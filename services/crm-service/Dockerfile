@@ -18,5 +18,6 @@ FROM base AS production
 COPY package*.json ./
 RUN npm ci --omit=dev
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/drizzle ./drizzle
 EXPOSE 4000
 CMD ["node", "dist/server.js"]
