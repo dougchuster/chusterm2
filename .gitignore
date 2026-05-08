@@ -83,8 +83,16 @@ coverage/
 test-results/
 playwright-report/
 
-# Notas locais de desenvolvimento
+# Notas e documentação de orientação (não fazem parte do sistema)
 memorias.md
+docs/
+core/docs/
+SETUP.md
+core-placeholder-readme.md
+
+# Arquivos do Claude Code (prompts e skills de IA)
+.github/prompts/
+.github/skills/
 
 # OpenClaude config local
 .openclaude.json
