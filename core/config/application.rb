@@ -121,3 +121,5 @@ module ChusteRM
     encryption_configured?
   end
 end
+
+Chatwoot = ChusteRM
