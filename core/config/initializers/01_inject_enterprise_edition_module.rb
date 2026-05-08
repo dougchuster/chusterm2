@@ -1,7 +1,4 @@
-﻿# frozen_string_literal: true
-
-# Skip enterprise injection if DISABLE_ENTERPRISE is set
-return if defined?(ChusteRM::Application::ENTERPRISE_DISABLED) && ChusteRM::Application::ENTERPRISE_DISABLED
+# frozen_string_literal: true
 
 # original Authors: Gitlab
 # https://gitlab.com/gitlab-org/gitlab/-/blob/master/config/initializers/0_inject_enterprise_edition_module.rb
@@ -83,9 +80,9 @@ module InjectEnterpriseEditionModule
   end
 
   def const_get_maybe_false(mod, name)
-    return false unless mod.respond_to?(:const_defined?)
+    return nil unless mod.is_a?(Module)
 
-    mod.const_defined?(name, false) && mod.const_get(name, false)
+    mod.const_defined?(name, false) ? mod.const_get(name, false) : nil
   end
 end
 

@@ -225,10 +225,14 @@ COPY config/initializers/disable_evented_watcher.rb ./config/initializers/disabl
 COPY config/environments/development.rb ./config/environments/development.rb
 COPY config/initializers/vite_hot_reload.rb ./config/initializers/vite_hot_reload.rb
 COPY config/initializers/evolution_routes.rb ./config/initializers/evolution_routes.rb
+COPY config/initializers/01_inject_enterprise_edition_module.rb ./config/initializers/01_inject_enterprise_edition_module.rb
 COPY config/initializers/chusterm_branding.rb ./config/initializers/chusterm_branding.rb
+COPY config/initializers/chusterm_compatibility_aliases.rb ./config/initializers/chusterm_compatibility_aliases.rb
 COPY config/initializers/chusterm_exception_tracker_alias.rb ./config/initializers/chusterm_exception_tracker_alias.rb
 COPY config/initializers/active_record_query_trace.rb ./config/initializers/active_record_query_trace.rb
 COPY config/application.rb ./config/application.rb
+# Templates de email traduzidos para pt_BR
+COPY app/views/devise/mailer/ ./app/views/devise/mailer/
 
 EXPOSE 3000
 CMD ["sh", "-c", "rm -f /app/tmp/pids/server.pid && bundle exec rails s -b 0.0.0.0 -p 3000"]

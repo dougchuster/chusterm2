@@ -41,6 +41,7 @@ export default {
   },
   data() {
     return {
+      localTheme: 'system',
       credentials: { email: '', password: '' },
       loginApi: { message: '', showLoading: false, hasErrored: false },
       error: '',
@@ -103,7 +104,35 @@ export default {
       });
     }
   },
+  mounted() {
+    const savedTheme = localStorage.getItem('chusterm-login-theme');
+    if (savedTheme) {
+      this.localTheme = savedTheme;
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      this.localTheme = 'dark';
+    } else {
+      this.localTheme = 'light';
+    }
+    this.applyTheme();
+
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+      if (!localStorage.getItem('chusterm-login-theme')) {
+        this.localTheme = e.matches ? 'dark' : 'light';
+        this.applyTheme();
+      }
+    });
+  },
+
   methods: {
+
+    toggleTheme() {
+      this.localTheme = this.localTheme === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('chusterm-login-theme', this.localTheme);
+      this.applyTheme();
+    },
+    applyTheme() {
+      // O tema é aplicado dinamicamente usando uma classe no container principal
+    },
     getTranslatedMessage(key) {
       switch (key) {
         case 'LOGIN.OAUTH.NO_ACCOUNT_FOUND':
@@ -220,1108 +249,868 @@ export default {
 </script>
 
 <template>
-  <main class="auth">
-    <!-- Painel decorativo (esquerda em desktop) -->
-    <aside class="auth__brand" aria-hidden="true">
-      <div class="auth__brand-stage">
-        <div class="auth__brand-mark">
-          <img
-            v-if="brandLogo"
-            :src="brandLogo"
-            :alt="installationName"
-            class="auth__brand-logo"
-          />
-          <span v-else class="auth__brand-wordmark">
-            {{ installationName }}
-          </span>
-        </div>
-        <p class="auth__brand-tagline">
-          {{ $t('LOGIN.INTRO.TAGLINE') }}
-        </p>
-      </div>
-      <div class="auth__brand-glow auth__brand-glow--one" />
-      <div class="auth__brand-glow auth__brand-glow--two" />
-    </aside>
+  <main class="auth-modern" :class="localTheme">
+    <!-- Botão de Troca de Tema -->
+    <button class="theme-toggle-btn" @click="toggleTheme" :aria-label="localTheme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'">
+      <i v-if="localTheme === 'dark'" class="i-lucide-sun size-5" />
+      <i v-else class="i-lucide-moon size-5" />
+    </button>
 
-    <!-- Form (direita em desktop) -->
-    <section class="auth__pane" :aria-label="$t('LOGIN.INTRO.FORM_LABEL')">
-      <div class="auth__card">
-        <header class="auth__header">
-          <div class="auth__brand-mobile">
-            <img
-              v-if="brandLogo"
-              :src="brandLogo"
-              :alt="installationName"
-              class="auth__brand-logo"
-            />
-            <span v-else class="auth__brand-wordmark">
-              {{ installationName }}
-            </span>
-          </div>
-          <h1 class="auth__title">{{ $t('LOGIN.INTRO.WELCOME_TITLE') }}</h1>
-          <p class="auth__subtitle">
-            {{ $t('LOGIN.INTRO.FORM_SUBTITLE') }}
-          </p>
-        </header>
+    <!-- Animated Background Elements -->
+    <div class="auth-bg-elements">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+      <div class="glass-overlay"></div>
+    </div>
 
-        <div v-if="mfaRequired" class="auth__mfa">
-          <MfaVerification
-            :mfa-token="mfaToken"
-            @verified="handleMfaVerified"
-            @cancel="handleMfaCancel"
-          />
-        </div>
-
-        <div v-else :class="{ 'auth--shake': loginApi.hasErrored }">
-          <div
-            v-if="loginApi.message && loginApi.hasErrored"
-            class="auth__alert"
-            role="alert"
-          >
-            <i class="i-lucide-circle-alert size-4" />
-            <span>{{ loginApi.message }}</span>
-          </div>
-
-          <div v-if="email" class="auth__loading" role="status">
-            <span class="auth__spinner" aria-hidden="true" />
-            <div>
-              <p>{{ $t('LOGIN.INTRO.LOADING_TITLE') }}</p>
-              <span>{{ $t('LOGIN.INTRO.LOADING_DESCRIPTION') }}</span>
+    <div class="auth-wrapper">
+      <div class="auth-glass-card">
+        <!-- Hero/Brand Side -->
+        <aside class="auth-hero" :aria-label="$t('LOGIN.INTRO.BRAND_LABEL')">
+          <div class="auth-hero-content">
+            <div class="custom-logo">
+              <svg class="logo-icon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="node-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#06b6d4" />
+                    <stop offset="100%" stop-color="#3b82f6" />
+                  </linearGradient>
+                  <linearGradient id="ring-grad" x1="100%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" stop-color="#ec4899" />
+                    <stop offset="100%" stop-color="#a855f7" />
+                  </linearGradient>
+                </defs>
+                <circle cx="32" cy="32" r="24" stroke="url(#ring-grad)" stroke-width="6" stroke-linecap="round" stroke-dasharray="80 30" transform="rotate(45 32 32)" />
+                <circle cx="32" cy="32" r="16" stroke="url(#node-grad)" stroke-width="5" stroke-linecap="round" stroke-dasharray="40 20" transform="rotate(-30 32 32)" />
+                <circle cx="32" cy="32" r="8" fill="url(#node-grad)" />
+                <circle cx="56" cy="32" r="4" fill="#ec4899" />
+                <circle cx="8" cy="32" r="4" fill="#06b6d4" />
+              </svg>
+              <span class="logo-text">
+                <span class="logo-highlight" v-text="'C'" />
+                <span v-text="'huste'" />
+                <span class="logo-highlight" v-text="'RM'" />
+              </span>
             </div>
+            <h2 class="auth-headline">{{ $t('LOGIN.INTRO.TAGLINE') }}</h2>
+            <p class="auth-description">{{ $t('LOGIN.INTRO.HERO_DESCRIPTION') }}</p>
           </div>
+        </aside>
 
-          <div v-else class="auth__content">
-            <a
-              v-if="showGoogleLogin"
-              :href="getGoogleAuthUrl()"
-              class="auth__provider"
-            >
-              <span class="i-logos-google-icon size-5" aria-hidden="true" />
-              <span>{{ $t('LOGIN.OAUTH.GOOGLE_LOGIN') }}</span>
-            </a>
+        <!-- Form Side -->
+        <section class="auth-form-pane" :aria-label="$t('LOGIN.INTRO.FORM_LABEL')">
+          <div class="auth-form-content">
+            <header class="auth-header">
+              <div class="auth-brand-mobile">
+                <div class="custom-logo">
+                  <svg class="logo-icon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="32" cy="32" r="24" stroke="url(#ring-grad)" stroke-width="6" stroke-linecap="round" stroke-dasharray="80 30" transform="rotate(45 32 32)" />
+                    <circle cx="32" cy="32" r="16" stroke="url(#node-grad)" stroke-width="5" stroke-linecap="round" stroke-dasharray="40 20" transform="rotate(-30 32 32)" />
+                    <circle cx="32" cy="32" r="8" fill="url(#node-grad)" />
+                    <circle cx="56" cy="32" r="4" fill="#ec4899" />
+                    <circle cx="8" cy="32" r="4" fill="#06b6d4" />
+                  </svg>
+                  <span class="logo-text">
+                    <span class="logo-highlight" v-text="'C'" />
+                    <span v-text="'huste'" />
+                    <span class="logo-highlight" v-text="'RM'" />
+                  </span>
+                </div>
+              </div>
+              <h1 class="auth-title">{{ $t('LOGIN.INTRO.WELCOME_TITLE') }}</h1>
+              <p class="auth-subtitle">{{ $t('LOGIN.INTRO.FORM_SUBTITLE') }}</p>
+            </header>
 
-            <div v-if="showGoogleLogin && showEmailLogin" class="auth__divider">
-              <span aria-hidden="true" />
-              <small>{{ $t('LOGIN.INTRO.OR_WITH_EMAIL') }}</small>
-              <span aria-hidden="true" />
+            <div v-if="mfaRequired" class="auth-mfa-container">
+              <MfaVerification
+                :mfa-token="mfaToken"
+                @verified="handleMfaVerified"
+                @cancel="handleMfaCancel"
+              />
             </div>
 
-            <form
-              v-if="showEmailLogin"
-              class="auth__form"
-              @submit.prevent="submitFormLogin"
-            >
-              <div class="auth__field">
-                <label for="login-email">
-                  {{ $t('LOGIN.EMAIL.LABEL') }}
-                </label>
-                <div
-                  class="auth__control"
-                  :class="{
-                    'auth__control--error': v$.credentials.email.$error,
-                  }"
-                >
-                  <i
-                    class="auth__control-icon i-lucide-mail size-4"
-                    aria-hidden="true"
-                  />
-                  <input
-                    id="login-email"
-                    v-model="credentials.email"
-                    class="auth__input"
-                    type="email"
-                    :placeholder="$t('LOGIN.EMAIL.PLACEHOLDER')"
-                    data-testid="email_input"
-                    :tabindex="1"
-                    autocomplete="email"
-                    spellcheck="false"
-                    @input="v$.credentials.email.$touch"
-                  />
+            <div v-else :class="{ 'shake-animation': loginApi.hasErrored }">
+              <div v-if="loginApi.message && loginApi.hasErrored" class="auth-alert-box" role="alert">
+                <i class="i-lucide-circle-alert size-4" />
+                <span>{{ loginApi.message }}</span>
+              </div>
+
+              <div v-if="email" class="auth-loading-state" role="status">
+                <span class="auth-spinner-ring" aria-hidden="true" />
+                <div class="loading-text">
+                  <p>{{ $t('LOGIN.INTRO.LOADING_TITLE') }}</p>
+                  <span>{{ $t('LOGIN.INTRO.LOADING_DESCRIPTION') }}</span>
                 </div>
               </div>
 
-              <div class="auth__field">
-                <div class="auth__field-row">
-                  <label for="login-password">
-                    {{ $t('LOGIN.PASSWORD.LABEL') }}
-                  </label>
-                  <router-link to="/app/auth/reset/password" class="auth__link">
-                    {{ $t('LOGIN.FORGOT_PASSWORD') }}
-                  </router-link>
+              <div v-else class="auth-interactive-area">
+                <a v-if="showGoogleLogin" :href="getGoogleAuthUrl()" class="auth-social-btn">
+                  <span class="i-logos-google-icon size-5" aria-hidden="true" />
+                  <span>{{ $t('LOGIN.OAUTH.GOOGLE_LOGIN') }}</span>
+                </a>
+
+                <div v-if="showGoogleLogin && showEmailLogin" class="auth-divider">
+                  <span class="line" aria-hidden="true" />
+                  <small>{{ $t('LOGIN.INTRO.OR_WITH_EMAIL') }}</small>
+                  <span class="line" aria-hidden="true" />
                 </div>
-                <div
-                  class="auth__control"
-                  :class="{
-                    'auth__control--error': v$.credentials.password.$error,
-                  }"
-                >
-                  <i
-                    class="auth__control-icon i-lucide-lock-keyhole size-4"
-                    aria-hidden="true"
-                  />
-                  <input
-                    id="login-password"
-                    v-model="credentials.password"
-                    class="auth__input"
-                    :type="showPassword ? 'text' : 'password'"
-                    :placeholder="$t('LOGIN.PASSWORD.PLACEHOLDER')"
-                    data-testid="password_input"
-                    :tabindex="2"
-                    autocomplete="current-password"
-                    spellcheck="false"
-                    @input="v$.credentials.password.$touch"
-                  />
+
+                <form v-if="showEmailLogin" class="auth-form" @submit.prevent="submitFormLogin">
+                  <div class="input-group">
+                    <label for="login-email">{{ $t('LOGIN.EMAIL.LABEL') }}</label>
+                    <div class="input-wrapper" :class="{ 'has-error': v$.credentials.email.$error }">
+                      <i class="input-icon i-lucide-mail size-4" aria-hidden="true" />
+                      <input
+                        id="login-email"
+                        v-model="credentials.email"
+                        class="modern-input"
+                        type="email"
+                        :placeholder="$t('LOGIN.EMAIL.PLACEHOLDER')"
+                        data-testid="email_input"
+                        :tabindex="1"
+                        autocomplete="email"
+                        spellcheck="false"
+                        @input="v$.credentials.email.$touch"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="input-group">
+                    <div class="input-group-header">
+                      <label for="login-password">{{ $t('LOGIN.PASSWORD.LABEL') }}</label>
+                      <router-link to="/app/auth/reset/password" class="forgot-link">
+                        {{ $t('LOGIN.FORGOT_PASSWORD') }}
+                      </router-link>
+                    </div>
+                    <div class="input-wrapper" :class="{ 'has-error': v$.credentials.password.$error }">
+                      <i class="input-icon i-lucide-lock-keyhole size-4" aria-hidden="true" />
+                      <input
+                        id="login-password"
+                        v-model="credentials.password"
+                        class="modern-input"
+                        :type="showPassword ? 'text' : 'password'"
+                        :placeholder="$t('LOGIN.PASSWORD.PLACEHOLDER')"
+                        data-testid="password_input"
+                        :tabindex="2"
+                        autocomplete="current-password"
+                        spellcheck="false"
+                        @input="v$.credentials.password.$touch"
+                      />
+                      <button
+                        type="button"
+                        class="password-toggle"
+                        :aria-label="showPassword ? $t('LOGIN.HIDE_PASSWORD') : $t('LOGIN.SHOW_PASSWORD')"
+                        @click="showPassword = !showPassword"
+                      >
+                        <i :class="showPassword ? 'i-lucide-eye-off size-4' : 'i-lucide-eye size-4'" />
+                      </button>
+                    </div>
+                  </div>
+
                   <button
-                    type="button"
-                    class="auth__toggle"
-                    :aria-label="
-                      showPassword
-                        ? $t('LOGIN.HIDE_PASSWORD')
-                        : $t('LOGIN.SHOW_PASSWORD')
-                    "
-                    @click="showPassword = !showPassword"
+                    type="submit"
+                    class="auth-submit-btn"
+                    :disabled="loginApi.showLoading"
+                    data-testid="submit_button"
+                    :tabindex="3"
                   >
-                    <i
-                      :class="
-                        showPassword
-                          ? 'i-lucide-eye-off size-4'
-                          : 'i-lucide-eye size-4'
-                      "
-                    />
+                    <Spinner v-if="loginApi.showLoading" :color-scheme="localTheme === 'dark' ? 'primary' : 'white'" size="small" />
+                    <span v-else>{{ $t('LOGIN.SUBMIT') }}</span>
                   </button>
-                </div>
+                </form>
+
+                <router-link v-if="showSsoLogin" to="/app/login/sso" class="auth-sso-btn">
+                  <i class="i-lucide-shield-check size-4" aria-hidden="true" />
+                  <span>{{ $t('LOGIN.SAML.LABEL') }}</span>
+                </router-link>
+
+                <p v-if="showSignupLink" class="auth-signup-text">
+                  {{ $t('LOGIN.INTRO.SIGNUP_PROMPT') }}
+                  <router-link to="/app/auth/signup" class="signup-link">
+                    {{ $t('LOGIN.CREATE_NEW_ACCOUNT') }}
+                  </router-link>
+                </p>
               </div>
-
-              <button
-                type="submit"
-                class="auth__submit"
-                :disabled="loginApi.showLoading"
-                data-testid="submit_button"
-                :tabindex="3"
-              >
-                <Spinner
-                  v-if="loginApi.showLoading"
-                  color-scheme="white"
-                  size="small"
-                />
-                <span v-else>{{ $t('LOGIN.SUBMIT') }}</span>
-              </button>
-            </form>
-
-            <router-link
-              v-if="showSsoLogin"
-              to="/app/login/sso"
-              class="auth__sso"
-            >
-              <i class="i-lucide-shield-check size-4" aria-hidden="true" />
-              <span>{{ $t('LOGIN.SAML.LABEL') }}</span>
-            </router-link>
-
-            <p v-if="showSignupLink" class="auth__signup">
-              {{ $t('LOGIN.INTRO.SIGNUP_PROMPT') }}
-              <router-link to="/app/auth/signup" class="auth__link">
-                {{ $t('LOGIN.CREATE_NEW_ACCOUNT') }}
-              </router-link>
-            </p>
+            </div>
           </div>
-        </div>
+        </section>
       </div>
-    </section>
+    </div>
   </main>
 </template>
 
+
 <style scoped>
-/* ──────────────────────────────────────────────────────────
- * Login — minimal, dark/light via tokens DS.
- * Layout: 2 colunas em desktop (brand visual + form),
- *         1 coluna em mobile (form full-width).
- * ────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;700;800&display=swap');
 
-@keyframes auth-shake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  25% {
-    transform: translateX(-4px);
-  }
-  75% {
-    transform: translateX(4px);
-  }
-}
-
-@keyframes auth-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes auth-glow-pulse {
-  0%,
-  100% {
-    opacity: 0.6;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.9;
-    transform: scale(1.06);
-  }
-}
-
-.auth {
-  position: fixed;
-  inset: 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  font-family: var(--ds-font-sans);
-  color: rgb(var(--ds-fg-default));
-  background: rgb(var(--ds-bg-canvas));
-}
-
-/* ── Painel de marca (esquerda) ──────────────────────────── */
-
-.auth__brand {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  padding: 3rem;
-  background: radial-gradient(
-      circle at 30% 30%,
-      rgb(var(--ds-accent-primary) / 0.45),
-      transparent 55%
-    ),
-    radial-gradient(
-      circle at 70% 70%,
-      rgb(var(--ds-accent-secondary) / 0.35),
-      transparent 55%
-    ),
-    linear-gradient(
-      135deg,
-      rgb(var(--ds-accent-primary) / 0.08),
-      rgb(var(--ds-accent-secondary) / 0.06)
-    ),
-    rgb(var(--ds-bg-elevated));
-}
-
-.auth__brand-stage {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.25rem;
-  text-align: center;
-  max-width: 24rem;
-}
-
-.auth__brand-mark {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.auth__brand-logo {
-  max-width: 18rem;
-  max-height: 4.5rem;
-  object-fit: contain;
-  filter: drop-shadow(0 8px 24px rgb(var(--ds-accent-primary) / 0.3));
-}
-
-.auth__brand-wordmark {
-  font-size: clamp(2.25rem, 4vw, 3rem);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1;
-  color: rgb(var(--ds-fg-default));
-}
-
-.auth__brand-tagline {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 500;
-  line-height: 1.5;
-  color: rgb(var(--ds-fg-muted));
-  max-width: 22rem;
-}
-
-/* Glows decorativos */
-.auth__brand-glow {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  pointer-events: none;
-  animation: auth-glow-pulse 8s ease-in-out infinite;
-}
-
-.auth__brand-glow--one {
-  top: -10%;
-  left: -10%;
-  width: 60%;
-  height: 60%;
-  background: rgb(var(--ds-accent-primary) / 0.35);
-}
-
-.auth__brand-glow--two {
-  bottom: -10%;
-  right: -10%;
-  width: 55%;
-  height: 55%;
-  background: rgb(var(--ds-accent-secondary) / 0.3);
-  animation-delay: 4s;
-}
-
-/* ── Painel do form (direita) ────────────────────────────── */
-
-.auth__pane {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: clamp(1.5rem, 4vw, 3rem);
-  overflow-y: auto;
-}
-
-.auth__card {
-  width: 100%;
-  max-width: 24rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.auth__brand-mobile {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 0.5rem;
-}
-
-.auth__brand-mobile .auth__brand-logo {
-  max-width: 11rem;
-  max-height: 2.5rem;
-}
-
-.auth__brand-mobile .auth__brand-wordmark {
-  font-size: 1.65rem;
-}
-
-.auth__header {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.auth__title {
-  margin: 0;
-  font-size: clamp(1.6rem, 2.5vw, 1.85rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
-  color: rgb(var(--ds-fg-default));
-}
-
-.auth__subtitle {
-  margin: 0;
-  font-size: 0.92rem;
-  line-height: 1.5;
-  color: rgb(var(--ds-fg-muted));
-}
-
-.auth__content,
-.auth__form {
-  display: flex;
-  flex-direction: column;
-}
-
-.auth__content {
-  gap: 1rem;
-}
-
-.auth__form {
-  gap: 0.85rem;
-}
-
-/* ── Provider buttons (Google) ───────────────────────────── */
-
-.auth__provider {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  width: 100%;
-  min-height: 2.85rem;
-  padding: 0.7rem 1rem;
-  font-size: 0.92rem;
-  font-weight: 600;
-  border-radius: var(--ds-radius-md);
-  border: 1px solid rgb(var(--ds-border-default));
-  color: rgb(var(--ds-fg-default));
-  background: rgb(var(--ds-bg-surface));
-  transition:
-    background-color var(--ds-duration-base) var(--ds-easing-standard),
-    border-color var(--ds-duration-base) var(--ds-easing-standard);
-}
-
-.auth__provider:hover {
-  border-color: rgb(var(--ds-border-strong));
-  background: rgb(var(--ds-bg-hover));
-}
-
-.auth__divider {
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-}
-
-.auth__divider span {
-  flex: 1;
-  height: 1px;
-  background: rgb(var(--ds-border-subtle));
-}
-
-.auth__divider small {
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: rgb(var(--ds-fg-subtle));
-}
-
-/* ── Form fields ─────────────────────────────────────────── */
-
-.auth__field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.auth__field label {
-  font-size: 0.82rem;
-  font-weight: 600;
-  line-height: 1.25;
-  color: rgb(var(--ds-fg-default));
-}
-
-.auth__field-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.auth__link {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: rgb(var(--ds-accent-primary));
-  text-decoration: none;
-}
-
-:deep(.dark) .auth__link,
-.dark .auth__link {
-  color: rgb(var(--iris-11));
-}
-
-.auth__link:hover {
-  text-decoration: underline;
-}
-
-.auth__control {
-  position: relative;
-  display: flex;
-  align-items: center;
-  min-height: 2.85rem;
-  border: 1px solid rgb(var(--ds-border-default));
-  border-radius: var(--ds-radius-md);
-  background: rgb(var(--ds-bg-sunken));
-  transition:
-    border-color var(--ds-duration-base) var(--ds-easing-standard),
-    box-shadow var(--ds-duration-base) var(--ds-easing-standard),
-    background-color var(--ds-duration-base) var(--ds-easing-standard);
-}
-
-.auth__control:focus-within {
-  border-color: rgb(var(--ds-border-focus));
-  background: rgb(var(--ds-bg-surface));
-  box-shadow: 0 0 0 3px rgb(var(--ds-accent-primary) / 0.2);
-}
-
-.auth__control--error {
-  border-color: rgb(var(--ds-state-danger));
-}
-
-.auth__control-icon {
-  flex-shrink: 0;
-  margin: 0 0.65rem 0 0.85rem;
-  color: rgb(var(--ds-fg-subtle));
-}
-
-.auth__toggle {
-  display: grid;
-  place-items: center;
-  width: 2.6rem;
-  height: 100%;
-  flex-shrink: 0;
-  border: 0;
-  background: transparent;
-  color: rgb(var(--ds-fg-subtle));
-  cursor: pointer;
-}
-
-.auth__toggle:hover,
-.auth__toggle:focus-visible {
-  color: rgb(var(--ds-accent-primary));
-  outline: none;
-}
-
-/* Reset agressivo do <input> nativo */
-.auth .auth__control input.auth__input,
-.auth .auth__control input.auth__input[type='email'],
-.auth .auth__control input.auth__input[type='password'],
-.auth .auth__control input.auth__input[type='text'] {
-  all: unset !important;
-  flex: 1 !important;
-  min-width: 0 !important;
-  height: 100% !important;
-  padding: 0 0.85rem 0 0 !important;
-  font-family: inherit !important;
-  font-size: 0.94rem !important;
-  font-weight: 500 !important;
-  line-height: 1.4 !important;
-  color: rgb(var(--ds-fg-default)) !important;
-  caret-color: rgb(var(--ds-accent-primary)) !important;
-  background: transparent !important;
-}
-
-.auth .auth__control input.auth__input::placeholder {
-  color: rgb(var(--ds-fg-subtle)) !important;
-  opacity: 1 !important;
-}
-
-.auth .auth__control input.auth__input:-webkit-autofill {
-  -webkit-text-fill-color: rgb(var(--ds-fg-default)) !important;
-  caret-color: rgb(var(--ds-accent-primary)) !important;
-  -webkit-box-shadow: 0 0 0 1000px rgb(var(--ds-bg-sunken)) inset !important;
-  transition: background-color 9999s ease-out 0s;
-}
-
-/* ── Submit button — sempre roxo da marca ────────────────── */
-
-.auth .auth__submit[type='submit'] {
+.auth-modern {
+  position: fixed !important;
+  inset: 0 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 0.5rem !important;
-  width: 100% !important;
-  min-height: 2.95rem !important;
-  margin-top: 0.4rem !important;
-  padding: 0.78rem 1rem !important;
-  font-family: inherit !important;
-  font-size: 0.94rem !important;
-  font-weight: 600 !important;
-  border: 0 !important;
-  border-radius: var(--ds-radius-md) !important;
-  color: rgb(var(--ds-fg-on-accent)) !important;
-  background: rgb(var(--ds-accent-primary)) !important;
-  box-shadow:
-    0 1px 2px rgb(var(--ds-accent-primary) / 0.4),
-    0 8px 24px rgb(var(--ds-accent-primary) / 0.25) !important;
-  cursor: pointer !important;
-  transition:
-    background-color var(--ds-duration-base) var(--ds-easing-standard),
-    box-shadow var(--ds-duration-base) var(--ds-easing-standard),
-    transform var(--ds-duration-base) var(--ds-easing-standard) !important;
+  font-family: 'Inter', sans-serif !important;
+  overflow: hidden !important;
+  z-index: 999999 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  transition: background-color 0.5s ease, color 0.5s ease;
 }
 
-.auth .auth__submit[type='submit']:hover:not(:disabled) {
-  transform: translateY(-1px);
-  background: rgb(var(--ds-accent-primary-hover)) !important;
-  box-shadow:
-    0 1px 2px rgb(var(--ds-accent-primary) / 0.5),
-    0 12px 32px rgb(var(--ds-accent-primary) / 0.35) !important;
+/* THEME VARIABLES */
+.auth-modern.light {
+  --bg-base: #f8fafc;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --card-bg: rgba(255, 255, 255, 0.7);
+  --card-border: rgba(255, 255, 255, 0.8);
+  --form-bg: rgba(255, 255, 255, 0.9);
+  --hero-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(248, 250, 252, 0.4) 100%);
+  --input-bg: rgba(241, 245, 249, 0.8);
+  --input-border: #e2e8f0;
+  --input-text: #0f172a;
+  --social-bg: #ffffff;
+  --social-border: #e2e8f0;
+  --social-text: #334155;
+  --social-hover: #f1f5f9;
+  --btn-bg: #0f172a;
+  --btn-hover: #1e293b;
+  --btn-text: #ffffff;
+  --btn-shadow: 0 4px 14px 0 rgba(15, 23, 42, 0.39);
+  --btn-border: rgba(15, 23, 42, 1);
+  --divider: #e2e8f0;
+  
+  background-color: var(--bg-base) !important;
+  color: var(--text-main) !important;
 }
 
-.auth .auth__submit[type='submit']:disabled {
-  cursor: not-allowed;
+.auth-modern.dark {
+  --bg-base: #0b0f19;
+  --text-main: #ffffff;
+  --text-muted: #94a3b8;
+  --card-bg: rgba(15, 23, 42, 0.4);
+  --card-border: rgba(255, 255, 255, 0.12);
+  --form-bg: rgba(2, 6, 23, 0.5);
+  --hero-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 100%);
+  --input-bg: rgba(0, 0, 0, 0.2);
+  --input-border: rgba(255, 255, 255, 0.1);
+  --input-text: #ffffff;
+  --social-bg: rgba(255, 255, 255, 0.05);
+  --social-border: rgba(255, 255, 255, 0.1);
+  --social-text: #ffffff;
+  --social-hover: rgba(255, 255, 255, 0.1);
+  --btn-bg: #ffffff;
+  --btn-hover: #f8fafc;
+  --btn-text: #0f172a;
+  --btn-shadow: 0 4px 14px 0 rgba(255, 255, 255, 0.25);
+  --btn-border: rgba(255, 255, 255, 1);
+  --divider: rgba(255, 255, 255, 0.1);
+
+  background-color: var(--bg-base) !important;
+  color: var(--text-main) !important;
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 50;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-main);
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.theme-toggle-btn:hover {
+  transform: scale(1.05);
+  background: var(--form-bg);
+}
+
+/* Background Animations */
+.auth-bg-elements {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background-color: var(--bg-base);
+  transition: background-color 0.5s ease;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.8;
+  animation: float 20s infinite ease-in-out alternate;
+  mix-blend-mode: screen;
+}
+
+.auth-modern.light .orb {
+  mix-blend-mode: multiply;
+  opacity: 0.4;
+}
+
+.orb-1 {
+  width: 700px;
+  height: 700px;
+  background: #4f46e5;
+  top: -150px;
+  left: -150px;
+  animation-duration: 25s;
+}
+
+.orb-2 {
+  width: 600px;
+  height: 600px;
+  background: #ec4899;
+  bottom: -150px;
+  right: -100px;
+  animation-duration: 28s;
+  animation-delay: -5s;
+}
+
+.orb-3 {
+  width: 500px;
+  height: 500px;
+  background: #0ea5e9;
+  top: 40%;
+  left: 30%;
+  animation-duration: 22s;
+  animation-delay: -10s;
   opacity: 0.6;
+}
+
+.auth-modern.light .orb-1 { background: #cbd5e1; }
+.auth-modern.light .orb-2 { background: #93c5fd; }
+.auth-modern.light .orb-3 { background: #bae6fd; }
+
+.glass-overlay {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes float {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(40px, -60px) scale(1.1); }
+  66% { transform: translate(-30px, 30px) scale(0.9); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+/* Main Layout */
+.auth-wrapper {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 1100px;
+  padding: 2rem;
+  perspective: 1200px;
+}
+
+.auth-glass-card {
+  display: flex;
+  background: var(--card-bg);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid var(--card-border);
+  border-radius: 28px;
+  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  min-height: 640px;
+  animation: cardEntrance 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: background 0.5s ease, border-color 0.5s ease;
+}
+
+.auth-modern.dark .auth-glass-card {
+  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+@keyframes cardEntrance {
+  from { opacity: 0; transform: translateY(50px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Hero Section */
+.auth-hero {
+  flex: 1;
+  padding: 4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: var(--hero-bg);
+  border-right: 1px solid var(--card-border);
+}
+
+/* Custom Vector Logo */
+.custom-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-icon {
+  width: 48px;
+  height: 48px;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+  animation: logoSpin 30s linear infinite;
+}
+
+@keyframes logoSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.logo-text {
+  font-family: 'Outfit', sans-serif;
+  font-size: 2.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-main);
+  transition: color 0.5s ease;
+}
+
+.logo-highlight {
+  background: linear-gradient(135deg, #a855f7, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.auth-brand-mark {
+  margin-bottom: 2rem;
+}
+
+.auth-badge {
+  font-family: 'Outfit', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--text-main);
+  display: block;
+  margin-bottom: 2.5rem;
+}
+
+.auth-headline {
+  font-family: 'Outfit', sans-serif;
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin-bottom: 1.25rem;
+  color: var(--text-main);
+}
+
+.auth-description {
+  font-size: 1.15rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  max-width: 90%;
+}
+
+/* Form Section */
+.auth-form-pane {
+  flex: 0 0 460px;
+  padding: 4rem 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: var(--form-bg);
+}
+
+.auth-form-content {
+  width: 100%;
+}
+
+.auth-brand-mobile {
+  display: none;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.auth-wordmark-mobile {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.auth-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 0.5rem;
+}
+
+.auth-subtitle {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 2.5rem;
+}
+
+.auth-interactive-area {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Social Buttons */
+.auth-social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.9rem;
+  background: var(--social-bg);
+  border: 1px solid var(--social-border);
+  border-radius: 14px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--social-text);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.auth-social-btn:hover {
+  background: var(--social-hover);
+  transform: translateY(-2px);
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.auth-divider .line {
+  flex: 1;
+  height: 1px;
+  background: var(--divider);
+}
+
+.auth-divider small {
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Inputs */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.input-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.input-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.forgot-link {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #3b82f6;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.forgot-link:hover {
+  text-decoration: underline;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.input-wrapper:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.input-wrapper.has-error {
+  border-color: #ef4444;
+}
+
+.input-icon {
+  margin-left: 1rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: color 0.3s ease;
+}
+
+.input-wrapper:focus-within .input-icon {
+  color: #3b82f6;
+}
+
+main.auth-modern div.auth-wrapper input.modern-input {
+  flex: 1;
+  border: none;
+  background: transparent !important;
+  background-color: transparent !important;
+  padding: 0.9rem 1rem 0.9rem 0.75rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  color: var(--input-text);
+  outline: none;
+}
+
+main.auth-modern div.auth-wrapper input.modern-input:-webkit-autofill,
+main.auth-modern div.auth-wrapper input.modern-input:-webkit-autofill:hover,
+main.auth-modern div.auth-wrapper input.modern-input:-webkit-autofill:focus,
+main.auth-modern div.auth-wrapper input.modern-input:-webkit-autofill:active {
+  transition: background-color 5000s ease-in-out 0s !important;
+  -webkit-text-fill-color: var(--input-text) !important;
+}
+
+.modern-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Auto-fill fix that respects the theme */
+.modern-input:-webkit-autofill,
+.modern-input:-webkit-autofill:hover, 
+.modern-input:-webkit-autofill:focus, 
+.modern-input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--input-text) !important;
+  transition: background-color 5000s ease-in-out 0s !important;
+}
+
+.password-toggle {
+  background: none;
+  border: none;
+  padding: 0 1rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.password-toggle:hover {
+  color: var(--text-main);
+}
+
+/* Submit Button */
+main.auth-modern div.auth-wrapper button.auth-submit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 1rem;
+  margin-top: 0.5rem;
+  background: var(--btn-bg) !important;
+  color: var(--btn-text) !important;
+  border: 1px solid var(--btn-border) !important;
+  border-radius: 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--btn-shadow) !important;
+  letter-spacing: 0.01em;
+}
+
+main.auth-modern div.auth-wrapper button.auth-submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
+  background: var(--btn-hover) !important;
+}
+
+main.auth-modern div.auth-wrapper button.auth-submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+main.auth-modern div.auth-wrapper button.auth-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
   transform: none;
 }
 
-/* ── Estados auxiliares ──────────────────────────────────── */
-
-.auth__alert {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-  padding: 0.7rem 0.85rem;
-  font-size: 0.86rem;
-  border: 1px solid rgb(var(--ds-state-danger) / 0.3);
-  border-radius: var(--ds-radius-md);
-  color: rgb(var(--ds-state-danger));
-  background: rgb(var(--ds-state-danger-soft));
-}
-
-.auth__loading {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  padding: 1rem;
-  border: 1px solid rgb(var(--ds-border-subtle));
-  border-radius: var(--ds-radius-md);
-  background: rgb(var(--ds-bg-sunken));
-}
-
-.auth__loading p {
-  margin: 0;
-  font-size: 0.94rem;
-  font-weight: 600;
-  color: rgb(var(--ds-fg-default));
-}
-
-.auth__loading span {
-  font-size: 0.82rem;
-  color: rgb(var(--ds-fg-muted));
-}
-
-.auth__spinner {
-  width: 2rem;
-  height: 2rem;
-  flex-shrink: 0;
-  border: 3px solid rgb(var(--ds-accent-primary) / 0.18);
-  border-top-color: rgb(var(--ds-accent-primary));
-  border-radius: 50%;
-  animation: auth-spin 0.8s linear infinite;
-}
-
-.auth__sso {
+/* Secondary Actions */
+.auth-sso-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  width: 100%;
-  min-height: 2.6rem;
-  padding: 0.55rem 0.95rem;
-  font-size: 0.86rem;
-  font-weight: 600;
-  border-radius: var(--ds-radius-md);
-  border: 1px solid rgb(var(--ds-border-subtle));
-  color: rgb(var(--ds-fg-muted));
+  padding: 0.875rem;
   background: transparent;
+  border: 1px solid var(--input-border);
+  border-radius: 12px;
+  color: var(--text-main);
+  font-weight: 600;
+  font-size: 0.95rem;
   text-decoration: none;
-  transition:
-    color var(--ds-duration-base) var(--ds-easing-standard),
-    border-color var(--ds-duration-base) var(--ds-easing-standard),
-    background-color var(--ds-duration-base) var(--ds-easing-standard);
+  transition: all 0.2s ease;
 }
 
-.auth__sso:hover {
-  color: rgb(var(--ds-fg-default));
-  border-color: rgb(var(--ds-border-default));
-  background: rgb(var(--ds-bg-hover));
+.auth-sso-btn:hover {
+  background: var(--social-bg);
+  border-color: var(--text-muted);
 }
 
-.auth__signup {
-  margin: 0;
-  font-size: 0.86rem;
+.auth-signup-text {
   text-align: center;
-  color: rgb(var(--ds-fg-muted));
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-top: 1rem;
 }
 
-.auth__mfa {
-  max-height: 70vh;
-  overflow: auto;
+.signup-link {
+  color: #3b82f6;
+  font-weight: 600;
+  text-decoration: none;
 }
 
-.auth--shake {
-  animation: auth-shake 0.34s ease-in-out;
+.signup-link:hover {
+  text-decoration: underline;
 }
 
-/* ── Mobile ─────────────────────────────────────────────── */
+/* Alerts and Loading */
+.auth-alert-box {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border-left: 4px solid #ef4444;
+  border-radius: 8px;
+  color: #ef4444;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
 
+.shake-animation {
+  animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
+.auth-loading-state {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: var(--input-bg);
+  border-radius: 12px;
+  border: 1px dashed var(--input-border);
+}
+
+.loading-text p {
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 0 0 0.25rem;
+}
+
+.loading-text span {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.auth-spinner-ring {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 3px solid rgba(59, 130, 246, 0.2);
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive */
 @media (max-width: 900px) {
-  .auth {
-    grid-template-columns: 1fr;
+  .auth-glass-card {
+    flex-direction: column;
+    min-height: auto;
   }
-
-  .auth__brand {
-    display: none;
+  
+  .auth-hero {
+    padding: 3rem 2rem;
+    border-right: none;
+    border-bottom: 1px solid var(--card-border);
   }
-
-  .auth__brand-mobile {
-    display: flex;
+  
+  .auth-headline {
+    font-size: 2.5rem;
+  }
+  
+  .auth-form-pane {
+    flex: auto;
+    padding: 3rem 2rem;
   }
 }
 
 @media (max-width: 480px) {
-  .auth__pane {
-    padding: 1.5rem 1.25rem;
-  }
-
-  .auth .auth__control input.auth__input {
-    font-size: 16px !important; /* evita zoom no iOS */
-  }
-}
-
-/* Login hardening: the auth route can render before the dashboard design
-   tokens are available, so this page keeps its own visible theme tokens. */
-.auth {
-  --auth-bg: #edf4fb;
-  --auth-panel: #ffffff;
-  --auth-panel-soft: #f8fbff;
-  --auth-side: #f7fbff;
-  --auth-text: #0f172a;
-  --auth-muted: #475569;
-  --auth-subtle: #64748b;
-  --auth-border: #c9d8ea;
-  --auth-border-strong: #8fa8c7;
-  --auth-input: #ffffff;
-  --auth-input-hover: #f8fbff;
-  --auth-primary: #2563eb;
-  --auth-primary-strong: #1d4ed8;
-  --auth-primary-soft: #dbeafe;
-  --auth-teal: #0f766e;
-  --auth-danger: #e11d48;
-  --auth-danger-soft: #fff1f2;
-  --auth-shadow: 0 28px 80px rgba(15, 23, 42, 0.16);
-  --auth-radius: 1.35rem;
-
-  grid-template-columns: minmax(390px, 0.88fr) minmax(0, 1.12fr);
-  min-height: 100dvh;
-  overflow: hidden;
-  font-family:
-    Inter,
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    sans-serif;
-  color: var(--auth-text);
-  background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.74),
-      transparent 42%
-    ),
-    var(--auth-bg);
-}
-
-:deep(.dark) .auth,
-:deep(.theme-dark) .auth,
-:deep([data-theme='dark']) .auth {
-  --auth-bg: #09111f;
-  --auth-panel: #101827;
-  --auth-panel-soft: #0d1524;
-  --auth-side: #0f1b2c;
-  --auth-text: #f8fafc;
-  --auth-muted: #cbd5e1;
-  --auth-subtle: #94a3b8;
-  --auth-border: #26364e;
-  --auth-border-strong: #3d5270;
-  --auth-input: #0b1423;
-  --auth-input-hover: #111d30;
-  --auth-primary: #60a5fa;
-  --auth-primary-strong: #3b82f6;
-  --auth-primary-soft: rgba(96, 165, 250, 0.18);
-  --auth-teal: #2dd4bf;
-  --auth-danger: #fb7185;
-  --auth-danger-soft: rgba(251, 113, 133, 0.12);
-  --auth-shadow: 0 32px 90px rgba(0, 0, 0, 0.42);
-}
-
-.auth__pane {
-  grid-column: 1;
-  grid-row: 1;
-  min-height: 100dvh;
-  padding: clamp(1.5rem, 4vw, 4rem);
-  background: var(--auth-bg);
-}
-
-.auth__brand {
-  grid-column: 2;
-  grid-row: 1;
-  justify-content: flex-start;
-  padding: clamp(2rem, 5vw, 5rem);
-  border-left: 1px solid var(--auth-border);
-  border-right: 0;
-  background: linear-gradient(rgba(37, 99, 235, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(37, 99, 235, 0.08) 1px, transparent 1px),
-    linear-gradient(135deg, var(--auth-side), var(--auth-panel-soft));
-  background-size:
-    72px 72px,
-    72px 72px,
-    auto;
-}
-
-.auth__brand-stage {
-  align-items: flex-start;
-  width: min(100%, 38rem);
-  max-width: 38rem;
-  padding: clamp(1.5rem, 3vw, 2.3rem);
-  text-align: left;
-  border: 1px solid var(--auth-border);
-  border-radius: calc(var(--auth-radius) + 0.35rem);
-  background: rgba(255, 255, 255, 0.74);
-  box-shadow: var(--auth-shadow);
-  backdrop-filter: blur(18px);
-}
-
-:deep(.dark) .auth__brand-stage,
-:deep(.theme-dark) .auth__brand-stage,
-:deep([data-theme='dark']) .auth__brand-stage {
-  background: rgba(15, 23, 42, 0.74);
-}
-
-.auth__brand-stage::after {
-  content: 'Organize atendimentos, leads, clientes e reunioes em um CRM simples para sua equipe.';
-  display: block;
-  max-width: 31rem;
-  margin-top: 0.25rem;
-  font-size: 1rem;
-  line-height: 1.7;
-  color: var(--auth-muted);
-}
-
-.auth__brand-mark {
-  justify-content: flex-start;
-}
-
-.auth__brand-logo {
-  max-width: 15rem;
-  max-height: 4rem;
-  filter: none;
-}
-
-.auth__brand-wordmark {
-  color: var(--auth-text);
-  font-size: clamp(2.2rem, 4.8vw, 4rem);
-  font-weight: 850;
-  letter-spacing: 0;
-}
-
-.auth__brand-tagline {
-  max-width: 34rem;
-  color: var(--auth-text);
-  font-size: clamp(2rem, 4vw, 4.7rem);
-  font-weight: 850;
-  line-height: 0.98;
-  letter-spacing: 0;
-}
-
-.auth__brand-glow {
-  display: none;
-}
-
-.auth__card {
-  max-width: 28rem;
-  padding: clamp(1.35rem, 3.2vw, 2.25rem);
-  gap: 1.35rem;
-  border: 1px solid var(--auth-border);
-  border-radius: var(--auth-radius);
-  background: var(--auth-panel);
-  box-shadow: var(--auth-shadow);
-}
-
-.auth__brand-mobile {
-  justify-content: flex-start;
-}
-
-.auth__title {
-  color: var(--auth-text);
-  font-size: clamp(1.9rem, 4vw, 2.45rem);
-  font-weight: 850;
-  letter-spacing: 0;
-}
-
-.auth__subtitle,
-.auth__signup {
-  color: var(--auth-muted);
-}
-
-.auth__provider,
-.auth__sso {
-  min-height: 3rem;
-  border: 1px solid var(--auth-border);
-  border-radius: 0.95rem;
-  color: var(--auth-text);
-  background: var(--auth-panel);
-}
-
-.auth__provider:hover,
-.auth__sso:hover {
-  border-color: var(--auth-border-strong);
-  background: var(--auth-input-hover);
-}
-
-.auth__divider span {
-  background: var(--auth-border);
-}
-
-.auth__divider small,
-.auth__control-icon,
-.auth__toggle {
-  color: var(--auth-subtle);
-}
-
-.auth__field label {
-  color: var(--auth-text);
-  font-weight: 750;
-}
-
-.auth__link,
-:deep(.dark) .auth__link,
-.dark .auth__link {
-  color: var(--auth-teal);
-}
-
-.auth__control {
-  min-height: 3.1rem;
-  overflow: hidden;
-  border: 1px solid var(--auth-border);
-  border-radius: 0.95rem;
-  background: var(--auth-input);
-  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
-}
-
-.auth__control:hover {
-  border-color: var(--auth-border-strong);
-  background: var(--auth-input-hover);
-}
-
-.auth__control:focus-within {
-  border-color: var(--auth-primary);
-  background: var(--auth-input);
-  box-shadow:
-    0 0 0 4px var(--auth-primary-soft),
-    0 12px 28px rgba(37, 99, 235, 0.12);
-}
-
-.auth__control--error {
-  border-color: var(--auth-danger);
-}
-
-.auth__control-icon {
-  margin: 0 0.75rem 0 0.95rem;
-}
-
-.auth__toggle {
-  width: 3rem;
-}
-
-.auth__toggle:hover,
-.auth__toggle:focus-visible {
-  color: var(--auth-primary);
-}
-
-.auth .auth__control input.auth__input,
-.auth .auth__control input.auth__input[type='email'],
-.auth .auth__control input.auth__input[type='password'],
-.auth .auth__control input.auth__input[type='text'] {
-  color: var(--auth-text) !important;
-  caret-color: var(--auth-primary) !important;
-}
-
-.auth .auth__control input.auth__input::placeholder {
-  color: var(--auth-subtle) !important;
-}
-
-.auth .auth__control input.auth__input:-webkit-autofill {
-  -webkit-text-fill-color: var(--auth-text) !important;
-  caret-color: var(--auth-primary) !important;
-  -webkit-box-shadow: 0 0 0 1000px var(--auth-input) inset !important;
-}
-
-.auth .auth__submit[type='submit'] {
-  min-height: 3.15rem !important;
-  border-radius: 0.95rem !important;
-  color: #ffffff !important;
-  background: linear-gradient(
-    135deg,
-    var(--auth-primary),
-    var(--auth-primary-strong)
-  ) !important;
-  box-shadow:
-    0 12px 28px rgba(37, 99, 235, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.26) !important;
-}
-
-.auth .auth__submit[type='submit']:hover:not(:disabled) {
-  background: linear-gradient(
-    135deg,
-    var(--auth-primary-strong),
-    var(--auth-primary)
-  ) !important;
-  box-shadow:
-    0 16px 36px rgba(37, 99, 235, 0.34),
-    inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
-}
-
-.auth .auth__submit[type='submit']:disabled {
-  color: rgba(255, 255, 255, 0.82) !important;
-  background: linear-gradient(135deg, #93c5fd, #60a5fa) !important;
-  opacity: 0.92;
-}
-
-.auth__alert {
-  border-color: rgba(225, 29, 72, 0.28);
-  color: var(--auth-danger);
-  background: var(--auth-danger-soft);
-}
-
-.auth__loading {
-  border-color: var(--auth-border);
-  background: var(--auth-input-hover);
-}
-
-.auth__loading p {
-  color: var(--auth-text);
-}
-
-.auth__loading span {
-  color: var(--auth-muted);
-}
-
-.auth__spinner {
-  border-color: rgba(37, 99, 235, 0.2);
-  border-top-color: var(--auth-primary);
-}
-
-@media (max-width: 900px) {
-  .auth {
-    grid-template-columns: 1fr;
-    overflow: auto;
-  }
-
-  .auth__brand {
-    display: none;
-  }
-
-  .auth__pane {
-    grid-column: 1;
-    min-height: 100dvh;
-  }
-
-  .auth__brand-mobile {
-    display: flex;
-  }
-
-  .auth__card {
-    max-width: 30rem;
-  }
-}
-
-@media (max-width: 520px) {
-  .auth__pane {
+  .auth-wrapper {
     padding: 1rem;
   }
 
-  .auth__card {
-    padding: 1.15rem;
-    border-radius: 1.1rem;
+  .theme-toggle-btn {
+    top: 1rem;
+    right: 1rem;
+    width: 40px;
+    height: 40px;
   }
 
-  .auth__title {
-    font-size: 1.7rem;
+  .auth-hero {
+    padding: 2rem 1.5rem;
+  }
+
+  .auth-headline {
+    font-size: 2rem;
+  }
+
+  .auth-form-pane {
+    padding: 2rem 1.5rem;
+  }
+
+  .auth-title {
+    font-size: 1.75rem;
   }
 }
+
 </style>
