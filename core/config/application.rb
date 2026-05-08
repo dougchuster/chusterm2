@@ -65,6 +65,9 @@ module ChusteRM
     config.generators.javascripts = false
     config.generators.stylesheets = false
 
+    config.i18n.default_locale = :pt_BR
+    config.i18n.available_locales = [:pt_BR, :en]
+
     # Custom ChusteRM configurations
     config.x = config_for(:app).with_indifferent_access
 

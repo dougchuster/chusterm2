@@ -228,6 +228,7 @@ COPY config/initializers/evolution_routes.rb ./config/initializers/evolution_rou
 COPY config/initializers/chusterm_branding.rb ./config/initializers/chusterm_branding.rb
 COPY config/initializers/chusterm_exception_tracker_alias.rb ./config/initializers/chusterm_exception_tracker_alias.rb
 COPY config/initializers/active_record_query_trace.rb ./config/initializers/active_record_query_trace.rb
+COPY config/application.rb ./config/application.rb
 
 EXPOSE 3000
 CMD ["sh", "-c", "rm -f /app/tmp/pids/server.pid && bundle exec rails s -b 0.0.0.0 -p 3000"]
