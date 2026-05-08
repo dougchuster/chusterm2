@@ -59,8 +59,10 @@ core/public/uploads/
 # Local databases, dumps, archives and backups
 backups/
 *.dump
-*.sql
 *.sql.gz
+# Excluir dumps SQL mas preservar migrations do Drizzle
+*.sql
+!services/**/drizzle/*.sql
 *.bak
 *.backup
 *.tar
