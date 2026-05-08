@@ -114,7 +114,7 @@ COPY lib/filters/filter_keys.yml ./lib/filters/filter_keys.yml
 COPY enterprise/app/jobs/enterprise/internal/check_new_versions_job.rb ./enterprise/app/jobs/enterprise/internal/check_new_versions_job.rb
 COPY enterprise/app/services/internal/reconcile_plan_config_service.rb ./enterprise/app/services/internal/reconcile_plan_config_service.rb
 COPY public/brand-assets/ ./public/brand-assets/
-COPY public/assets/images/dashboard/priority/ ./public/assets/images/dashboard/priority/
+COPY public/dashboard/images/ ./public/dashboard/images/
 
 # Evolution API - Vue components e i18n
 COPY app/javascript/dashboard/routes/dashboard/settings/inbox/channels/ ./app/javascript/dashboard/routes/dashboard/settings/inbox/channels/
