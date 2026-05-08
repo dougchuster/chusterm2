@@ -1,0 +1,63 @@
+{
+  "LOGIN": {
+    "TITLE": "Entrar no ChusteRM",
+    "INTRO": {
+      "FORM_LABEL": "Login",
+      "BRAND_LABEL": "Painel ChusteRM",
+      "WELCOME_TITLE": "Acesse sua conta",
+      "FORM_SUBTITLE": "Entre para continuar de onde parou.",
+      "TAGLINE": "Atendimento e CRM em um só lugar.",
+      "OR_WITH_EMAIL": "Ou entre com e-mail",
+      "SIGNUP_PROMPT": "Ainda não tem conta?",
+      "LOADING_TITLE": "Validando acesso",
+      "LOADING_DESCRIPTION": "Carregando seu workspace com segurança."
+    },
+    "EMAIL": {
+      "LABEL": "E-mail",
+      "PLACEHOLDER": "email{'@'}empresa.com",
+      "ERROR": "Por favor, insira um endereço de e-mail válido"
+    },
+    "PASSWORD": {
+      "LABEL": "Senha",
+      "PLACEHOLDER": "Sua senha",
+      "ERROR": "Por favor, informe sua senha"
+    },
+    "API": {
+      "SUCCESS_MESSAGE": "Acesso bem-sucedido",
+      "ERROR_MESSAGE": "Não foi possível conectar ao servidor. Tente novamente em alguns instantes.",
+      "UNAUTH": "Usuário ou senha incorretos. Por favor, tente novamente."
+    },
+    "OAUTH": {
+      "GOOGLE_LOGIN": "Entrar com o Google",
+      "BUSINESS_ACCOUNTS_ONLY": "Use seu e-mail corporativo para entrar",
+      "NO_ACCOUNT_FOUND": "Não encontramos uma conta para este e-mail."
+    },
+    "FORGOT_PASSWORD": "Esqueceu sua senha?",
+    "SHOW_PASSWORD": "Mostrar senha",
+    "HIDE_PASSWORD": "Ocultar senha",
+    "CREATE_NEW_ACCOUNT": "Criar nova conta",
+    "SUBMIT": "Entrar",
+    "SAML": {
+      "LABEL": "Login via SSO",
+      "TITLE": "Iniciar Single Sign-on (SSO)",
+      "SUBTITLE": "Digite seu e-mail de trabalho para acessar sua organização",
+      "BACK_TO_LOGIN": "Entrar com senha",
+      "INTRO": {
+        "EYEBROW": "Gateway SSO seguro",
+        "HERO_TITLE_PREFIX": "Uma camada de identidade para",
+        "HERO_TITLE_EMPHASIS": "todo workspace.",
+        "HERO_DESCRIPTION": "Conduza seu time por um corredor de autenticação controlado, com políticas organizacionais, clareza editorial e zero ruído visual.",
+        "FEATURE_TITLE": "Confiança enterprise",
+        "FEATURE_DESCRIPTION": "Valide domínios corporativos e direcione cada usuário para o contexto correto de conta."
+      },
+      "WORK_EMAIL": {
+        "LABEL": "E-mail de trabalho",
+        "PLACEHOLDER": "Digite seu e-mail de trabalho"
+      },
+      "SUBMIT": "Continuar com SSO",
+      "API": {
+        "ERROR_MESSAGE": "A autenticação SSO falhou. Verifique suas credenciais e tente novamente."
+      }
+    }
+  }
+}

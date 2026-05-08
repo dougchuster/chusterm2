@@ -1,0 +1,17 @@
+<script setup>
+defineProps({
+  message: {
+    type: String,
+    required: true,
+  },
+});
+</script>
+
+<template>
+  <div class="w-full mb-4 flex items-center justify-end">
+    <div
+      v-dompurify-html="message"
+      class="px-4 py-3 bg-[rgb(var(--primary))] text-[rgb(var(--on-primary-container))] text-sm rounded-md inline-block"
+    />
+  </div>
+</template>

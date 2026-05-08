@@ -1,0 +1,275 @@
+﻿# Docker Compose — ChusteRM Completo
+# Inclui Core (fork Chatwoot) + todos os serviços proprietários
+#
+# Uso: docker compose up -d
+
+services:
+
+  # ─── PostgreSQL ──────────────────────────────────────────────────────────────
+  postgres:
+    image: pgvector/pgvector:pg15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: chusterm
+      POSTGRES_PASSWORD: chusterm_pass
+      POSTGRES_DB: chusterm_core
+      POSTGRES_MULTIPLE_DATABASES: chusterm_crm,chusterm_ai,chusterm_identity
+    ports:
+      - "5436:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./scripts/docker/postgres-init.sh:/docker-entrypoint-initdb.d/init.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chusterm"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Redis ───────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --requirepass chusterm_redis_pass --loglevel warning
+    ports:
+      - "6382:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "chusterm_redis_pass", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Mailhog ─────────────────────────────────────────────────────────────────
+  mailhog:
+    image: mailhog/mailhog:latest
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
+  # ─── CRM Service (backend interno do CRM integrado ao Core) ────────────────
+  crm-service:
+    build:
+      context: ./services/crm-service
+      dockerfile: Dockerfile
+      target: development
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    ports:
+      - "4003:4000"
+    volumes:
+      - ./services/crm-service:/app
+      - /app/node_modules
+    command: sh -c "npm run db:migrate && npm run dev"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ─── Agent Orchestrator (skills IA internas) ────────────────────────────────
+  orchestrator:
+    build:
+      context: ./services/orchestrator
+      dockerfile: Dockerfile
+      target: development
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    ports:
+      - "4001:4001"
+    volumes:
+      - ./services/orchestrator:/app
+      - /app/node_modules
+    command: sh -c "npm run db:migrate && npm run dev"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4001/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ─── Identity Bridge (auth service-to-service) ─────────────────────────────
+  identity-bridge:
+    build:
+      context: ./services/identity-bridge
+      dockerfile: Dockerfile
+      target: development
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "4002:4002"
+    volumes:
+      - ./services/identity-bridge:/app
+      - /app/node_modules
+    command: npm run dev
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4002/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ─── Evolution API (WhatsApp não-oficial via Baileys) ────────────────────────
+  evolution-api:
+    image: evoapicloud/evolution-api:v2.3.0
+    restart: unless-stopped
+    # Override entrypoint to apply runtime patches before starting the app.
+    # infra/evolution-patch-start.sh applies fixes that would otherwise require
+    # rebuilding the official image (e.g. await loadChatwoot() bug).
+    entrypoint: ["/bin/bash", "/startup/evolution-patch-start.sh"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - SERVER_URL=http://localhost:8085
+      - SERVER_PORT=8080
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=postgresql://chusterm:chusterm_pass@postgres:5432/evolution_api
+      - DATABASE_CONNECTION_CLIENT_NAME=evolution_api
+      - DATABASE_SAVE_DATA_INSTANCE=true
+      - DATABASE_SAVE_DATA_NEW_MESSAGE=true
+      - DATABASE_SAVE_DATA_MESSAGE_UPDATE=true
+      - DATABASE_SAVE_DATA_CONTACTS=true
+      - DATABASE_SAVE_DATA_CHATS=true
+      - DATABASE_SAVE_DATA_SETTINGS=true
+      - DATABASE_SAVE_IS_ON_WHATSAPP=true
+      - DATABASE_SAVE_IS_ON_WHATSAPP_DAYS=7
+      - CACHE_REDIS_ENABLED=true
+      - CACHE_REDIS_URI=redis://:chusterm_redis_pass@redis:6379/3
+      - CACHE_REDIS_PREFIX_KEY=evolution
+      - CACHE_LOCAL_ENABLED=false
+      - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY:-evo_chusterm_secret_key}
+      - AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES=true
+      - LOG_LEVEL=${EVOLUTION_LOG_LEVEL:-INFO}
+      - DEL_INSTANCE=false
+      - WEBHOOK_GLOBAL_ENABLED=false
+      - WEBHOOK_GLOBAL_URL=
+      - WEBHOOK_GLOBAL_WEBHOOK_BY_EVENTS=false
+      # Habilita integração nativa Chatwoot na UI do Evolution Manager
+      - CHATWOOT_ENABLED=true
+      # URL pública do servidor Evolution (usada na UI do Manager)
+      - SERVER_URL=${EVOLUTION_SERVER_URL:-http://localhost:8085}
+    ports:
+      - "8085:8080"
+    volumes:
+      - evolution-instances:/evolution/instances
+      - evolution-store:/evolution/store
+      - ./infra/evolution-patch-start.sh:/startup/evolution-patch-start.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ─── ChusteRM Core (fork Chatwoot rebrandado) ───────────────────────────
+  # NOTA: O Core usa a imagem oficial do Chatwoot.
+  # O código rebrandado está em core/ e pode ser rodado localmente com:
+  #   cd core && bundle install && pnpm install && bin/dev
+  # Para rodar via Docker, é necessário build com Ruby 3.4.4 compatível.
+  #
+  # Para desenvolvimento rápido, use a imagem oficial:
+  core:
+    build:
+      context: ./core
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      crm-service:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - VITE_HOT_RELOAD=true
+      - CRM_SERVICE_INTERNAL_URL=http://crm-service:4000
+      - RACK_TIMEOUT_SERVICE_TIMEOUT=60
+    ports:
+      - "3010:3000"
+    volumes:
+      - core-vite-output:/app/public/vite
+      - core-storage:/app/storage
+    command: >
+      sh -c "rm -f /app/tmp/pids/server.pid && bundle exec rails s -b 0.0.0.0 -p 3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+  # ─── Vite Watch (hot-reload de design) ───────────────────────────────
+  # Usar: docker compose up -d core-vite
+  core-vite:
+    build:
+      context: ./core
+      dockerfile: Dockerfile
+      args:
+        INSTALL_JS_DEPS: "true"
+    restart: unless-stopped
+    entrypoint: []
+    command: sh -c "node_modules/.bin/vite build --watch"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_INTERVAL=1000
+    volumes:
+      - ./core/app/javascript:/app/app/javascript
+      - core-vite-output:/app/public/vite
+
+
+  # ─── ChusteRM Sidekiq Worker ─────────────────────────────────────────────────
+  sidekiq:
+    build:
+      context: ./core
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      core:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - RAILS_ENV=production
+    volumes:
+      - core-storage:/app/storage
+    command: >
+      sh -c "bundle exec sidekiq -e production -C config/sidekiq.yml"
+    healthcheck:
+      test: ["CMD-SHELL", "bundle exec sidekiqmon status 2>/dev/null || exit 0"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+
+volumes:
+  postgres-data:
+  redis-data:
+  evolution-instances:
+  evolution-store:
+  core-vite-output:
+  core-storage:

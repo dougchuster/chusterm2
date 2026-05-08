@@ -1,0 +1,189 @@
+﻿name: CI
+
+on:
+  push:
+    branches: [main, develop, "release/**", "feature/**"]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  # ─── Auditoria de marca (fase 0) ─────────────────────────────────────────────
+  brand-audit:
+    name: Brand Audit (sem referências ao Chatwoot)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verificar referências de marca proibidas
+        run: bash scripts/audit-brand.sh
+
+      - name: Verificar referências enterprise proibidas
+        run: bash scripts/audit-enterprise.sh
+
+  # ─── Lint de segredos ─────────────────────────────────────────────────────────
+  secrets-lint:
+    name: Secrets Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verificar .env não commitado
+        run: |
+          if git ls-files --error-unmatch .env 2>/dev/null; then
+            echo "ERRO: arquivo .env encontrado no repositório!"
+            exit 1
+          fi
+          echo "OK: .env não está rastreado."
+
+      - name: Detectar segredos expostos
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --only-verified
+
+  # ─── CRM Service ─────────────────────────────────────────────────────────────
+  crm-service:
+    name: CRM Service — Lint & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/crm-service
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: services/crm-service/package-lock.json
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - name: Run tests with coverage
+        run: npm run test -- --coverage --reporter=verbose
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: crm-service-coverage
+          path: services/crm-service/coverage/
+          retention-days: 7
+
+  # ─── Agent Orchestrator ──────────────────────────────────────────────────────
+  orchestrator:
+    name: Orchestrator — Lint & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/orchestrator
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: services/orchestrator/package-lock.json
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - name: Run tests with coverage
+        run: npm run test -- --coverage --reporter=verbose
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: orchestrator-coverage
+          path: services/orchestrator/coverage/
+          retention-days: 7
+
+  # ─── Identity Bridge ─────────────────────────────────────────────────────────
+  identity-bridge:
+    name: Identity Bridge — Lint & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/identity-bridge
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: services/identity-bridge/package-lock.json
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - name: Run tests with coverage
+        run: npm run test -- --coverage --reporter=verbose
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: identity-bridge-coverage
+          path: services/identity-bridge/coverage/
+          retention-days: 7
+
+  # ─── Core Rails (quando ./core existir) ──────────────────────────────────────
+  core-ruby:
+    name: Core — RuboCop & RSpec
+    runs-on: ubuntu-latest
+    if: ${{ hashFiles('core/Gemfile') != '' }}
+    defaults:
+      run:
+        working-directory: core
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: chusterm
+          POSTGRES_PASSWORD: chusterm_pass
+          POSTGRES_DB: chusterm_core_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+          working-directory: core
+
+      - name: RuboCop
+        run: bundle exec rubocop --parallel
+
+      - name: RSpec
+        env:
+          RAILS_ENV: test
+          DATABASE_URL: postgresql://chusterm:chusterm_pass@localhost:5432/chusterm_core_test
+          REDIS_URL: redis://localhost:6379/0
+          SECRET_KEY_BASE: test_secret_key_base_placeholder
+        run: bundle exec rspec --format progress
+

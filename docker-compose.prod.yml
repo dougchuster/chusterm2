@@ -1,0 +1,242 @@
+# Docker Compose — ChusteRM Produção
+# VPS: ssh root@187.77.255.211
+# Domínio: crm.coimbraeruas.com.br
+#
+# Uso: docker compose -f docker-compose.prod.yml up -d --build
+#
+# Diferenças do compose de dev:
+#   - Sem mailhog, sem core-vite (hot-reload)
+#   - Node.js services usam target: production
+#   - Postgres e Redis NÃO expostos ao host
+#   - Core e Evolution API acessíveis apenas via 127.0.0.1 (Nginx faz proxy)
+#   - Rede isolada chusterm_network (coexiste com outros sistemas no VPS)
+
+services:
+
+  # ─── PostgreSQL ──────────────────────────────────────────────────────────────
+  postgres:
+    image: pgvector/pgvector:pg15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-chusterm}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: chusterm_core
+      POSTGRES_MULTIPLE_DATABASES: chusterm_crm,chusterm_ai,chusterm_identity,evolution_api
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./scripts/docker/postgres-init.sh:/docker-entrypoint-initdb.d/init.sh:ro
+    networks:
+      - chusterm_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-chusterm}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Redis ───────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD} --loglevel warning
+    volumes:
+      - redis-data:/data
+    networks:
+      - chusterm_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── CRM Service ─────────────────────────────────────────────────────────────
+  crm-service:
+    build:
+      context: ./services/crm-service
+      dockerfile: Dockerfile
+      target: production
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    networks:
+      - chusterm_network
+    command: sh -c "node dist/server.js"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ─── Agent Orchestrator ──────────────────────────────────────────────────────
+  orchestrator:
+    build:
+      context: ./services/orchestrator
+      dockerfile: Dockerfile
+      target: production
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    networks:
+      - chusterm_network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4001/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ─── Identity Bridge ─────────────────────────────────────────────────────────
+  identity-bridge:
+    build:
+      context: ./services/identity-bridge
+      dockerfile: Dockerfile
+      target: production
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - chusterm_network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4002/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ─── Evolution API (WhatsApp) ─────────────────────────────────────────────────
+  evolution-api:
+    image: evoapicloud/evolution-api:v2.3.0
+    restart: unless-stopped
+    entrypoint: ["/bin/bash", "/startup/evolution-patch-start.sh"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - SERVER_URL=${EVOLUTION_SERVER_URL}
+      - SERVER_PORT=8080
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=postgresql://${POSTGRES_USER:-chusterm}:${POSTGRES_PASSWORD}@postgres:5432/evolution_api
+      - DATABASE_CONNECTION_CLIENT_NAME=evolution_api
+      - DATABASE_SAVE_DATA_INSTANCE=true
+      - DATABASE_SAVE_DATA_NEW_MESSAGE=true
+      - DATABASE_SAVE_DATA_MESSAGE_UPDATE=true
+      - DATABASE_SAVE_DATA_CONTACTS=true
+      - DATABASE_SAVE_DATA_CHATS=true
+      - DATABASE_SAVE_DATA_SETTINGS=true
+      - DATABASE_SAVE_IS_ON_WHATSAPP=true
+      - DATABASE_SAVE_IS_ON_WHATSAPP_DAYS=7
+      - CACHE_REDIS_ENABLED=true
+      - CACHE_REDIS_URI=redis://:${REDIS_PASSWORD}@redis:6379/3
+      - CACHE_REDIS_PREFIX_KEY=evolution
+      - CACHE_LOCAL_ENABLED=false
+      - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY}
+      - AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES=true
+      - LOG_LEVEL=${EVOLUTION_LOG_LEVEL:-WARN}
+      - DEL_INSTANCE=false
+      - WEBHOOK_GLOBAL_ENABLED=false
+      - CHATWOOT_ENABLED=true
+    ports:
+      - "127.0.0.1:8085:8080"
+    volumes:
+      - evolution-instances:/evolution/instances
+      - evolution-store:/evolution/store
+      - ./infra/evolution-patch-start.sh:/startup/evolution-patch-start.sh:ro
+    networks:
+      - chusterm_network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ─── ChusteRM Core (Rails) ───────────────────────────────────────────────────
+  core:
+    build:
+      context: ./core
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      crm-service:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - RAILS_ENV=production
+      - NODE_ENV=production
+      - CRM_SERVICE_INTERNAL_URL=http://crm-service:4000
+      - RACK_TIMEOUT_SERVICE_TIMEOUT=60
+    ports:
+      - "127.0.0.1:3010:3000"
+    volumes:
+      - core-storage:/app/storage
+    command: >
+      sh -c "rm -f /app/tmp/pids/server.pid &&
+             bundle exec rails db:migrate &&
+             bundle exec rails s -b 0.0.0.0 -p 3000"
+    networks:
+      - chusterm_network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+  # ─── Sidekiq Worker ──────────────────────────────────────────────────────────
+  sidekiq:
+    build:
+      context: ./core
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      core:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - RAILS_ENV=production
+    volumes:
+      - core-storage:/app/storage
+    command: >
+      sh -c "bundle exec sidekiq -e production -C config/sidekiq.yml"
+    networks:
+      - chusterm_network
+    healthcheck:
+      test: ["CMD-SHELL", "bundle exec sidekiqmon status 2>/dev/null || exit 0"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  postgres-data:
+  redis-data:
+  evolution-instances:
+  evolution-store:
+  core-storage:
+
+networks:
+  chusterm_network:
+    driver: bridge
+    name: chusterm_network

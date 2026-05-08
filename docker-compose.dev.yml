@@ -1,0 +1,132 @@
+# Docker Compose — Development (sem Core/Chatwoot)
+# Use este arquivo para rodar apenas os serviços Node.js + infra.
+# Útil para desenvolvimento antes de ter o fork do Chatwoot pronto.
+#
+# Uso: docker compose -f docker-compose.dev.yml up -d
+
+services:
+
+  # ─── PostgreSQL ──────────────────────────────────────────────────────────────
+  postgres:
+    image: pgvector/pgvector:pg15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: chusterm
+      POSTGRES_PASSWORD: chusterm_pass
+      POSTGRES_MULTIPLE_DATABASES: chusterm_core,chusterm_crm,chusterm_ai,chusterm_identity
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./scripts/docker/postgres-init.sh:/docker-entrypoint-initdb.d/init.sh:ro
+    ports:
+      - "5436:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chusterm"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Redis ───────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --requirepass chusterm_redis_pass --loglevel warning
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6382:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "chusterm_redis_pass", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Mailhog (e-mail local) ─────────────────────────────────────────────────
+  mailhog:
+    image: mailhog/mailhog:latest
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
+  # ─── CRM Service ─────────────────────────────────────────────────────────────
+  crm-service:
+    build:
+      context: ./services/crm-service
+      dockerfile: Dockerfile
+      target: development
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    ports:
+      - "4003:4000"
+    volumes:
+      - ./services/crm-service:/app
+      - /app/node_modules
+    command: npm run dev
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ─── Agent Orchestrator ──────────────────────────────────────────────────────
+  orchestrator:
+    build:
+      context: ./services/orchestrator
+      dockerfile: Dockerfile
+      target: development
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    ports:
+      - "4001:4001"
+    volumes:
+      - ./services/orchestrator:/app
+      - /app/node_modules
+    command: npm run dev
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4001/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ─── Identity Bridge ─────────────────────────────────────────────────────────
+  identity-bridge:
+    build:
+      context: ./services/identity-bridge
+      dockerfile: Dockerfile
+      target: development
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    ports:
+      - "4002:4002"
+    volumes:
+      - ./services/identity-bridge:/app
+      - /app/node_modules
+    command: npm run dev
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4002/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  postgres-data:
+  redis-data:

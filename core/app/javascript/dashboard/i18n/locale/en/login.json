@@ -1,0 +1,63 @@
+{
+  "LOGIN": {
+    "TITLE": "Login to ChusteRM",
+    "INTRO": {
+      "FORM_LABEL": "Login",
+      "BRAND_LABEL": "ChusteRM panel",
+      "WELCOME_TITLE": "Access your account",
+      "FORM_SUBTITLE": "Sign in to continue where you left off.",
+      "TAGLINE": "Customer support and CRM in one place.",
+      "OR_WITH_EMAIL": "Or continue with email",
+      "SIGNUP_PROMPT": "Do not have an account yet?",
+      "LOADING_TITLE": "Validating access",
+      "LOADING_DESCRIPTION": "Loading your workspace securely."
+    },
+    "EMAIL": {
+      "LABEL": "Email",
+      "PLACEHOLDER": "email{'@'}company.com",
+      "ERROR": "Please enter a valid email address"
+    },
+    "PASSWORD": {
+      "LABEL": "Password",
+      "PLACEHOLDER": "Your password",
+      "ERROR": "Please enter your password"
+    },
+    "API": {
+      "SUCCESS_MESSAGE": "Login successful",
+      "ERROR_MESSAGE": "Could not connect to the server. Please try again.",
+      "UNAUTH": "Username or password is incorrect. Please try again."
+    },
+    "OAUTH": {
+      "GOOGLE_LOGIN": "Login with Google",
+      "BUSINESS_ACCOUNTS_ONLY": "Please use your company email address to login",
+      "NO_ACCOUNT_FOUND": "We couldn't find an account for your email address."
+    },
+    "FORGOT_PASSWORD": "Forgot your password?",
+    "SHOW_PASSWORD": "Show password",
+    "HIDE_PASSWORD": "Hide password",
+    "CREATE_NEW_ACCOUNT": "Create a new account",
+    "SUBMIT": "Login",
+    "SAML": {
+      "LABEL": "Login via SSO",
+      "TITLE": "Initiate Single Sign-on (SSO)",
+      "SUBTITLE": "Enter your work email to access your organization",
+      "BACK_TO_LOGIN": "Login via Password",
+      "INTRO": {
+        "EYEBROW": "Secure SSO gateway",
+        "HERO_TITLE_PREFIX": "One identity layer for",
+        "HERO_TITLE_EMPHASIS": "every workspace.",
+        "HERO_DESCRIPTION": "Route your team through a controlled authentication corridor with organizational policies, editorial clarity, and zero visual noise.",
+        "FEATURE_TITLE": "Enterprise trust",
+        "FEATURE_DESCRIPTION": "Validate work domains and redirect each user to the correct account context."
+      },
+      "WORK_EMAIL": {
+        "LABEL": "Work Email",
+        "PLACEHOLDER": "Enter your work email"
+      },
+      "SUBMIT": "Continue with SSO",
+      "API": {
+        "ERROR_MESSAGE": "SSO authentication failed. Please check your credentials and try again."
+      }
+    }
+  }
+}

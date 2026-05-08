@@ -1,0 +1,2547 @@
+/* ============================================================
+ * ChusteRM Theme — Built on Chatwoot CE Base
+ * Identity: Purple-Teal dark theme, clean surfaces, subtle depth
+ * ============================================================
+ * This file overrides ONLY dark-mode colors and component
+ * surfaces. Light mode uses the Chatwoot CE upstream defaults.
+ * ============================================================ */
+
+/* ═══════════════════════════════════════════════════════════
+ * 1. DARK MODE COLOR PALETTE
+ *    Purple-Teal identity (overriding upstream iris/slate)
+ * ═══════════════════════════════════════════════════════════ */
+
+.dark {
+  /* ── Primary: Purple (replaces upstream iris) ── */
+  --iris-1: 16 12 24;
+  --iris-2: 24 16 36;
+  --iris-3: 36 22 54;
+  --iris-4: 48 28 72;
+  --iris-5: 64 38 96;
+  --iris-6: 84 50 124;
+  --iris-7: 108 68 160;
+  --iris-8: 132 88 192;
+  --iris-9: 128 0 198; /* #8000c6 - Brand primary */
+  --iris-10: 148 32 212;
+  --iris-11: 172 88 228;
+  --iris-12: 216 180 248;
+
+  /* ── Secondary: Teal ── */
+  --teal-9: 0 180 160;
+  --teal-10: 0 196 172;
+  --teal-11: 0 212 188;
+
+  /* ── Surface tones: Cool Charcoal with purple undertone ── */
+  --slate-1: 14 14 18;
+  --slate-2: 20 20 26;
+  --slate-3: 28 28 36;
+  --slate-4: 38 38 48;
+  --slate-5: 48 48 60;
+  --slate-6: 60 60 74;
+  --slate-7: 80 80 96;
+  --slate-8: 110 110 128;
+  --slate-9: 140 140 158;
+  --slate-10: 160 160 176;
+  --slate-11: 188 188 204;
+  --slate-12: 234 234 240;
+
+  /* ── Background ── */
+  --background-color: 14 14 18;
+
+  /* ── Surface ── */
+  --surface-1: 20 20 26;
+  --surface-2: 28 28 36;
+  --surface-active: 38 38 48;
+
+  /* ── Solid tones ── */
+  --solid-1: 20 20 26;
+  --solid-2: 28 28 36;
+  --solid-3: 38 38 48;
+  --solid-active: 38 38 48;
+  --solid-amber: 52 44 28;
+  --solid-blue: 14 36 56;
+  --solid-blue-2: 16 12 24;
+  --solid-iris: 28 28 36;
+  --solid-purple: 38 28 52;
+  --solid-red: 72 20 36;
+  --solid-amber-button: 255 210 120;
+
+  /* ── Card ── */
+  --card-color: 28 28 36;
+
+  /* ── Border ── */
+  --border-container: 0, 0, 0, 0;
+  --border-strong: 38 38 48;
+  --border-weak: 28 28 36;
+  --border-blue-strong: 60 60 74;
+  --border-blue: 128 0 198, 0.25;
+
+  /* ── Overlays ── */
+  --overlay: 0, 0, 0, 0.55;
+  --overlay-avatar: 0, 0, 0, 0.1;
+  --alpha-1: 20, 20, 26, 0.8;
+  --alpha-2: 128, 0, 198, 0.1;
+  --alpha-3: 14, 14, 18, 0.95;
+  --black-alpha-1: 0, 0, 0, 0.3;
+  --black-alpha-2: 0, 0, 0, 0.15;
+  --white-alpha: 255, 255, 255, 0.05;
+
+  /* ── Button ── */
+  --button-color: 38 38 48;
+  --button-hover-color: 48, 48, 60, 1;
+  --label-background: 28 28 36;
+  --label-border: 255, 255, 255, 0.06;
+
+  /* ── Text ── */
+  --text-blue: 168 88 204;
+  --text-purple: 216 180 248;
+  --text-amber: 255 240 210;
+
+  /* ── Shell (sidebar/topbar) ── */
+  --shell-panel: 20, 20, 26, 0.85;
+  --shell-panel-strong: 28, 28, 36, 0.92;
+  --shell-border: 128, 0, 198, 0.08;
+  --shell-border-strong: 128, 0, 198, 0.16;
+  --shell-glow-primary: 128, 0, 198, 0.12;
+  --shell-glow-tertiary: 0, 180, 160, 0.08;
+  --shell-shadow: 0, 0, 0, 0.25;
+
+  /* ── v3 Design Tokens ── */
+  --bg-app: 10 11 15;
+  --bg-surface: 18 19 26;
+  --bg-card: 25 26 34;
+  --bg-card-hover: 34 36 48;
+  --border-subtle: 40 43 56;
+  --border-strong-rgb: 64 69 88;
+
+  --primary-main: 141 62 255;
+  --primary-hover: 157 93 255;
+  --primary-active: 186 139 255;
+  --primary-surface: 141, 62, 255, 0.14;
+
+  --secondary-main: 188 199 218;
+  --secondary-hover: 226 232 240;
+
+  --tertiary-main: 168 85 247;
+  --tertiary-hover: 192 132 252;
+  --tertiary-surface: 168, 85, 247, 0.08;
+
+  /* ── Feedback ── */
+  --success: 16 185 129;
+  --error: 239 68 68;
+  --warning: 245 158 11;
+}
+
+/* ═══════════════════════════════════════════════════════════
+ * 2. SIDEBAR — Clean dark surface with purple accent
+ * ═══════════════════════════════════════════════════════════ */
+
+.chusterm-login-card {
+  max-width: calc(100vw - 2.5rem);
+}
+
+@media (max-width: 640px) {
+  .chusterm-login-card,
+  .chusterm-login-card > * {
+    min-width: 0;
+  }
+
+  .chusterm-login-card {
+    width: calc(100vw - 2.5rem) !important;
+  }
+}
+
+.dark .account-selector--area .account-selector__trigger {
+  border-color: rgb(var(--slate-4) / 0.4);
+  background: rgb(var(--slate-2));
+}
+
+.dark .sidebar-menu__container {
+  background: rgb(var(--slate-1));
+  border-color: rgb(var(--slate-4) / 0.3);
+}
+
+/* Sidebar menu items — hover and active states */
+.dark .sidebar-menu a {
+  color: rgb(var(--slate-11));
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+
+.dark .sidebar-menu a:hover {
+  color: rgb(var(--slate-12));
+  background: rgb(var(--slate-3) / 0.6);
+}
+
+.dark .sidebar-menu a.router-link-exact-active,
+.dark .sidebar-menu a.router-link-active {
+  color: rgb(var(--iris-11));
+  background: rgb(var(--iris-3) / 0.8);
+}
+
+/* Submenu items */
+.dark .submenu .menu-link {
+  color: rgb(var(--slate-10));
+}
+
+.dark .submenu .menu-link:hover,
+.dark .submenu .menu-link.active {
+  color: rgb(var(--iris-10));
+  background: rgb(var(--iris-2) / 0.6);
+}
+
+/* Sidebar group headers */
+.dark .sidebar-menu__group-label {
+  color: rgb(var(--slate-9));
+  font-size: 0.6875rem;
+}
+
+/* Sidebar inbox selector */
+.dark .inbox--sidebar .inbox {
+  border-color: rgb(var(--slate-4) / 0.4);
+}
+
+.dark .inbox--sidebar .inbox:hover {
+  background: rgb(var(--slate-3) / 0.5);
+}
+
+.dark .inbox--sidebar .inbox.selected {
+  background: rgb(var(--slate-3));
+  border-color: rgb(var(--slate-4) / 0.6);
+}
+
+/* ═══════════════════════════════════════════════════════════
+ * 3. CONVERSATION LIST — Clean cards
+ * ═══════════════════════════════════════════════════════════ */
+
+.dark .conversations-list .conversation-item {
+  background: transparent;
+  border-color: transparent;
+  transition: background 0.15s ease;
+}
+
+.dark .conversations-list .conversation-item:hover {
+  background: rgb(var(--slate-3) / 0.5);
+}
+
+.dark .conversations-list .conversation-item.active,
+.dark .conversations-list .conversation-item.selected {
+  background: rgb(var(--slate-2));
+  border-color: rgb(var(--slate-4) / 0.3);
+}
+
+.dark .conversations-list .conversation-item .sender--name {
+  color: rgb(var(--slate-12));
+}
+
+.dark .conversations-list .conversation-item .message-preview--excerpt {
+  color: rgb(var(--slate-10));
+}
+
+.dark .conversations-list .conversation-item .meta--time {
+  color: rgb(var(--slate-9));
+}
+
+/* Unread badge */
+.dark .unread-badge,
+.dark .conversation-item .unread-badge {
+  background: rgb(var(--iris-9));
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════════════
+ * 4. MESSAGE AREA — Purple outgoing, slate incoming
+ * ═══════════════════════════════════════════════════════════ */
+
+/* Outgoing bubble — purple accent */
+.dark .message-text__wrap--outgoing .text-message {
+  background: rgb(var(--iris-9));
+  color: rgb(var(--slate-12));
+  border-radius: 1rem 1rem 0.25rem 1rem;
+}
+
+.dark .message-text__wrap--outgoing .bubble .link {
+  color: rgb(var(--slate-4));
+}
+
+/* Incoming bubble — subtle surface */
+.dark .message-text__wrap--incoming .text-message {
+  background: rgb(var(--slate-3));
+  color: rgb(var(--slate-12));
+  border-radius: 1rem 1rem 1rem 0.25rem;
+}
+
+/* Reply panel */
+.dark .reply-box {
+  border-color: rgb(var(--slate-4) / 0.3);
+}
+
+.dark .reply-box textarea,
+.dark .reply-box .ProseMirror {
+  background: rgb(var(--slate-2));
+  border-color: rgb(var(--slate-4) / 0.5);
+  color: rgb(var(--slate-12));
+}
+
+.dark .reply-box textarea:focus,
+.dark .reply-box .ProseMirror:focus {
+  border-color: rgb(var(--iris-9));
+  box-shadow: 0 0 0 2px rgb(var(--iris-9) / 0.15);
+}
+
+/* ═══════════════════════════════════════════════════════════
+ * 5. BUTTONS — Purple primary
+ * ═══════════════════════════════════════════════════════════ */
+
+.dark .button.woo,
+.dark button[type='submit'].woo,
+.dark .woot-button--primary {
+  background: rgb(var(--iris-9));
+  color: #fff;
+}
+
+.dark .button.woo:hover,
+.dark button[type='submit'].woo:hover,
+.dark .woot-button--primary:hover {
+  background: rgb(var(--iris-10));
+}
+
+/* ═══════════════════════════════════════════════════════════
+ * 6. MODALS & DIALOGS
+ * ═══════════════════════════════════════════════════════════ */
+
+.dark .modal-container,
+.dark .woot-modal__body {
+  background: rgb(var(--slate-2));
+  border-color: rgb(var(--slate-4) / 0.6);
+  border-radius: var(--radius-lg, 0.875rem);
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.5);
+}
+
+.dark .modal-backdrop,
+.dark .modal-mask {
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+/* Dropdowns & floating panels */
+.dark [data-floating-ui-portal] [class*='bg-n-'],
+.dark .dropdown-pane {
+  background: rgb(var(--slate-2));
+  border-color: rgb(var(--slate-4) / 0.6);
+}
+
+/* ═══════════════════════════════════════════════════════════
+ * 7. TABLES & LISTS
+ * ═══════════════════════════════════════════════════════════ */
+
+.dark table thead th {
+  color: rgb(var(--slate-10));
+  background: rgb(var(--slate-2));
+  border-color: rgb(var(--slate-4) / 0.4);
+}
+
+.dark table tbody td {
+  color: rgb(var(--slate-11));
+  border-color: rgb(var(--slate-3) / 0.4);
+}
+
+.dark table tbody tr:hover td {
+  background: rgb(var(--slate-3) / 0.25);
+}
+
+/* ═══════════════════════════════════════════════════════════
+ * 8. HEADER / TOPBAR
+ * ═══════════════════════════════════════════════════════════ */
+
+.dark .main-content__header {
+  border-color: rgb(var(--slate-4) / 0.3);
+}
+
+.dark .main-content__page-title {
+  color: rgb(var(--slate-12));
+}
+
+/* ═══════════════════════════════════════════════════════════
+ * 9. BADGES & TAGS
+ * ═══════════════════════════════════════════════════════════ */
+
+.dark .label--primary {
+  background: rgb(var(--iris-3) / 0.6);
+  color: rgb(var(--iris-11));
+  border-color: rgb(var(--iris-4) / 0.4);
+}
+
+.dark .label--success {
+  background: rgb(var(--teal-3) / 0.5);
+  color: rgb(var(--teal-10));
+}
+
+/* ═══════════════════════════════════════════════════════════
+ * 10. SCROLLBAR — Purple tint
+ * ═══════════════════════════════════════════════════════════ */
+
+.dark ::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgb(var(--slate-5) / 0.5);
+  border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--slate-6) / 0.6);
+}
+
+/* ═══════════════════════════════════════════════════════════
+ * 11. EMPTY STATES
+ * ═══════════════════════════════════════════════════════════ */
+
+.dark .empty-state {
+  color: rgb(var(--slate-10));
+}
+
+.dark .empty-state .empty-state__title {
+  color: rgb(var(--slate-12));
+}
+
+/* ═══════════════════════════════════════════════════════════
+ * 12. FORM CONTROLS
+ * ═══════════════════════════════════════════════════════════ */
+
+.dark input[type='text']:focus,
+.dark input[type='email']:focus,
+.dark input[type='password']:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: rgb(var(--iris-9));
+  box-shadow: 0 0 0 2px rgb(var(--iris-9) / 0.15);
+}
+
+/* ═══════════════════════════════════════════════════════════
+ * 13. SWITCHES & TOGGLES
+ * ═══════════════════════════════════════════════════════════ */
+
+.dark .switch__input:checked {
+  background: rgb(var(--iris-9));
+}
+
+.dark .woot-switch--is-active {
+  background: rgb(var(--iris-9));
+}
+
+/* ═══════════════════════════════════════════════════════════
+ * 14. PHASE 2 — Surface harmonization (Dashboard/Settings/Reports/Captain)
+ * ═══════════════════════════════════════════════════════════ */
+
+.dark .conversation-view-shell {
+  background: linear-gradient(
+    180deg,
+    rgb(var(--slate-1) / 0.85) 0%,
+    rgb(var(--background-color)) 100%
+  );
+}
+
+.dark .conversation-view-frame {
+  border-color: rgb(var(--slate-4) / 0.55);
+  background: linear-gradient(
+    180deg,
+    rgb(var(--slate-2) / 0.95) 0%,
+    rgb(var(--slate-1) / 0.96) 100%
+  );
+  box-shadow:
+    0 24px 56px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgb(255 255 255 / 0.03);
+}
+
+.dark .settings-shell,
+.dark .settings-layout,
+.dark .settings-layout__content {
+  color: rgb(var(--slate-12));
+}
+
+.dark .settings-layout__panel {
+  border-color: rgb(var(--slate-4) / 0.5);
+  background: linear-gradient(
+    180deg,
+    rgb(var(--slate-2) / 0.92) 0%,
+    rgb(var(--slate-1) / 0.88) 100%
+  );
+  box-shadow:
+    0 20px 48px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgb(255 255 255 / 0.03);
+}
+
+.dark .report-header__panel,
+.dark .base-settings-header__hero,
+.dark .base-settings-header__toolbar,
+.dark .settings-subpage-header,
+.dark .settings-header__panel {
+  border-color: rgb(var(--slate-4) / 0.45);
+}
+
+.dark .metric-card {
+  border: 1px solid rgb(var(--slate-4) / 0.45);
+  background: linear-gradient(
+    180deg,
+    rgb(var(--slate-2) / 0.94) 0%,
+    rgb(var(--slate-1) / 0.92) 100%
+  );
+  box-shadow:
+    0 18px 44px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgb(255 255 255 / 0.03);
+}
+
+.dark .stats-live-reports-shell .conversation-metric,
+.dark .stats-live-reports-shell > div {
+  min-height: 100%;
+}
+
+.dark .captain-paywall-shell .woot-modal,
+.dark .captain-paywall-shell .modal-container,
+.dark .captain-paywall-shell [class*='paywall'] {
+  border-color: rgb(var(--slate-4) / 0.55);
+  background: linear-gradient(
+    180deg,
+    rgb(var(--slate-2) / 0.95) 0%,
+    rgb(var(--slate-1) / 0.96) 100%
+  );
+}
+
+.dark .chat-list-shell {
+  border-right: 1px solid rgb(var(--slate-4) / 0.45);
+  background: linear-gradient(
+    180deg,
+    rgb(var(--slate-1) / 0.94) 0%,
+    rgb(var(--slate-2) / 0.9) 100%
+  );
+}
+
+.dark .chat-list-scroll {
+  background: linear-gradient(
+    180deg,
+    rgb(var(--slate-1) / 0.72) 0%,
+    rgb(var(--slate-2) / 0.68) 100%
+  );
+}
+
+.dark .conversation-panel-shell {
+  background: linear-gradient(
+    180deg,
+    rgb(var(--slate-1) / 0.88) 0%,
+    rgb(var(--slate-2) / 0.9) 100%
+  );
+}
+
+.dark .conversation-panel-header {
+  border-bottom-color: rgb(var(--slate-4) / 0.45);
+  background: rgb(var(--slate-2) / 0.5);
+}
+
+.dark .conversation-panel-tabs {
+  border-bottom: 1px solid rgb(var(--slate-4) / 0.4);
+  background: rgb(var(--slate-2) / 0.38);
+}
+
+.dark .conversation-panel-body {
+  background: transparent;
+}
+
+.dark .conversation-sidebar-shell {
+  border-left-color: rgb(var(--slate-4) / 0.5);
+  background: linear-gradient(
+    180deg,
+    rgb(var(--slate-2) / 0.95) 0%,
+    rgb(var(--slate-1) / 0.95) 100%
+  );
+}
+
+.dark .conversation-sidebar-body {
+  background: transparent;
+}
+
+.dark .captain-page-shell {
+  background: linear-gradient(
+    180deg,
+    rgb(var(--slate-1) / 0.96) 0%,
+    rgb(var(--background-color)) 100%
+  );
+}
+
+.dark .captain-page-header {
+  border-bottom: 1px solid rgb(var(--slate-4) / 0.38);
+  background: rgb(var(--slate-1) / 0.78);
+  backdrop-filter: blur(14px);
+}
+
+.dark .captain-page-content-inner {
+  border: 1px solid rgb(var(--slate-4) / 0.42);
+  border-radius: 1rem;
+  background: rgb(var(--slate-2) / 0.52);
+  padding: 1rem;
+}
+
+.dark .captain-page-footer {
+  border-top: 1px solid rgb(var(--slate-4) / 0.35);
+  background: rgb(var(--slate-1) / 0.74);
+  backdrop-filter: blur(12px);
+}
+
+.dark .settings-screen-shell {
+  background: linear-gradient(
+    180deg,
+    rgb(var(--slate-1) / 0.96) 0%,
+    rgb(var(--background-color)) 100%
+  );
+}
+
+.dark .settings-screen-content {
+  background: transparent;
+}
+
+.dark .settings-screen-inner {
+  border: 1px solid rgb(var(--slate-4) / 0.36);
+  border-radius: 1rem;
+  background: rgb(var(--slate-1) / 0.32);
+  padding: 1rem;
+}
+
+.dark .settings-layout__body {
+  padding: 0.5rem;
+}
+
+.dark .report-metrics-shell {
+  border: 1px solid rgb(var(--slate-4) / 0.45);
+  background: linear-gradient(
+    180deg,
+    rgb(var(--slate-2) / 0.94) 0%,
+    rgb(var(--slate-1) / 0.92) 100%
+  );
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgb(255 255 255 / 0.03);
+}
+
+.dark .report-metrics-item {
+  border: 1px solid rgb(var(--slate-4) / 0.4);
+  background: rgb(var(--slate-1) / 0.42);
+}
+
+.dark .summary-reports-shell {
+  border: 1px solid rgb(var(--slate-4) / 0.45);
+  background: linear-gradient(
+    180deg,
+    rgb(var(--slate-2) / 0.94) 0%,
+    rgb(var(--slate-1) / 0.92) 100%
+  );
+  box-shadow:
+    0 20px 48px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgb(255 255 255 / 0.03);
+}
+
+.dark .summary-reports-loading {
+  background: rgb(var(--slate-1) / 0.72);
+}
+
+/* ═══════════════════════════════════════════════════════════
+ * 15. CRM PAGE — Pipeline & Kanban dark mode
+ * ═══════════════════════════════════════════════════════════ */
+
+.dark .crm-page {
+  background: rgb(var(--slate-1));
+}
+
+.dark .crm-filter-bar {
+  background: rgb(var(--slate-1));
+  border-bottom-color: rgb(var(--slate-4) / 0.45);
+}
+
+.dark .crm-filter-bar__input {
+  background: rgb(var(--slate-2));
+  border-color: rgb(var(--slate-4) / 0.5);
+  color: rgb(var(--slate-12));
+}
+
+.dark .crm-filter-bar__input:focus {
+  border-color: rgb(var(--iris-9));
+  box-shadow: 0 0 0 2px rgb(var(--iris-9) / 0.15);
+}
+
+.dark .crm-filter-bar__input::placeholder {
+  color: rgb(var(--slate-9));
+}
+
+.dark .crm-metric {
+  background: rgb(var(--slate-2));
+  border-color: rgb(var(--slate-4) / 0.45);
+}
+
+.dark .crm-metric strong {
+  color: rgb(var(--slate-12));
+}
+
+.dark .crm-column {
+  background: rgb(var(--slate-2) / 0.6);
+  border-color: rgb(var(--slate-4) / 0.4);
+}
+
+.dark .crm-column header {
+  border-bottom-color: rgb(var(--slate-4) / 0.35);
+  background: rgb(var(--slate-2) / 0.5);
+}
+
+.dark .crm-side-card {
+  background: rgb(var(--slate-2));
+  border-color: rgb(var(--slate-4) / 0.45);
+}
+
+.dark .crm-mini-metric {
+  background: rgb(var(--slate-3) / 0.5);
+}
+
+.dark .crm-activity-row {
+  border-top-color: rgb(var(--slate-4) / 0.3);
+}
+
+.dark .crm-filter-bar__clear {
+  background: rgb(var(--ruby-3) / 0.6);
+  border-color: rgb(var(--ruby-6) / 0.5);
+  color: rgb(var(--ruby-11));
+}
+
+.dark .crm-filter-bar__clear:hover {
+  background: rgb(var(--ruby-4) / 0.7);
+}
+
+.dark .crm-filter-bar__badge {
+  background: rgb(var(--iris-3) / 0.6);
+  color: rgb(var(--iris-11));
+}
+
+.dark .crm-column__empty {
+  border-color: rgb(var(--slate-4) / 0.3);
+  color: rgb(var(--slate-9));
+}
+
+/* ═══════════════════════════════════════════════════════════
+ * 16. SEARCH PAGE — Better dark mode styling
+ * ═══════════════════════════════════════════════════════════ */
+
+.dark .search-view-shell {
+  background: rgb(var(--slate-1));
+}
+
+.dark .search-result-item {
+  border-color: rgb(var(--slate-4) / 0.3);
+}
+
+.dark .search-result-item:hover {
+  background: rgb(var(--slate-3) / 0.4);
+}
+
+/* ═══════════════════════════════════════════════════════════
+ * 17. RESPONSIVE FIXES — Layout overflow & mobile
+ * ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .dark .settings-layout__body {
+    padding: 0.25rem;
+  }
+
+  .dark .settings-screen-inner {
+    padding: 0.5rem;
+    border-radius: 0.75rem;
+  }
+
+  .dark .captain-page-content-inner {
+    padding: 0.5rem;
+    border-radius: 0.75rem;
+  }
+}
+
+/* Fix for conversation list overflow on mobile */
+@media (max-width: 640px) {
+  .dark .chat-list-shell {
+    border-right: none;
+    border-bottom: 1px solid rgb(var(--slate-4) / 0.45);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+ * 18. BUTTON IMPROVEMENTS — Better dark mode contrast
+ * ═══════════════════════════════════════════════════════════ */
+
+.dark .button.secondary,
+.dark .woot-button--secondary {
+  background: rgb(var(--slate-3));
+  border-color: rgb(var(--slate-5) / 0.5);
+  color: rgb(var(--slate-11));
+}
+
+.dark .button.secondary:hover,
+.dark .woot-button--secondary:hover {
+  background: rgb(var(--slate-4));
+  color: rgb(var(--slate-12));
+}
+
+/* Fix for search input clear button visibility */
+.dark input[type='search']::-webkit-search-cancel-button {
+  filter: invert(1);
+}
+
+/* ═══════════════════════════════════════════════════════════
+ * 19. TAB BAR — Better dark mode styling
+ * ═══════════════════════════════════════════════════════════ */
+
+.dark .tab-bar-item {
+  color: rgb(var(--slate-10));
+}
+
+.dark .tab-bar-item:hover {
+  color: rgb(var(--slate-11));
+  background: rgb(var(--slate-3) / 0.5);
+}
+
+.dark .tab-bar-item.active {
+  color: rgb(var(--iris-11));
+  background: rgb(var(--iris-3) / 0.6);
+}
+
+/* ═══════════════════════════════════════════════════════════
+ * 20. CARD LAYOUT — Better hover states in dark mode
+ * ═══════════════════════════════════════════════════════════ */
+
+.dark .card-layout {
+  border-color: rgb(var(--slate-4) / 0.3);
+  background: rgb(var(--slate-2) / 0.5);
+}
+
+.dark .card-layout:hover {
+  border-color: rgb(var(--slate-5) / 0.5);
+  background: rgb(var(--slate-3) / 0.4);
+}
+
+/* ============================================================
+ * Design System Stabilization 2026-05-06
+ * System-wide tokens and contrast repairs for light and dark.
+ * ============================================================ */
+
+:root {
+  color-scheme: light;
+
+  --slate-1: 248 250 252;
+  --slate-2: 241 245 249;
+  --slate-3: 226 232 240;
+  --slate-4: 203 213 225;
+  --slate-5: 148 163 184;
+  --slate-6: 100 116 139;
+  --slate-7: 71 85 105;
+  --slate-8: 51 65 85;
+  --slate-9: 100 116 139;
+  --slate-10: 71 85 105;
+  --slate-11: 51 65 85;
+  --slate-12: 15 23 42;
+
+  --iris-1: 238 242 255;
+  --iris-2: 224 231 255;
+  --iris-3: 199 210 254;
+  --iris-4: 165 180 252;
+  --iris-5: 129 140 248;
+  --iris-6: 99 102 241;
+  --iris-7: 79 70 229;
+  --iris-8: 67 56 202;
+  --iris-9: 79 70 229;
+  --iris-10: 67 56 202;
+  --iris-11: 55 48 163;
+  --iris-12: 30 27 75;
+
+  --blue-1: 239 246 255;
+  --blue-2: 219 234 254;
+  --blue-3: 191 219 254;
+  --blue-4: 147 197 253;
+  --blue-5: 96 165 250;
+  --blue-6: 59 130 246;
+  --blue-7: 37 99 235;
+  --blue-8: 29 78 216;
+  --blue-9: 37 99 235;
+  --blue-10: 29 78 216;
+  --blue-11: 30 64 175;
+  --blue-12: 23 37 84;
+
+  --teal-1: 240 253 250;
+  --teal-2: 204 251 241;
+  --teal-3: 153 246 228;
+  --teal-4: 94 234 212;
+  --teal-5: 45 212 191;
+  --teal-6: 20 184 166;
+  --teal-7: 15 118 110;
+  --teal-8: 17 94 89;
+  --teal-9: 13 148 136;
+  --teal-10: 15 118 110;
+  --teal-11: 17 94 89;
+  --teal-12: 19 78 74;
+
+  --ruby-1: 255 241 242;
+  --ruby-2: 255 228 230;
+  --ruby-3: 254 205 211;
+  --ruby-4: 253 164 175;
+  --ruby-5: 251 113 133;
+  --ruby-6: 244 63 94;
+  --ruby-7: 225 29 72;
+  --ruby-8: 190 18 60;
+  --ruby-9: 225 29 72;
+  --ruby-10: 190 18 60;
+  --ruby-11: 159 18 57;
+  --ruby-12: 76 5 25;
+
+  --amber-1: 255 251 235;
+  --amber-2: 254 243 199;
+  --amber-3: 253 230 138;
+  --amber-4: 252 211 77;
+  --amber-5: 251 191 36;
+  --amber-6: 245 158 11;
+  --amber-7: 217 119 6;
+  --amber-8: 180 83 9;
+  --amber-9: 245 158 11;
+  --amber-10: 217 119 6;
+  --amber-11: 146 64 14;
+  --amber-12: 69 26 3;
+
+  --gray-1: 249 250 251;
+  --gray-2: 243 244 246;
+  --gray-3: 229 231 235;
+  --gray-4: 209 213 219;
+  --gray-5: 156 163 175;
+  --gray-6: 107 114 128;
+  --gray-7: 75 85 99;
+  --gray-8: 55 65 81;
+  --gray-9: 107 114 128;
+  --gray-10: 75 85 99;
+  --gray-11: 55 65 81;
+  --gray-12: 17 24 39;
+
+  --background-color: 247 249 252;
+  --background-input-box: 15, 23, 42, 0.05;
+  --surface-1: 255 255 255;
+  --surface-2: 248 250 252;
+  --surface-active: 241 245 249;
+  --solid-1: 255 255 255;
+  --solid-2: 248 250 252;
+  --solid-3: 241 245 249;
+  --solid-active: 226 232 240;
+  --card-color: 255 255 255;
+
+  --border-container: 226, 232, 240, 0.9;
+  --border-strong: 148 163 184;
+  --border-weak: 226 232 240;
+  --border-subtle: 226 232 240;
+  --border-strong-rgb: 148 163 184;
+  --border-blue: 37, 99, 235, 0.22;
+  --border-blue-strong: 37 99 235;
+
+  --overlay: 15, 23, 42, 0.44;
+  --overlay-avatar: 15, 23, 42, 0.08;
+  --alpha-1: 255, 255, 255, 0.72;
+  --alpha-2: 37, 99, 235, 0.1;
+  --alpha-3: 247, 249, 252, 0.94;
+  --black-alpha-1: 15, 23, 42, 0.1;
+  --black-alpha-2: 15, 23, 42, 0.05;
+  --white-alpha: 255, 255, 255, 0.72;
+
+  --button-color: 255 255 255;
+  --button-hover-color: 226 232 240;
+  --label-background: 241 245 249;
+  --label-border: 226, 232, 240, 0.9;
+
+  --bg-app: 247 249 252;
+  --bg-surface: 255 255 255;
+  --bg-card: 255 255 255;
+  --bg-card-hover: 248 250 252;
+
+  --primary-main: 37 99 235;
+  --primary-hover: 29 78 216;
+  --primary-active: 30 64 175;
+  --primary-surface: 37, 99, 235, 0.1;
+  --secondary-main: 71 85 105;
+  --secondary-hover: 51 65 85;
+  --tertiary-main: 13 148 136;
+  --tertiary-hover: 15 118 110;
+  --tertiary-surface: 13, 148, 136, 0.1;
+
+  --shell-panel: 255, 255, 255;
+  --shell-panel-strong: 255, 255, 255;
+  --shell-border: 226, 232, 240, 0.95;
+  --shell-border-strong: 203, 213, 225, 1;
+  --shell-glow-primary: 37, 99, 235, 0;
+  --shell-glow-tertiary: 13, 148, 136, 0;
+  --shell-shadow: 15, 23, 42, 0.08;
+
+  --success: 13 148 136;
+  --error: 225 29 72;
+  --warning: 217 119 6;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --slate-1: 15 23 42;
+  --slate-2: 20 31 52;
+  --slate-3: 30 41 59;
+  --slate-4: 51 65 85;
+  --slate-5: 71 85 105;
+  --slate-6: 100 116 139;
+  --slate-7: 148 163 184;
+  --slate-8: 203 213 225;
+  --slate-9: 148 163 184;
+  --slate-10: 186 198 213;
+  --slate-11: 203 213 225;
+  --slate-12: 241 245 249;
+
+  --iris-1: 30 27 75;
+  --iris-2: 49 46 129;
+  --iris-3: 55 48 163;
+  --iris-4: 67 56 202;
+  --iris-5: 79 70 229;
+  --iris-6: 99 102 241;
+  --iris-7: 129 140 248;
+  --iris-8: 165 180 252;
+  --iris-9: 129 140 248;
+  --iris-10: 165 180 252;
+  --iris-11: 199 210 254;
+  --iris-12: 238 242 255;
+
+  --blue-1: 23 37 84;
+  --blue-2: 30 58 138;
+  --blue-3: 30 64 175;
+  --blue-4: 29 78 216;
+  --blue-5: 37 99 235;
+  --blue-6: 59 130 246;
+  --blue-7: 96 165 250;
+  --blue-8: 147 197 253;
+  --blue-9: 96 165 250;
+  --blue-10: 147 197 253;
+  --blue-11: 191 219 254;
+  --blue-12: 239 246 255;
+
+  --teal-1: 19 78 74;
+  --teal-2: 17 94 89;
+  --teal-3: 15 118 110;
+  --teal-4: 13 148 136;
+  --teal-5: 20 184 166;
+  --teal-6: 45 212 191;
+  --teal-7: 94 234 212;
+  --teal-8: 153 246 228;
+  --teal-9: 45 212 191;
+  --teal-10: 94 234 212;
+  --teal-11: 153 246 228;
+  --teal-12: 240 253 250;
+
+  --ruby-1: 76 5 25;
+  --ruby-2: 136 19 55;
+  --ruby-3: 159 18 57;
+  --ruby-4: 190 18 60;
+  --ruby-5: 225 29 72;
+  --ruby-6: 244 63 94;
+  --ruby-7: 251 113 133;
+  --ruby-8: 253 164 175;
+  --ruby-9: 251 113 133;
+  --ruby-10: 253 164 175;
+  --ruby-11: 254 205 211;
+  --ruby-12: 255 241 242;
+
+  --amber-1: 69 26 3;
+  --amber-2: 120 53 15;
+  --amber-3: 146 64 14;
+  --amber-4: 180 83 9;
+  --amber-5: 217 119 6;
+  --amber-6: 245 158 11;
+  --amber-7: 251 191 36;
+  --amber-8: 252 211 77;
+  --amber-9: 251 191 36;
+  --amber-10: 252 211 77;
+  --amber-11: 253 230 138;
+  --amber-12: 255 251 235;
+
+  --gray-1: 17 24 39;
+  --gray-2: 31 41 55;
+  --gray-3: 55 65 81;
+  --gray-4: 75 85 99;
+  --gray-5: 107 114 128;
+  --gray-6: 156 163 175;
+  --gray-7: 209 213 219;
+  --gray-8: 229 231 235;
+  --gray-9: 156 163 175;
+  --gray-10: 209 213 219;
+  --gray-11: 229 231 235;
+  --gray-12: 249 250 251;
+
+  --background-color: 15 23 42;
+  --background-input-box: 255, 255, 255, 0.08;
+  --surface-1: 20 31 52;
+  --surface-2: 30 41 59;
+  --surface-active: 51 65 85;
+  --solid-1: 20 31 52;
+  --solid-2: 30 41 59;
+  --solid-3: 51 65 85;
+  --solid-active: 71 85 105;
+  --card-color: 30 41 59;
+
+  --border-container: 51, 65, 85, 0.86;
+  --border-strong: 100 116 139;
+  --border-weak: 51 65 85;
+  --border-subtle: 51 65 85;
+  --border-strong-rgb: 100 116 139;
+  --border-blue: 96, 165, 250, 0.28;
+  --border-blue-strong: 96 165 250;
+
+  --overlay: 2, 6, 23, 0.64;
+  --overlay-avatar: 2, 6, 23, 0.16;
+  --alpha-1: 15, 23, 42, 0.76;
+  --alpha-2: 96, 165, 250, 0.14;
+  --alpha-3: 15, 23, 42, 0.96;
+  --black-alpha-1: 2, 6, 23, 0.34;
+  --black-alpha-2: 2, 6, 23, 0.18;
+  --white-alpha: 255, 255, 255, 0.08;
+
+  --button-color: 30 41 59;
+  --button-hover-color: 51 65 85;
+  --label-background: 30 41 59;
+  --label-border: 71, 85, 105, 0.85;
+
+  --bg-app: 15 23 42;
+  --bg-surface: 20 31 52;
+  --bg-card: 30 41 59;
+  --bg-card-hover: 51 65 85;
+
+  --primary-main: 96 165 250;
+  --primary-hover: 147 197 253;
+  --primary-active: 191 219 254;
+  --primary-surface: 96, 165, 250, 0.14;
+  --secondary-main: 203 213 225;
+  --secondary-hover: 241 245 249;
+  --tertiary-main: 45 212 191;
+  --tertiary-hover: 94 234 212;
+  --tertiary-surface: 45, 212, 191, 0.12;
+
+  --shell-panel: 20, 31, 52;
+  --shell-panel-strong: 30, 41, 59;
+  --shell-border: 51, 65, 85, 0.9;
+  --shell-border-strong: 71, 85, 105, 1;
+  --shell-glow-primary: 96, 165, 250, 0;
+  --shell-glow-tertiary: 45, 212, 191, 0;
+  --shell-shadow: 2, 6, 23, 0.28;
+
+  --success: 45 212 191;
+  --error: 251 113 133;
+  --warning: 251 191 36;
+}
+
+html,
+body,
+#app,
+.dashboard-shell {
+  background: rgb(var(--bg-app));
+  color: rgb(var(--slate-12));
+}
+
+.dashboard-shell__ambient,
+.dashboard-shell__orb,
+.dashboard-shell__grid,
+.settings-shell__ambient,
+.settings-shell__orb,
+.settings-shell__grid {
+  display: none !important;
+}
+
+* {
+  scrollbar-color: rgb(var(--slate-6)) rgb(var(--surface-1));
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(var(--surface-1));
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--slate-5));
+  border: 2px solid rgb(var(--surface-1));
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--slate-6));
+}
+
+.sidebar-menu__container,
+.sidebar-menu,
+[data-testid='sidebar'] {
+  background: rgb(var(--surface-1)) !important;
+  border-color: rgb(var(--border-weak)) !important;
+  color: rgb(var(--slate-12));
+}
+
+.sidebar-menu a,
+.sidebar-menu button,
+.sidebar-menu .menu-link {
+  min-width: 0;
+  border-radius: 8px;
+  color: rgb(var(--slate-11)) !important;
+}
+
+.sidebar-menu a:hover,
+.sidebar-menu button:hover,
+.sidebar-menu .menu-link:hover {
+  background: rgb(var(--surface-active)) !important;
+  color: rgb(var(--slate-12)) !important;
+}
+
+.sidebar-menu a.router-link-exact-active,
+.sidebar-menu a.router-link-active,
+.sidebar-menu .menu-link.active {
+  background: rgb(var(--blue-2)) !important;
+  color: rgb(var(--blue-11)) !important;
+}
+
+.dark .sidebar-menu a.router-link-exact-active,
+.dark .sidebar-menu a.router-link-active,
+.dark .sidebar-menu .menu-link.active {
+  background: rgb(var(--blue-2) / 0.42) !important;
+  color: rgb(var(--blue-11)) !important;
+}
+
+.sidebar-menu svg,
+.sidebar-menu i {
+  color: currentColor;
+}
+
+.sidebar-menu__container input,
+.sidebar-menu__container [role='searchbox'],
+.sidebar-menu__container .search-box {
+  background: rgb(var(--surface-2)) !important;
+  border-color: rgb(var(--border-weak)) !important;
+  color: rgb(var(--slate-12)) !important;
+}
+
+.settings-shell,
+.settings-screen-shell,
+.settings-screen-content,
+.settings-screen-inner,
+.settings-layout,
+.settings-layout__content {
+  background: transparent !important;
+  color: rgb(var(--slate-12));
+}
+
+.settings-layout__panel,
+.settings-header__panel,
+.settings-subpage-header,
+.card-layout,
+.woot-card,
+.base-card,
+.modal-container,
+.dialog-container,
+.dropdown-pane,
+.multiselect,
+.vs__dropdown-menu {
+  background: rgb(var(--bg-card)) !important;
+  border-color: rgb(var(--border-weak)) !important;
+  color: rgb(var(--slate-12)) !important;
+}
+
+.settings-layout__body {
+  color: rgb(var(--slate-12)) !important;
+}
+
+.settings-layout__body > *,
+.settings-layout__panel > * {
+  position: relative;
+}
+
+.dark .bg-white,
+.dark .bg-gray-50,
+.dark .bg-slate-50,
+.dark .bg-n-solid-1,
+.dark .bg-n-solid-2 {
+  background-color: rgb(var(--surface-2)) !important;
+  color: rgb(var(--slate-12)) !important;
+}
+
+.dark .bg-gray-100,
+.dark .bg-slate-100 {
+  background-color: rgb(var(--surface-active)) !important;
+  color: rgb(var(--slate-12)) !important;
+}
+
+.dark .text-black,
+.dark .text-gray-900,
+.dark .text-slate-900,
+.dark .text-gray-800,
+.dark .text-slate-800 {
+  color: rgb(var(--slate-12)) !important;
+}
+
+.dark .text-gray-700,
+.dark .text-slate-700,
+.dark .text-gray-600,
+.dark .text-slate-600 {
+  color: rgb(var(--slate-11)) !important;
+}
+
+.dark .text-gray-500,
+.dark .text-slate-500,
+.dark .text-gray-400,
+.dark .text-slate-400 {
+  color: rgb(var(--slate-10)) !important;
+}
+
+label,
+.label,
+.form-label,
+.text-n-slate-12 {
+  color: rgb(var(--slate-12));
+}
+
+.text-n-slate-11,
+.text-body-main,
+.text-body-para,
+.help-text,
+.hint-text,
+.form-help {
+  color: rgb(var(--slate-11));
+}
+
+input:not([type='checkbox']):not([type='radio']):not([type='range']),
+textarea,
+select,
+.field-base,
+.vs__dropdown-toggle,
+.multiselect__tags,
+.multiselect__single,
+.multiselect__input {
+  background-color: rgb(var(--surface-1)) !important;
+  border-color: rgb(var(--border-weak)) !important;
+  color: rgb(var(--slate-12)) !important;
+  outline-color: rgb(var(--border-weak)) !important;
+}
+
+.dark input:not([type='checkbox']):not([type='radio']):not([type='range']),
+.dark textarea,
+.dark select,
+.dark .field-base,
+.dark .vs__dropdown-toggle,
+.dark .multiselect__tags,
+.dark .multiselect__single,
+.dark .multiselect__input {
+  background-color: rgb(var(--surface-2)) !important;
+  border-color: rgb(var(--border-strong)) !important;
+}
+
+input::placeholder,
+textarea::placeholder,
+.multiselect__placeholder,
+.vs__search::placeholder {
+  color: rgb(var(--slate-9)) !important;
+  opacity: 1;
+}
+
+input:focus,
+textarea:focus,
+select:focus,
+.field-base:focus,
+.vs__dropdown-toggle:focus-within,
+.multiselect--active .multiselect__tags {
+  border-color: rgb(var(--ds-border-focus)) !important;
+  box-shadow: 0 0 0 3px rgb(var(--ds-accent-primary) / 0.18) !important;
+  outline: none !important;
+}
+
+button,
+.button,
+.woot-button,
+[role='button'] {
+  border-radius: 8px;
+}
+
+.button.primary,
+.woot-button--primary,
+button[type='submit'],
+.btn-primary {
+  background: rgb(var(--ds-accent-primary)) !important;
+  border-color: rgb(var(--ds-accent-primary)) !important;
+  color: rgb(var(--ds-fg-on-accent)) !important;
+}
+
+.button.primary:hover,
+.woot-button--primary:hover,
+button[type='submit']:hover,
+.btn-primary:hover {
+  background: rgb(var(--ds-accent-primary-hover)) !important;
+  border-color: rgb(var(--ds-accent-primary-hover)) !important;
+}
+
+.button.secondary,
+.woot-button--secondary,
+.btn-secondary {
+  background: rgb(var(--surface-2)) !important;
+  border-color: rgb(var(--border-weak)) !important;
+  color: rgb(var(--slate-12)) !important;
+}
+
+.button.secondary:hover,
+.woot-button--secondary:hover,
+.btn-secondary:hover {
+  background: rgb(var(--surface-active)) !important;
+}
+
+.tab-bar-item,
+[role='tab'] {
+  color: rgb(var(--slate-11)) !important;
+}
+
+.tab-bar-item:hover,
+[role='tab']:hover {
+  color: rgb(var(--slate-12)) !important;
+}
+
+.tab-bar-item.active,
+[role='tab'][aria-selected='true'],
+.router-link-active[role='tab'] {
+  color: rgb(var(--blue-11)) !important;
+  border-color: rgb(var(--blue-9)) !important;
+}
+
+table,
+.table {
+  color: rgb(var(--slate-12));
+}
+
+thead,
+.table-header {
+  background: rgb(var(--surface-2));
+  color: rgb(var(--slate-11));
+}
+
+tr,
+.table-row {
+  border-color: rgb(var(--border-weak));
+}
+
+.v-popper--theme-tooltip .v-popper__inner {
+  max-width: min(18rem, calc(100vw - 2rem));
+  background: rgb(var(--slate-12)) !important;
+  color: rgb(var(--slate-1)) !important;
+  border: 1px solid rgb(var(--border-weak));
+  border-radius: 6px !important;
+  box-shadow: 0 12px 24px rgba(var(--shell-shadow));
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  overflow-wrap: anywhere;
+}
+
+.dark .v-popper--theme-tooltip .v-popper__inner {
+  background: rgb(var(--surface-active)) !important;
+  color: rgb(var(--slate-12)) !important;
+  border-color: rgb(var(--border-strong));
+}
+
+.dropdown-menu,
+.popover,
+.menu,
+.v-popper__popper {
+  color: rgb(var(--slate-12));
+}
+
+.crm-page,
+.campaigns-page,
+.captain-page,
+.search-view-shell,
+.chat-list-shell,
+.inbox--sidebar {
+  background: rgb(var(--bg-app)) !important;
+  color: rgb(var(--slate-12));
+}
+
+/* Bloco A: final visual stabilization for shell, menus and settings pages. */
+.sidebar-shell {
+  border-inline-end: 1px solid rgb(var(--border-weak));
+  background: rgb(var(--surface-1)) !important;
+  color: rgb(var(--slate-12)) !important;
+}
+
+.sidebar-footer {
+  border-top: 1px solid rgb(var(--border-weak));
+  background: rgb(var(--surface-1)) !important;
+}
+
+.sidebar-group-header,
+.sidebar-group-leaf,
+.sidebar-collapsed-trigger,
+.sidebar-collapsed-popover__item {
+  color: rgb(var(--slate-11)) !important;
+}
+
+.sidebar-group-header.is-idle:hover,
+.sidebar-group-leaf.is-idle:hover,
+.sidebar-collapsed-trigger.is-idle:hover,
+.sidebar-collapsed-popover__item:hover {
+  background: rgb(var(--surface-active)) !important;
+  color: rgb(var(--slate-12)) !important;
+}
+
+.sidebar-group-header.is-current,
+.sidebar-group-header.has-current-child,
+.sidebar-group-leaf.is-current,
+.sidebar-collapsed-trigger.is-current,
+.sidebar-collapsed-popover__item.bg-n-alpha-2 {
+  background: rgb(var(--blue-2)) !important;
+  color: rgb(var(--blue-11)) !important;
+}
+
+.dark .sidebar-group-header.is-current,
+.dark .sidebar-group-header.has-current-child,
+.dark .sidebar-group-leaf.is-current,
+.dark .sidebar-collapsed-trigger.is-current,
+.dark .sidebar-collapsed-popover__item.bg-n-alpha-2 {
+  background: rgb(var(--blue-2) / 0.44) !important;
+  color: rgb(var(--blue-11)) !important;
+}
+
+.sidebar-group-header svg,
+.sidebar-group-leaf svg,
+.sidebar-collapsed-trigger svg,
+.sidebar-collapsed-popover__item svg,
+.sidebar-group-header i,
+.sidebar-group-leaf i,
+.sidebar-collapsed-trigger i,
+.sidebar-collapsed-popover__item i {
+  color: currentColor !important;
+}
+
+.sidebar-search,
+.sidebar-toggle {
+  background: rgb(var(--surface-2)) !important;
+  border-color: rgb(var(--border-weak)) !important;
+  color: rgb(var(--slate-12)) !important;
+}
+
+.sidebar-search:hover,
+.sidebar-toggle:hover {
+  background: rgb(var(--surface-active)) !important;
+  border-color: rgb(var(--border-strong)) !important;
+  color: rgb(var(--slate-12)) !important;
+}
+
+.sidebar-collapsed-popover {
+  border: 1px solid rgb(var(--border-weak));
+  outline: 0 !important;
+  background: rgb(var(--bg-card)) !important;
+  color: rgb(var(--slate-12)) !important;
+  box-shadow: 0 18px 48px rgba(var(--shell-shadow));
+}
+
+.sidebar-collapsed-popover__title {
+  border-color: rgb(var(--border-weak)) !important;
+  color: rgb(var(--slate-10)) !important;
+  letter-spacing: 0;
+}
+
+.settings-wrapper-shell,
+.settings-layout,
+.settings-layout__content {
+  background: rgb(var(--bg-app)) !important;
+}
+
+.settings-header__panel,
+.base-settings-header__hero,
+.base-settings-header__toolbar,
+.settings-subpage-header,
+.settings-layout__panel,
+.settings-layout__body,
+.settings-screen-inner,
+.captain-page-content-inner {
+  background: rgb(var(--bg-card)) !important;
+  border-color: rgb(var(--border-weak)) !important;
+  color: rgb(var(--slate-12)) !important;
+}
+
+.settings-header__eyebrow,
+.settings-header__status,
+.settings-subpage-header__eyebrow,
+.base-settings-header__eyebrow,
+.base-settings-header__status-chip {
+  background: rgb(var(--surface-2)) !important;
+  border-color: rgb(var(--border-weak)) !important;
+  color: rgb(var(--slate-11)) !important;
+}
+
+.settings-header__icon-chip,
+.settings-subpage-header__icon,
+.base-settings-header__title-icon {
+  background: rgb(var(--surface-2)) !important;
+  border-color: rgb(var(--border-weak)) !important;
+  color: rgb(var(--slate-12)) !important;
+}
+
+button:disabled,
+.button:disabled,
+[aria-disabled='true'] {
+  cursor: not-allowed !important;
+  opacity: 0.58 !important;
+}
+
+button:focus-visible,
+a:focus-visible,
+[role='button']:focus-visible,
+[role='tab']:focus-visible {
+  outline: 2px solid rgb(var(--blue-9)) !important;
+  outline-offset: 2px !important;
+}
+
+.v-popper__popper,
+.dropdown-menu,
+.popover,
+.menu,
+.vs__dropdown-menu,
+.multiselect__content-wrapper {
+  z-index: 1000;
+  max-width: min(28rem, calc(100vw - 1rem));
+  color: rgb(var(--slate-12)) !important;
+}
+
+.vs__dropdown-option,
+.multiselect__option {
+  color: rgb(var(--slate-11)) !important;
+}
+
+.vs__dropdown-option:hover,
+.vs__dropdown-option--highlight,
+.multiselect__option--highlight {
+  background: rgb(var(--surface-active)) !important;
+  color: rgb(var(--slate-12)) !important;
+}
+
+/* CRM search fields: keep icons outside the typed text across all CRM pages. */
+.crm-filter-bar__search-wrap,
+.crm-leads-search,
+.crm-search-field,
+.crm-cadences-search,
+.agenda-search {
+  position: relative !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+.crm-filter-bar__search-icon,
+.crm-leads-search__icon,
+.crm-search-field__icon,
+.crm-cadences-search__icon,
+.agenda-search > span:first-child,
+.crm-search-field > fluent-icon:first-child {
+  position: absolute !important;
+  top: 50% !important;
+  left: 0.85rem !important;
+  z-index: 2 !important;
+  display: grid !important;
+  width: 1rem !important;
+  height: 1rem !important;
+  min-width: 1rem !important;
+  min-height: 1rem !important;
+  place-items: center !important;
+  color: rgb(var(--blue-10)) !important;
+  transform: translateY(-50%) !important;
+  pointer-events: none !important;
+}
+
+.crm-leads-search__icon,
+.crm-search-field__icon,
+.crm-cadences-search__icon {
+  inset-block: auto !important;
+  width: 1rem !important;
+  border-right: 0 !important;
+  background: transparent !important;
+}
+
+.crm-filter-bar__input--search,
+.crm-leads-search input[type='search'],
+.crm-search-field input[type='search'],
+.crm-cadences-search input[type='search'],
+.agenda-search input[type='search'] {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  padding-left: 2.85rem !important;
+  padding-right: 0.95rem !important;
+  color: rgb(var(--slate-12)) !important;
+}
+
+.crm-search-field input[type='search'] {
+  padding-right: 2.85rem !important;
+}
+
+.crm-filter-bar__input--search::placeholder,
+.crm-leads-search input[type='search']::placeholder,
+.crm-search-field input[type='search']::placeholder,
+.crm-cadences-search input[type='search']::placeholder,
+.agenda-search input[type='search']::placeholder {
+  color: rgb(var(--slate-10)) !important;
+  opacity: 1 !important;
+}
+
+.crm-filter-bar__search-wrap:focus-within,
+.crm-leads-search:focus-within,
+.crm-search-field:focus-within,
+.crm-cadences-search:focus-within,
+.agenda-search:focus-within {
+  border-color: rgb(var(--blue-7)) !important;
+  box-shadow: 0 0 0 3px rgb(var(--blue-4) / 0.24) !important;
+}
+
+.dark .crm-filter-bar__search-icon,
+.dark .crm-leads-search__icon,
+.dark .crm-search-field__icon,
+.dark .crm-cadences-search__icon,
+.dark .agenda-search > span:first-child,
+.dark .crm-search-field > fluent-icon:first-child,
+[data-theme='dark'] .crm-filter-bar__search-icon,
+[data-theme='dark'] .crm-leads-search__icon,
+[data-theme='dark'] .crm-search-field__icon,
+[data-theme='dark'] .crm-cadences-search__icon,
+[data-theme='dark'] .agenda-search > span:first-child,
+[data-theme='dark'] .crm-search-field > fluent-icon:first-child,
+.theme-dark .crm-filter-bar__search-icon,
+.theme-dark .crm-leads-search__icon,
+.theme-dark .crm-search-field__icon,
+.theme-dark .crm-cadences-search__icon,
+.theme-dark .agenda-search > span:first-child,
+.theme-dark .crm-search-field > fluent-icon:first-child {
+  color: rgb(var(--blue-9)) !important;
+}
+
+/* CRM visual system: normalize surfaces, controls and icon alignment across pages. */
+.crm-page,
+.crm-agenda,
+.crm-reports-page,
+.crm-activities-page,
+.crm-all-leads-page,
+.crm-cadences-page,
+.crm-checklist-templates-page,
+.crm-automation-rules-page,
+.crm-pipeline-settings-page,
+.crm-leads-page,
+.crm-metrics-page,
+.crm-scoring-page,
+.crm-pipeline-settings,
+.crm-loss-reasons,
+.deal-details {
+  background: rgb(var(--bg-app)) !important;
+  color: rgb(var(--slate-12)) !important;
+}
+
+.crm-page-header,
+.crm-pipeline-hero,
+.agenda-hero,
+.metrics-header,
+.crm-loss-reasons__header {
+  border: 1px solid rgb(var(--border-weak)) !important;
+  border-radius: 8px !important;
+  background: rgb(var(--bg-card)) !important;
+  color: rgb(var(--slate-12)) !important;
+  box-shadow: 0 14px 36px rgba(var(--shell-shadow)) !important;
+}
+
+.crm-panel,
+.crm-filter-panel,
+.crm-toolbar,
+.crm-section-card,
+.crm-kpi-card,
+.crm-stat,
+.crm-empty-state,
+.crm-empty-inline,
+.crm-state,
+.crm-lifecycle-panel,
+.crm-sidebar-card,
+.crm-ai-scheduler-panel,
+.crm-archived-card,
+.crm-alert,
+.crm-insight,
+.crm-activity-row,
+.crm-drawer,
+.crm-confirm,
+.crm-scoring-panel,
+.crm-funnel,
+.crm-funnel__row,
+.crm-funnel__empty,
+.crm-loss-reasons__form,
+.crm-loss-reasons__list li,
+.crm-loss-reasons__state,
+.crm-pipeline-card,
+.crm-stage-card,
+.analyst-card,
+.analyst-card__answer,
+.kpi-strip,
+.chart-card,
+.empty-state-global,
+.agenda-status,
+.agenda-toolbar,
+.agenda-calendar-card,
+.agenda-panel-card,
+.agenda-event-card,
+.agenda-empty-state {
+  border: 1px solid rgb(var(--border-weak)) !important;
+  border-radius: 8px !important;
+  background: rgb(var(--bg-card)) !important;
+  color: rgb(var(--slate-12)) !important;
+  box-shadow: none !important;
+}
+
+.crm-panel:hover,
+.crm-section-card:hover,
+.crm-kpi-card:hover,
+.crm-stat:hover,
+.crm-pipeline-card:hover,
+.crm-stage-card:hover,
+.crm-insight:hover,
+.crm-activity-row:hover,
+.crm-funnel:hover,
+.crm-funnel__row:hover,
+.crm-loss-reasons__list li:hover,
+.chart-card:hover,
+.agenda-status:hover,
+.agenda-panel-card:hover,
+.agenda-event-card:hover {
+  border-color: rgb(var(--border-strong)) !important;
+  box-shadow: 0 10px 28px rgba(var(--shell-shadow)) !important;
+}
+
+.crm-page-header__eyebrow,
+.crm-page-header__meta,
+.crm-page-header__subtitle,
+.crm-kpi-card__label,
+.crm-stat__label,
+.crm-empty-state__text,
+.crm-empty-inline__text,
+.crm-alert,
+.crm-funnel__total,
+.crm-funnel__empty,
+.kpi-item-label,
+.empty-chart,
+.empty-state-desc,
+.analyst-card__subtitle,
+.agenda-hero__eyebrow,
+.agenda-hero__subtitle,
+.agenda-status__label,
+.agenda-panel-card__subtitle,
+.agenda-empty-state__text {
+  color: rgb(var(--slate-11)) !important;
+}
+
+.chart-title,
+.analyst-card__title,
+.empty-state-title,
+.crm-funnel__title,
+.kpi-item-value,
+.crm-loss-reasons__header h1 {
+  color: rgb(var(--slate-12)) !important;
+}
+
+.crm-page-header__icon,
+.crm-page-header__icon-chip,
+.crm-pipeline-hero__icon,
+.crm-kpi-card__icon,
+.crm-stat__icon,
+.crm-section-card__icon,
+.crm-pipeline-card__icon,
+.crm-stage-card__icon,
+.crm-sidebar-card__icon,
+.agenda-hero__icon,
+.agenda-status__icon,
+.agenda-panel-card__icon {
+  display: inline-grid !important;
+  flex: 0 0 auto !important;
+  place-items: center !important;
+  border: 1px solid rgb(var(--border-weak)) !important;
+  border-radius: 8px !important;
+  background: rgb(var(--surface-2)) !important;
+  color: rgb(var(--blue-10)) !important;
+  box-shadow: none !important;
+}
+
+.crm-page-header__icon > *,
+.crm-page-header__icon-chip > *,
+.crm-pipeline-hero__icon > *,
+.crm-kpi-card__icon > *,
+.crm-stat__icon > *,
+.crm-section-card__icon > *,
+.crm-pipeline-card__icon > *,
+.crm-stage-card__icon > *,
+.crm-sidebar-card__icon > *,
+.agenda-hero__icon > *,
+.agenda-status__icon > *,
+.agenda-panel-card__icon > * {
+  width: 1rem !important;
+  height: 1rem !important;
+  color: currentColor !important;
+}
+
+.crm-primary-button,
+.crm-secondary-button,
+.crm-ghost-button,
+.crm-danger-button,
+.crm-action-button,
+.crm-icon-button,
+.crm-primary-action,
+.crm-secondary-action,
+.crm-back-button,
+.crm-nav-add-action,
+.crm-loss-reasons__form button,
+.analyst-card__button,
+.analyst-card__example,
+.agenda-clear-btn,
+.agenda-icon-button {
+  min-height: 2.5rem !important;
+  border-radius: 8px !important;
+  letter-spacing: 0 !important;
+}
+
+.crm-secondary-button,
+.crm-ghost-button,
+.crm-action-button,
+.crm-icon-button,
+.crm-secondary-action,
+.crm-back-button,
+.crm-nav-add-action,
+.analyst-card__example,
+.agenda-clear-btn,
+.agenda-icon-button {
+  border: 1px solid rgb(var(--border-weak)) !important;
+  background: rgb(var(--surface-2)) !important;
+  color: rgb(var(--slate-12)) !important;
+}
+
+.crm-secondary-button:hover,
+.crm-ghost-button:hover,
+.crm-action-button:hover,
+.crm-icon-button:hover,
+.crm-secondary-action:hover,
+.crm-back-button:hover,
+.crm-nav-add-action:hover,
+.analyst-card__example:hover,
+.agenda-clear-btn:hover,
+.agenda-icon-button:hover {
+  border-color: rgb(var(--border-strong)) !important;
+  background: rgb(var(--surface-active)) !important;
+  color: rgb(var(--slate-12)) !important;
+}
+
+.crm-input,
+.crm-select,
+.crm-textarea,
+.agenda-select,
+.crm-field input,
+.crm-field select,
+.crm-field textarea,
+.crm-loss-reasons__form input,
+.analyst-card__input,
+.crm-scoring-page input,
+.crm-scoring-page select,
+.crm-scoring-page textarea,
+.crm-pipeline-settings input,
+.crm-pipeline-settings select,
+.crm-pipeline-settings textarea {
+  min-width: 0 !important;
+  border: 1px solid rgb(var(--border-weak)) !important;
+  border-radius: 8px !important;
+  background-color: rgb(var(--bg-card)) !important;
+  color: rgb(var(--slate-12)) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.crm-input,
+.crm-select,
+.agenda-select,
+.crm-loss-reasons__form input,
+.analyst-card__input,
+.crm-scoring-page input,
+.crm-scoring-page select,
+.crm-pipeline-settings input,
+.crm-pipeline-settings select {
+  min-height: 2.5rem !important;
+  padding-inline: 0.75rem !important;
+}
+
+.crm-textarea,
+.crm-field textarea,
+.crm-scoring-page textarea,
+.crm-pipeline-settings textarea {
+  padding: 0.75rem !important;
+  resize: vertical !important;
+}
+
+.crm-input:focus,
+.crm-select:focus,
+.crm-textarea:focus,
+.agenda-select:focus,
+.crm-field input:focus,
+.crm-field select:focus,
+.crm-field textarea:focus,
+.crm-loss-reasons__form input:focus,
+.analyst-card__input:focus,
+.crm-scoring-page input:focus,
+.crm-scoring-page select:focus,
+.crm-scoring-page textarea:focus,
+.crm-pipeline-settings input:focus,
+.crm-pipeline-settings select:focus,
+.crm-pipeline-settings textarea:focus {
+  border-color: rgb(var(--blue-7)) !important;
+  box-shadow: 0 0 0 3px rgb(var(--blue-4) / 0.24) !important;
+}
+
+.deal-details header,
+.deal-details section.border-b,
+.deal-details article.rounded-lg.border,
+.deal-details .crm-panel {
+  border-color: rgb(var(--border-weak)) !important;
+  background: rgb(var(--bg-card)) !important;
+  color: rgb(var(--slate-12)) !important;
+}
+
+.crm-field {
+  border-color: rgb(var(--border-weak)) !important;
+  border-radius: 8px !important;
+  background: rgb(var(--surface-1)) !important;
+}
+
+.crm-field span,
+.crm-loss-reasons__header span,
+.crm-loss-reasons__list small,
+.deal-details .text-n-slate-10 {
+  color: rgb(var(--slate-10)) !important;
+}
+
+html body .crm-filter-bar__search-wrap.crm-filter-bar__search-wrap,
+html body .crm-leads-search.crm-leads-search.crm-leads-search,
+html body .crm-search-field.crm-search-field.crm-search-field,
+html body .crm-cadences-search.crm-cadences-search.crm-cadences-search,
+html body .agenda-search.agenda-search.agenda-search {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 2.625rem !important;
+  border: 1px solid rgb(var(--border-weak)) !important;
+  border-radius: 8px !important;
+  background: rgb(var(--bg-card)) !important;
+  color: rgb(var(--slate-12)) !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
+
+html body .crm-filter-bar__search-icon.crm-filter-bar__search-icon,
+html body .crm-leads-search__icon.crm-leads-search__icon.crm-leads-search__icon,
+html body .crm-search-field__icon.crm-search-field__icon.crm-search-field__icon,
+html body .crm-cadences-search__icon.crm-cadences-search__icon.crm-cadences-search__icon,
+html body .agenda-search.agenda-search.agenda-search > span:first-child,
+html body .crm-search-field.crm-search-field.crm-search-field > fluent-icon:first-child {
+  position: absolute !important;
+  top: 50% !important;
+  left: 0.875rem !important;
+  z-index: 2 !important;
+  display: grid !important;
+  width: 1rem !important;
+  height: 1rem !important;
+  min-width: 1rem !important;
+  min-height: 1rem !important;
+  place-items: center !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: rgb(var(--blue-10)) !important;
+  transform: translateY(-50%) !important;
+  pointer-events: none !important;
+}
+
+html body .crm-search-field__loader.crm-search-field__loader.crm-search-field__loader {
+  position: absolute !important;
+  top: 50% !important;
+  right: 0.875rem !important;
+  z-index: 2 !important;
+  width: 1rem !important;
+  height: 1rem !important;
+  color: rgb(var(--slate-10)) !important;
+  transform: translateY(-50%) !important;
+  pointer-events: none !important;
+}
+
+html body .crm-filter-bar__input--search.crm-filter-bar__input--search,
+html body .crm-leads-search.crm-leads-search.crm-leads-search input,
+html body .crm-search-field.crm-search-field.crm-search-field input,
+html body .crm-cadences-search.crm-cadences-search.crm-cadences-search input,
+html body .agenda-search.agenda-search.agenda-search input {
+  box-sizing: border-box !important;
+  display: block !important;
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 2.625rem !important;
+  min-height: 2.625rem !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: rgb(var(--slate-12)) !important;
+  outline: none !important;
+  padding: 0 0.95rem 0 2.75rem !important;
+  line-height: 2.625rem !important;
+  appearance: none !important;
+}
+
+html body .crm-search-field.crm-search-field.crm-search-field input {
+  padding-right: 2.75rem !important;
+}
+
+html body .crm-filter-bar__input--search.crm-filter-bar__input--search::placeholder,
+html body .crm-leads-search.crm-leads-search.crm-leads-search input::placeholder,
+html body .crm-search-field.crm-search-field.crm-search-field input::placeholder,
+html body .crm-cadences-search.crm-cadences-search.crm-cadences-search input::placeholder,
+html body .agenda-search.agenda-search.agenda-search input::placeholder {
+  color: rgb(var(--slate-10)) !important;
+  opacity: 1 !important;
+}
+
+html body .crm-leads-search.crm-leads-search.crm-leads-search input::-webkit-search-cancel-button,
+html body .crm-search-field.crm-search-field.crm-search-field input::-webkit-search-cancel-button,
+html body .crm-cadences-search.crm-cadences-search.crm-cadences-search input::-webkit-search-cancel-button,
+html body .agenda-search.agenda-search.agenda-search input::-webkit-search-cancel-button,
+html body .crm-leads-search.crm-leads-search.crm-leads-search input::-webkit-search-decoration,
+html body .crm-search-field.crm-search-field.crm-search-field input::-webkit-search-decoration,
+html body .crm-cadences-search.crm-cadences-search.crm-cadences-search input::-webkit-search-decoration,
+html body .agenda-search.agenda-search.agenda-search input::-webkit-search-decoration {
+  appearance: none !important;
+}
+
+html body .crm-filter-bar__search-wrap.crm-filter-bar__search-wrap:focus-within,
+html body .crm-leads-search.crm-leads-search.crm-leads-search:focus-within,
+html body .crm-search-field.crm-search-field.crm-search-field:focus-within,
+html body .crm-cadences-search.crm-cadences-search.crm-cadences-search:focus-within,
+html body .agenda-search.agenda-search.agenda-search:focus-within {
+  border-color: rgb(var(--blue-7)) !important;
+  box-shadow: 0 0 0 3px rgb(var(--blue-4) / 0.24) !important;
+}
+
+.dark .crm-panel,
+.dark .crm-filter-panel,
+.dark .crm-toolbar,
+.dark .crm-section-card,
+.dark .crm-kpi-card,
+.dark .crm-stat,
+.dark .crm-empty-state,
+.dark .crm-empty-inline,
+.dark .crm-state,
+.dark .crm-lifecycle-panel,
+.dark .crm-sidebar-card,
+.dark .crm-ai-scheduler-panel,
+.dark .crm-archived-card,
+.dark .crm-alert,
+.dark .crm-insight,
+.dark .crm-activity-row,
+.dark .crm-drawer,
+.dark .crm-confirm,
+.dark .crm-scoring-panel,
+.dark .crm-funnel,
+.dark .crm-funnel__row,
+.dark .crm-funnel__empty,
+.dark .crm-loss-reasons__form,
+.dark .crm-loss-reasons__list li,
+.dark .crm-loss-reasons__state,
+.dark .crm-pipeline-card,
+.dark .crm-stage-card,
+.dark .metrics-header,
+.dark .analyst-card,
+.dark .analyst-card__answer,
+.dark .kpi-strip,
+.dark .chart-card,
+.dark .empty-state-global,
+.dark .agenda-status,
+.dark .agenda-toolbar,
+.dark .agenda-calendar-card,
+.dark .agenda-panel-card,
+.dark .agenda-event-card,
+.dark .agenda-empty-state,
+.dark .crm-page-header,
+.dark .crm-pipeline-hero,
+.dark .agenda-hero {
+  border-color: rgb(var(--border-weak)) !important;
+  background: rgb(var(--bg-card)) !important;
+  color: rgb(var(--slate-12)) !important;
+}
+
+/* CRM enforced polish: explicit coverage for pages that use local/Tailwind classes. */
+html body .crm-page,
+html body .crm-leads-page,
+html body .crm-activities-page,
+html body .crm-agenda,
+html body .crm-reports-page,
+html body .crm-metrics-page,
+html body .crm-scoring-page,
+html body .crm-pipeline-settings,
+html body .crm-loss-reasons,
+html body .deal-details {
+  background: rgb(var(--bg-app)) !important;
+  color: rgb(var(--slate-12)) !important;
+}
+
+html body .crm-page > header,
+html body .crm-leads-header,
+html body .crm-page-header,
+html body .crm-pipeline-hero,
+html body .agenda-hero,
+html body .metrics-header,
+html body .crm-loss-reasons__header,
+html body .deal-details > header {
+  border: 1px solid rgb(var(--border-weak)) !important;
+  border-radius: 8px !important;
+  background:
+    linear-gradient(180deg, rgb(var(--bg-card)), rgb(var(--surface-1)))
+    !important;
+  box-shadow:
+    inset 4px 0 0 rgb(var(--blue-9)),
+    0 16px 40px rgba(var(--shell-shadow)) !important;
+  color: rgb(var(--slate-12)) !important;
+}
+
+html body .crm-metric,
+html body .crm-column,
+html body .crm-column__empty,
+html body .crm-leads-filters,
+html body .crm-leads-bulk,
+html body .crm-leads-content,
+html body .crm-leads-kpi,
+html body .crm-leads-stage,
+html body .crm-leads-table-wrap,
+html body .crm-leads-table__empty,
+html body .crm-leads-modal__panel,
+html body .crm-leads-field,
+html body .crm-panel,
+html body .crm-filter-panel,
+html body .crm-toolbar,
+html body .crm-section-card,
+html body .crm-kpi-card,
+html body .crm-stat,
+html body .crm-activity-row,
+html body .crm-insight,
+html body .crm-funnel,
+html body .crm-funnel__row,
+html body .chart-card,
+html body .kpi-strip,
+html body .analyst-card,
+html body .agenda-status,
+html body .agenda-calendar-card,
+html body .agenda-panel-card,
+html body .agenda-event-card,
+html body .deal-details article.rounded-lg.border,
+html body .crm-column article.group {
+  border: 1px solid rgb(var(--border-weak)) !important;
+  border-radius: 8px !important;
+  background: rgb(var(--bg-card)) !important;
+  color: rgb(var(--slate-12)) !important;
+  box-shadow: 0 1px 2px rgba(var(--shell-shadow)) !important;
+}
+
+html body .crm-metric:hover,
+html body .crm-column article.group:hover,
+html body .crm-leads-kpi:hover,
+html body .crm-leads-stage:hover,
+html body .crm-leads-table tbody tr:hover,
+html body .crm-activity-row:hover,
+html body .chart-card:hover,
+html body .agenda-event-card:hover {
+  border-color: rgb(var(--border-strong)) !important;
+  background: rgb(var(--surface-active)) !important;
+  box-shadow: 0 12px 30px rgba(var(--shell-shadow)) !important;
+}
+
+html body .crm-leads-header__icon,
+html body .crm-leads-kpi__icon-box,
+html body .crm-page > header .grid.size-11,
+html body .crm-kpi-card__icon,
+html body .crm-stat__icon,
+html body .agenda-status__icon {
+  display: inline-grid !important;
+  place-items: center !important;
+  border: 1px solid rgb(var(--border-weak)) !important;
+  border-radius: 8px !important;
+  background: rgb(var(--surface-2)) !important;
+  color: rgb(var(--blue-10)) !important;
+  box-shadow: none !important;
+}
+
+html body .crm-leads-control,
+html body .crm-leads-inline-select,
+html body .crm-leads-field input,
+html body .crm-leads-field select,
+html body .crm-leads-field textarea,
+html body .crm-filter-bar__input,
+html body .crm-input,
+html body .crm-select,
+html body .crm-textarea,
+html body .agenda-select,
+html body .crm-field input,
+html body .crm-field select,
+html body .crm-field textarea,
+html body .analyst-card__input,
+html body .crm-loss-reasons__form input {
+  min-height: 2.5rem !important;
+  border: 1px solid rgb(var(--border-weak)) !important;
+  border-radius: 8px !important;
+  background: rgb(var(--bg-card)) !important;
+  color: rgb(var(--slate-12)) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+html body .crm-leads-control:focus,
+html body .crm-leads-inline-select:focus,
+html body .crm-leads-field input:focus,
+html body .crm-leads-field select:focus,
+html body .crm-leads-field textarea:focus,
+html body .crm-filter-bar__input:focus,
+html body .crm-input:focus,
+html body .crm-select:focus,
+html body .crm-textarea:focus,
+html body .agenda-select:focus,
+html body .crm-field input:focus,
+html body .crm-field select:focus,
+html body .crm-field textarea:focus,
+html body .analyst-card__input:focus,
+html body .crm-loss-reasons__form input:focus {
+  border-color: rgb(var(--blue-7)) !important;
+  box-shadow: 0 0 0 3px rgb(var(--blue-4) / 0.24) !important;
+}
+
+html body .crm-leads-button,
+html body .crm-leads-actions-button,
+html body .crm-secondary-button,
+html body .crm-ghost-button,
+html body .crm-action-button,
+html body .crm-icon-button,
+html body .crm-back-button,
+html body .agenda-clear-btn,
+html body .agenda-icon-button {
+  min-height: 2.5rem !important;
+  border: 1px solid rgb(var(--border-weak)) !important;
+  border-radius: 8px !important;
+  background: rgb(var(--surface-2)) !important;
+  color: rgb(var(--slate-12)) !important;
+}
+
+html body .crm-leads-button--primary,
+html body .crm-primary-button,
+html body .crm-primary-action,
+html body .analyst-card__button {
+  min-height: 2.5rem !important;
+  border-radius: 8px !important;
+  background: rgb(var(--blue-9)) !important;
+  color: white !important;
+}
+
+html body .crm-leads-table {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  color: rgb(var(--slate-12)) !important;
+}
+
+html body .crm-leads-table th,
+html body .crm-leads-table td,
+html body .crm-leads-pagination,
+html body .crm-column > header,
+html body .crm-leads-modal__header,
+html body .deal-details nav {
+  border-color: rgb(var(--border-weak)) !important;
+}
+
+html body .crm-leads-pill,
+html body .crm-leads-table span.rounded-full,
+html body .crm-page span.rounded-full,
+html body .deal-details span.rounded-full {
+  border: 1px solid rgb(var(--border-weak)) !important;
+  background: rgb(var(--surface-2)) !important;
+  color: rgb(var(--slate-11)) !important;
+}
+
+html body .dark .crm-page > header,
+html body .dark .crm-leads-header,
+html body .dark .crm-page-header,
+html body .dark .crm-pipeline-hero,
+html body .dark .agenda-hero,
+html body .dark .metrics-header,
+html body .dark .crm-loss-reasons__header,
+html body .dark .deal-details > header,
+html body .dark .crm-metric,
+html body .dark .crm-column,
+html body .dark .crm-leads-filters,
+html body .dark .crm-leads-content,
+html body .dark .crm-leads-table-wrap,
+html body .dark .crm-panel,
+html body .dark .chart-card,
+html body .dark .agenda-panel-card {
+  border-color: rgb(var(--border-weak)) !important;
+  background: rgb(var(--bg-card)) !important;
+  color: rgb(var(--slate-12)) !important;
+}
+
+/* CRM reports and select controls: force one visual language and one chevron. */
+html body .crm-reports-page {
+  gap: 1rem !important;
+  background: rgb(var(--bg-app)) !important;
+}
+
+html body .crm-reports-page .crm-page-header,
+html body .crm-reports-page .crm-filter-panel,
+html body .crm-reports-page .crm-panel,
+html body .crm-reports-page .crm-kpi-card,
+html body .crm-reports-page .crm-insight,
+html body .crm-reports-page .crm-state,
+html body .crm-reports-page .crm-alert,
+html body .crm-reports-page .crm-empty-inline {
+  border: 1px solid rgb(var(--border-weak)) !important;
+  border-radius: 8px !important;
+  background: rgb(var(--bg-card)) !important;
+  color: rgb(var(--slate-12)) !important;
+  box-shadow: 0 1px 2px rgba(var(--shell-shadow)) !important;
+}
+
+html body .crm-reports-page .crm-page-header {
+  background:
+    linear-gradient(180deg, rgb(var(--bg-card)), rgb(var(--surface-1)))
+    !important;
+  box-shadow:
+    inset 4px 0 0 rgb(var(--blue-9)),
+    0 16px 40px rgba(var(--shell-shadow)) !important;
+}
+
+html body .crm-reports-page .crm-filter-panel {
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)) !important;
+  align-items: end !important;
+}
+
+html body .crm-reports-page .crm-kpi-grid {
+  grid-template-columns: repeat(auto-fit, minmax(12.5rem, 1fr)) !important;
+}
+
+html body .crm-reports-page .crm-kpi-card {
+  min-height: 8.5rem !important;
+  padding: 1rem !important;
+  box-shadow: inset 0 3px 0 rgb(var(--blue-8)) !important;
+}
+
+html body .crm-reports-page .crm-kpi-card > span,
+html body .crm-reports-page .crm-insight > span {
+  display: inline-grid !important;
+  width: 2.25rem !important;
+  height: 2.25rem !important;
+  place-items: center !important;
+  border: 1px solid rgb(var(--border-weak)) !important;
+  border-radius: 8px !important;
+  background: rgb(var(--surface-2)) !important;
+  color: rgb(var(--blue-10)) !important;
+}
+
+html body .crm-reports-page .crm-insight {
+  background: rgb(var(--bg-card)) !important;
+}
+
+html body .crm-reports-page .crm-insight h2,
+html body .crm-reports-page .crm-panel h2,
+html body .crm-reports-page .crm-kpi-card strong {
+  color: rgb(var(--slate-12)) !important;
+}
+
+html body .crm-reports-page .crm-page-header p,
+html body .crm-reports-page .crm-insight p,
+html body .crm-reports-page .crm-kpi-card p,
+html body .crm-reports-page .crm-panel__header p,
+html body .crm-reports-page .crm-empty-inline {
+  color: rgb(var(--slate-10)) !important;
+}
+
+html body .crm-reports-page .crm-breakdown div {
+  border-color: rgb(var(--border-weak)) !important;
+}
+
+html body .crm-reports-page .crm-empty-inline {
+  border-style: dashed !important;
+  background: rgb(var(--surface-1)) !important;
+}
+
+html body .crm-select,
+html body .crm-field select,
+html body .crm-leads-control,
+html body .crm-leads-inline-select,
+html body .crm-leads-field select,
+html body .agenda-select,
+html body .crm-pipeline-settings select,
+html body .crm-scoring-page select,
+html body .deal-details select {
+  -moz-appearance: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  background-color: rgb(var(--bg-card)) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2364758b' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-position: right 0.75rem center !important;
+  background-repeat: no-repeat !important;
+  background-size: 1rem 1rem !important;
+  padding-right: 2.5rem !important;
+}
+
+html body .crm-select::-ms-expand,
+html body .crm-field select::-ms-expand,
+html body .crm-leads-control::-ms-expand,
+html body .crm-leads-inline-select::-ms-expand,
+html body .crm-leads-field select::-ms-expand,
+html body .agenda-select::-ms-expand,
+html body .crm-pipeline-settings select::-ms-expand,
+html body .crm-scoring-page select::-ms-expand,
+html body .deal-details select::-ms-expand {
+  display: none !important;
+}
+
+html body .dark .crm-select,
+html body .dark .crm-field select,
+html body .dark .crm-leads-control,
+html body .dark .crm-leads-inline-select,
+html body .dark .crm-leads-field select,
+html body .dark .agenda-select,
+html body .dark .crm-pipeline-settings select,
+html body .dark .crm-scoring-page select,
+html body .dark .deal-details select {
+  background-color: rgb(var(--bg-card)) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+}
+
+@media (max-width: 640px) {
+  .settings-header__panel,
+  .base-settings-header__hero,
+  .base-settings-header__toolbar,
+  .settings-subpage-header,
+  .settings-layout__panel {
+    border-radius: 10px !important;
+  }
+
+  .settings-layout {
+    gap: 0.75rem !important;
+  }
+}
