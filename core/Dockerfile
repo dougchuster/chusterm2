@@ -193,8 +193,9 @@ COPY app/listeners/crm_captain_triage_listener.rb ./app/listeners/crm_captain_tr
 COPY app/dispatchers/async_dispatcher.rb ./app/dispatchers/async_dispatcher.rb
 COPY app/policies/label_policy.rb ./app/policies/label_policy.rb
 COPY app/policies/crm_*.rb ./app/policies/
-# Patch migration do Chatwoot base — ActsAsTaggableOn::Taggable::Cache removido em >= 10.0
+# Patches de migrations da imagem base do Chatwoot com incompatibilidades de versao
 COPY db/migrate/20231211010807_add_cached_labels_list.rb ./db/migrate/
+COPY db/migrate/20260324102005_repurpose_response_bot_flag_for_custom_tools.rb ./db/migrate/
 COPY db/migrate/20260403*.rb ./db/migrate/
 COPY db/migrate/20260429*.rb ./db/migrate/
 COPY db/migrate/20260430*.rb ./db/migrate/
