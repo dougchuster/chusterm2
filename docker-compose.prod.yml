@@ -28,7 +28,7 @@ services:
     networks:
       - chusterm_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-chusterm}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-chusterm} -d chusterm_core"]
       interval: 10s
       timeout: 5s
       retries: 5
