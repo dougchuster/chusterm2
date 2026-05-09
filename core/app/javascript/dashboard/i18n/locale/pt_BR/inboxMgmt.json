@@ -322,6 +322,12 @@
           "ERROR_MESSAGE": "Não foi possível salvar o canal do WhatsApp"
         },
         "EVOLUTION": {
+          "PHONE": {
+            "LABEL": "Número WhatsApp (identificador da caixa)",
+            "PLACEHOLDER": "5511999999999",
+            "ERROR": "Use dígitos com código do país (ex: 5561999716604) ou formato E.164 com +. Entre 8 e 15 dígitos após o +.",
+            "HELP": "A Evolution cria a sessão apenas pelo nome da instância abaixo. Este número identifica a caixa de entrada e o caminho do webhook; o + é adicionado automaticamente se omitido."
+          },
           "API_URL": {
             "LABEL": "URL da Evolution API",
             "PLACEHOLDER": "https://sua-evolution-api.exemplo.com",
@@ -336,6 +342,30 @@
             "LABEL": "Nome da Instância",
             "PLACEHOLDER": "ex: minha-instancia-whatsapp",
             "ERROR": "Por favor, insira um nome de instância"
+          },
+          "DISCOVER_INSTANCES": {
+            "BUTTON": "Buscar instâncias da Evolution",
+            "LOADING": "Consultando Evolution API...",
+            "EMPTY": "Nenhuma instância retornada. Verifique a URL/chave ou crie uma no Manager.",
+            "EMPTY_HINT": "Clique em «Buscar instâncias» para listar sessões existentes (incluindo as criadas no Manager).",
+            "PLACEHOLDER": "Nome exato da instância (ou escolha da lista)",
+            "LINK_BUTTON": "Vincular instância e configurar webhook",
+            "LINK_SUCCESS": "Instância vinculada e webhook atualizado.",
+            "LINK_ERROR": "Não foi possível vincular a instância.",
+            "FETCH_ERROR": "Não foi possível listar instâncias. Verifique a Evolution API, URL e chave.",
+            "PREVIEW_HELP": "Se você criou a instância no Manager, use «Buscar» para sugestões sem precisar digitar o nome.",
+            "FIX_URL_KEY": "Preencha a URL da API e a chave antes de buscar instâncias.",
+            "NAME_REQUIRED": "Digite o nome da instância.",
+            "CURRENT": "Instância configurada para esta caixa: {name}",
+            "WARNING_ORPHAN": "Esta caixa aponta para «{name}», mas essa instância não é retornada pela Evolution para esta URL/chave. Revincule ou corrija a API.",
+            "SETTINGS_INSTANCE_LABEL": "Instância Evolution (Manager)",
+            "SETTINGS_INSTANCE_HELP": "Liste instâncias do mesmo servidor da URL/chave deste canal e escolha a que você criou manualmente no Manager.",
+            "CONNECTION_SECTION_LABEL": "Conexão WhatsApp (QR code)",
+            "CONNECTION_SECTION_HELP": "Escaneie o QR code com o WhatsApp para conectar o número a esta caixa de entrada.",
+            "QR_WAITING": "Aguardando QR code da Evolution API...",
+            "QR_REFRESH": "Atualizar QR code",
+            "QR_GENERATE": "Gerar QR code",
+            "QR_POLL_ERROR": "Não foi possível obter o QR code. Verifique se a instância Evolution está rodando e tente novamente."
           },
           "INFO": {
             "TITLE": "Sobre Evolution API + Baileys",
