@@ -33,9 +33,16 @@ export const isValidBusinessData = businessData => {
   return businessData && businessData.business_id && businessData.waba_id;
 };
 
+const ALLOWED_FACEBOOK_ORIGINS = new Set([
+  'https://www.facebook.com',
+  'https://web.facebook.com',
+  'https://m.facebook.com',
+  'https://facebook.com',
+]);
+
 export const createMessageHandler = onEmbeddedSignupData => {
   return event => {
-    if (!event.origin.endsWith('facebook.com')) return;
+    if (!ALLOWED_FACEBOOK_ORIGINS.has(event.origin)) return;
 
     try {
       let data;
@@ -73,8 +80,6 @@ export const initWhatsAppEmbeddedSignup = configId => {
         response_type: 'code',
         override_default_response_type: true,
         extras: {
-          setup: {},
-          featureType: 'whatsapp_business_app_onboarding',
           sessionInfoVersion: '3',
         },
       }

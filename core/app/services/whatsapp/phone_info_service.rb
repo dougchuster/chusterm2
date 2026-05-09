@@ -33,8 +33,18 @@ class Whatsapp::PhoneInfoService
 
     if @phone_number_id.present?
       phone_numbers.find { |phone| phone['id'] == @phone_number_id } || phone_numbers.first
-    else
+    elsif phone_numbers.size == 1
       phone_numbers.first
+    else
+      raise Whatsapp::MultipleNumbersError.new(
+        phone_numbers.map do |p|
+          {
+            id: p['id'],
+            display_phone_number: p['display_phone_number'],
+            verified_name: p['verified_name']
+          }
+        end
+      )
     end
   end
 

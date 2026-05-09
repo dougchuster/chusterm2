@@ -42,9 +42,28 @@ if (isLibraryMode) {
   plugins = [vue(vueOptions)];
 }
 
+// Separa bibliotecas pesadas e o catálogo de ícones em chunks dedicados.
+// Sem isso, dashboard-icons.json (~114 KB de paths SVG) era arrastado para um
+// chunk único de ~10 MB, comprometendo Time-to-Interactive.
+const manualChunks = (id: string) => {
+  if (id.includes('FluentIcon/dashboard-icons.json')) return 'icons-dashboard';
+  if (id.includes('FluentIcon/icons.json')) return 'icons-base';
+  if (!id.includes('node_modules')) return undefined;
+  if (id.includes('@sentry')) return 'vendor-sentry';
+  if (id.includes('chart.js') || id.includes('vue-chartjs')) return 'vendor-charts';
+  if (id.includes('@formkit')) return 'vendor-formkit';
+  if (id.includes('@tiptap') || id.includes('prosemirror')) return 'vendor-editor';
+  if (id.includes('highlight.js') || id.includes('@highlightjs')) return 'vendor-highlight';
+  if (id.includes('vue-dompurify-html') || id.includes('dompurify')) return 'vendor-dompurify';
+  if (id.includes('floating-vue')) return 'vendor-floating';
+  if (id.includes('lucide')) return 'vendor-lucide';
+  return undefined;
+};
+
 export default defineConfig({
   plugins: plugins,
   build: {
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         // [NOTE] when not in library mode, no new keys will be addedd or overwritten
@@ -59,7 +78,9 @@ export default defineConfig({
                 return '[name].js';
               },
             }
-          : {}),
+          : {
+              manualChunks,
+            }),
         inlineDynamicImports: isLibraryMode, // Disable code-splitting for SDK
       },
     },

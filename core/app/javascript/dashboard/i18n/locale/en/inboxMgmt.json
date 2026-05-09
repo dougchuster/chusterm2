@@ -311,7 +311,12 @@
           "AUTH_NOT_COMPLETED": "Authentication not completed. Please restart the process.",
           "SUCCESS_FALLBACK": "WhatsApp Business Account has been successfully configured",
           "MANUAL_FALLBACK": "If your number is already connected to the WhatsApp Business Platform (API), or if youâ€™re a tech provider onboarding your own number, please use the {link} flow",
-          "MANUAL_LINK_TEXT": "manual setup flow"
+          "MANUAL_LINK_TEXT": "manual setup flow",
+          "SELECT_NUMBER_TITLE": "Select your WhatsApp number",
+          "SELECT_NUMBER_DESC": "Your account has more than one number registered. Select the number you want to connect to this inbox.",
+          "SELECT_A_NUMBER": "Please select a number before continuing.",
+          "CONFIRM_NUMBER_BUTTON": "Confirm",
+          "CANCEL_BUTTON": "Cancel"
         },
         "API": {
           "ERROR_MESSAGE": "We were not able to save the WhatsApp channel"

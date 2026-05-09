@@ -253,11 +253,14 @@ services:
     env_file:
       - .env
     environment:
-      - RAILS_ENV=production
+      # A imagem base do Chatwoot já define RAILS_ENV=production. Mantemos a
+      # variável aqui apenas para tornar explícito e permitir override via .env
+      # (ex.: RAILS_ENV=development) sem editar o compose.
+      - RAILS_ENV=${RAILS_ENV:-production}
     volumes:
       - core-storage:/app/storage
     command: >
-      sh -c "bundle exec sidekiq -e production -C config/sidekiq.yml"
+      sh -c "bundle exec sidekiq -e ${RAILS_ENV:-production} -C config/sidekiq.yml"
     healthcheck:
       test: ["CMD-SHELL", "bundle exec sidekiqmon status 2>/dev/null || exit 0"]
       interval: 30s

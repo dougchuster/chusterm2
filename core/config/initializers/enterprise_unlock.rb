@@ -54,9 +54,10 @@ Rails.application.config.autoload_paths += %W[
   #{Rails.root}/enterprise/lib
 ]
 
-# Garante que as views enterprise estejam no path independente de DISABLE_ENTERPRISE
-unless Rails.application.config.paths['app/views'].to_a.include?('enterprise/app/views')
-  Rails.application.config.paths['app/views'].unshift('enterprise/app/views')
+# Garante que as views enterprise estejam no path via prepend_view_path (confiável)
+enterprise_views = Rails.root.join('enterprise/app/views').to_s
+Rails.application.config.to_prepare do
+  ActionController::Base.prepend_view_path(enterprise_views)
 end
 
 puts 'ChusteRM: Enterprise features unlocked'

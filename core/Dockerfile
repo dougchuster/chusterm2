@@ -135,6 +135,7 @@ RUN node /usr/local/lib/node_modules/npm/bin/npm-cli.js install -g pnpm@10.2.0 &
     if [ "$INSTALL_JS_DEPS" != "true" ]; then rm -rf node_modules; fi
 
 # Evolution API - Ruby backend
+COPY app/dashboards/account_dashboard.rb ./app/dashboards/account_dashboard.rb
 COPY config/routes.rb ./config/routes.rb
 COPY app/controllers/api/v1/accounts/captain/ ./app/controllers/api/v1/accounts/captain/
 COPY app/controllers/api/v1/accounts/campaigns_controller.rb ./app/controllers/api/v1/accounts/campaigns_controller.rb
@@ -177,6 +178,13 @@ COPY app/services/email/ ./app/services/email/
 COPY app/services/sms/oneoff_sms_campaign_service.rb ./app/services/sms/oneoff_sms_campaign_service.rb
 COPY app/services/twilio/oneoff_sms_campaign_service.rb ./app/services/twilio/oneoff_sms_campaign_service.rb
 COPY app/services/whatsapp/oneoff_campaign_service.rb ./app/services/whatsapp/oneoff_campaign_service.rb
+COPY app/services/whatsapp/multiple_numbers_error.rb ./app/services/whatsapp/multiple_numbers_error.rb
+COPY app/services/whatsapp/phone_info_service.rb ./app/services/whatsapp/phone_info_service.rb
+COPY app/services/whatsapp/embedded_signup_service.rb ./app/services/whatsapp/embedded_signup_service.rb
+COPY app/services/whatsapp/embedded_signup/ ./app/services/whatsapp/embedded_signup/
+COPY app/controllers/api/v1/accounts/whatsapp/ ./app/controllers/api/v1/accounts/whatsapp/
+COPY app/models/whatsapp_embedded_onboarding.rb ./app/models/whatsapp_embedded_onboarding.rb
+COPY db/migrate/20260508*.rb ./db/migrate/
 COPY enterprise/app/jobs/messages/media_understanding_job.rb ./enterprise/app/jobs/messages/media_understanding_job.rb
 COPY enterprise/app/services/messages/audio_transcription_service.rb ./enterprise/app/services/messages/audio_transcription_service.rb
 COPY enterprise/app/services/messages/media_understanding_service.rb ./enterprise/app/services/messages/media_understanding_service.rb
@@ -196,13 +204,23 @@ COPY app/policies/crm_*.rb ./app/policies/
 # Patches de migrations da imagem base do Chatwoot com incompatibilidades de versao
 COPY db/migrate/20231211010807_add_cached_labels_list.rb ./db/migrate/
 COPY db/migrate/20260324102005_repurpose_response_bot_flag_for_custom_tools.rb ./db/migrate/
+# Stubs no-op para 22 migrations órfãs herdadas de versão anterior do Chatwoot
+# (vide docs/system-audit-report.md NEW-01). Copiar para satisfazer schema_migrations.
+COPY db/migrate/20260404*.rb ./db/migrate/
+COPY db/migrate/20260405*.rb ./db/migrate/
+COPY db/migrate/20260406*.rb ./db/migrate/
+COPY db/migrate/20260407*.rb ./db/migrate/
+# Wildcard amplo cobre todas as migrations 2026 customizadas — evita órfãs por COPY
+# específico esquecido (ex.: 20260502*, 20260507* que ficaram fora antes).
 COPY db/migrate/20260403*.rb ./db/migrate/
 COPY db/migrate/20260429*.rb ./db/migrate/
 COPY db/migrate/20260430*.rb ./db/migrate/
 COPY db/migrate/20260501*.rb ./db/migrate/
+COPY db/migrate/20260502*.rb ./db/migrate/
 COPY db/migrate/20260504*.rb ./db/migrate/
 COPY db/migrate/20260505*.rb ./db/migrate/
 COPY db/migrate/20260506*.rb ./db/migrate/
+COPY db/migrate/20260507*.rb ./db/migrate/
 COPY lib/tasks/crm_labels.rake ./lib/tasks/crm_labels.rake
 COPY lib/tasks/crm_contacts.rake ./lib/tasks/crm_contacts.rake
 COPY lib/tasks/crm_health.rake ./lib/tasks/crm_health.rake
@@ -219,6 +237,7 @@ COPY app/controllers/webhooks/evolution_controller.rb ./app/controllers/webhooks
 COPY app/controllers/api/v1/accounts/channels/evolution_controller.rb ./app/controllers/api/v1/accounts/channels/evolution_controller.rb
 COPY app/jobs/webhooks/evolution_events_job.rb ./app/jobs/webhooks/evolution_events_job.rb
 COPY app/jobs/webhooks/whatsapp_events_job.rb ./app/jobs/webhooks/whatsapp_events_job.rb
+COPY app/jobs/channels/whatsapp/ ./app/jobs/channels/whatsapp/
 COPY app/jobs/channels/evolution_connection_health_job.rb ./app/jobs/channels/evolution_connection_health_job.rb
 COPY config/schedule.yml ./config/schedule.yml
 COPY config/initializers/disable_evented_watcher.rb ./config/initializers/disable_evented_watcher.rb

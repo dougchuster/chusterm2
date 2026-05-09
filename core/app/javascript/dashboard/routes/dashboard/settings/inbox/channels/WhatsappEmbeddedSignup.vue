@@ -20,7 +20,7 @@ const store = useStore();
 const router = useRouter();
 const { t } = useI18n();
 
-// State
+// State — signup flow
 const fbSdkLoaded = ref(false);
 const isProcessing = ref(false);
 const processingMessage = ref('');
@@ -28,6 +28,12 @@ const authCodeReceived = ref(false);
 const authCode = ref(null);
 const businessData = ref(null);
 const isAuthenticating = ref(false);
+
+// State — multi-number selection
+const isSelectingNumber = ref(false);
+const availablePhoneNumbers = ref([]);
+const selectedPhoneNumberId = ref(null);
+const sessionKey = ref(null);
 
 const benefits = computed(() => [
   {
@@ -51,6 +57,7 @@ const handleSignupError = data => {
   isProcessing.value = false;
   authCodeReceived.value = false;
   isAuthenticating.value = false;
+  isSelectingNumber.value = false;
 
   const errorMessage =
     data.error ||
@@ -63,11 +70,13 @@ const handleSignupCancellation = () => {
   isProcessing.value = false;
   authCodeReceived.value = false;
   isAuthenticating.value = false;
+  isSelectingNumber.value = false;
 };
 
 const handleSignupSuccess = inboxData => {
   isProcessing.value = false;
   isAuthenticating.value = false;
+  isSelectingNumber.value = false;
 
   if (inboxData && inboxData.id) {
     useAlert(t('INBOX_MGMT.FINISH.MESSAGE'));
@@ -80,13 +89,32 @@ const handleSignupSuccess = inboxData => {
     });
   } else {
     useAlert(t('INBOX_MGMT.ADD.WHATSAPP.EMBEDDED_SIGNUP.SUCCESS_FALLBACK'));
-    router.replace({
-      name: 'settings_inbox_list',
-    });
+    router.replace({ name: 'settings_inbox_list' });
   }
 };
 
-// Signup flow
+// Dispatch and handle response — including needs_number_selection
+const dispatchSignup = async params => {
+  const responseData = await store.dispatch(
+    'inboxes/createWhatsAppEmbeddedSignup',
+    params
+  );
+
+  if (responseData && responseData.needs_number_selection) {
+    availablePhoneNumbers.value = responseData.phone_numbers || [];
+    sessionKey.value = responseData.session_key;
+    selectedPhoneNumberId.value =
+      availablePhoneNumbers.value[0]?.id || null;
+    isSelectingNumber.value = true;
+    isProcessing.value = false;
+    isAuthenticating.value = false;
+    return null;
+  }
+
+  return responseData;
+};
+
+// Complete signup flow after business data + auth code are both available
 const completeSignupFlow = async businessDataParam => {
   if (!authCodeReceived.value || !authCode.value) {
     handleSignupError({
@@ -108,6 +136,38 @@ const completeSignupFlow = async businessDataParam => {
       phone_number_id: businessDataParam?.phone_number_id || '',
     };
 
+    const responseData = await dispatchSignup(params);
+    if (responseData) {
+      authCode.value = null;
+      handleSignupSuccess(responseData);
+    }
+  } catch (error) {
+    const errorMessage =
+      parseAPIErrorResponse(error) ||
+      t('INBOX_MGMT.ADD.WHATSAPP.API.ERROR_MESSAGE');
+    handleSignupError({ error: errorMessage });
+  }
+};
+
+// Confirm the number chosen by the user and complete onboarding
+const confirmNumberSelection = async () => {
+  if (!selectedPhoneNumberId.value) {
+    useAlert(t('INBOX_MGMT.ADD.WHATSAPP.EMBEDDED_SIGNUP.SELECT_A_NUMBER'));
+    return;
+  }
+
+  isProcessing.value = true;
+  isSelectingNumber.value = false;
+  processingMessage.value = t('INBOX_MGMT.ADD.WHATSAPP.EMBEDDED_SIGNUP.PROCESSING');
+
+  try {
+    const params = {
+      waba_id: businessData.value?.waba_id,
+      business_id: businessData.value?.business_id,
+      phone_number_id: selectedPhoneNumberId.value,
+      session_key: sessionKey.value,
+    };
+
     const responseData = await store.dispatch(
       'inboxes/createWhatsAppEmbeddedSignup',
       params
@@ -123,7 +183,7 @@ const completeSignupFlow = async businessDataParam => {
   }
 };
 
-// Message handling
+// Message handling (postMessage from Facebook SDK)
 const handleEmbeddedSignupData = async data => {
   if (
     data.event === 'FINISH' ||
@@ -154,8 +214,6 @@ const handleEmbeddedSignupData = async data => {
       error:
         data.error_message ||
         t('INBOX_MGMT.ADD.WHATSAPP.EMBEDDED_SIGNUP.SIGNUP_ERROR'),
-      error_id: data.error_id,
-      session_id: data.session_id,
     });
   }
 };
@@ -204,24 +262,12 @@ const launchEmbeddedSignup = async () => {
 };
 
 // Lifecycle
-const setupMessageListener = () => {
-  window.addEventListener('message', handleSignupMessage);
-};
-
-const cleanupMessageListener = () => {
-  window.removeEventListener('message', handleSignupMessage);
-};
-
-const initialize = () => {
-  setupMessageListener();
-};
-
 onMounted(() => {
-  initialize();
+  window.addEventListener('message', handleSignupMessage);
 });
 
 onBeforeUnmount(() => {
-  cleanupMessageListener();
+  window.removeEventListener('message', handleSignupMessage);
 });
 </script>
 
@@ -229,6 +275,72 @@ onBeforeUnmount(() => {
   <div class="h-full">
     <LoadingState v-if="showLoader" :message="processingMessage" />
 
+    <!-- Multi-number selection -->
+    <div v-else-if="isSelectingNumber" class="flex flex-col gap-4">
+      <div class="flex flex-col items-start mb-2">
+        <div class="flex justify-start mb-4">
+          <div
+            class="flex size-11 items-center justify-center rounded-full bg-n-alpha-2"
+          >
+            <Icon icon="i-woot-whatsapp" class="text-n-slate-10 size-6" />
+          </div>
+        </div>
+        <h3 class="mb-1 text-base font-medium text-n-slate-12">
+          {{ $t('INBOX_MGMT.ADD.WHATSAPP.EMBEDDED_SIGNUP.SELECT_NUMBER_TITLE') }}
+        </h3>
+        <p class="text-sm text-n-slate-11">
+          {{ $t('INBOX_MGMT.ADD.WHATSAPP.EMBEDDED_SIGNUP.SELECT_NUMBER_DESC') }}
+        </p>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <label
+          v-for="phone in availablePhoneNumbers"
+          :key="phone.id"
+          class="flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors"
+          :class="
+            selectedPhoneNumberId === phone.id
+              ? 'border-n-brand bg-n-alpha-2'
+              : 'border-n-weak hover:border-n-brand'
+          "
+        >
+          <input
+            v-model="selectedPhoneNumberId"
+            type="radio"
+            :value="phone.id"
+            class="accent-n-brand"
+          />
+          <span class="flex flex-col">
+            <span class="text-sm font-medium text-n-slate-12">
+              {{ phone.display_phone_number }}
+            </span>
+            <span class="text-xs text-n-slate-11">
+              {{ phone.verified_name }}
+            </span>
+          </span>
+        </label>
+      </div>
+
+      <div class="flex gap-2 mt-2">
+        <NextButton
+          faded
+          slate
+          class="flex-1"
+          @click="handleSignupCancellation"
+        >
+          {{ $t('INBOX_MGMT.ADD.WHATSAPP.EMBEDDED_SIGNUP.CANCEL_BUTTON') }}
+        </NextButton>
+        <NextButton
+          :disabled="!selectedPhoneNumberId"
+          class="flex-1"
+          @click="confirmNumberSelection"
+        >
+          {{ $t('INBOX_MGMT.ADD.WHATSAPP.EMBEDDED_SIGNUP.CONFIRM_NUMBER_BUTTON') }}
+        </NextButton>
+      </div>
+    </div>
+
+    <!-- Initial signup screen -->
     <div v-else>
       <div class="flex flex-col items-start mb-6 text-start">
         <div class="flex justify-start mb-6">

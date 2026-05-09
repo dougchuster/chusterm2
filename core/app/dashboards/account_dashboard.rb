@@ -8,17 +8,11 @@ class AccountDashboard < Administrate::BaseDashboard
   # which determines how the attribute is displayed
   # on pages throughout the dashboard.
 
-  enterprise_attribute_types = if ChusteRMApp.enterprise?
-                                 attributes = {
-                                   limits: AccountLimitsField
-                                 }
-
-                                 # Only show manually managed features in ChusteRM Cloud deployment
-                                 attributes[:manually_managed_features] = ManuallyManagedFeaturesField if ChusteRMApp.ChusteRM_cloud?
-
-                                 # Add all_features last so it appears after manually_managed_features
+  enterprise_attribute_types = if ChusteRMApp.enterprise? && defined?(AccountFeaturesField)
+                                 attributes = {}
+                                 attributes[:limits] = AccountLimitsField if defined?(AccountLimitsField)
+                                 attributes[:manually_managed_features] = ManuallyManagedFeaturesField if defined?(ManuallyManagedFeaturesField) && ChusteRMApp.respond_to?(:ChusteRM_cloud?) && ChusteRMApp.ChusteRM_cloud?
                                  attributes[:all_features] = AccountFeaturesField
-
                                  attributes
                                else
                                  {}
@@ -53,9 +47,10 @@ class AccountDashboard < Administrate::BaseDashboard
 
   # SHOW_PAGE_ATTRIBUTES
   # an array of attributes that will be displayed on the model's show page.
-  enterprise_show_page_attributes = if ChusteRMApp.enterprise?
-                                      attrs = %i[custom_attributes limits]
-                                      attrs << :manually_managed_features if ChusteRMApp.ChusteRM_cloud?
+  enterprise_show_page_attributes = if ChusteRMApp.enterprise? && defined?(AccountFeaturesField)
+                                      attrs = [:custom_attributes]
+                                      attrs << :limits if defined?(AccountLimitsField)
+                                      attrs << :manually_managed_features if defined?(ManuallyManagedFeaturesField) && ChusteRMApp.respond_to?(:ChusteRM_cloud?) && ChusteRMApp.ChusteRM_cloud?
                                       attrs << :all_features
                                       attrs
                                     else
@@ -75,9 +70,10 @@ class AccountDashboard < Administrate::BaseDashboard
   # FORM_ATTRIBUTES
   # an array of attributes that will be displayed
   # on the model's form (`new` and `edit`) pages.
-  enterprise_form_attributes = if ChusteRMApp.enterprise?
-                                 attrs = %i[limits]
-                                 attrs << :manually_managed_features if ChusteRMApp.ChusteRM_cloud?
+  enterprise_form_attributes = if ChusteRMApp.enterprise? && defined?(AccountFeaturesField)
+                                 attrs = []
+                                 attrs << :limits if defined?(AccountLimitsField)
+                                 attrs << :manually_managed_features if defined?(ManuallyManagedFeaturesField) && ChusteRMApp.respond_to?(:ChusteRM_cloud?) && ChusteRMApp.ChusteRM_cloud?
                                  attrs << :all_features
                                  attrs
                                else

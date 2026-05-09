@@ -1,7 +1,7 @@
 # 🔍 ChusteRM — Relatório de Auditoria Completa do Sistema
 
-> **Data:** 2026-05-08  
-> **Versão:** Docker Compose (Core + CRM Service + Orchestrator + Identity Bridge + Evolution API)  
+> **Última atualização:** 2026-05-08 (sessão de hardening crítico)
+> **Versão:** Docker Compose (Core + CRM Service + Orchestrator + Identity Bridge + Evolution API)
 > **Ambiente:** Desenvolvimento (localhost:3010)
 
 ---
@@ -10,12 +10,16 @@
 
 | Categoria | Total | Críticos | Médios | Baixos |
 |-----------|-------|----------|--------|--------|
-| Infraestrutura / Docker | 5 | 2 | 2 | 1 |
+| Infraestrutura / Docker | 6 | 2 | 3 | 1 |
 | Autenticação (UI) | 3 | 0 | 2 | 1 |
-| Backend (Rails) | 4 | 1 | 2 | 1 |
+| Backend (Rails) | 5 | 1 | 3 | 1 |
 | Frontend (Vue/CRM) | 8 | 1 | 5 | 2 |
-| Build / Performance | 3 | 1 | 1 | 1 |
-| **Total** | **23** | **5** | **12** | **6** |
+| Build / Performance | 3 | 0 | 1 | 2 |
+| Branding / i18n | 3 | 0 | 3 | 0 |
+| **Total** | **28** | **4** | **17** | **7** |
+
+> **Resolvidos nesta sessão:** CRIT-02, CRIT-03, CRIT-05 (parcial), MED-02, **NEW-01**
+> **Novos achados:** ~~NEW-01~~ ✅, NEW-02 (locale `en` em vez de `pt_BR`), NEW-03 (URLs de branding chatwoot.com), NEW-04 (Core também roda em RAILS_ENV=production)
 
 ### Serviços verificados
 
@@ -32,271 +36,261 @@
 | Vite Watch | ✅ Running | — |
 | Mailhog | ✅ Running | 8025/1025 |
 
-### Páginas de login verificadas visualmente
+### Páginas de login verificadas
 
-| Página | Design | Formulário | Toggle Tema | Acentuação |
-|--------|--------|------------|-------------|------------|
-| `/app/login` | ✅ Glassmorphism | ✅ OK | ✅ OK | ✅ OK |
-| `/app/login/sso` | ✅ Glassmorphism | ✅ OK | ✅ OK | ✅ OK |
-| `/super_admin/sign_in` | ✅ Glassmorphism (CORRIGIDO) | ✅ OK | ✅ OK | ✅ OK |
-
----
-
-## ✅ RESOLVIDOS NESTA SESSÃO
-
-### ~~CRIT-01: Alterações em arquivos ERB/Ruby não propagam para o container Docker~~
-- **Status:** ✅ RESOLVIDO
-- **Solução aplicada:** Arquivos copiados via `docker cp` + `docker restart chusterm-core-1`
-- **Nota:** Solução permanente ainda precisa ser implementada (volume mount ou rebuild automatizado)
-
-### ~~CRIT-04: Super Admin sign_in — Layout ainda usava versão antiga~~
-- **Status:** ✅ RESOLVIDO
-- **Verificado:** Screenshots confirmam glassmorphism, orbs animados, toggle de tema e acentuação funcionando.
+| Página | HTTP | Design | Acentuação | Locale |
+|--------|------|--------|------------|--------|
+| `/app/login` | 200 | ✅ Glassmorphism | ✅ OK | ⚠️ `en` em vez de `pt_BR` |
+| `/app/login/sso` | 200 | ✅ Glassmorphism | ✅ OK | ⚠️ idem |
+| `/super_admin/sign_in` | 200 | ✅ Glassmorphism | ✅ OK | ✅ `lang="pt-BR"` |
 
 ---
 
-## 🔴 CRÍTICOS (Necessitam ação imediata)
+## ✅ RESOLVIDOS NESTA SESSÃO (2026-05-08)
+
+### ~~CRIT-02: Branding init errors com 127.0.0.1~~
+- **Status:** ✅ RESOLVIDO
+- **Causa raiz:** Initializer rodava em contextos onde `InstallationConfig` não estava disponível (asset precompile, rake tasks) e a conexão caía no fallback Rails (`127.0.0.1:6379`/`::1:5432`).
+- **Solução aplicada:** `core/config/initializers/chusterm_branding.rb` agora:
+  - Aborta cedo se `InstallationConfig` não estiver definido.
+  - Verifica `data_source_exists?('installation_configs')` em `begin/rescue` antes de tentar persistir.
+  - Mensagem de log mudou de "init error" para "init skipped" e inclui classe da exceção.
+- **Validação:** `docker logs chusterm-core-1` desde restart não contém mais "Branding init error". Logo, nome e branding renderizam corretos no login.
+
+### ~~CRIT-03: Migrations órfãs `20260502000001` e `20260507000001`~~
+- **Status:** ✅ RESOLVIDO
+- **Causa raiz:** `core/Dockerfile` linhas 197-205 fazia `COPY db/migrate/20260501*.rb`, `20260504*`, `20260505*`, `20260506*` — **omitindo** `20260502*` e `20260507*`. Os arquivos existiam no host mas nunca eram copiados para a imagem.
+- **Solução aplicada:**
+  - Adicionado `COPY db/migrate/20260502*.rb` e `COPY db/migrate/20260507*.rb` no Dockerfile.
+  - Adicionado comentário explicativo para alertar sobre o padrão "wildcard por dia" evitar omissões futuras.
+  - `docker cp` dos dois arquivos para containers `core` e `sidekiq` em runtime.
+- **Validação:** `rails db:migrate:status` agora mostra "Create crm cadence enrollments" e "Adjust crm external connections per user" em vez de `NO FILE`.
+
+### ~~MED-02: Sidekiq com `RAILS_ENV=production` hardcoded~~
+- **Status:** ✅ RESOLVIDO (parcial — vide NEW-04)
+- **Solução aplicada:** `docker-compose.yml` agora usa `RAILS_ENV=${RAILS_ENV:-production}` permitindo override via `.env` sem editar compose. Comando do Sidekiq também passou a usar a mesma variável (`sidekiq -e ${RAILS_ENV:-production}`).
+- **Nota:** A imagem base `chatwoot/chatwoot:latest` já define `RAILS_ENV=production` em `ENV`. Para realmente rodar em development, o `.env` precisa explicitamente ter `RAILS_ENV=development` — vide NEW-04.
+
+### ~~CRIT-05: Vite build com chunks gigantes~~
+- **Status:** 🟡 PARCIALMENTE RESOLVIDO
+- **Solução aplicada:** `core/vite.config.ts` com `manualChunks` agressivo:
+  - `icons-dashboard` / `icons-base` → JSONs de SVG paths isolados em chunks dedicados (era arrastado para chunk de 10MB)
+  - `vendor-sentry`, `vendor-charts`, `vendor-formkit`, `vendor-editor` (tiptap/prosemirror), `vendor-highlight`, `vendor-dompurify`, `vendor-floating`, `vendor-lucide` → vendor splits explícitos
+  - `chunkSizeWarningLimit: 1000` para silenciar avisos abaixo de 1MB
+- **Métricas (antes → depois):**
+  - **Build time:** 318s → 100s (**3.18× mais rápido**)
+  - **icons-dashboard:** isolado em 113 kB (gzip 38 kB) — antes diluía no chunk principal
+  - **vendors separados:** 7 chunks vendor (23 kB a 361 kB), antes tudo aglomerado
+  - **DashboardIcon-*.js:** 10.1 MB → 9.9 MB (-2%) — **melhoria mínima** (vide observação abaixo)
+- **Limitação restante:** O chunk `DashboardIcon-*.js` de 9.9 MB **não é** o componente `DashboardIcon.vue`. É um chunk compartilhado que o Rollup nomeou pelo primeiro arquivo importado em comum entre os dois entrypoints (`dashboard.js` e `v3app.js`). Para reduzi-lo seria necessário reorganizar a arquitetura de entrypoints ou aplicar code-splitting via `import()` dinâmico nas rotas — fora do escopo de hardening crítico.
+
+---
+
+## 🔴 CRÍTICOS REMANESCENTES
 
 ### CRIT-01: Docker — Core não monta código Ruby como volume
+- **Status:** ⚠️ NÃO TRATADO (escopo da sessão excluiu — risco de regressão de performance no Windows)
 - **Localização:** `docker-compose.yml` → serviço `core` (linhas 209-211)
-- **Descrição:** O container `core` NÃO monta o diretório do código Ruby/ERB como volume. Apenas `public/vite` e `storage` são montados. O `core-vite` monta `./core/app/javascript` para hot-reload de JS, mas alterações em controllers, views, models, e configs requerem `docker cp` + restart ou rebuild completo.
-- **Impacto:** Qualquer alteração backend exige processo manual de deploy para o container.
-- **Solução permanente:** Adicionar volumes no `docker-compose.yml`:
-  ```yaml
-  volumes:
-    - ./core/app/views:/app/app/views
-    - ./core/app/controllers:/app/app/controllers
-    - ./core/app/models:/app/app/models
-    - ./core/config:/app/config
-    - core-vite-output:/app/public/vite
-    - core-storage:/app/storage
-  ```
-- **Risco:** Volume mounts no Windows podem ter performance reduzida. Avaliar uso de `delegated` consistency mode.
-- **Prioridade:** 🔴 Alta
-
-### CRIT-02: Redis/PostgreSQL — Branding init errors
-- **Localização:** `core/log/development.log`, `core/config/initializers/chusterm_branding.rb`
-- **Descrição:** Logs mostram falhas repetidas de conexão ao Redis (`127.0.0.1:6379`) e PostgreSQL (`::1:5432`) no inicializador de Branding. Dentro do Docker, os serviços comunicam via nomes de container (`redis:6379`, `postgres:5432`), não localhost.
-- **Mensagens:**
-  ```
-  [ChusteRM] Branding init error for INSTALLATION_NAME: ...redis://127.0.0.1:6379
-  [ChusteRM] Branding init error for INSTALLATION_NAME: ...port 5432 failed: Connection refused
-  ```
-- **Impacto:** Logo, nome da instalação e branding caem para fallback. Não quebra o sistema mas degrada branding.
-- **Solução:** Verificar `REDIS_URL` e `DATABASE_URL` no `.env` — devem usar nomes de serviço Docker internos. O initializer deve ter fallback gracioso sem logar repetidamente.
-- **Prioridade:** 🔴 Alta
-
-### CRIT-03: Migrations órfãs — "NO FILE" no migration status
-- **Localização:** `db/migrate/`
-- **Descrição:** Duas migrations aparecem como `********** NO FILE **********`:
-  ```
-  up  20260502000001  ********** NO FILE **********
-  up  20260507000001  ********** NO FILE **********
-  ```
-  Isso significa que migrations foram executadas no banco mas os arquivos `.rb` correspondentes foram deletados do código.
-- **Impacto:** `rails db:migrate:status` mostra estado inconsistente. Pode causar problemas em rollback ou nova instalação.
-- **Solução:** Identificar o que essas migrations faziam e restaurar os arquivos, ou criar migrations "stub" vazias com os mesmos timestamps para satisfazer o schema_migrations.
-- **Prioridade:** 🔴 Alta
+- **Descrição:** Apenas `public/vite` e `storage` são montados. Alterações em controllers, views, models, configs exigem `docker cp` + restart ou rebuild.
+- **Solução proposta:** volumes adicionais (`./core/app/views`, `./core/app/controllers`, `./core/app/models`, `./core/config`) com `:delegated` no Windows. Risco: perf de I/O em Windows host.
+- **Workaround atual:** Helper script ou `docker cp` manual.
 
 ### CRIT-04: eslint-disable generalizado nos componentes CRM
+- **Status:** ⚠️ NÃO TRATADO (escopo da sessão excluiu — refatoração massiva)
 - **Localização:** Todos os arquivos em `dashboard/components/crm/` e `dashboard/routes/dashboard/crm/pages/`
-- **Descrição:** Todo componente CRM usa:
-  ```html
-  <!-- eslint-disable vue/no-bare-strings-in-template, @intlify/vue-i18n/no-raw-text, vue/no-static-inline-styles -->
-  ```
-  Strings hardcoded em pt-BR: "Lead sem nome", "Alta prioridade", "Score pendente", "Pipeline Jurídico", "Gerencie atendimentos...", etc.
-- **Impacto:** Internacionalização completamente quebrada para CRM. Build pode emitir warnings se eslint config mudar.
-- **Solução:** Migrar strings para `i18n/locale/pt_BR/crm.json` e usar `$t()`.
-- **Prioridade:** 🔴 Alta (mas pode ser tratada incrementalmente)
-
-### CRIT-05: Vite build — chunks enormes (10MB+ DashboardIcon)
-- **Localização:** `core-vite` container logs
-- **Descrição:** O build Vite produz chunks desproporcionais:
-  ```
-  DashboardIcon-BQpgEGpD.js   10,105.99 kB (10MB!)
-  dashboard-CDxNNRnV.js        3,307.39 kB (3.3MB)
-  typing-DH0Kp7el.js             445.92 kB
-  ```
-  Warning do Vite: "Some chunks are larger than 500 kB after minification"
-- **Impacto:** Tempo de carregamento lento, consumo excessivo de banda, performance ruim em conexões lentas.
-- **Solução:**
-  1. Configurar `build.rollupOptions.output.manualChunks` no `vite.config.ts`
-  2. Usar `import()` dinâmico para code-splitting (lazy loading de rotas)
-  3. Verificar se o `DashboardIcon` (10MB) está importando toda a lib de ícones — provavelmente deve usar tree-shaking
-- **Prioridade:** 🔴 Alta
+- **Descrição:** Strings hardcoded em pt-BR violando i18n. Solução incremental migrando para `i18n/locale/pt_BR/crm.json` e `$t()`.
 
 ---
 
-## 🟡 MÉDIOS (Devem ser corrigidos em breve)
+## 🆕 NOVOS BUGS DESCOBERTOS NESTA SESSÃO
 
-### MED-01: Deprecation Warnings — Rails.application.secrets
-- **Localização:** `core/config/environment.rb` (linha 5)
-- **Descrição:** Três avisos de depreciação repetidos a cada boot:
+### ~~NEW-01 (🔴 Crítico): 22 migrations órfãs adicionais~~ ✅ RESOLVIDO
+- **Localização:** `schema_migrations` PostgreSQL
+- **Origem confirmada:** essas 22 versões vêm de uma versão anterior/diferente do Chatwoot rodada no banco antes da imagem atual. **Não estão na imagem upstream `chatwoot/chatwoot:latest`** (113 migrations, sem nenhum desses timestamps), nem no histórico Git do fork ChusteRM (`git log --all --diff-filter=D` retorna vazio).
+- **Versões afetadas (22):** `20260404000001-2`, `20260405100001-8`, `20260406000001-11`, `20260407000001`.
+- **Solução aplicada (Opção B — stubs no-op):**
+  - Criados 22 arquivos `core/db/migrate/<timestamp>_legacy_upstream_stub.rb` com `class LegacyUpstreamStub<timestamp> < ActiveRecord::Migration[7.1]; def change; end; end`.
+  - Cada arquivo tem comentário explicando a origem e referenciando este relatório.
+  - `Dockerfile` atualizado com `COPY db/migrate/20260404*.rb`, `20260405*`, `20260406*`, `20260407*` para sobreviver a rebuilds.
+  - Sincronizados via `docker cp` para `chusterm-core-1` e `chusterm-sidekiq-1`.
+- **Validação:** `rails db:migrate:status | grep 'NO FILE' | wc -l` agora retorna **0**. App respondendo 200 OK em `/app/login` e `/health`.
+- **Trade-off conhecido:** se o banco for resetado (`db:reset`), os stubs rodarão como no-ops (não recriam o schema que as migrations originais aplicaram). Para nova instalação from-scratch, será preciso reconstruir o schema desejado a partir do `db/schema.rb` ou identificar as features que ficaram sem migration de origem.
+
+### NEW-02 (🟡 Médio): `selectedLocale` ainda é `en` no `chustermConfig`
+- **Localização:** `app/views/layouts/vueapp.html.erb` (`window.chustermConfig`) ou origem em `app/controllers/application_controller.rb`
+- **Descrição:** O HTML servido em `/app/login` contém `selectedLocale: 'en'` apesar de `pt_BR` estar configurado como default em `core/config/application.rb` ou similar. A memória do projeto diz "responder em pt-BR".
+- **Reprodução:** `curl http://localhost:3010/app/login | grep selectedLocale` → `selectedLocale: 'en'`.
+- **Impacto:** Usuário sem conta autenticada vê interface em inglês mesmo o sistema sendo pt_BR-first.
+- **Prioridade:** 🟡 Média — afeta UX de novos usuários.
+
+### NEW-03 (🟡 Médio): URLs de branding ainda apontam para chatwoot.com
+- **Localização:** `window.globalConfig` no HTML servido
+- **Descrição:** Vários campos do `globalConfig` ainda têm valores chatwoot:
   ```
-  DEPRECATION WARNING: `Rails.application.secrets` is deprecated in favor of `Rails.application.credentials`
+  WIDGET_BRAND_URL: "https://www.chatwoot.com"
+  TERMS_URL: "https://www.chatwoot.com/terms-of-service"
+  PRIVACY_URL: "https://www.chatwoot.com/privacy-policy"
   ```
-- **Impacto:** Funciona agora mas quebrará no Rails 7.2+.
-- **Solução:** Migrar para `Rails.application.credentials`.
+  Adicionalmente, a `<meta name="description">` ainda diz: *"ChusteRM is a customer support solution that helps companies engage customers over Messenger, Twitter, Telegram, WeChat, Whatsapp..."* — texto Chatwoot original com nome trocado.
+- **Solução:** Atualizar `installation_config.yml` (chaves `WIDGET_BRAND_URL`, `TERMS_URL`, `PRIVACY_URL`) e a meta description no layout principal (`app/views/layouts/application.html.erb` ou `vueapp.html.erb`).
+- **Prioridade:** 🟡 Média — visibilidade externa.
 
-### MED-02: Docker — Sidekiq roda com RAILS_ENV=production em ambiente dev
-- **Localização:** `docker-compose.yml`, linha 260
-- **Descrição:** O Sidekiq está configurado com `RAILS_ENV=production` mesmo no compose de desenvolvimento.
-- **Impacto:** Jobs podem se comportar diferente do esperado. Error reporting e logs podem estar suprimidos.
-- **Solução:** Remover `RAILS_ENV=production` ou criar perfil separado.
+### NEW-04 (🟡 Médio): Core também roda em RAILS_ENV=production em dev
+- **Localização:** Imagem base `chatwoot/chatwoot:latest` define `ENV RAILS_ENV=production`
+- **Descrição:** Não só Sidekiq (MED-02), mas o próprio `core` roda em production. Boot log: `Rails 7.1.5.2 application starting in production`. O `.env` tem `APP_ENV=development` mas não define `RAILS_ENV`.
+- **Impacto:**
+  - Sem hot-reload de código Ruby (combinado com CRIT-01 = ciclo de dev mais lento).
+  - Stack traces simplificados em erros 500.
+  - Asset precompile diferente, gems não-dev podem estar ausentes.
+- **Solução:** Adicionar `RAILS_ENV=development` ao `.env` para o ambiente local. Pode requerer rebuild da imagem com gems de development incluídas.
+- **Prioridade:** 🟡 Média — mas requer mais investigação (mudar pode quebrar inits que assumem production).
 
-### MED-03: Login Index.vue — Usa Options API (legado) vs Composition API
-- **Localização:** `core/app/javascript/v3/views/login/Index.vue`
-- **Descrição:** Index.vue usa `export default { ... }` (Options API) enquanto Saml.vue e componentes CRM usam `<script setup>` (Composition API). Inconsistência de padrão no mesmo projeto.
-- **Solução:** Refatorar Index.vue para `<script setup>`.
-
-### MED-04: CRM API — `accountIdFromRoute()` usa window.location.pathname
-- **Localização:** `core/app/javascript/dashboard/api/crm.js`, linhas 4-10
-- **Descrição:** O helper extrai `accountId` via `window.location.pathname.split('/')[3]`. Isso é frágil e quebra se a estrutura de URL mudar.
-- **Solução:** Aceitar `accountId` como parâmetro do Vue Router.
-
-### MED-05: CrmIndex.vue — Nome de variável com caractere acentuado
-- **Localização:** `CrmIndex.vue`, linha 70
-- **Descrição:** Variável `filterÁrea` usa "Á" acentuado. Embora JavaScript suporte, é anti-padrão e pode causar bugs com encodings diferentes, copy-paste, e ferramentas de build.
-  ```js
-  const filterÁrea = ref(route.query.área || '');
-  ```
-- **Solução:** Renomear para `filterArea` (sem acento).
-
-### MED-06: CrmIndex.vue — `window.confirm()` e `window.alert()` nativos
-- **Localização:** `CrmIndex.vue`, linhas 789, 812, 826
-- **Descrição:** Usa `window.confirm()` e `window.alert()` nativos do browser para confirmações. Isso quebra a experiência visual do design system e não é estilizável.
-- **Solução:** Criar componente `ConfirmDialog.vue` reutilizável com glassmorphism.
-
-### MED-07: CrmIndex.vue — Arquivo com 1930 linhas
-- **Localização:** `core/app/javascript/dashboard/routes/dashboard/crm/pages/CrmIndex.vue`
-- **Descrição:** O componente principal do CRM tem quase 2000 linhas (69KB). Contém lógica de Kanban, filtros, bulk actions, activities, health checks, board panning — tudo em um único arquivo.
-- **Solução:** Extrair composables: `useCrmBoard.js`, `useCrmFilters.js`, `useCrmBulkActions.js`, `useCrmActivities.js`.
-
-### MED-08: Core Vite Watch — Sem healthcheck
-- **Localização:** `docker-compose.yml`, serviço `core-vite` (linhas 223-237)
-- **Descrição:** O serviço `core-vite` não tem healthcheck. Impossível saber se está compilando.
-- **Solução:** Adicionar healthcheck ou pelo menos volume para logs.
-
-### MED-09: CRMDealCard — Emojis como indicadores de urgência
-- **Localização:** `CRMDealCard.vue`, linhas 106-111
-- **Descrição:** Emojis (🔴🟠🟡🟢) para urgência renderizam diferente em cada OS/browser.
-- **Solução:** Usar ícones SVG/CSS consistentes.
-
-### MED-10: SSO Login — action hardcoded
-- **Localização:** `Saml.vue`
-- **Descrição:** `action="/api/v1/auth/saml_login"` hardcoded no formulário.
-- **Solução:** Usar rota relativa ou config.
-
-### MED-11: Theme toggle — Inconsistência entre Login (Vue) e Super Admin (ERB)
-- **Localização:** Login usa classes CSS (`i-lucide-sun/moon`), Super Admin usa SVG inline
-- **Solução:** Padronizar abordagem.
-
-### MED-12: CRM — `DEFAULT_STAGES` hardcoded no frontend
-- **Localização:** `CrmIndex.vue`, linhas 17-24
-- **Descrição:** Estágios padrão do pipeline são definidos no frontend. Se o backend criar com nomes diferentes, ficam inconsistentes.
-- **Solução:** Sempre carregar do backend; usar defaults apenas como fallback visual.
+### NEW-05 (🟢 Baixo): Deprecation warnings persistentes
+- **Localização:** boot logs `core` e `sidekiq`
+- **Descrição:** Vários warnings recorrentes:
+  - `RubyLLM's legacy acts_as API is deprecated` (será removido em RubyLLM 2.0)
+  - `redis-namespace`: `Passing 'info' command to redis as is; ... has been deprecated and will be removed in redis-namespace 2.0`
+  - `Sass legacy JS API is deprecated` (durante build do Vite)
+- **Impacto:** Funciona hoje mas quebrará em upgrades futuros das dependências.
+- **Prioridade:** 🟢 Baixa, mas não esquecer.
 
 ---
 
-## 🟢 BAIXOS (Melhorias e boas práticas)
+## 🟡 MÉDIOS REMANESCENTES (do relatório anterior)
 
-### LOW-01: Score Badge — Thresholds hardcoded
-- **Localização:** `CRMScoreBadge.vue`, linhas 26-30
-- **Descrição:** Thresholds (80, 60, 40) hardcoded. Deveriam vir do backend.
-- **Solução:** Buscar da API `ScoringConfig`.
+### MED-01: Deprecation Rails.application.secrets
+- **Status:** Não tratado nesta sessão. Migrar para `Rails.application.credentials`.
 
-### LOW-02: Google Fonts CDN
-- **Localização:** `Index.vue`, `Saml.vue`, `new.html.erb`
-- **Descrição:** Inter e Outfit carregadas de CDN externo.
-- **Solução:** Self-host para performance e privacidade.
+### MED-03: Login Index.vue usa Options API legacy
+- **Status:** Não tratado. Refatorar para `<script setup>`.
 
-### LOW-03: CRMSidebarCard.vue — 24KB, muito extenso
-- **Localização:** `dashboard/components/crm/CRMSidebarCard.vue`
-- **Solução:** Dividir em sub-componentes.
+### MED-04: `accountIdFromRoute()` usa `window.location.pathname`
+- **Status:** Não tratado. Receber `accountId` via Vue Router.
 
-### LOW-04: Agenda.vue — 88KB, arquivo extremamente grande
-- **Localização:** `dashboard/routes/dashboard/crm/pages/Agenda.vue`
-- **Solução:** Dividir lógica em composables e sub-componentes.
+### MED-05: Variável `filterÁrea` com acento
+- **Status:** Não tratado. Renomear para `filterArea`.
 
-### LOW-05: Vite build time — 318 segundos (5+ minutos)
-- **Localização:** `core-vite` container
-- **Descrição:** Build completo leva 318148ms (~5.3 minutos). Excessivo para desenvolvimento.
-- **Solução:** Configurar excludes, otimizar deps, considerar esbuild para pre-bundling.
+### MED-06: `window.confirm/alert` nativos no CRM
+- **Status:** Não tratado. Criar `ConfirmDialog.vue`.
 
-### LOW-06: `completeActivity` no CrmIndex usa campo camelCase mas API espera snake_case
-- **Localização:** `CrmIndex.vue`, linha 842
-- **Descrição:**
-  ```js
-  await CrmAPI.updateActivity(activity.id, {
-    completedAt: new Date().toISOString(),
-  });
-  ```
-  A API Rails provavelmente espera `completed_at` (snake_case), não `completedAt`.
-- **Solução:** Verificar se há normalização no backend ou corrigir para `completed_at`.
+### MED-07: CrmIndex.vue com 1930 linhas
+- **Status:** Não tratado. Extrair composables.
+
+### MED-08: core-vite sem healthcheck
+- **Status:** Não tratado.
+
+### MED-09: Emojis como indicadores de urgência
+- **Status:** Não tratado.
+
+### MED-10: SSO action hardcoded
+- **Status:** Não tratado.
+
+### MED-11: Theme toggle inconsistente
+- **Status:** Não tratado.
+
+### MED-12: DEFAULT_STAGES hardcoded
+- **Status:** Não tratado.
+
+---
+
+## 🟢 BAIXOS (do relatório anterior, não tratados)
+
+- **LOW-01:** Score thresholds hardcoded (vir do backend)
+- **LOW-02:** Google Fonts CDN (self-host)
+- **LOW-03:** CRMSidebarCard.vue (24KB)
+- **LOW-04:** Agenda.vue (88KB)
+- **LOW-05:** Vite build time → ✅ **Reduzido de 318s para 100s** (CRIT-05 colateral)
+- **LOW-06:** `completeActivity` camelCase vs snake_case API
 
 ---
 
 ## 📊 Saúde dos Microserviços
 
 ```
-Core Health:      {"status":"woot"}           ✅
-CRM Service:      {"status":"ok"}             ✅
-Orchestrator:     {"status":"ok","version":"1.0.0"} ✅
-Identity Bridge:  {"status":"ok"}             ✅
+Core Health:      {"status":"woot"}                     ✅ 200 OK
+CRM Service:      {"status":"ok"}                       ✅ 200 OK
+Orchestrator:     {"status":"ok","version":"1.0.0"}     ✅ 200 OK
+Identity Bridge:  {"status":"ok"}                       ✅ 200 OK
+Login UI:         /app/login → 200 OK                   ✅
+Super Admin UI:   /super_admin/sign_in → 200 OK         ✅
 ```
 
----
-
-## 🔧 Recomendação de Prioridade de Correção
-
-### Sprint 1 — Infraestrutura (1-2 dias)
-1. **CRIT-01** → Volume mounts para código Ruby no Docker
-2. **CRIT-02** → Corrigir variáveis Redis/Postgres no branding
-3. **CRIT-03** → Resolver migrations "NO FILE"
-4. **MED-02** → Sidekiq RAILS_ENV
-
-### Sprint 2 — Performance (1-2 dias)
-5. **CRIT-05** → Code-splitting e tree-shaking do Vite build
-6. **LOW-05** → Otimizar build time
-
-### Sprint 3 — Qualidade de Código (3-5 dias)
-7. **CRIT-04** → Internacionalização CRM (incremental)
-8. **MED-05** → Renomear `filterÁrea`
-9. **MED-07** → Refatorar CrmIndex.vue em composables
-10. **MED-06** → Substituir `window.confirm/alert`
-11. **MED-01** → Deprecation warnings Rails
-
-### Sprint 4 — Polish (2-3 dias)
-12. **MED-03** → Migrar Login Index.vue para Composition API
-13. **MED-04** → Refatorar `accountIdFromRoute()`
-14. **LOW-01 a LOW-06** → Melhorias gerais
+Nenhum erro `ERROR|FATAL|Exception` nos últimos 2 minutos de logs após restart.
 
 ---
 
-## 📝 Comandos Úteis
+## 🔧 Recomendação de Prioridade Atualizada
+
+### Sprint 1 — Limpeza pós-hardening (1 dia)
+1. ~~**NEW-01**~~ ✅ Resolvido com stubs no-op
+2. **NEW-02** → Forçar `selectedLocale: 'pt_BR'` no controller
+3. **NEW-03** → Atualizar `installation_config.yml` (WIDGET_BRAND_URL, TERMS_URL, PRIVACY_URL) e meta description
+
+### Sprint 2 — Infraestrutura (2 dias)
+4. **CRIT-01** → Volume mounts Ruby
+5. **NEW-04** → Decidir entre rodar dev em `RAILS_ENV=development` (precisa rebuild da imagem com gems de dev)
+6. **MED-08** → Healthcheck core-vite
+7. **NEW-05** → Atacar deprecation warnings
+
+### Sprint 3 — Performance (1-2 dias)
+8. **CRIT-05 (parte 2)** → Lazy-load de rotas pesadas via `import()` para reduzir o chunk de 9.9 MB
+9. **LOW-02** → Self-host Google Fonts
+
+### Sprint 4 — Qualidade de Código (5 dias)
+10. **CRIT-04** → i18n CRM (incremental)
+11. **MED-05** → Renomear `filterÁrea`
+12. **MED-07** → Refatorar CrmIndex.vue
+13. **MED-06** → ConfirmDialog
+14. **MED-01, MED-03, MED-04**
+
+### Sprint 5 — Polish (2 dias)
+15. **LOW-01 a LOW-04, LOW-06**, **MED-09 a MED-12**
+
+---
+
+## 🛠️ Comandos Úteis
 
 ```bash
-# Copiar alterações para o container (enquanto volumes não estão configurados)
+# Sincronizar código para containers (até CRIT-01 ser resolvido)
 docker cp core/app/views/ chusterm-core-1:/app/app/views/
 docker cp core/app/controllers/ chusterm-core-1:/app/app/controllers/
-docker restart chusterm-core-1
+docker cp core/config/initializers/ chusterm-core-1:/app/config/initializers/
+docker restart chusterm-core-1 chusterm-sidekiq-1
 
 # Verificar saúde de todos os serviços
-docker exec chusterm-core-1 wget -qO- http://127.0.0.1:3000/health
-docker exec chusterm-crm-service-1 wget -qO- http://127.0.0.1:4000/health
-docker exec chusterm-orchestrator-1 wget -qO- http://127.0.0.1:4001/health
-docker exec chusterm-identity-bridge-1 wget -qO- http://127.0.0.1:4002/health
+curl -s http://localhost:3010/health
+curl -s http://localhost:4003/health
+curl -s http://localhost:4001/health
+curl -s http://localhost:4002/health
 
 # Verificar migrations
-docker exec chusterm-core-1 sh -c "RAILS_ENV=production bundle exec rails db:migrate:status | tail -20"
+docker exec chusterm-core-1 sh -c "RAILS_ENV=production bundle exec rails db:migrate:status | grep 'NO FILE' | wc -l"
 
-# Verificar logs do Vite
-docker logs chusterm-core-vite-1 --tail 30
+# Listar migrations órfãs no schema_migrations
+docker exec chusterm-postgres-1 psql -U chusterm -d chusterm_core -c \
+  "SELECT version FROM schema_migrations WHERE version NOT IN (SELECT regexp_replace(filename, '_.*$', '') FROM ...);"
 
-# Rebuild completo do core
-docker compose build core && docker compose up -d core sidekiq
+# Verificar tamanho dos chunks Vite
+docker logs chusterm-core-vite-1 --tail 50 | grep -E "kB|larger"
+
+# Forçar rebuild Vite
+docker restart chusterm-core-vite-1
+
+# Ver logs de boot completo do core
+docker logs chusterm-core-1 2>&1 | head -80
 ```
 
 ---
 
-*Relatório gerado por auditoria automatizada do sistema ChusteRM — 2026-05-08*
+## 📜 Changelog desta sessão (2026-05-08)
+
+- ✅ `core/config/initializers/chusterm_branding.rb` → hardening defensivo (early return + data_source_exists?)
+- ✅ `core/Dockerfile` → adicionados `COPY db/migrate/20260404*.rb` ... `20260407*.rb` + `20260502*.rb` + `20260507*.rb` (corrige migrations órfãs em rebuilds)
+- ✅ `docker-compose.yml` → Sidekiq usa `${RAILS_ENV:-production}` (override via .env)
+- ✅ `core/vite.config.ts` → `manualChunks` para vendors e icons + `chunkSizeWarningLimit: 1000`
+- ✅ `core/db/migrate/2026040*_legacy_upstream_stub.rb` → 22 stubs no-op para resolver órfãs (NEW-01)
+- ✅ `docker cp` aplicado para sincronizar mudanças aos containers existentes sem rebuild
+
+---
+
+*Relatório atualizado por auditoria automatizada — 2026-05-08*

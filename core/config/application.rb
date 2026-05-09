@@ -50,8 +50,7 @@ module ChusteRM
       # rubocop:disable Rails/FilePath
       config.eager_load_paths += Dir["#{Rails.root}/enterprise/app/**"]
       # rubocop:enable Rails/FilePath
-      # Add enterprise views to the view paths
-      config.paths['app/views'].unshift('enterprise/app/views')
+      # Enterprise views are registered via enterprise_unlock.rb initializer
 
       # Load enterprise initializers alongside standard initializers
       enterprise_initializers = Rails.root.join('enterprise/config/initializers')

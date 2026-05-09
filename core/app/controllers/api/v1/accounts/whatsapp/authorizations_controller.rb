@@ -1,13 +1,22 @@
+# frozen_string_literal: true
+
 class Api::V1::Accounts::Whatsapp::AuthorizationsController < Api::V1::Accounts::BaseController
   before_action :fetch_and_validate_inbox, if: -> { params[:inbox_id].present? }
 
   # POST /api/v1/accounts/:account_id/whatsapp/authorization
-  # Handles both initial authorization and reauthorization
-  # If inbox_id is present in params, it performs reauthorization
   def create
     validate_embedded_signup_params!
     channel = process_embedded_signup
     render_success_response(channel.inbox)
+
+  rescue Whatsapp::MultipleNumbersError => e
+    render json: {
+      success: true,
+      needs_number_selection: true,
+      phone_numbers: e.phone_numbers,
+      session_key: e.session_key
+    }, status: :ok
+
   rescue StandardError => e
     render_error_response(e)
   end
@@ -15,12 +24,18 @@ class Api::V1::Accounts::Whatsapp::AuthorizationsController < Api::V1::Accounts:
   private
 
   def process_embedded_signup
-    service = Whatsapp::EmbeddedSignupService.new(
+    Whatsapp::EmbeddedSignupService.new(
       account: Current.account,
-      params: params.permit(:code, :business_id, :waba_id, :phone_number_id).to_h.symbolize_keys,
+      user: Current.user,
+      params: embedded_signup_params,
       inbox_id: params[:inbox_id]
-    )
-    service.perform
+    ).perform
+  end
+
+  def embedded_signup_params
+    params.permit(:code, :business_id, :waba_id, :phone_number_id, :session_key, :flow_type)
+          .to_h
+          .symbolize_keys
   end
 
   def fetch_and_validate_inbox
@@ -38,10 +53,7 @@ class Api::V1::Accounts::Whatsapp::AuthorizationsController < Api::V1::Accounts:
   end
 
   def can_upgrade_to_embedded_signup?
-    channel = @inbox.channel
-    return false unless channel.provider == 'whatsapp_cloud'
-
-    true
+    @inbox.channel.provider == 'whatsapp_cloud'
   end
 
   def render_success_response(inbox)
@@ -56,22 +68,15 @@ class Api::V1::Accounts::Whatsapp::AuthorizationsController < Api::V1::Accounts:
   end
 
   def render_error_response(error)
-    Rails.logger.error "[WHATSAPP AUTHORIZATION] Embedded signup error: #{error.message}"
-    Rails.logger.error error.backtrace.join("\n")
-    render json: {
-      success: false,
-      error: error.message
-    }, status: :unprocessable_entity
+    Rails.logger.error "[WHATSAPP AUTHORIZATION] #{error.class}: #{error.message}"
+    Rails.logger.error error.backtrace&.join("\n")
+    render json: { success: false, error: error.message }, status: :unprocessable_entity
   end
 
   def validate_embedded_signup_params!
-    missing_params = []
-    missing_params << 'code' if params[:code].blank?
-    missing_params << 'business_id' if params[:business_id].blank?
-    missing_params << 'waba_id' if params[:waba_id].blank?
-
-    return if missing_params.empty?
-
-    raise ArgumentError, "Required parameters are missing: #{missing_params.join(', ')}"
+    errors = []
+    errors << 'code ou session_key' if params[:code].blank? && params[:session_key].blank?
+    errors << 'waba_id' if params[:waba_id].blank? && params[:session_key].blank?
+    raise ArgumentError, "Parâmetros obrigatórios ausentes: #{errors.join(', ')}" if errors.any?
   end
 end

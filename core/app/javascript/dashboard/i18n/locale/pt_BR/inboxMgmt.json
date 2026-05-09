@@ -311,7 +311,12 @@
           "AUTH_NOT_COMPLETED": "Autenticação não concluída. Por favor, reinicie o processo.",
           "SUCCESS_FALLBACK": "A conta do WhatsApp Business foi configurada com sucesso",
           "MANUAL_FALLBACK": "Se o seu número já estiver conectado à Plataforma WhatsApp Business (API) ou se você for um provedor de tecnologia integrando o seu próprio número, use o fluxo de {link}",
-          "MANUAL_LINK_TEXT": "fluxo de configuração manual"
+          "MANUAL_LINK_TEXT": "fluxo de configuração manual",
+          "SELECT_NUMBER_TITLE": "Selecione o número do WhatsApp",
+          "SELECT_NUMBER_DESC": "A sua conta possui mais de um número cadastrado. Selecione o número que deseja conectar a esta caixa de entrada.",
+          "SELECT_A_NUMBER": "Selecione um número antes de continuar.",
+          "CONFIRM_NUMBER_BUTTON": "Confirmar",
+          "CANCEL_BUTTON": "Cancelar"
         },
         "API": {
           "ERROR_MESSAGE": "Não foi possível salvar o canal do WhatsApp"
