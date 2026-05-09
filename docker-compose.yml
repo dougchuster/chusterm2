@@ -141,7 +141,7 @@ services:
       - SERVER_URL=http://localhost:8085
       - SERVER_PORT=8080
       - DATABASE_PROVIDER=postgresql
-      - DATABASE_CONNECTION_URI=postgresql://chusterm:chusterm_pass@postgres:5432/evolution_api
+      - DATABASE_CONNECTION_URI=postgresql://chusterm:${POSTGRES_PASSWORD:-chusterm_pass}@postgres:5432/evolution_api
       - DATABASE_CONNECTION_CLIENT_NAME=evolution_api
       - DATABASE_SAVE_DATA_INSTANCE=true
       - DATABASE_SAVE_DATA_NEW_MESSAGE=true
@@ -152,7 +152,7 @@ services:
       - DATABASE_SAVE_IS_ON_WHATSAPP=true
       - DATABASE_SAVE_IS_ON_WHATSAPP_DAYS=7
       - CACHE_REDIS_ENABLED=true
-      - CACHE_REDIS_URI=redis://:chusterm_redis_pass@redis:6379/3
+      - CACHE_REDIS_URI=redis://:${REDIS_PASSWORD:-chusterm_redis_pass}@redis:6379/3
       - CACHE_REDIS_PREFIX_KEY=evolution
       - CACHE_LOCAL_ENABLED=false
       - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY:-evo_chusterm_secret_key}
