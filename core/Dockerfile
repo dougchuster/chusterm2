@@ -19,6 +19,9 @@ COPY config/locales/pt_BR.yml ./config/locales/pt_BR.yml
 COPY app/javascript/dashboard/routes/dashboard/settings/inbox/channels/EvolutionWhatsapp.vue ./app/javascript/dashboard/routes/dashboard/settings/inbox/channels/EvolutionWhatsapp.vue
 COPY app/services/whatsapp/providers/evolution_service.rb ./app/services/whatsapp/providers/evolution_service.rb
 
+# Auth – fix UnsafeRedirectError no redirect OAuth para FRONTEND_URL
+COPY app/controllers/devise_overrides/sessions_controller.rb ./app/controllers/devise_overrides/sessions_controller.rb
+
 # Design System – SCSS dark palette + brand color + login/superadmin
 COPY app/javascript/dashboard/assets/scss/_next-colors.scss ./app/javascript/dashboard/assets/scss/_next-colors.scss
 COPY app/javascript/dashboard/assets/scss/super_admin/index.scss ./app/javascript/dashboard/assets/scss/super_admin/index.scss
