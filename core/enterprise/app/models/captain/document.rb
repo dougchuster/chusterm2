@@ -108,6 +108,21 @@ class Captain::Document < ApplicationRecord
     end
   end
 
+  def to_llm_metadata
+    {
+      document_id: id,
+      assistant_id: assistant_id,
+      account_id: account_id,
+      document_name: name,
+      document_url: display_url,
+      document_type: pdf_document? ? 'pdf' : 'web',
+      document_status: status,
+      sync_status: sync_status,
+      content_fingerprint: has_attribute?(:content_fingerprint) ? self[:content_fingerprint] : nil,
+      updated_at: updated_at&.iso8601
+    }.compact
+  end
+
   private
 
   def enqueue_crawl_job
