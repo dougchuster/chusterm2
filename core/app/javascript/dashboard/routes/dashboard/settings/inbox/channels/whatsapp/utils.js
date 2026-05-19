@@ -1,7 +1,15 @@
 import { loadScript } from 'dashboard/helper/DOMHelpers';
 
+const FACEBOOK_SDK_URL = 'https://connect.facebook.net/en_US/sdk.js';
+const FACEBOOK_SDK_TIMEOUT = 15000;
+
 export const loadFacebookSdk = async () => {
-  return loadScript('https://connect.facebook.net/en_US/sdk.js', {
+  if (window.FB) {
+    return window.FB;
+  }
+
+  return loadScript(FACEBOOK_SDK_URL, {
+    id: 'facebook-jssdk',
     async: true,
     defer: true,
     crossOrigin: 'anonymous',
@@ -30,7 +38,7 @@ export const initializeFacebook = (appId, apiVersion) => {
 };
 
 export const isValidBusinessData = businessData => {
-  return businessData && businessData.business_id && businessData.waba_id;
+  return Boolean(businessData?.waba_id);
 };
 
 const ALLOWED_FACEBOOK_ORIGINS = new Set([
@@ -38,6 +46,7 @@ const ALLOWED_FACEBOOK_ORIGINS = new Set([
   'https://web.facebook.com',
   'https://m.facebook.com',
   'https://facebook.com',
+  'https://business.facebook.com',
 ]);
 
 export const createMessageHandler = onEmbeddedSignupData => {
@@ -65,10 +74,31 @@ export const createMessageHandler = onEmbeddedSignupData => {
 
 export const initWhatsAppEmbeddedSignup = configId => {
   return new Promise((resolve, reject) => {
+    if (!window.FB) {
+      reject(new Error('Facebook SDK is not ready'));
+      return;
+    }
+
+    if (!configId) {
+      reject(new Error('WhatsApp Configuration ID is required'));
+      return;
+    }
+
+    if (window.location.protocol !== 'https:') {
+      reject(
+        new Error(
+          'A Meta exige HTTPS para abrir o login do WhatsApp Business. Use um domínio HTTPS configurado no app da Meta.'
+        )
+      );
+      return;
+    }
+
     window.FB.login(
       response => {
         if (response.authResponse && response.authResponse.code) {
           resolve(response.authResponse.code);
+        } else if (response.error?.message) {
+          reject(new Error(response.error.message));
         } else if (response.error) {
           reject(new Error(response.error));
         } else {
@@ -77,6 +107,7 @@ export const initWhatsAppEmbeddedSignup = configId => {
       },
       {
         config_id: configId,
+        auth_type: 'rerequest',
         response_type: 'code',
         override_default_response_type: true,
         extras: {
@@ -88,7 +119,19 @@ export const initWhatsAppEmbeddedSignup = configId => {
 };
 
 export const setupFacebookSdk = async (appId, apiVersion) => {
+  if (!appId) {
+    throw new Error('WhatsApp App ID is required');
+  }
+
   const version = apiVersion || 'v22.0';
-  await loadFacebookSdk();
+  await Promise.race([
+    loadFacebookSdk(),
+    new Promise((resolve, reject) => {
+      setTimeout(
+        () => reject(new Error('Facebook SDK load timed out')),
+        FACEBOOK_SDK_TIMEOUT
+      );
+    }),
+  ]);
   await initializeFacebook(appId, version);
 };

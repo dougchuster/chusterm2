@@ -28,12 +28,32 @@ const authCodeReceived = ref(false);
 const authCode = ref(null);
 const businessData = ref(null);
 const isAuthenticating = ref(false);
+const isLoadingFacebook = ref(false);
 
 // State — multi-number selection
 const isSelectingNumber = ref(false);
 const availablePhoneNumbers = ref([]);
 const selectedPhoneNumberId = ref(null);
 const sessionKey = ref(null);
+
+let facebookSdkSetupPromise = null;
+
+const whatsappAppId = computed(() => window.chustermConfig?.whatsappAppId);
+const whatsappConfigurationId = computed(
+  () => window.chustermConfig?.whatsappConfigurationId
+);
+const whatsappApiVersion = computed(
+  () => window.chustermConfig?.whatsappApiVersion
+);
+
+const canLaunchEmbeddedSignup = computed(() => {
+  return (
+    Boolean(whatsappAppId.value) &&
+    Boolean(whatsappConfigurationId.value) &&
+    !isLoadingFacebook.value &&
+    !isAuthenticating.value
+  );
+});
 
 const benefits = computed(() => [
   {
@@ -73,6 +93,16 @@ const handleSignupCancellation = () => {
   isSelectingNumber.value = false;
 };
 
+const resetSignupState = () => {
+  authCodeReceived.value = false;
+  authCode.value = null;
+  businessData.value = null;
+  availablePhoneNumbers.value = [];
+  selectedPhoneNumberId.value = null;
+  sessionKey.value = null;
+  isSelectingNumber.value = false;
+};
+
 const handleSignupSuccess = inboxData => {
   isProcessing.value = false;
   isAuthenticating.value = false;
@@ -103,8 +133,7 @@ const dispatchSignup = async params => {
   if (responseData && responseData.needs_number_selection) {
     availablePhoneNumbers.value = responseData.phone_numbers || [];
     sessionKey.value = responseData.session_key;
-    selectedPhoneNumberId.value =
-      availablePhoneNumbers.value[0]?.id || null;
+    selectedPhoneNumberId.value = availablePhoneNumbers.value[0]?.id || null;
     isSelectingNumber.value = true;
     isProcessing.value = false;
     isAuthenticating.value = false;
@@ -131,9 +160,10 @@ const completeSignupFlow = async businessDataParam => {
   try {
     const params = {
       code: authCode.value,
-      business_id: businessDataParam.business_id,
+      business_id: businessDataParam?.business_id || '',
       waba_id: businessDataParam.waba_id,
       phone_number_id: businessDataParam?.phone_number_id || '',
+      flow_type: businessDataParam?.flow_type || '',
     };
 
     const responseData = await dispatchSignup(params);
@@ -158,7 +188,9 @@ const confirmNumberSelection = async () => {
 
   isProcessing.value = true;
   isSelectingNumber.value = false;
-  processingMessage.value = t('INBOX_MGMT.ADD.WHATSAPP.EMBEDDED_SIGNUP.PROCESSING');
+  processingMessage.value = t(
+    'INBOX_MGMT.ADD.WHATSAPP.EMBEDDED_SIGNUP.PROCESSING'
+  );
 
   try {
     const params = {
@@ -187,9 +219,13 @@ const confirmNumberSelection = async () => {
 const handleEmbeddedSignupData = async data => {
   if (
     data.event === 'FINISH' ||
+    data.event === 'FINISH_ONLY_WABA' ||
     data.event === 'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING'
   ) {
-    const businessDataLocal = data.data;
+    const businessDataLocal = {
+      ...(data.data || {}),
+      flow_type: data.event,
+    };
 
     if (isValidBusinessData(businessDataLocal)) {
       businessData.value = businessDataLocal;
@@ -209,9 +245,10 @@ const handleEmbeddedSignupData = async data => {
     }
   } else if (data.event === 'CANCEL') {
     handleSignupCancellation();
-  } else if (data.event === 'error') {
+  } else if (data.event === 'ERROR' || data.event === 'error') {
     handleSignupError({
       error:
+        data.data?.error_message ||
         data.error_message ||
         t('INBOX_MGMT.ADD.WHATSAPP.EMBEDDED_SIGNUP.SIGNUP_ERROR'),
     });
@@ -220,21 +257,62 @@ const handleEmbeddedSignupData = async data => {
 
 const handleSignupMessage = createMessageHandler(handleEmbeddedSignupData);
 
+const prepareFacebookSdk = async ({ alertOnError = false } = {}) => {
+  if (fbSdkLoaded.value) return true;
+
+  if (!whatsappAppId.value) {
+    if (alertOnError) useAlert(t('INBOX.REAUTHORIZE.WHATSAPP_APP_ID_MISSING'));
+    return false;
+  }
+
+  if (!whatsappConfigurationId.value) {
+    if (alertOnError) {
+      useAlert(t('INBOX.REAUTHORIZE.WHATSAPP_CONFIG_ID_MISSING'));
+    }
+    return false;
+  }
+
+  if (!facebookSdkSetupPromise) {
+    isLoadingFacebook.value = true;
+    facebookSdkSetupPromise = setupFacebookSdk(
+      whatsappAppId.value,
+      whatsappApiVersion.value
+    )
+      .then(() => {
+        fbSdkLoaded.value = true;
+        return true;
+      })
+      .catch(error => {
+        facebookSdkSetupPromise = null;
+        if (alertOnError) {
+          useAlert(error.message || t('INBOX.REAUTHORIZE.FACEBOOK_LOAD_ERROR'));
+        }
+        return false;
+      })
+      .finally(() => {
+        isLoadingFacebook.value = false;
+      });
+  }
+
+  return facebookSdkSetupPromise;
+};
+
 const launchEmbeddedSignup = async () => {
+  if (!fbSdkLoaded.value) {
+    useAlert(t('INBOX_MGMT.ADD.WHATSAPP.EMBEDDED_SIGNUP.LOADING_SDK'));
+    prepareFacebookSdk({ alertOnError: true });
+    return;
+  }
+
   try {
+    resetSignupState();
     isAuthenticating.value = true;
     processingMessage.value = t(
       'INBOX_MGMT.ADD.WHATSAPP.EMBEDDED_SIGNUP.AUTH_PROCESSING'
     );
 
-    await setupFacebookSdk(
-      window.chustermConfig?.whatsappAppId,
-      window.chustermConfig?.whatsappApiVersion
-    );
-    fbSdkLoaded.value = true;
-
     const code = await initWhatsAppEmbeddedSignup(
-      window.chustermConfig?.whatsappConfigurationId
+      whatsappConfigurationId.value
     );
 
     authCode.value = code;
@@ -253,9 +331,7 @@ const launchEmbeddedSignup = async () => {
       useAlert(t('INBOX_MGMT.ADD.WHATSAPP.EMBEDDED_SIGNUP.CANCELLED'));
     } else {
       handleSignupError({
-        error:
-          error.message ||
-          t('INBOX_MGMT.ADD.WHATSAPP.EMBEDDED_SIGNUP.SDK_LOAD_ERROR'),
+        error: error.message || t('INBOX.REAUTHORIZE.FACEBOOK_LOAD_ERROR'),
       });
     }
   }
@@ -264,6 +340,7 @@ const launchEmbeddedSignup = async () => {
 // Lifecycle
 onMounted(() => {
   window.addEventListener('message', handleSignupMessage);
+  prepareFacebookSdk();
 });
 
 onBeforeUnmount(() => {
@@ -286,7 +363,9 @@ onBeforeUnmount(() => {
           </div>
         </div>
         <h3 class="mb-1 text-base font-medium text-n-slate-12">
-          {{ $t('INBOX_MGMT.ADD.WHATSAPP.EMBEDDED_SIGNUP.SELECT_NUMBER_TITLE') }}
+          {{
+            $t('INBOX_MGMT.ADD.WHATSAPP.EMBEDDED_SIGNUP.SELECT_NUMBER_TITLE')
+          }}
         </h3>
         <p class="text-sm text-n-slate-11">
           {{ $t('INBOX_MGMT.ADD.WHATSAPP.EMBEDDED_SIGNUP.SELECT_NUMBER_DESC') }}
@@ -335,7 +414,9 @@ onBeforeUnmount(() => {
           class="flex-1"
           @click="confirmNumberSelection"
         >
-          {{ $t('INBOX_MGMT.ADD.WHATSAPP.EMBEDDED_SIGNUP.CONFIRM_NUMBER_BUTTON') }}
+          {{
+            $t('INBOX_MGMT.ADD.WHATSAPP.EMBEDDED_SIGNUP.CONFIRM_NUMBER_BUTTON')
+          }}
         </NextButton>
       </div>
     </div>
@@ -395,8 +476,8 @@ onBeforeUnmount(() => {
 
       <div class="flex mt-4">
         <NextButton
-          :disabled="isAuthenticating"
-          :is-loading="isAuthenticating"
+          :disabled="!canLaunchEmbeddedSignup"
+          :is-loading="isAuthenticating || isLoadingFacebook"
           faded
           slate
           class="w-full"

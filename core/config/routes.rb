@@ -1,4 +1,8 @@
 Rails.application.routes.draw do
+  # Evolution API Manager — login customizado vinculado ao super admin
+  get  '/manager/login', to: 'evo_manager#login'
+  post '/manager/login', to: 'evo_manager#authenticate'
+
   # AUTH STARTS
   mount_devise_token_auth_for 'User', at: 'auth', controllers: {
     confirmations: 'devise_overrides/confirmations',
@@ -73,10 +77,16 @@ Rails.application.routes.draw do
               resources :copilot_messages, only: [:index, :create]
             end
             resources :custom_tools
+            resources :agent_configs, only: [:show, :update], param: :assistant_id
             resources :documents, only: [:index, :show, :create, :destroy]
             resources :document_versions, only: [:index, :show]
             resources :playbooks, only: [:index, :show, :create, :update, :destroy]
             resources :conversation_states, only: [:show, :update], param: :conversation_id
+            resources :score_settings, only: [:index, :update], param: :campaign_id do
+              collection do
+                patch 'conversation_states/:id', action: :update_conversation_state
+              end
+            end
             resources :flows do
               member do
                 post :publish

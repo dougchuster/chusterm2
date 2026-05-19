@@ -147,6 +147,8 @@ services:
       - DEL_INSTANCE=false
       - WEBHOOK_GLOBAL_ENABLED=false
       - CHATWOOT_ENABLED=true
+      # URL do ChusteRM Core — usada pelo Patch 5 para redirecionar /manager/login
+      - CHUSTERM_URL=${FRONTEND_URL:-https://crm.coimbraeruas.com.br}
     ports:
       - "127.0.0.1:8085:8080"
     volumes:
@@ -181,6 +183,7 @@ services:
       - RAILS_ENV=production
       - NODE_ENV=production
       - CRM_SERVICE_INTERNAL_URL=http://crm-service:4000
+      - EVOLUTION_API_URL=http://evolution-api:8080
       - RACK_TIMEOUT_SERVICE_TIMEOUT=60
     ports:
       - "127.0.0.1:3010:3000"

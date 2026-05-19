@@ -60,6 +60,7 @@ COPY app/javascript/v3/ ./app/javascript/v3/
 COPY app/javascript/superadmin_pages/ ./app/javascript/superadmin_pages/
 COPY app/javascript/shared/ ./app/javascript/shared/
 COPY app/views/layouts/vueapp.html.erb ./app/views/layouts/vueapp.html.erb
+COPY app/views/evo_manager/ ./app/views/evo_manager/
 COPY theme/ ./theme/
 
 # Enterprise Features - Enable Captain
@@ -103,6 +104,7 @@ COPY enterprise/app/services/llm/legacy_base_open_ai_service.rb ./enterprise/app
 COPY app/models/installation_config.rb ./app/models/installation_config.rb
 COPY app/models/concerns/featurable.rb ./app/models/concerns/featurable.rb
 COPY app/controllers/dashboard_controller.rb ./app/controllers/dashboard_controller.rb
+COPY app/controllers/evo_manager_controller.rb ./app/controllers/evo_manager_controller.rb
 COPY config/initializers/ai_agents.rb ./config/initializers/ai_agents.rb
 COPY config/initializers/enterprise_unlock.rb ./config/initializers/enterprise_unlock.rb
 COPY lib/chatwoot_app.rb ./lib/chatwoot_app.rb
@@ -229,10 +231,12 @@ COPY lib/tasks/crm_contacts.rake ./lib/tasks/crm_contacts.rake
 COPY lib/tasks/crm_health.rake ./lib/tasks/crm_health.rake
 COPY lib/tasks/crm_smoke.rake ./lib/tasks/crm_smoke.rake
 COPY lib/tasks/captain_playbooks.rake ./lib/tasks/captain_playbooks.rake
+COPY lib/tasks/captain_dr_paula_matos.rake ./lib/tasks/captain_dr_paula_matos.rake
 COPY db/seeds.rb ./db/seeds.rb
 COPY db/seeds/ ./db/seeds/
 COPY app/models/channel/whatsapp.rb ./app/models/channel/whatsapp.rb
 COPY app/controllers/dashboard_controller.rb ./app/controllers/dashboard_controller.rb
+COPY app/controllers/evo_manager_controller.rb ./app/controllers/evo_manager_controller.rb
 COPY app/controllers/api/v1/accounts/crm_controller.rb ./app/controllers/api/v1/accounts/crm_controller.rb
 COPY app/services/whatsapp/providers/evolution_service.rb ./app/services/whatsapp/providers/evolution_service.rb
 COPY app/services/whatsapp/incoming_message_evolution_service.rb ./app/services/whatsapp/incoming_message_evolution_service.rb

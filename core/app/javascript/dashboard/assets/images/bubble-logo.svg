@@ -1,3 +1,17 @@
-<svg width="66" height="66" viewBox="0 0 66 66" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M63 63H32.9976C16.4591 63 2.99996 49.5399 2.99996 32.9973C2.99996 16.4601 16.4591 3 32.9979 3C49.5408 3 63 16.4601 63 32.9973V63Z" fill="white" stroke="white" stroke-width="6"/>
+<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="node-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+    <linearGradient id="ring-grad" x1="100%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#ec4899"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+  </defs>
+  <circle cx="32" cy="32" r="24" stroke="url(#ring-grad)" stroke-width="6" stroke-linecap="round" stroke-dasharray="80 30" transform="rotate(45 32 32)"/>
+  <circle cx="32" cy="32" r="16" stroke="url(#node-grad)" stroke-width="5" stroke-linecap="round" stroke-dasharray="40 20" transform="rotate(-30 32 32)"/>
+  <circle cx="32" cy="32" r="8" fill="url(#node-grad)"/>
+  <circle cx="56" cy="32" r="4" fill="#ec4899"/>
+  <circle cx="8" cy="32" r="4" fill="#06b6d4"/>
 </svg>

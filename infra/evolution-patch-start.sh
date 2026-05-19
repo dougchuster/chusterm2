@@ -95,5 +95,52 @@ if (code.includes(OLD)) {
 }
 '
 
+# --- Patch 5: redirecionar GET /manager/login para o login customizado do ChusteRM ---
+# Injeta um <script> no index.html do manager que redireciona para CHUSTERM_URL/manager/login.
+# Isso faz com que tanto o acesso direto (porta 8085) quanto via nginx vão para nossa tela.
+node -e '
+const fs   = require("fs");
+const { execSync } = require("child_process");
+
+const CHUSTERM_URL = (process.env.CHUSTERM_URL || "").replace(/\/$/, "");
+const SERVER_URL   = (process.env.SERVER_URL   || "http://localhost:8080").replace(/\/$/, "");
+
+if (!CHUSTERM_URL || CHUSTERM_URL === SERVER_URL) {
+  console.log("[PATCH5] CHUSTERM_URL nao configurado ou igual a SERVER_URL — ignorando redirect patch.");
+  process.exit(0);
+}
+
+const TARGET = CHUSTERM_URL + "/manager/login";
+const MARKER = "chusterm-login-redirect-v1";
+const SCRIPT = "<script id=\"" + MARKER + "\">(function(){var p=window.location.pathname;if(p===\"/manager/login\"||p===\"/manager/login/\"){window.location.replace(\"" + TARGET + "\");}})();<\/script>";
+
+let htmlFiles = [];
+try {
+  htmlFiles = execSync("find /evolution -name \"index.html\" -not -path \"*/node_modules/*\" 2>/dev/null")
+    .toString().trim().split("\n").filter(Boolean);
+} catch(e) {}
+
+if (htmlFiles.length === 0) {
+  console.log("[PATCH5] Nenhum index.html encontrado em /evolution.");
+  process.exit(0);
+}
+
+let patched = 0;
+htmlFiles.forEach(function(f) {
+  try {
+    const html = fs.readFileSync(f, "utf8");
+    if (html.includes(MARKER)) { console.log("[PATCH5] Redirect ja presente em " + f); return; }
+    if (!html.includes("</head>")) return;
+    fs.writeFileSync(f, html.replace("</head>", SCRIPT + "</head>"));
+    console.log("[PATCH5] Redirect injetado em " + f + " -> " + TARGET);
+    patched++;
+  } catch(e) {
+    console.log("[PATCH5] Erro ao patchar " + f + ": " + e.message);
+  }
+});
+
+if (patched === 0) console.log("[PATCH5] Nenhum arquivo foi modificado.");
+'
+
 # Run original Evolution API startup
 . ./Docker/scripts/deploy_database.sh && npm run start:prod

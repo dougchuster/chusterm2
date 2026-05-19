@@ -22,6 +22,8 @@
 #
 class Captain::Document < ApplicationRecord
   class LimitExceededError < StandardError; end
+  SYNC_STALE_TIMEOUT = 30.minutes.freeze
+
   self.table_name = 'captain_documents'
 
   belongs_to :assistant, class_name: 'Captain::Assistant'

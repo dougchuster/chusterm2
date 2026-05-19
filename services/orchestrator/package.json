@@ -7,7 +7,8 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "db:migrate": "drizzle-kit migrate",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "seed:dr-paula": "tsx src/seeds/drPaulaMatosKnowledge.ts"
   },
   "dependencies": {
     "@fastify/cors": "^9.0.1",

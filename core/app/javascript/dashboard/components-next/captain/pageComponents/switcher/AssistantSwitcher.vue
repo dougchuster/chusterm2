@@ -46,6 +46,12 @@ const fetchDataForRoute = async (routeName, assistantId) => {
     captain_assistants_inboxes_index: async () => {
       await store.dispatch('captainInboxes/get', { assistantId });
     },
+    captain_score_settings_index: () => {
+      // Score settings are fetched by the page because they are campaign-scoped.
+    },
+    captain_agent_configs_index: () => {
+      // The configuration panel owns its aggregate fetch.
+    },
     captain_tools_index: async () => {
       await store.dispatch('captainCustomTools/get', { page: 1 });
     },

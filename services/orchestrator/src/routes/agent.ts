@@ -1,11 +1,25 @@
 import type { FastifyPluginAsync } from 'fastify'
 import { z } from 'zod'
-import { llm, LLM_MODEL, isLlmConfigured } from '../llm/client.js'
+import { llm, LLM_MAX_TOKENS, LLM_MODEL, isLlmConfigured } from '../llm/client.js'
+import {
+  DR_PAULA_MATOS_SLUG,
+  buildDrPaulaFallbackResponse,
+  buildDrPaulaMessages,
+  buildMemorySummary,
+  buildPrivateTriageNote,
+  extractPrevidenciarioTriage,
+  retrieveDrPaulaKnowledge,
+  scorePrevidenciarioLead,
+  type AgentMessage,
+  type PrevidenciarioTriageSnapshot,
+} from '../agents/drPaulaMatos.js'
+import {
+  getAgentConversationMemory,
+  upsertAgentConversationMemory,
+} from '../agents/memory.js'
 
 const CHATWOOT_BASE_URL = (process.env.CHATWOOT_BASE_URL ?? 'http://core:3000').replace(/\/$/, '')
 const CHATWOOT_BOT_TOKEN = process.env.CHATWOOT_BOT_TOKEN ?? ''
-
-// ─── Chatwoot AgentBot webhook payload ───────────────────────────────────────
 
 const AgentBotPayloadSchema = z.object({
   event: z.string(),
@@ -24,11 +38,15 @@ const AgentBotPayloadSchema = z.object({
     .optional(),
 })
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
 interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
+}
+
+function asStoredTriage(value: unknown): Partial<PrevidenciarioTriageSnapshot> | null {
+  return value && typeof value === 'object'
+    ? (value as Partial<PrevidenciarioTriageSnapshot>)
+    : null
 }
 
 async function fetchConversationHistory(
@@ -52,6 +70,7 @@ async function fetchConversationHistory(
         (m) =>
           (m.message_type === 0 || m.message_type === 1) &&
           m.content_type === 'text' &&
+          m.private !== true &&
           typeof m.content === 'string' &&
           (m.content as string).trim().length > 0,
       )
@@ -69,9 +88,10 @@ async function postReply(
   accountId: number,
   conversationId: number,
   content: string,
+  options: { private?: boolean } = {},
 ): Promise<void> {
   const url = `${CHATWOOT_BASE_URL}/api/v1/accounts/${accountId}/conversations/${conversationId}/messages`
-  await fetch(url, {
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -81,19 +101,15 @@ async function postReply(
       content,
       message_type: 'outgoing',
       content_type: 'text',
-      private: false,
+      private: options.private ?? false,
     }),
     signal: AbortSignal.timeout(15_000),
   })
+
+  if (!response.ok) {
+    throw new Error(`Chatwoot post failed with status ${response.status}`)
+  }
 }
-
-// ─── Route ───────────────────────────────────────────────────────────────────
-
-const SYSTEM_PROMPT = `Você é a Dra. Juliana, advogada do escritório Coimbra e Ruas, especializada em direito previdenciário, trabalhista e cível.
-Seja cordial, profissional e objetiva. Use linguagem acessível, sem jargões desnecessários.
-Quando o cliente iniciar a conversa, cumprimente e pergunte em que pode ajudar.
-Não forneça pareceres jurídicos definitivos sem conhecer todos os fatos — oriente o cliente a agendar uma consulta presencial ou por videochamada.
-Responda sempre em português brasileiro.`
 
 const agentRoute: FastifyPluginAsync = async (fastify) => {
   fastify.post('/agent/message', async (request, reply) => {
@@ -104,7 +120,6 @@ const agentRoute: FastifyPluginAsync = async (fastify) => {
 
     const payload = result.data
 
-    // Só processa mensagens recebidas do contato
     if (payload.event !== 'message_created' || payload.message_type !== 'incoming') {
       return reply.status(200).send({ ok: true, skipped: true })
     }
@@ -114,18 +129,11 @@ const agentRoute: FastifyPluginAsync = async (fastify) => {
       return reply.status(200).send({ ok: true, skipped: 'empty_content' })
     }
 
-    if (!isLlmConfigured()) {
-      request.log.warn('[AGENT] LLM_API_KEY não configurada — não é possível responder')
-      return reply.status(200).send({ ok: false, reason: 'llm_not_configured' })
-    }
-
     const { conversation } = payload
     const { account_id: accountId, id: conversationId } = conversation
 
-    // Busca histórico da conversa para contexto
     const history = await fetchConversationHistory(accountId, conversationId)
 
-    // Garante que a última mensagem do usuário está no histórico sem duplicar
     const messages: ChatMessage[] = []
     const lastMsg = history[history.length - 1]
     const alreadyIncluded =
@@ -137,23 +145,89 @@ const agentRoute: FastifyPluginAsync = async (fastify) => {
     }
 
     try {
-      const completion = await llm.chat.completions.create({
-        model: LLM_MODEL,
-        messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
-        max_tokens: 512,
+      const memory = await getAgentConversationMemory({
+        accountId,
+        conversationId: String(conversationId),
+        profileSlug: DR_PAULA_MATOS_SLUG,
       })
 
-      const responseText = completion.choices[0]?.message?.content?.trim()
+      const triage = extractPrevidenciarioTriage({
+        text: messages.map((m) => `${m.role}: ${m.content}`).join('\n'),
+        previous: asStoredTriage(memory?.triageJson),
+      })
+      const nextMessageCount = (memory?.messageCount ?? 0) + 1
+      const score = scorePrevidenciarioLead({
+        triage,
+        latestMessage: userMessage,
+        messageCount: nextMessageCount,
+      })
+      const memorySummary = buildMemorySummary(triage, score)
+      const retrievedDocuments = retrieveDrPaulaKnowledge(`${userMessage}\n${memorySummary}`)
+      const status = score.handoff.recommended ? 'handoff_recommended' : 'active'
+
+      await upsertAgentConversationMemory({
+        accountId,
+        conversationId: String(conversationId),
+        profileSlug: DR_PAULA_MATOS_SLUG,
+        senderName: payload.sender?.name ?? null,
+        summary: memorySummary,
+        factsJson: { sources: retrievedDocuments.map((doc) => doc.id) },
+        triageJson: triage as unknown as Record<string, unknown>,
+        scoreJson: score as unknown as Record<string, unknown>,
+        lastUserMessage: userMessage,
+        messageCount: nextMessageCount,
+        status,
+      })
+
+      let responseText: string | undefined
+
+      if (isLlmConfigured()) {
+        const agentMessages = buildDrPaulaMessages({
+          conversation: messages as AgentMessage[],
+          memorySummary,
+          triage,
+          score,
+          retrievedDocuments,
+        })
+
+        const completion = await llm.chat.completions.create({
+          model: LLM_MODEL,
+          messages: agentMessages,
+          max_tokens: Math.min(900, LLM_MAX_TOKENS),
+          temperature: 0.35,
+        })
+
+        responseText = completion.choices[0]?.message?.content?.trim()
+      } else {
+        request.log.warn('[AGENT] LLM_API_KEY not configured; using deterministic response')
+        responseText = buildDrPaulaFallbackResponse({ triage, retrievedDocuments })
+      }
+
       if (!responseText) {
-        request.log.warn('[AGENT] LLM retornou resposta vazia')
-        return reply.status(200).send({ ok: false, reason: 'empty_llm_response' })
+        request.log.warn('[AGENT] Empty agent response')
+        return reply.status(200).send({ ok: false, reason: 'empty_agent_response' })
       }
 
       await postReply(accountId, conversationId, responseText)
+
+      if (score.handoff.recommended && memory?.status !== 'handoff_recommended') {
+        await postReply(
+          accountId,
+          conversationId,
+          buildPrivateTriageNote({ triage, score }),
+          { private: true },
+        )
+      }
+
       request.log.info(
-        `[AGENT] Respondeu conversa ${conversationId}: ${responseText.slice(0, 100)}`,
+        `[AGENT] Dra. Paula respondeu conversa ${conversationId} score=${score.total}: ${responseText.slice(0, 100)}`,
       )
-      return reply.status(200).send({ ok: true })
+      return reply.status(200).send({
+        ok: true,
+        agent: DR_PAULA_MATOS_SLUG,
+        score: score.total,
+        handoffRecommended: score.handoff.recommended,
+      })
     } catch (err) {
       request.log.error({ err }, '[AGENT] Falha ao gerar ou enviar resposta')
       return reply.status(500).send({ error: 'AGENT_ERROR' })

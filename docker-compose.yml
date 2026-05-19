@@ -166,6 +166,8 @@ services:
       - CHATWOOT_ENABLED=true
       # URL pública do servidor Evolution (usada na UI do Manager)
       - SERVER_URL=${EVOLUTION_SERVER_URL:-http://localhost:8085}
+      # URL do ChusteRM Core — usada pelo Patch 5 para redirecionar /manager/login
+      - CHUSTERM_URL=${CHUSTERM_URL:-http://localhost:3010}
     ports:
       - "8085:8080"
     volumes:
@@ -203,6 +205,7 @@ services:
     environment:
       - VITE_HOT_RELOAD=true
       - CRM_SERVICE_INTERNAL_URL=http://crm-service:4000
+      - EVOLUTION_API_URL=http://evolution-api:8080
       - RACK_TIMEOUT_SERVICE_TIMEOUT=60
     ports:
       - "3010:3000"

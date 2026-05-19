@@ -1,12 +1,17 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="512px" height="512px" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <!-- Generator: Sketch 59.1 (86144) - https://sketch.com -->
-    <title>woot-log</title>
-    <desc>Created with Sketch.</desc>
-    <g id="Logo" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="woot-log" fill-rule="nonzero">
-            <circle id="Oval" fill="#47A7F6" cx="256" cy="256" r="256"></circle>
-            <path d="M362.807947,368.807947 L244.122956,368.807947 C178.699407,368.807947 125.456954,315.561812 125.456954,250.12177 C125.456954,184.703089 178.699407,131.456954 244.124143,131.456954 C309.565494,131.456954 362.807947,184.703089 362.807947,250.12177 L362.807947,368.807947 Z" id="Fill-1" stroke="#FFFFFF" stroke-width="6" fill="#FFFFFF"></path>
-        </g>
-    </g>
+<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="node-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+    <linearGradient id="ring-grad" x1="100%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#ec4899"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+  </defs>
+  <circle cx="32" cy="32" r="24" stroke="url(#ring-grad)" stroke-width="6" stroke-linecap="round" stroke-dasharray="80 30" transform="rotate(45 32 32)"/>
+  <circle cx="32" cy="32" r="16" stroke="url(#node-grad)" stroke-width="5" stroke-linecap="round" stroke-dasharray="40 20" transform="rotate(-30 32 32)"/>
+  <circle cx="32" cy="32" r="8" fill="url(#node-grad)"/>
+  <circle cx="56" cy="32" r="4" fill="#ec4899"/>
+  <circle cx="8" cy="32" r="4" fill="#06b6d4"/>
 </svg>

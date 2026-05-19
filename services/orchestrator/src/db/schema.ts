@@ -7,6 +7,7 @@ import {
   jsonb,
   timestamp,
   pgEnum,
+  uniqueIndex,
 } from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
 
@@ -58,6 +59,33 @@ export const promptVersions = pgTable('prompt_versions', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })
+
+// ─── Persistent Agent Conversation Memory ────────────────────────────────────
+
+export const agentConversationMemories = pgTable(
+  'agent_conversation_memories',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    accountId: integer('account_id').notNull(),
+    conversationId: text('conversation_id').notNull(),
+    profileSlug: text('profile_slug').notNull(),
+    senderName: text('sender_name'),
+    summary: text('summary').notNull().default(''),
+    factsJson: jsonb('facts_json').notNull().default({}),
+    triageJson: jsonb('triage_json').notNull().default({}),
+    scoreJson: jsonb('score_json').notNull().default({}),
+    lastUserMessage: text('last_user_message'),
+    messageCount: integer('message_count').notNull().default(0),
+    status: text('status').notNull().default('active'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    conversationProfileIdx: uniqueIndex(
+      'agent_conversation_memories_conversation_profile_idx',
+    ).on(table.accountId, table.conversationId, table.profileSlug),
+  }),
+)
 
 // ─── Skill Runs ───────────────────────────────────────────────────────────────
 

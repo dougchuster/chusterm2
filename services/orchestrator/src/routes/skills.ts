@@ -6,6 +6,13 @@ import { skillRuns } from '../db/schema.js'
 import { runIntentClassifier } from '../skills/intentClassifier.js'
 import { runLeadScorer } from '../skills/leadScorer.js'
 import { runNextBestAction } from '../skills/nextBestAction.js'
+import {
+  buildMemorySummary,
+  extractPrevidenciarioTriage,
+  retrieveDrPaulaKnowledge,
+  scorePrevidenciarioLead,
+  type PrevidenciarioTriageSnapshot,
+} from '../agents/drPaulaMatos.js'
 
 // ─── Request schema ───────────────────────────────────────────────────────────
 
@@ -62,6 +69,76 @@ async function dispatchSkill(slug: string, input: Record<string, unknown>): Prom
         })
         .parse(input)
       const output = await runLeadScorer(parsed)
+      return { output: output as unknown as Record<string, unknown> }
+    }
+
+    case 'previdenciario-triage': {
+      const parsed = z
+        .object({
+          accountId: z.number().int().positive(),
+          conversationId: z.string().optional(),
+          latestMessage: z.string().optional(),
+          messages: z
+            .array(
+              z.object({
+                role: z.enum(['user', 'assistant']),
+                content: z.string(),
+              }),
+            )
+            .default([]),
+          previousTriage: z.record(z.unknown()).optional(),
+          messageCount: z.number().int().nonnegative().optional(),
+        })
+        .parse(input)
+
+      const text = [
+        ...parsed.messages.map((message) => `${message.role}: ${message.content}`),
+        parsed.latestMessage ? `user: ${parsed.latestMessage}` : null,
+      ]
+        .filter(Boolean)
+        .join('\n')
+
+      const triage = extractPrevidenciarioTriage({
+        text,
+        previous: parsed.previousTriage as Partial<PrevidenciarioTriageSnapshot> | undefined,
+      })
+      const score = scorePrevidenciarioLead({
+        triage,
+        latestMessage: parsed.latestMessage ?? text,
+        messageCount: parsed.messageCount ?? parsed.messages.length,
+      })
+      const ragSources = retrieveDrPaulaKnowledge(`${text}\n${buildMemorySummary(triage, score)}`)
+
+      return {
+        output: {
+          triage,
+          score,
+          suggestedQuestions: triage.suggestedQuestions,
+          ragSources: ragSources.map((source) => ({
+            id: source.id,
+            title: source.title,
+            source: source.source,
+            sourceUrl: source.sourceUrl,
+          })),
+        },
+      }
+    }
+
+    case 'previdenciario-lead-scorer': {
+      const parsed = z
+        .object({
+          accountId: z.number().int().positive(),
+          latestMessage: z.string().optional(),
+          messageCount: z.number().int().nonnegative().optional(),
+          triage: z.record(z.unknown()),
+        })
+        .parse(input)
+
+      const output = scorePrevidenciarioLead({
+        triage: parsed.triage as unknown as PrevidenciarioTriageSnapshot,
+        latestMessage: parsed.latestMessage,
+        messageCount: parsed.messageCount,
+      })
       return { output: output as unknown as Record<string, unknown> }
     }
 

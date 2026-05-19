@@ -15,6 +15,8 @@ import DocumentsIndex from './documents/Index.vue';
 import ResponsesIndex from './responses/Index.vue';
 import ResponsesPendingIndex from './responses/Pending.vue';
 import CustomToolsIndex from './tools/Index.vue';
+import ScoreSettingsIndex from './score/Index.vue';
+import AgentConfigIndex from './config/Index.vue';
 import FlowsIndex from './flows/Index.vue';
 import FlowEditor from './flows/Editor.vue';
 
@@ -75,6 +77,18 @@ const assistantRoutes = [
     path: frontendURL('accounts/:accountId/captain/:assistantId/inboxes'),
     component: AssistantInboxesIndex,
     name: 'captain_assistants_inboxes_index',
+    meta,
+  },
+  {
+    path: frontendURL('accounts/:accountId/captain/:assistantId/score'),
+    component: ScoreSettingsIndex,
+    name: 'captain_score_settings_index',
+    meta,
+  },
+  {
+    path: frontendURL('accounts/:accountId/captain/:assistantId/config'),
+    component: AgentConfigIndex,
+    name: 'captain_agent_configs_index',
     meta,
   },
   {

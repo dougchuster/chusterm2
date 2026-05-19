@@ -361,6 +361,15 @@ const menuItems = computed(() => {
           }),
         },
         {
+          name: 'AgentConfig',
+          label: t('SIDEBAR.CAPTAIN_AGENT_PANEL'),
+          icon: 'i-lucide-sliders-horizontal',
+          activeOn: ['captain_agent_configs_index'],
+          to: accountScopedRoute('captain_assistants_index', {
+            navigationPath: 'captain_agent_configs_index',
+          }),
+        },
+        {
           name: 'FAQs',
           label: t('SIDEBAR.CAPTAIN_RESPONSES'),
           activeOn: [
@@ -401,6 +410,14 @@ const menuItems = computed(() => {
           activeOn: ['captain_assistants_inboxes_index'],
           to: accountScopedRoute('captain_assistants_index', {
             navigationPath: 'captain_assistants_inboxes_index',
+          }),
+        },
+        {
+          name: 'Score',
+          label: t('SIDEBAR.CAPTAIN_SCORE'),
+          activeOn: ['captain_score_settings_index'],
+          to: accountScopedRoute('captain_assistants_index', {
+            navigationPath: 'captain_score_settings_index',
           }),
         },
         {
