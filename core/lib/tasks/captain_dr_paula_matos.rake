@@ -10,74 +10,81 @@ namespace :captain do
 
     assistant = Captain::Assistant.find_or_initialize_by(account: account, name: 'Dra. Paula Matos')
     assistant.assign_attributes(
-      description: 'Advogada previdenciaria para triagem inicial de planejamento de aposentadoria, CNIS, contribuicoes e riscos antes do pedido ao INSS.',
+      description: 'Advogada previdenciária para triagem inicial de planejamento de aposentadoria, CNIS, contribuições e riscos antes do pedido ao INSS.',
       config: (assistant.config || {}).merge(
-        'product_name' => 'Planejamento Previdenciario Coimbra & Ruas',
+        'product_name' => 'Planejamento Previdenciário Coimbra & Ruas',
         'feature_faq' => true,
         'feature_memory' => true,
         'feature_contact_attributes' => true,
         'temperature' => 0.35,
         'llm_max_tokens' => 4096,
         'llm_timeout_seconds' => 45,
+        'welcome_message' => 'Olá! Sou a Dra. Paula Matos. Vou te ajudar com uma triagem inicial para entender seu momento previdenciário e organizar o próximo passo com segurança.',
+        'handoff_message' => 'Pelo que você contou, o ideal é que a equipe jurídica revise seu caso com atenção antes de qualquer orientação definitiva. Vou encaminhar a conversa para atendimento humano.',
+        'resolution_message' => 'Obrigada pelas informações. A triagem inicial ficou registrada e, se necessário, a equipe poderá retomar com você pelos próximos passos.',
         'instructions' => <<~TEXT.squish
-          Voce e a Dra. Paula Matos, advogada previdenciaria do Coimbra & Ruas.
-          Faça triagem inicial de planejamento previdenciario com acolhimento,
-          objetividade e tecnica. Nao prometa resultado, nao calcule beneficio
-          final sem documentos e encaminhe para humano quando houver negativa,
-          exigencia, prazo, CNIS critico, atividade especial, professor, RPPS
-          ou contribuicao sem estrategia.
+          Você é a Dra. Paula Matos, advogada previdenciária do Coimbra & Ruas.
+          Faça triagem inicial de planejamento previdenciário com acolhimento,
+          objetividade e técnica. Responda sempre em português brasileiro correto,
+          com acentuação completa, concordância e ortografia revisadas. Nunca responda
+          sem acentos ou com português digitado de forma incorreta. Não prometa resultado,
+          não calcule benefício final sem documentos e encaminhe para humano quando houver
+          negativa, exigência, prazo, CNIS crítico, atividade especial, professor, RPPS
+          ou contribuição sem estratégia.
         TEXT
       ),
       response_guidelines: [
-        'Responder em portugues brasileiro, com linguagem clara e humana.',
-        'Fazer no maximo tres perguntas por resposta.',
-        'Organizar o caso por objetivo, forma de contribuicao, situacao no INSS, documentos e risco.',
-        'Explicar que simulacao do Meu INSS e ponto de partida, nao garantia de direito.',
+        'Responder sempre em português brasileiro correto, com acentuação completa, concordância e ortografia revisadas.',
+        'Nunca responder sem acentos, com abreviações inadequadas ou com português digitado de forma incorreta.',
+        'Usar linguagem clara, humana e natural.',
+        'Fazer no máximo três perguntas por resposta.',
+        'Organizar o caso por objetivo, forma de contribuição, situação no INSS, documentos e risco.',
+        'Explicar que simulação do Meu INSS é ponto de partida, não garantia de direito.',
         'Orientar envio de documentos completos apenas pelo canal seguro indicado pela equipe.'
       ],
       guardrails: [
-        'Nao prometer aposentadoria, valor, prazo ou resultado.',
-        'Nao emitir parecer juridico definitivo sem CNIS e documentos.',
-        'Nao pressionar o lead; priorizar clareza e decisao informada.',
-        'Encaminhar para atendimento humano quando houver urgencia, prazo, recurso, exigencia ou negativa.',
-        'Nao solicitar CPF completo ou documentos sensiveis em canal inseguro.'
+        'Não prometer aposentadoria, valor, prazo ou resultado.',
+        'Não emitir parecer jurídico definitivo sem CNIS e documentos.',
+        'Não pressionar o lead; priorizar clareza e decisão informada.',
+        'Encaminhar para atendimento humano quando houver urgência, prazo, recurso, exigência ou negativa.',
+        'Não solicitar CPF completo ou documentos sensíveis em canal inseguro.'
       ]
     )
     assistant.save!
 
     documents = [
       {
-        name: 'RAG - Planejamento previdenciario Coimbra & Ruas',
+        name: 'RAG - Planejamento previdenciário Coimbra & Ruas',
         external_link: 'internal://dr-paula-matos/planejamento-previdenciario',
         content: <<~TEXT
-          A campanha orienta a pessoa a analisar CNIS, regra e contribuicoes antes de pedir aposentadoria, esperar ou pagar nova guia.
-          O diagnostico deve separar os caminhos possiveis: pedir agora, corrigir dados, contribuir melhor, aguardar com data e motivo ou preparar documentos.
-          Riscos a mapear: base de calculo incompleta, regra escolhida sem comparacao, contribuicao sem funcao, pedido antes da hora, espera sem plano e protocolo fraco.
-          Publico prioritario: quem esta perto da aposentadoria, MEI, autonomo, facultativo, quem tem CNIS confuso, atividade especial, professor, simulacao baixa ou desejo de se organizar com antecedencia.
+          A campanha orienta a pessoa a analisar CNIS, regra e contribuições antes de pedir aposentadoria, esperar ou pagar nova guia.
+          O diagnóstico deve separar os caminhos possíveis: pedir agora, corrigir dados, contribuir melhor, aguardar com data e motivo ou preparar documentos.
+          Riscos a mapear: base de cálculo incompleta, regra escolhida sem comparação, contribuição sem função, pedido antes da hora, espera sem plano e protocolo fraco.
+          Público prioritário: quem está perto da aposentadoria, MEI, autônomo, facultativo, quem tem CNIS confuso, atividade especial, professor, simulação baixa ou desejo de se organizar com antecedência.
         TEXT
       },
       {
         name: 'RAG - FAQ Dra. Paula Matos',
         external_link: 'internal://dr-paula-matos/faq',
         content: <<~TEXT
-          O que e planejamento previdenciario? Analise tecnica do historico de contribuicoes, CNIS, regras e cenarios antes de pedir o beneficio ou definir contribuicoes futuras.
-          Quando fazer? Antes de pedir aposentadoria e, se possivel, alguns anos antes.
-          Garante aposentadoria? Nao. Nenhuma analise seria promete resultado; ela mostra cenarios, riscos, documentos e caminhos.
-          MEI ou autonomo precisa analisar? Sim, porque codigo, aliquota e valor podem impactar tempo, valor e tipo de beneficio.
-          CNIS errado prejudica? Pode prejudicar quando existem vinculos ausentes, salarios incorretos, periodos nao reconhecidos ou indicadores pendentes.
-          Simulacao do Meu INSS basta? Nao. E ponto de partida e precisa ser conferida contra documentos e regras aplicaveis.
-          Documentos comuns: CNIS, documentos pessoais, CTPS, comprovantes GPS/DAS/carne, simulacao Meu INSS, carta de concessao, PPP/LTCAT e documentos de vinculo.
+          O que é planejamento previdenciário? Análise técnica do histórico de contribuições, CNIS, regras e cenários antes de pedir o benefício ou definir contribuições futuras.
+          Quando fazer? Antes de pedir aposentadoria e, se possível, alguns anos antes.
+          Garante aposentadoria? Não. Nenhuma análise séria promete resultado; ela mostra cenários, riscos, documentos e caminhos.
+          MEI ou autônomo precisa analisar? Sim, porque código, alíquota e valor podem impactar tempo, valor e tipo de benefício.
+          CNIS errado prejudica? Pode prejudicar quando existem vínculos ausentes, salários incorretos, períodos não reconhecidos ou indicadores pendentes.
+          Simulação do Meu INSS basta? Não. É ponto de partida e precisa ser conferida contra documentos e regras aplicáveis.
+          Documentos comuns: CNIS, documentos pessoais, CTPS, comprovantes GPS/DAS/carnê, simulação Meu INSS, carta de concessão, PPP/LTCAT e documentos de vínculo.
         TEXT
       },
       {
         name: 'RAG - Fontes oficiais INSS para triagem',
         external_link: 'internal://dr-paula-matos/fontes-inss',
         content: <<~TEXT
-          O INSS orienta conferir CNIS e simulacao antes de pedir aposentadoria.
-          O CNIS informa vinculos, remuneracoes e contribuicoes previdenciarias.
-          A simulacao do Meu INSS e apenas demonstrativo de consulta e nao garante direito ao beneficio.
+          O INSS orienta conferir CNIS e simulação antes de pedir aposentadoria.
+          O CNIS informa vínculos, remunerações e contribuições previdenciárias.
+          A simulação do Meu INSS é apenas demonstrativo de consulta e não garante direito ao benefício.
           Contribuinte individual e facultativo recolhem via GPS, enquanto MEI recolhe via DAS-MEI.
-          Alíquotas reduzidas de facultativo, contribuinte individual e MEI podem limitar direito a aposentadoria por tempo de contribuicao e CTC, conforme orientacao do INSS.
+          Alíquotas reduzidas de facultativo, contribuinte individual e MEI podem limitar direito a aposentadoria por tempo de contribuição e CTC, conforme orientação do INSS.
         TEXT
       }
     ]
@@ -106,25 +113,28 @@ namespace :captain do
     if defined?(Captain::Scenario)
       scenarios = [
         {
-          title: 'Triagem previdenciaria inicial',
-          description: 'Coleta objetivo, forma de contribuicao, situacao no INSS, documentos e maior preocupacao.',
-          instruction: 'Pergunte no maximo tres campos pendentes por vez. Use FAQ quando a pessoa fizer pergunta comum e finalize com proximo passo claro.',
+          title: 'Triagem previdenciária inicial',
+          legacy_title: 'Triagem previdenciaria inicial',
+          description: 'Coleta objetivo, forma de contribuição, situação no INSS, documentos e maior preocupação.',
+          instruction: 'Pergunte no máximo três campos pendentes por vez. Use FAQ quando a pessoa fizer pergunta comum e finalize com próximo passo claro.',
           tools: %w[faq_lookup handoff]
         },
         {
-          title: 'Handoff de risco previdenciario',
-          description: 'Encaminha casos com prazo, negativa, exigencia, CNIS critico, atividade especial, professor ou RPPS.',
-          instruction: 'Se houver risco de prazo, recurso, exigencia, pedido negado ou score alto, use handoff e registre resumo objetivo para a equipe.',
+          title: 'Handoff de risco previdenciário',
+          legacy_title: 'Handoff de risco previdenciario',
+          description: 'Encaminha casos com prazo, negativa, exigência, CNIS crítico, atividade especial, professor ou RPPS.',
+          instruction: 'Se houver risco de prazo, recurso, exigência, pedido negado ou score alto, use handoff e registre resumo objetivo para a equipe.',
           tools: %w[handoff]
         }
       ]
 
       scenarios.each do |attrs|
-        scenario = Captain::Scenario.find_or_initialize_by(
+        legacy_title = attrs.delete(:legacy_title)
+        scenario = Captain::Scenario.where(
           assistant: assistant,
           account: account,
-          title: attrs[:title]
-        )
+          title: [attrs[:title], legacy_title].compact
+        ).first || Captain::Scenario.new(assistant: assistant, account: account)
         scenario.assign_attributes(attrs.merge(enabled: true))
         scenario.save!
       end
@@ -132,52 +142,56 @@ namespace :captain do
 
     playbooks = [
       {
-        name: 'Triagem Planejamento Previdenciario',
+        name: 'Triagem Planejamento Previdenciário',
+        legacy_name: 'Triagem Planejamento Previdenciario',
         legal_area: 'previdenciario',
         case_type: 'planejamento_aposentadoria',
-        objective: 'Identificar objetivo, CNIS, forma de contribuicao, situacao no INSS, documentos e risco principal.',
+        objective: 'Identificar objetivo, CNIS, forma de contribuição, situação no INSS, documentos e risco principal.',
         required_fields: %w[objetivo forma_contribuicao situacao_inss documentos maior_preocupacao],
         escalation_rules: {
           urgent_terms: %w[indeferido negado exigencia prazo recurso suspenso bloqueado valor_baixo],
-          handoff_when: 'pedido negado, exigencia, prazo, atividade especial, professor, RPPS, CNIS critico ou contribuicao sem estrategia'
+          handoff_when: 'pedido negado, exigência, prazo, atividade especial, professor, RPPS, CNIS crítico ou contribuição sem estratégia'
         },
-        instructions: 'Nao prometer resultado. Organizar a rota entre pedir, corrigir, contribuir melhor, esperar ou revisar.',
+        instructions: 'Não prometer resultado. Organizar a rota entre pedir, corrigir, contribuir melhor, esperar ou revisar.',
         position: 0
       },
       {
-        name: 'CNIS e Simulacao Meu INSS',
+        name: 'CNIS e Simulação Meu INSS',
+        legacy_name: 'CNIS e Simulacao Meu INSS',
         legal_area: 'previdenciario',
         case_type: 'analise_cnis_simulacao',
-        objective: 'Conferir se CNIS e simulacao indicam risco de dado incompleto, salario errado, vinculo pendente ou decisao precipitada.',
+        objective: 'Conferir se CNIS e simulação indicam risco de dado incompleto, salário errado, vínculo pendente ou decisão precipitada.',
         required_fields: %w[cnis simulacao_meu_inss vinculos_pendentes salarios_lacunas],
         escalation_rules: {
           urgent_terms: %w[vinculo_pendente salario_errado contribuicao_baixo_minimo rpps],
-          handoff_when: 'CNIS incompleto, dados divergentes, periodo em RPPS ou simulacao baixa'
+          handoff_when: 'CNIS incompleto, dados divergentes, período em RPPS ou simulação baixa'
         },
-        instructions: 'Explicar que a simulacao e ponto de partida e precisa ser lida com documentos.',
+        instructions: 'Explicar que a simulação é ponto de partida e precisa ser lida com documentos.',
         position: 1
       },
       {
-        name: 'Contribuicoes MEI Autonomo Facultativo',
+        name: 'Contribuições MEI Autônomo Facultativo',
+        legacy_name: 'Contribuicoes MEI Autonomo Facultativo',
         legal_area: 'previdenciario',
         case_type: 'estrategia_contribuicao',
-        objective: 'Avaliar se codigo, aliquota, valor e frequencia de contribuicao tem funcao previdenciaria real.',
+        objective: 'Avaliar se código, alíquota, valor e frequência de contribuição têm função previdenciária real.',
         required_fields: %w[tipo_contribuinte codigo_pagamento valor_contribuicao tempo_contribuicao objetivo],
         escalation_rules: {
           urgent_terms: %w[mei autonomo facultativo gps das codigo aliquota atrasado],
-          handoff_when: 'duvida sobre codigo, aliquota reduzida, contribuicao em atraso ou custo sem retorno claro'
+          handoff_when: 'dúvida sobre código, alíquota reduzida, contribuição em atraso ou custo sem retorno claro'
         },
-        instructions: 'Nao orientar pagamento especifico sem analise; coletar dados e encaminhar para diagnostico.',
+        instructions: 'Não orientar pagamento específico sem análise; coletar dados e encaminhar para diagnóstico.',
         position: 2
       }
     ]
 
     playbooks.each do |attrs|
-      playbook = Captain::Playbook.find_or_initialize_by(
+      legacy_name = attrs.delete(:legacy_name)
+      playbook = Captain::Playbook.where(
         account: account,
         assistant: assistant,
-        name: attrs[:name]
-      )
+        name: [attrs[:name], legacy_name].compact
+      ).first || Captain::Playbook.new(account: account, assistant: assistant)
       playbook.assign_attributes(attrs.merge(active: true))
       playbook.save!
     end
@@ -189,15 +203,16 @@ namespace :captain do
                      end
 
     if campaign_inbox
-      campaign = Campaign.find_or_initialize_by(
+      campaign = Campaign.where(
         account: account,
-        title: 'Planejamento Previdenciario - Dra. Paula Matos'
-      )
+        title: ['Planejamento Previdenciário - Dra. Paula Matos', 'Planejamento Previdenciario - Dra. Paula Matos']
+      ).first || Campaign.new(account: account)
       campaign.assign_attributes(
+        title: 'Planejamento Previdenciário - Dra. Paula Matos',
         inbox: campaign_inbox,
         captain_assistant: assistant,
-        description: 'Campanha de triagem inicial para planejamento previdenciario, CNIS, contribuicoes e aposentadoria.',
-        message: 'Ola! Sou a Dra. Paula Matos. Vou fazer uma triagem inicial para entender seu objetivo previdenciario e indicar o proximo passo com seguranca.',
+        description: 'Campanha de triagem inicial para planejamento previdenciário, CNIS, contribuições e aposentadoria.',
+        message: 'Olá! Sou a Dra. Paula Matos. Vou fazer uma triagem inicial para entender seu objetivo previdenciário e indicar o próximo passo com segurança.',
         enabled: true,
         scoring_config: (campaign.scoring_config || {}).deep_merge(
           'score_model' => 'previdenciario-planejamento-v1',

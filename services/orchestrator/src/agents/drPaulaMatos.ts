@@ -81,14 +81,14 @@ const INSS_CONTRIBUTION_URL =
 export const DR_PAULA_MATOS_KNOWLEDGE: KnowledgeDocument[] = [
   {
     id: 'campanha-posicionamento',
-    title: 'Planejamento previdenciario antes do protocolo',
+    title: 'Planejamento previdenciário antes do protocolo',
     source: 'Coimbra & Ruas',
     sourceUrl: COIMBRA_PAGE_URL,
     type: 'rag',
-    tags: ['planejamento', 'diagnostico', 'protocolo', 'aposentadoria'],
+    tags: ['planejamento', 'diagnóstico', 'protocolo', 'aposentadoria'],
     priority: 10,
     content:
-      'A campanha posiciona a consultoria como diagnostico antes da decisao: analisar CNIS, regra escolhida e forma de contribuir antes de protocolar, esperar ou pagar nova guia. O foco e decidir com documentos, nao com achismo.',
+      'A campanha posiciona a consultoria como diagnóstico antes da decisão: analisar CNIS, regra escolhida e forma de contribuir antes de protocolar, esperar ou pagar nova guia. O foco é decidir com documentos, não com achismo.',
   },
   {
     id: 'campanha-riscos',
@@ -99,18 +99,18 @@ export const DR_PAULA_MATOS_KNOWLEDGE: KnowledgeDocument[] = [
     tags: ['risco', 'cnis', 'negativa', 'exigencia', 'valor'],
     priority: 10,
     content:
-      'A decisao previdenciaria pode perder valor mesmo quando o beneficio e aprovado. A triagem deve observar base de calculo incompleta, regra escolhida sem comparacao, contribuicao sem funcao, pedido antes da hora, espera sem data e protocolo fraco.',
+      'A decisão previdenciária pode perder valor mesmo quando o benefício é aprovado. A triagem deve observar base de cálculo incompleta, regra escolhida sem comparação, contribuição sem função, pedido antes da hora, espera sem data e protocolo fraco.',
   },
   {
     id: 'campanha-metodo',
-    title: 'Metodo de atendimento da campanha',
+    title: 'Método de atendimento da campanha',
     source: 'Coimbra & Ruas',
     sourceUrl: COIMBRA_PAGE_URL,
     type: 'rag',
-    tags: ['triagem', 'cnis', 'cenario', 'rota', 'documentos'],
+    tags: ['triagem', 'cnis', 'cenário', 'rota', 'documentos'],
     priority: 9,
     content:
-      'O processo esperado e: triagem do objetivo, leitura dos dados, mapa de decisoes e proximo passo claro. A resposta deve levar a uma decisao pratica: pedir agora, corrigir dados, contribuir melhor, aguardar com motivo ou preparar documentos.',
+      'O processo esperado é: triagem do objetivo, leitura dos dados, mapa de decisões e próximo passo claro. A resposta deve levar a uma decisão prática: pedir agora, corrigir dados, contribuir melhor, aguardar com motivo ou preparar documentos.',
   },
   {
     id: 'campanha-publico-prioritario',
@@ -118,32 +118,32 @@ export const DR_PAULA_MATOS_KNOWLEDGE: KnowledgeDocument[] = [
     source: 'Coimbra & Ruas',
     sourceUrl: COIMBRA_PAGE_URL,
     type: 'rag',
-    tags: ['mei', 'autonomo', 'professor', 'especial', 'simulacao', 'cnis'],
+    tags: ['mei', 'autônomo', 'professor', 'especial', 'simulação', 'cnis'],
     priority: 8,
     content:
-      'A consultoria e especialmente relevante para quem esta a poucos anos da aposentadoria, contribui por conta propria, tem CNIS confuso, tem tempo especial ou de professor, recebeu simulacao baixa ou quer se organizar com antecedencia.',
+      'A consultoria é especialmente relevante para quem está a poucos anos da aposentadoria, contribui por conta própria, tem CNIS confuso, tem tempo especial ou de professor, recebeu simulação baixa ou quer se organizar com antecedência.',
   },
   {
     id: 'inss-conferir-cnis',
-    title: 'Conferir CNIS e simulacao antes do pedido',
+    title: 'Conferir CNIS e simulação antes do pedido',
     source: 'INSS',
     sourceUrl: INSS_PRE_REQUEST_URL,
     type: 'rag',
-    tags: ['inss', 'cnis', 'meu inss', 'simulacao', 'documentos'],
+    tags: ['inss', 'cnis', 'meu inss', 'simulação', 'documentos'],
     priority: 9,
     content:
-      'O INSS orienta que o trabalhador confira o Extrato de Contribuicoes (CNIS) e faca simulacao no Meu INSS antes de pedir aposentadoria. Devem ser observadas datas de entrada e saida, contribuicoes abaixo do salario minimo desde 2019, vinculos pendentes, periodos de regime proprio e informacoes divergentes ou incompletas.',
+      'O INSS orienta que o trabalhador confira o Extrato de Contribuições (CNIS) e faça simulação no Meu INSS antes de pedir aposentadoria. Devem ser observadas datas de entrada e saída, contribuições abaixo do salário mínimo desde 2019, vínculos pendentes, períodos de regime próprio e informações divergentes ou incompletas.',
   },
   {
     id: 'inss-simulacao-nao-garante',
-    title: 'Simulacao do Meu INSS nao garante direito',
+    title: 'Simulação do Meu INSS não garante direito',
     source: 'INSS',
     sourceUrl: INSS_SIMULATION_URL,
     type: 'guardrail',
-    tags: ['simulacao', 'meu inss', 'garantia', 'documentos'],
+    tags: ['simulação', 'meu inss', 'garantia', 'documentos'],
     priority: 10,
     content:
-      'A calculadora do Meu INSS e um demonstrativo para consulta e nao garante direito ao beneficio. Quando a simulacao indica requisitos, o segurado ainda precisa fazer o pedido para o INSS analisar de fato, podendo ser solicitados documentos.',
+      'A calculadora do Meu INSS é um demonstrativo para consulta e não garante direito ao benefício. Quando a simulação indica requisitos, o segurado ainda precisa fazer o pedido para o INSS analisar de fato, podendo ser solicitados documentos.',
   },
   {
     id: 'inss-extrato-cnis',
@@ -151,32 +151,32 @@ export const DR_PAULA_MATOS_KNOWLEDGE: KnowledgeDocument[] = [
     source: 'INSS',
     sourceUrl: INSS_CNIS_URL,
     type: 'rag',
-    tags: ['cnis', 'vinculos', 'remuneracoes', 'contribuicoes'],
+    tags: ['cnis', 'vínculos', 'remunerações', 'contribuições'],
     priority: 9,
     content:
-      'O extrato CNIS informa vinculos, remuneracoes e contribuicoes previdenciarias. Ha extrato de relacoes previdenciarias, relacoes e remuneracoes, e ano civil com contribuicoes ano a ano a partir de 11/2019.',
+      'O extrato CNIS informa vínculos, remunerações e contribuições previdenciárias. Há extrato de relações previdenciárias, relações e remunerações, e ano civil com contribuições ano a ano a partir de 11/2019.',
   },
   {
     id: 'inss-mei-facultativo-autonomo',
-    title: 'Contribuicoes MEI, facultativo e individual',
+    title: 'Contribuições MEI, facultativo e individual',
     source: 'INSS',
     sourceUrl: INSS_CONTRIBUTION_URL,
     type: 'rag',
-    tags: ['mei', 'autonomo', 'facultativo', 'gps', 'das', 'aliquota'],
+    tags: ['mei', 'autônomo', 'facultativo', 'gps', 'das', 'alíquota'],
     priority: 8,
     content:
-      'Contribuinte individual e facultativo recolhem via GPS, enquanto MEI recolhe pelo DAS-MEI. O INSS alerta que segurado facultativo em aliquota reduzida, contribuinte individual com aliquota reduzida e MEI nao tem direito a aposentadoria por tempo de contribuicao, apenas por idade, alem de nao ter direito a CTC nesses casos.',
+      'Contribuinte individual e facultativo recolhem via GPS, enquanto MEI recolhe pelo DAS-MEI. O INSS alerta que segurado facultativo em alíquota reduzida, contribuinte individual com alíquota reduzida e MEI não tem direito a aposentadoria por tempo de contribuição, apenas por idade, além de não ter direito a CTC nesses casos.',
   },
   {
     id: 'faq-planejamento',
-    title: 'FAQ - O que e planejamento previdenciario?',
+    title: 'FAQ - O que é planejamento previdenciário?',
     source: 'Coimbra & Ruas',
     sourceUrl: COIMBRA_PAGE_URL,
     type: 'faq',
     tags: ['faq', 'planejamento', 'aposentadoria'],
     priority: 7,
     content:
-      'Planejamento previdenciario e uma analise tecnica do historico de contribuicoes, CNIS, regras de aposentadoria e cenarios possiveis para orientar a melhor estrategia antes de pedir o beneficio ou definir contribuicoes futuras.',
+      'Planejamento previdenciário é uma análise técnica do histórico de contribuições, CNIS, regras de aposentadoria e cenários possíveis para orientar a melhor estratégia antes de pedir o benefício ou definir contribuições futuras.',
   },
   {
     id: 'faq-documentos',
@@ -187,7 +187,7 @@ export const DR_PAULA_MATOS_KNOWLEDGE: KnowledgeDocument[] = [
     tags: ['faq', 'documentos', 'cnis', 'ctps', 'ppp'],
     priority: 7,
     content:
-      'Os documentos dependem do caso, mas normalmente CNIS, documentos pessoais, carteira de trabalho, comprovantes de contribuicao, documentos de atividade especial e registros de vinculo podem ser importantes.',
+      'Os documentos dependem do caso, mas normalmente CNIS, documentos pessoais, carteira de trabalho, comprovantes de contribuição, documentos de atividade especial e registros de vínculo podem ser importantes.',
   },
 ]
 
@@ -356,11 +356,11 @@ function buildMissingFields(triage: Omit<PrevidenciarioTriageSnapshot, 'missingF
 
 function buildSuggestedQuestions(missingFields: string[]): string[] {
   const questions: Record<string, string> = {
-    objetivo: 'Voce quer pedir aposentadoria agora, planejar com antecedencia, revisar CNIS ou avaliar contribuicoes futuras?',
-    forma_contribuicao: 'Como voce contribuiu ou contribui hoje: CLT, MEI, autonomo, facultativo, servidor, professor ou atividade especial?',
-    situacao_inss: 'No INSS, voce ainda nao fez pedido, tem pedido em analise, recebeu negativa ou apenas viu uma simulacao no Meu INSS?',
-    documentos: 'Voce ja tem CNIS atualizado, CTPS, carnes/GPS/DAS ou simulacao do Meu INSS para a analise?',
-    maior_preocupacao: 'O que mais preocupa agora: pedir antes da hora, valor baixo, CNIS incompleto, contribuicao sem retorno ou risco de exigencia/negativa?',
+    objetivo: 'Você quer pedir aposentadoria agora, planejar com antecedência, revisar CNIS ou avaliar contribuições futuras?',
+    forma_contribuicao: 'Como você contribuiu ou contribui hoje: CLT, MEI, autônomo, facultativo, servidor, professor ou atividade especial?',
+    situacao_inss: 'No INSS, você ainda não fez pedido, tem pedido em análise, recebeu negativa ou apenas viu uma simulação no Meu INSS?',
+    documentos: 'Você já tem CNIS atualizado, CTPS, carnês/GPS/DAS ou simulação do Meu INSS para a análise?',
+    maior_preocupacao: 'O que mais preocupa agora: pedir antes da hora, valor baixo, CNIS incompleto, contribuição sem retorno ou risco de exigência/negativa?',
   }
 
   return missingFields.map((field) => questions[field]).filter(Boolean).slice(0, 3)
@@ -568,18 +568,18 @@ function buildNextBestAction(
   handoffReasons: string[],
 ): string {
   if (handoffReasons.includes('pedido_negado') || handoffReasons.includes('prazo_recurso')) {
-    return 'Encaminhar imediatamente para revisao humana de prazo, documentos e possibilidade de recurso.'
+    return 'Encaminhar imediatamente para revisão humana de prazo, documentos e possibilidade de recurso.'
   }
   if (handoffReasons.includes('exigencia_inss')) {
-    return 'Solicitar documentos da exigencia e encaminhar para analise humana antes de qualquer resposta definitiva.'
+    return 'Solicitar documentos da exigência e encaminhar para análise humana antes de qualquer resposta definitiva.'
   }
   if (triage.missingFields.length > 0) {
     return `Completar triagem perguntando: ${buildSuggestedQuestions(triage.missingFields).join(' ')}`
   }
   if (classification === 'prioridade_maxima' || classification === 'qualificado') {
-    return 'Agendar ou encaminhar para diagnostico previdenciario com CNIS e documentos de contribuicao.'
+    return 'Agendar ou encaminhar para diagnóstico previdenciário com CNIS e documentos de contribuição.'
   }
-  return 'Responder a duvida principal e coletar objetivo, forma de contribuicao, situacao no INSS e documentos existentes.'
+  return 'Responder à dúvida principal e coletar objetivo, forma de contribuição, situação no INSS e documentos existentes.'
 }
 
 function tokenSet(query: string): Set<string> {
@@ -616,13 +616,13 @@ export function retrieveDrPaulaKnowledge(query: string, limit = 5): KnowledgeDoc
 export function buildMemorySummary(triage: PrevidenciarioTriageSnapshot, score: PrevidenciarioScoreOutput): string {
   return [
     `Objetivo: ${triage.objective}`,
-    `Forma de contribuicao: ${triage.contributionProfile.join(', ') || 'nao informada'}`,
-    `Situacao no INSS: ${triage.inssStatus}`,
-    `Documentos: ${triage.documentsMentioned.join(', ') || 'nao informados'}`,
-    `Preocupacoes: ${triage.concerns.join(', ') || 'nao informadas'}`,
-    `Urgencia: ${triage.urgencyFlags.join(', ') || 'sem flag urgente'}`,
+    `Forma de contribuição: ${triage.contributionProfile.join(', ') || 'não informada'}`,
+    `Situação no INSS: ${triage.inssStatus}`,
+    `Documentos: ${triage.documentsMentioned.join(', ') || 'não informados'}`,
+    `Preocupações: ${triage.concerns.join(', ') || 'não informadas'}`,
+    `Urgência: ${triage.urgencyFlags.join(', ') || 'sem flag urgente'}`,
     `Score: ${score.total}/100 (${score.classification})`,
-    `Proxima acao: ${score.nextBestAction}`,
+    `Próxima ação: ${score.nextBestAction}`,
   ].join('\n')
 }
 
@@ -640,29 +640,31 @@ export function buildDrPaulaMessages(input: {
     )
     .join('\n\n')
 
-  const systemPrompt = `Voce e a Dra. Paula Matos, advogada previdenciaria do Coimbra & Ruas.
-Sua funcao e fazer triagem inicial para planejamento previdenciario antes da aposentadoria.
+  const systemPrompt = `Você é a Dra. Paula Matos, advogada previdenciária do Coimbra & Ruas.
+Sua função é fazer triagem inicial para planejamento previdenciário antes da aposentadoria.
 
 Tom e postura:
 - Seja cordial, humana, segura e objetiva.
-- Fale em portugues brasileiro, sem juridiquês desnecessario.
-- Faca no maximo 3 perguntas por resposta.
-- Mostre criterio tecnico sem pressionar a pessoa.
-- Quando houver medo, confusao ou urgencia, acolha primeiro e organize o proximo passo.
+- Fale sempre em português brasileiro correto, natural, com acentuação completa e gramática revisada.
+- Nunca responda sem acentos, com palavras abreviadas ou com português digitado de forma incorreta.
+- Evite juridiquês desnecessário.
+- Faça no máximo 3 perguntas por resposta.
+- Mostre critério técnico sem pressionar a pessoa.
+- Quando houver medo, confusão ou urgência, acolha primeiro e organize o próximo passo.
 
-Limites obrigatorios:
-- Nao prometa aposentadoria, valor, prazo ou resultado.
-- Nao de parecer juridico definitivo sem CNIS e documentos.
-- Nao calcule beneficio final ou regra final com base em poucas mensagens.
-- Se a pessoa enviar dado sensivel, oriente que documentos completos sejam enviados apenas pelo canal seguro indicado pela equipe.
-- Nao revele o score interno ao cliente.
+Limites obrigatórios:
+- Não prometa aposentadoria, valor, prazo ou resultado.
+- Não dê parecer jurídico definitivo sem CNIS e documentos.
+- Não calcule benefício final ou regra final com base em poucas mensagens.
+- Se a pessoa enviar dado sensível, oriente que documentos completos sejam enviados apenas pelo canal seguro indicado pela equipe.
+- Não revele o score interno ao cliente.
 
 Objetivo da triagem:
-1. Entender se a pessoa quer pedir agora, planejar, corrigir CNIS, avaliar contribuicoes, comparar regras, revisar simulacao, negativa ou beneficio concedido.
-2. Identificar forma de contribuicao: CLT, MEI, autonomo, facultativo, servidor, professor, rural ou atividade especial.
-3. Identificar situacao no INSS: sem pedido, pedido em analise, negativa, beneficio concedido com duvida ou simulacao Meu INSS.
-4. Mapear documentos: CNIS, CTPS, comprovantes GPS/DAS/carne, simulacao, carta de concessao, PPP/LTCAT e documentos de vinculo.
-5. Encaminhar para analise humana quando houver prazo, exigencia, negativa, CNIS critico, atividade especial/professor/RPPS ou contribuicao sem estrategia.
+1. Entender se a pessoa quer pedir agora, planejar, corrigir CNIS, avaliar contribuições, comparar regras, revisar simulação, negativa ou benefício concedido.
+2. Identificar forma de contribuição: CLT, MEI, autônomo, facultativo, servidor, professor, rural ou atividade especial.
+3. Identificar situação no INSS: sem pedido, pedido em análise, negativa, benefício concedido com dúvida ou simulação Meu INSS.
+4. Mapear documentos: CNIS, CTPS, comprovantes GPS/DAS/carnê, simulação, carta de concessão, PPP/LTCAT e documentos de vínculo.
+5. Encaminhar para análise humana quando houver prazo, exigência, negativa, CNIS crítico, atividade especial/professor/RPPS ou contribuição sem estratégia.
 
 Memoria interna da conversa:
 ${input.memorySummary}
@@ -671,12 +673,12 @@ Campos ainda pendentes:
 ${input.triage.missingFields.length > 0 ? input.triage.missingFields.join(', ') : 'triagem essencial completa'}
 
 Score interno:
-${input.score.total}/100 (${input.score.classification}). Handoff recomendado: ${input.score.handoff.recommended ? 'sim' : 'nao'}.
+${input.score.total}/100 (${input.score.classification}). Handoff recomendado: ${input.score.handoff.recommended ? 'sim' : 'não'}.
 
 Base de conhecimento recuperada:
 ${ragBlock}
 
-Responda ao cliente com base nessa memoria e na base recuperada. Quando usar uma informacao do INSS, explique em linguagem simples e sem citar longos trechos.`
+Responda ao cliente com base nessa memória e na base recuperada. Antes de finalizar, revise acentuação, concordância e ortografia. Quando usar uma informação do INSS, explique em linguagem simples e sem citar longos trechos.`
 
   return [{ role: 'system', content: systemPrompt }, ...input.conversation]
 }
@@ -687,16 +689,16 @@ export function buildDrPaulaFallbackResponse(input: {
 }): string {
   const intro =
     input.triage.objective === 'nao_identificado'
-      ? 'Oi, eu sou a Dra. Paula Matos. Posso te ajudar a organizar essa analise previdenciaria com calma.'
-      : 'Entendi. Antes de qualquer protocolo ou nova contribuicao, o ideal e organizar seu historico e conferir os pontos que podem mudar prazo, regra e valor.'
+      ? 'Oi, eu sou a Dra. Paula Matos. Posso te ajudar a organizar essa análise previdenciária com calma.'
+      : 'Entendi. Antes de qualquer protocolo ou nova contribuição, o ideal é organizar seu histórico e conferir os pontos que podem mudar prazo, regra e valor.'
 
   const sourceHint = input.retrievedDocuments.some((doc) => doc.id === 'inss-simulacao-nao-garante')
-    ? 'A simulacao do Meu INSS ajuda como ponto de partida, mas nao garante o direito nem substitui a leitura dos documentos.'
-    : 'O CNIS costuma ser o ponto de partida, porque mostra vinculos, remuneracoes e contribuicoes que podem alterar a decisao.'
+    ? 'A simulação do Meu INSS ajuda como ponto de partida, mas não garante o direito nem substitui a leitura dos documentos.'
+    : 'O CNIS costuma ser o ponto de partida, porque mostra vínculos, remunerações e contribuições que podem alterar a decisão.'
 
   const questions = input.triage.suggestedQuestions
   if (questions.length === 0) {
-    return `${intro}\n\n${sourceHint}\n\nPelo que voce ja contou, o proximo passo e separar o CNIS atualizado e os documentos de contribuicao/vinculo para uma leitura tecnica do caso. Vou sinalizar para a equipe revisar com voce.`
+    return `${intro}\n\n${sourceHint}\n\nPelo que você já contou, o próximo passo é separar o CNIS atualizado e os documentos de contribuição/vínculo para uma leitura técnica do caso. Vou sinalizar para a equipe revisar com você.`
   }
 
   return `${intro}\n\n${sourceHint}\n\nPara eu fazer a triagem inicial, me diga por favor:\n${questions
@@ -713,10 +715,10 @@ export function buildPrivateTriageNote(input: {
     `Score: ${input.score.total}/100 (${input.score.classification})`,
     `Motivos: ${input.score.handoff.reasons.join(', ') || 'score/triagem'}`,
     `Objetivo: ${input.triage.objective}`,
-    `Contribuicao: ${input.triage.contributionProfile.join(', ') || 'nao informada'}`,
-    `Situacao INSS: ${input.triage.inssStatus}`,
-    `Documentos: ${input.triage.documentsMentioned.join(', ') || 'nao informados'}`,
-    `Pendencias: ${input.triage.missingFields.join(', ') || 'sem pendencias essenciais'}`,
-    `Proxima acao: ${input.score.nextBestAction}`,
+    `Contribuição: ${input.triage.contributionProfile.join(', ') || 'não informada'}`,
+    `Situação INSS: ${input.triage.inssStatus}`,
+    `Documentos: ${input.triage.documentsMentioned.join(', ') || 'não informados'}`,
+    `Pendências: ${input.triage.missingFields.join(', ') || 'sem pendências essenciais'}`,
+    `Próxima ação: ${input.score.nextBestAction}`,
   ].join('\n')
 }
