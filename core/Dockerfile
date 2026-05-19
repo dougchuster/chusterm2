@@ -197,6 +197,11 @@ COPY enterprise/app/services/captain/copilot/chat_service.rb ./enterprise/app/se
 COPY enterprise/app/services/captain/llm/assistant_chat_service.rb ./enterprise/app/services/captain/llm/assistant_chat_service.rb
 COPY enterprise/app/services/captain/llm/embedding_service.rb ./enterprise/app/services/captain/llm/embedding_service.rb
 COPY enterprise/app/services/captain/llm/system_prompts_service.rb ./enterprise/app/services/captain/llm/system_prompts_service.rb
+COPY enterprise/app/services/captain/llm/faq_generator_service.rb ./enterprise/app/services/captain/llm/faq_generator_service.rb
+COPY enterprise/app/services/captain/llm/conversation_faq_service.rb ./enterprise/app/services/captain/llm/conversation_faq_service.rb
+COPY enterprise/app/services/captain/llm/contact_notes_service.rb ./enterprise/app/services/captain/llm/contact_notes_service.rb
+COPY enterprise/app/services/captain/llm/contact_attributes_service.rb ./enterprise/app/services/captain/llm/contact_attributes_service.rb
+COPY enterprise/app/services/captain/onboarding/website_analyzer_service.rb ./enterprise/app/services/captain/onboarding/website_analyzer_service.rb
 COPY enterprise/app/services/captain/tools/copilot/get_crm_context_service.rb ./enterprise/app/services/captain/tools/copilot/get_crm_context_service.rb
 COPY enterprise/app/services/captain/assistant/agent_runner_service.rb ./enterprise/app/services/captain/assistant/agent_runner_service.rb
 COPY enterprise/app/services/captain/assistant/deterministic_crm_actions_service.rb ./enterprise/app/services/captain/assistant/deterministic_crm_actions_service.rb

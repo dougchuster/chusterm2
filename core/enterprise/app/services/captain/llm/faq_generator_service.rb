@@ -1,17 +1,17 @@
 class Captain::Llm::FaqGeneratorService < Llm::BaseAiService
   include Integrations::LlmInstrumentation
 
-  def initialize(content, language = 'english', account_id: nil)
+  def initialize(content = nil, language = 'english', account_id: nil, document: nil)
     super()
-    @language = language
-    @content = content
-    @account_id = account_id
+    @document = document
+    @language = document&.account&.locale_english_name || language
+    @content = document&.content || content
+    @account_id = document&.account_id || account_id
   end
 
   def generate
     response = instrument_llm_call(instrumentation_params) do
       chat
-        .with_params(response_format: { type: 'json_object' })
         .with_instructions(system_prompt)
         .ask(@content)
     end
@@ -40,8 +40,13 @@ class Captain::Llm::FaqGeneratorService < Llm::BaseAiService
       messages: [
         { role: 'system', content: system_prompt },
         { role: 'user', content: @content }
-      ]
+      ],
+      metadata: document_metadata
     }
+  end
+
+  def document_metadata
+    @document&.to_llm_metadata || {}
   end
 
   def parse_response(content)
