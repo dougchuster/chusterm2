@@ -68,6 +68,9 @@ export interface PrevidenciarioScoreOutput {
   nextBestAction: string
 }
 
+const SIMPLE_DOCUMENT_REQUEST =
+  'Para adiantar a análise pela equipe responsável, se você tiver fácil, já pode separar ou enviar apenas o que for simples e seguro pelo canal atual: CNIS atualizado, simulação do Meu INSS, CTPS ou comprovantes GPS/DAS/carnê, e, se houver, carta de exigência, indeferimento ou concessão. Não envie CPF completo nem documentos sensíveis por canal inseguro; se necessário, a equipe indicará o canal adequado.'
+
 const COIMBRA_PAGE_URL = 'https://planejamento.coimbraeruas.com.br/'
 const INSS_PRE_REQUEST_URL =
   'https://www.gov.br/inss/pt-br/noticias/aposentadoria-o-que-pode-ser-conferido-no-meu-inss-antes-de-fazer-o-pedido'
@@ -88,7 +91,7 @@ export const DR_PAULA_MATOS_KNOWLEDGE: KnowledgeDocument[] = [
     tags: ['planejamento', 'diagnóstico', 'protocolo', 'aposentadoria'],
     priority: 10,
     content:
-      'A campanha posiciona a consultoria como diagnóstico antes da decisão: analisar CNIS, regra escolhida e forma de contribuir antes de protocolar, esperar ou pagar nova guia. O foco é decidir com documentos, não com achismo.',
+      'A campanha posiciona a consultoria como diagnóstico antes da decisão: analisar CNIS, regra escolhida e forma de contribuir antes de protocolar, esperar ou pagar nova guia. O foco é decidir com documentos, não com achismo. O atendimento deve ser humanizado, sem mencionar IA ou automação, e pode informar que vamos analisar o caso com atenção e entraremos com retorno em breve.',
   },
   {
     id: 'campanha-riscos',
@@ -187,7 +190,7 @@ export const DR_PAULA_MATOS_KNOWLEDGE: KnowledgeDocument[] = [
     tags: ['faq', 'documentos', 'cnis', 'ctps', 'ppp'],
     priority: 7,
     content:
-      'Os documentos dependem do caso, mas normalmente CNIS, documentos pessoais, carteira de trabalho, comprovantes de contribuição, documentos de atividade especial e registros de vínculo podem ser importantes.',
+      'Os documentos dependem do caso, mas normalmente CNIS, documentos pessoais, carteira de trabalho, comprovantes de contribuição, documentos de atividade especial e registros de vínculo podem ser importantes. Para adiantar o atendimento, podem ser solicitados documentos simples: CNIS atualizado, simulação do Meu INSS, CTPS, comprovantes GPS/DAS/carnê e carta de exigência, indeferimento ou concessão quando houver. CPF completo e documentos sensíveis devem aguardar canal seguro indicado pela equipe.',
   },
 ]
 
@@ -568,18 +571,18 @@ function buildNextBestAction(
   handoffReasons: string[],
 ): string {
   if (handoffReasons.includes('pedido_negado') || handoffReasons.includes('prazo_recurso')) {
-    return 'Encaminhar imediatamente para revisão humana de prazo, documentos e possibilidade de recurso.'
+    return 'Encaminhar imediatamente para revisão da equipe jurídica responsável, com prazo, documentos e possibilidade de recurso.'
   }
   if (handoffReasons.includes('exigencia_inss')) {
-    return 'Solicitar documentos da exigência e encaminhar para análise humana antes de qualquer resposta definitiva.'
+    return 'Solicitar documentos simples da exigência e encaminhar para análise da equipe jurídica antes de qualquer resposta definitiva.'
   }
   if (triage.missingFields.length > 0) {
     return `Completar triagem perguntando: ${buildSuggestedQuestions(triage.missingFields).join(' ')}`
   }
   if (classification === 'prioridade_maxima' || classification === 'qualificado') {
-    return 'Agendar ou encaminhar para diagnóstico previdenciário com CNIS e documentos de contribuição.'
+    return 'Encaminhar para diagnóstico previdenciário com CNIS, simulação do Meu INSS e documentos simples de contribuição.'
   }
-  return 'Responder à dúvida principal e coletar objetivo, forma de contribuição, situação no INSS e documentos existentes.'
+  return 'Responder à dúvida principal e coletar objetivo, forma de contribuição, situação no INSS e documentos simples existentes.'
 }
 
 function tokenSet(query: string): Set<string> {
@@ -636,7 +639,7 @@ export function buildDrPaulaMessages(input: {
   const ragBlock = input.retrievedDocuments
     .map(
       (doc) =>
-        `[${doc.id}] ${doc.title}\nFonte: ${doc.source} - ${doc.sourceUrl}\nConteudo: ${doc.content}`,
+        `[${doc.id}] ${doc.title}\nFonte: ${doc.source} - ${doc.sourceUrl}\nConteúdo: ${doc.content}`,
     )
     .join('\n\n')
 
@@ -645,12 +648,14 @@ Sua função é fazer triagem inicial para planejamento previdenciário antes da
 
 Tom e postura:
 - Seja cordial, humana, segura e objetiva.
+- Conduza a conversa como atendimento humanizado do escritório. Nunca diga que é IA, robô, automação, assistente virtual ou atendimento automatizado.
 - Fale sempre em português brasileiro correto, natural, com acentuação completa e gramática revisada.
 - Nunca responda sem acentos, com palavras abreviadas ou com português digitado de forma incorreta.
 - Evite juridiquês desnecessário.
 - Faça no máximo 3 perguntas por resposta.
 - Mostre critério técnico sem pressionar a pessoa.
 - Quando houver medo, confusão ou urgência, acolha primeiro e organize o próximo passo.
+- Quando o caso precisar de revisão, diga que vamos analisar o caso com atenção e entraremos com retorno em breve.
 
 Limites obrigatórios:
 - Não prometa aposentadoria, valor, prazo ou resultado.
@@ -658,15 +663,20 @@ Limites obrigatórios:
 - Não calcule benefício final ou regra final com base em poucas mensagens.
 - Se a pessoa enviar dado sensível, oriente que documentos completos sejam enviados apenas pelo canal seguro indicado pela equipe.
 - Não revele o score interno ao cliente.
+- Não use expressões como "vou transferir para um humano", "sou IA", "como assistente virtual" ou similares.
 
 Objetivo da triagem:
 1. Entender se a pessoa quer pedir agora, planejar, corrigir CNIS, avaliar contribuições, comparar regras, revisar simulação, negativa ou benefício concedido.
 2. Identificar forma de contribuição: CLT, MEI, autônomo, facultativo, servidor, professor, rural ou atividade especial.
 3. Identificar situação no INSS: sem pedido, pedido em análise, negativa, benefício concedido com dúvida ou simulação Meu INSS.
 4. Mapear documentos: CNIS, CTPS, comprovantes GPS/DAS/carnê, simulação, carta de concessão, PPP/LTCAT e documentos de vínculo.
-5. Encaminhar para análise humana quando houver prazo, exigência, negativa, CNIS crítico, atividade especial/professor/RPPS ou contribuição sem estratégia.
+5. Solicitar documentos simples para adiantar a análise: CNIS atualizado, simulação do Meu INSS, CTPS, comprovantes GPS/DAS/carnê e carta de exigência, indeferimento ou concessão quando houver.
+6. Encaminhar para a equipe jurídica responsável quando houver prazo, exigência, negativa, CNIS crítico, atividade especial/professor/RPPS ou contribuição sem estratégia.
 
-Memoria interna da conversa:
+Documentos simples que podem ser solicitados:
+${SIMPLE_DOCUMENT_REQUEST}
+
+Memória interna da conversa:
 ${input.memorySummary}
 
 Campos ainda pendentes:
@@ -698,12 +708,12 @@ export function buildDrPaulaFallbackResponse(input: {
 
   const questions = input.triage.suggestedQuestions
   if (questions.length === 0) {
-    return `${intro}\n\n${sourceHint}\n\nPelo que você já contou, o próximo passo é separar o CNIS atualizado e os documentos de contribuição/vínculo para uma leitura técnica do caso. Vou sinalizar para a equipe revisar com você.`
+    return `${intro}\n\n${sourceHint}\n\nPelo que você já contou, vamos analisar seu caso com atenção e entraremos com retorno em breve. ${SIMPLE_DOCUMENT_REQUEST}`
   }
 
   return `${intro}\n\n${sourceHint}\n\nPara eu fazer a triagem inicial, me diga por favor:\n${questions
     .map((question, index) => `${index + 1}. ${question}`)
-    .join('\n')}`
+    .join('\n')}\n\n${SIMPLE_DOCUMENT_REQUEST}`
 }
 
 export function buildPrivateTriageNote(input: {
@@ -720,5 +730,6 @@ export function buildPrivateTriageNote(input: {
     `Documentos: ${input.triage.documentsMentioned.join(', ') || 'não informados'}`,
     `Pendências: ${input.triage.missingFields.join(', ') || 'sem pendências essenciais'}`,
     `Próxima ação: ${input.score.nextBestAction}`,
+    `Documentos simples a adiantar: CNIS atualizado; simulação do Meu INSS; CTPS; comprovantes GPS/DAS/carnê; carta de exigência, indeferimento ou concessão, se houver.`,
   ].join('\n')
 }
