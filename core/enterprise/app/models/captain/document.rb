@@ -47,6 +47,13 @@ class Captain::Document < ApplicationRecord
     available: 1
   }
 
+  enum sync_status: {
+    pending: 0,
+    synced: 1,
+    syncing: 2,
+    failed: 3
+  }, _prefix: :sync
+
   before_create :ensure_within_plan_limit
   after_create_commit :enqueue_crawl_job
   after_create_commit :update_document_usage
@@ -57,11 +64,22 @@ class Captain::Document < ApplicationRecord
 
   scope :for_account, ->(account_id) { where(account_id: account_id) }
   scope :for_assistant, ->(assistant_id) { where(assistant_id: assistant_id) }
+  scope :syncable, -> { where.not(external_link: [nil, '']).where.not('external_link LIKE ?', 'PDF:%') }
+  scope :pdf_documents, -> { where('external_link LIKE ?', 'PDF:%') }
+  scope :sync_in_progress, -> { where(sync_status: sync_statuses[:syncing]) }
 
   def pdf_document?
     return true if pdf_file.attached? && pdf_file.blob.content_type == 'application/pdf'
 
     external_link&.ends_with?('.pdf')
+  end
+
+  def syncable?
+    external_link.present? && !pdf_document?
+  end
+
+  def sync_in_progress?
+    sync_status == 'syncing'
   end
 
   def content_type
