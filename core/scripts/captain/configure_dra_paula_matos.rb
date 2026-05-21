@@ -7,9 +7,29 @@
 #     bundle exec rails runner /app/scripts/captain/configure_dra_paula_matos.rb
 #
 # Optional env:
-#   ACCOUNT_ID=1 INBOX_ID=43
+#   ACCOUNT_ID=1 INBOX_ID=43 DRA_PAULA_PHONE_NUMBER=+5561999999999 DRA_PAULA_INSTANCE_NAME=Dra_Paula_Matos
 
 account = Account.find(ENV.fetch('ACCOUNT_ID', 1))
+
+evolution_configuration = nil
+if defined?(EvolutionApiConfiguration)
+  evolution_configuration = EvolutionApiConfiguration.find_or_initialize_by(account: account)
+  if evolution_configuration.new_record?
+    evolution_base_url = ENV['EVOLUTION_API_URL'].presence || ENV['EVOLUTION_SERVER_URL'].presence
+    evolution_key = ENV['EVOLUTION_API_KEY'].presence
+    webhook_base_url = ENV['FRONTEND_URL'].presence || ENV['WEBHOOK_BASE_URL'].presence
+
+    if evolution_base_url.present? && evolution_key.present? && webhook_base_url.present?
+      evolution_configuration.assign_attributes(
+        base_url: evolution_base_url,
+        global_api_key: evolution_key,
+        webhook_base_url: webhook_base_url,
+        settings: { 'provisioned_by' => 'configure_dra_paula_matos' }
+      )
+      evolution_configuration.save!
+    end
+  end
+end
 
 instructions = <<~TEXT.strip
   Você é a Dra. Paula Matos, advogada especialista em Direito Previdenciário do escritório Coimbra & Ruas. Você faz o primeiro atendimento e a triagem de planejamento previdenciário, aposentadoria, CNIS, contribuições, MEI, atividade especial, professor, RPPS e casos no INSS.
@@ -134,6 +154,47 @@ inbox =
       account.inboxes.find_by(name: 'Dra Juliana') ||
       account.inboxes.where(channel_type: 'Channel::Whatsapp').order(:id).first
   end
+
+if inbox.blank? && defined?(Channel::Whatsapp)
+  phone_number = ENV['DRA_PAULA_PHONE_NUMBER'].presence || ENV['PHONE_NUMBER'].presence
+  instance_name = ENV['DRA_PAULA_INSTANCE_NAME'].presence || ENV['INSTANCE_NAME'].presence || 'Dra_Paula_Matos'
+
+  if phone_number.present? && evolution_configuration&.persisted?
+    channel = Channel::Whatsapp.find_or_initialize_by(phone_number: phone_number)
+    channel.assign_attributes(
+      account: account,
+      provider: 'evolution',
+      provider_config: channel.provider_config.to_h.merge(
+        'source' => 'managed_evolution',
+        'instance_name' => instance_name,
+        'last_connection_state' => 'connecting'
+      )
+    )
+    channel.save!
+
+    inbox = channel.inbox || account.inboxes.create!(
+      name: 'Dra. Paula Matos',
+      channel: channel,
+      greeting_enabled: false,
+      greeting_message: '',
+      working_hours_enabled: false
+    )
+
+    if defined?(EvolutionInstance)
+      evolution_instance = EvolutionInstance.find_or_initialize_by(account: account, inbox: inbox)
+      evolution_instance.assign_attributes(
+        channel_whatsapp: channel,
+        evolution_api_configuration: evolution_configuration,
+        instance_name: instance_name,
+        connection_state: 'connecting',
+        provisioning_status: 'pending',
+        phone_number: channel.phone_number
+      )
+      evolution_instance.webhook_token ||= SecureRandom.urlsafe_base64(32)
+      evolution_instance.save!
+    end
+  end
+end
 
 if inbox
   inbox.update!(name: 'Dra. Paula Matos') if inbox.name != 'Dra. Paula Matos'
