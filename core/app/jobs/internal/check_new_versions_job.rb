@@ -11,6 +11,7 @@
   private
 
   def update_version_info
+    return if @instance_info.blank?
     return if @instance_info['version'].blank?
 
     ::Redis::Alfred.set(::Redis::Alfred::LATEST_ChusteRM_VERSION, @instance_info['version'])
