@@ -240,6 +240,7 @@ COPY lib/tasks/captain_playbooks.rake ./lib/tasks/captain_playbooks.rake
 COPY lib/tasks/captain_dr_paula_matos.rake ./lib/tasks/captain_dr_paula_matos.rake
 COPY db/seeds.rb ./db/seeds.rb
 COPY db/seeds/ ./db/seeds/
+COPY scripts/captain/ ./scripts/captain/
 COPY app/models/channel/whatsapp.rb ./app/models/channel/whatsapp.rb
 COPY app/controllers/dashboard_controller.rb ./app/controllers/dashboard_controller.rb
 COPY app/controllers/evo_manager_controller.rb ./app/controllers/evo_manager_controller.rb
