@@ -1,0 +1,234 @@
+# frozen_string_literal: true
+
+module Evolution
+  class Client
+    DEFAULT_TIMEOUT = 10
+    RETRYABLE_STATUSES = [429, 502, 503, 504].freeze
+
+    def initialize(configuration:, timeout: DEFAULT_TIMEOUT)
+      @configuration = configuration
+      @timeout = timeout
+    end
+
+    def health
+      get('/', timeout: 3)
+    end
+
+    def fetch_instances
+      parsed = get('/instance/fetchInstances')
+      normalize_instances_response(parsed)
+    end
+
+    def create_instance(instance_name:)
+      post('/instance/create', {
+        instanceName: instance_name,
+        integration: 'WHATSAPP-BAILEYS',
+        qrcode: true,
+        rejectCall: true,
+        groupsIgnore: true,
+        alwaysOnline: false,
+        readMessages: false,
+        readStatus: false,
+        syncFullHistory: false
+      }, timeout: 15)
+    end
+
+    def set_webhook(instance_name:, url:, headers:, events:)
+      post("/webhook/set/#{escape(instance_name)}", legacy_webhook_payload(url: url, headers: headers, events: events), timeout: 15)
+    rescue Evolution::ApiError => e
+      raise unless [400, 404, 405, 422].include?(e.status)
+
+      post("/webhook/set/#{escape(instance_name)}", webhook_payload(url: url, events: events), timeout: 15)
+    end
+
+    def find_webhook(instance_name:)
+      get("/webhook/find/#{escape(instance_name)}")
+    end
+
+    def connect(instance_name:)
+      get("/instance/connect/#{escape(instance_name)}", timeout: 15)
+    end
+
+    def connection_state(instance_name:)
+      parsed = get("/instance/connectionState/#{escape(instance_name)}")
+      return 'unknown' unless parsed.is_a?(Hash)
+
+      parsed.dig('instance', 'state') || parsed.dig('instance', 'status') || parsed['state'] || parsed['status'] || 'unknown'
+    end
+
+    def logout(instance_name:)
+      delete("/instance/logout/#{escape(instance_name)}", timeout: 15, ignore_not_found: true)
+    end
+
+    def restart(instance_name:)
+      # Evolution deployments differ between POST and PUT for restart. Try POST first.
+      post("/instance/restart/#{escape(instance_name)}", {}, timeout: 15)
+    rescue Evolution::ApiError => e
+      raise unless e.status == 404 || e.status == 405
+
+      put("/instance/restart/#{escape(instance_name)}", {}, timeout: 15)
+    end
+
+    def delete_instance(instance_name:)
+      delete("/instance/delete/#{escape(instance_name)}", timeout: 15, ignore_not_found: true)
+    end
+
+    def send_text(instance_name:, number:, text:)
+      post("/message/sendText/#{escape(instance_name)}", {
+        number: number,
+        text: text
+      }, timeout: 20)
+    end
+
+    def send_media(instance_name:, number:, mediatype:, media:, caption:, file_name:)
+      post("/message/sendMedia/#{escape(instance_name)}", {
+        number: number,
+        mediatype: mediatype,
+        media: media,
+        caption: caption,
+        fileName: file_name
+      }, timeout: 45)
+    end
+
+    def normalize_instances_response(parsed)
+      raw_list =
+        case parsed
+        when Array then parsed
+        when Hash
+          parsed['instances'] || parsed['data'] || Array(parsed['value'])
+        else
+          []
+        end
+
+      Array(raw_list).filter_map do |raw|
+        next unless raw.is_a?(Hash)
+
+        name = raw['name'] || raw['instanceName'] || raw.dig('instance', 'instanceName') || raw.dig('instance', 'name')
+        next if name.blank?
+
+        {
+          name: name,
+          connection_status: raw['connectionStatus'] || raw['status'] ||
+            raw.dig('instance', 'status') || raw.dig('instance', 'state'),
+          owner_jid: raw['ownerJid'] || raw['owner'] || raw.dig('instance', 'ownerJid'),
+          phone_number: normalize_phone(raw['ownerJid'] || raw['owner'] || raw['number']),
+          profile_name: raw['profileName'] || raw.dig('profile', 'name'),
+          profile_picture_url: raw['profilePicUrl'] || raw['profilePictureUrl'] || raw.dig('profile', 'pictureUrl')
+        }.compact
+      end
+    end
+
+    private
+
+    def get(path, timeout: @timeout)
+      request(:get, path, timeout: timeout)
+    end
+
+    def post(path, body, timeout: @timeout)
+      request(:post, path, body: body, timeout: timeout)
+    end
+
+    def put(path, body, timeout: @timeout)
+      request(:put, path, body: body, timeout: timeout)
+    end
+
+    def delete(path, timeout: @timeout, ignore_not_found: false)
+      request(:delete, path, timeout: timeout, ignore_not_found: ignore_not_found)
+    end
+
+    def request(method, path, body: nil, timeout: @timeout, ignore_not_found: false)
+      response = with_retries do
+        HTTParty.public_send(
+          method,
+          "#{base_url}#{path}",
+          headers: headers,
+          timeout: timeout,
+          body: body.nil? ? nil : body.to_json
+        )
+      end
+
+      return {} if ignore_not_found && response.code.to_i == 404
+      return parsed_response(response) if response.success?
+
+      raise Evolution::ApiError.new(error_message(response), status: response.code.to_i, body: response.body)
+    rescue Net::OpenTimeout, Net::ReadTimeout, Timeout::Error => e
+      raise Evolution::TimeoutError, e.message
+    end
+
+    def with_retries
+      attempts = 0
+
+      begin
+        attempts += 1
+        response = yield
+        return response unless RETRYABLE_STATUSES.include?(response.code.to_i) && attempts < 4
+
+        sleep(0.25 * attempts)
+      end while attempts < 4
+
+      response
+    end
+
+    def parsed_response(response)
+      parsed = response.parsed_response
+      parsed = JSON.parse(parsed) if parsed.is_a?(String) && parsed.strip.start_with?('{', '[')
+      parsed.presence || {}
+    rescue StandardError
+      {}
+    end
+
+    def error_message(response)
+      parsed = parsed_response(response)
+      return parsed if parsed.is_a?(String)
+      return response.body.to_s.truncate(300) unless parsed.is_a?(Hash)
+
+      message = parsed['message'] || parsed.dig('error', 'message') || parsed.dig('response', 'message')
+      message = message.flatten.join(', ') if message.is_a?(Array)
+      message.presence || response.body.to_s.truncate(300)
+    end
+
+    def base_url
+      @configuration.base_url.to_s.chomp('/')
+    end
+
+    def headers
+      {
+        'apikey' => @configuration.global_api_key.to_s,
+        'Content-Type' => 'application/json'
+      }
+    end
+
+    def webhook_payload(url:, events:)
+      {
+        enabled: true,
+        url: url,
+        webhookByEvents: false,
+        webhookBase64: true,
+        events: events
+      }
+    end
+
+    def legacy_webhook_payload(url:, headers:, events:)
+      {
+        webhook: {
+          enabled: true,
+          url: url,
+          headers: headers,
+          webhookByEvents: false,
+          webhookBase64: true,
+          events: events
+        }
+      }
+    end
+
+    def escape(value)
+      ERB::Util.url_encode(value.to_s)
+    end
+
+    def normalize_phone(value)
+      phone = value.to_s.split('@').first
+      digits = phone.gsub(/\D/, '')
+      digits.present? ? "+#{digits}" : nil
+    end
+  end
+end

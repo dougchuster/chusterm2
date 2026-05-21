@@ -74,6 +74,7 @@ class Inbox < ApplicationRecord
   has_one :agent_bot, through: :agent_bot_inbox
   has_one :captain_inbox, dependent: :destroy, class_name: 'CaptainInbox'
   has_one :captain_assistant, through: :captain_inbox, class_name: 'Captain::Assistant'
+  has_one :evolution_instance, dependent: :destroy
   has_many :webhooks, dependent: :destroy_async
   has_many :hooks, dependent: :destroy_async, class_name: 'Integrations::Hook'
 

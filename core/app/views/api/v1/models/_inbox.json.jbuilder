@@ -136,6 +136,24 @@ if resource.whatsapp?
   json.message_templates resource.channel.try(:message_templates)
   json.provider_config resource.channel.try(:provider_config) if Current.account_user&.administrator?
   json.reauthorization_required resource.channel.try(:reauthorization_required?)
+  if resource.channel.try(:provider) == 'evolution' && resource.evolution_instance.present?
+    instance = resource.evolution_instance
+    json.evolution_instance do
+      json.id instance.id
+      json.instance_name instance.instance_name
+      json.connection_state instance.connection_state
+      json.provisioning_status instance.provisioning_status
+      json.phone_number instance.phone_number
+      json.profile_name instance.profile_name
+      json.profile_picture_url instance.profile_picture_url
+      json.latest_qr_at instance.latest_qr_at
+      json.last_connected_at instance.last_connected_at
+      json.last_disconnected_at instance.last_disconnected_at
+      json.last_sync_at instance.last_sync_at
+      json.last_error instance.last_error
+      json.circuit_open_until instance.circuit_open_until
+    end
+  end
 end
 
 ## Voice Channel Attributes

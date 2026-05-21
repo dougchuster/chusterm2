@@ -74,16 +74,24 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
   end
 
   def generate_and_process_response
-    @response = Captain::Llm::AssistantChatService.new(assistant: @assistant, conversation: @conversation).generate_response(
-      message_history: collect_previous_messages
-    )
+    @response = if deterministic_triage_enabled?
+                  deterministic_triage_response
+                else
+                  Captain::Llm::AssistantChatService.new(assistant: @assistant, conversation: @conversation).generate_response(
+                    message_history: collect_previous_messages
+                  )
+                end
     process_response
   end
 
   def generate_response_with_v2
-    @response = Captain::Assistant::AgentRunnerService.new(assistant: @assistant, conversation: @conversation).generate_response(
-      message_history: collect_previous_messages
-    )
+    @response = if deterministic_triage_enabled?
+                  deterministic_triage_response
+                else
+                  Captain::Assistant::AgentRunnerService.new(assistant: @assistant, conversation: @conversation).generate_response(
+                    message_history: collect_previous_messages
+                  )
+                end
     process_response
   end
 
@@ -326,11 +334,42 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
   end
 
   def log_error(error)
-    ChusteRMExceptionTracker.new(error, account: account).capture_exception
+    ::ChusteRMExceptionTracker.new(error, account: account).capture_exception
   end
 
   def captain_v2_enabled?
+    return false if ActiveModel::Type::Boolean.new.cast(@assistant.config['force_legacy_chat'])
+
     account.feature_enabled?('captain_integration_v2')
+  end
+
+  def deterministic_triage_enabled?
+    ActiveModel::Type::Boolean.new.cast(@assistant.config['deterministic_triage'])
+  end
+
+  def deterministic_triage_response
+    collect_previous_messages
+    latest_message = latest_public_incoming_message&.content.to_s.strip
+    normalized = ActiveSupport::Inflector.transliterate(latest_message).downcase
+
+    response_text = if greeting_message?(normalized)
+                      'Boa tarde! Aqui é a Dra. Paula Matos, advogada previdenciária. Para eu entender melhor, qual é o seu objetivo no INSS hoje?'
+                    elsif normalized.include?('planejamento') || normalized.include?('como funciona')
+                      'O planejamento previdenciário serve para conferir seu histórico no INSS antes de qualquer decisão, identificar erros no CNIS e avaliar o melhor momento para pedir o benefício. Para começarmos, me diga sua idade.'
+                    elsif normalized.include?('nao sei') || normalized.include?('nao tenho certeza')
+                      'Sem problema. Vamos por partes. Primeiro, me diga sua idade.'
+                    else
+                      'Entendi. Vou organizar sua triagem com cuidado. Primeiro, me diga qual benefício ou objetivo você quer avaliar no INSS.'
+                    end
+
+    {
+      'response' => response_text,
+      'reasoning' => 'Resposta determinística de triagem previdenciária para evitar fallback genérico quando o provedor LLM está indisponível.'
+    }
+  end
+
+  def greeting_message?(normalized)
+    normalized.match?(/\A(oi|ola|bom dia|boa tarde|boa noite|tudo bem|opa)[\s!.?]*\z/)
   end
 
   def ai_response_paused?

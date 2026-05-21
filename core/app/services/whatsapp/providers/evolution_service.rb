@@ -37,6 +37,8 @@ class Whatsapp::Providers::EvolutionService < Whatsapp::Providers::BaseService
   end
 
   def validate_provider_config?
+    return false if base_url.blank? || api_key.blank?
+
     response = HTTParty.get(
       "#{base_url}/instance/fetchInstances",
       headers: api_headers,
@@ -50,7 +52,7 @@ class Whatsapp::Providers::EvolutionService < Whatsapp::Providers::BaseService
 
   def api_headers
     {
-      'apikey' => provider_config['api_key'],
+      'apikey' => api_key,
       'Content-Type' => 'application/json'
     }
   end
@@ -68,6 +70,8 @@ class Whatsapp::Providers::EvolutionService < Whatsapp::Providers::BaseService
   end
 
   def qr_code_payload
+    return Evolution::InstanceService.new(instance: managed_instance).qr_code_payload if managed_instance.present?
+
     state = connection_status
     return { status: 'connected', state: state } if connected_state?(state)
 
@@ -106,6 +110,8 @@ class Whatsapp::Providers::EvolutionService < Whatsapp::Providers::BaseService
 
   # Check connection state of the instance
   def connection_status
+    return Evolution::InstanceService.new(instance: managed_instance).connection_state if managed_instance.present?
+
     response = HTTParty.get(
       "#{base_url}/instance/connectionState/#{instance_name}",
       headers: api_headers,
@@ -120,15 +126,21 @@ class Whatsapp::Providers::EvolutionService < Whatsapp::Providers::BaseService
 
   # Create the instance on Evolution API and configure its webhook
   def setup_instance
+    return Evolution::InstanceService.new(instance: managed_instance).provision! if managed_instance.present?
+
     create_instance_on_evolution unless instance_exists?
     configure_webhook
   end
 
   # Instances visible in Evolution Manager (fetchInstances) — same server as api_url/api_key.
   def fetch_instances_list
+    if managed_configuration.present?
+      return Evolution::Client.new(configuration: managed_configuration).fetch_instances
+    end
+
     self.class.remote_fetch_instances(
-      api_url: provider_config['api_url'],
-      api_key: provider_config['api_key']
+      api_url: base_url,
+      api_key: api_key
     )
   end
 
@@ -184,12 +196,24 @@ class Whatsapp::Providers::EvolutionService < Whatsapp::Providers::BaseService
     whatsapp_channel.provider_config
   end
 
+  def managed_instance
+    @managed_instance ||= whatsapp_channel.evolution_instance
+  end
+
+  def managed_configuration
+    @managed_configuration ||= managed_instance&.configuration || whatsapp_channel.account&.evolution_api_configuration
+  end
+
   def base_url
-    provider_config['api_url']&.chomp('/')
+    managed_configuration&.base_url.presence || provider_config['api_url']&.chomp('/')
   end
 
   def instance_name
-    provider_config['instance_name']
+    managed_instance&.instance_name.presence || provider_config['instance_name']
+  end
+
+  def api_key
+    managed_configuration&.global_api_key.presence || provider_config['api_key']
   end
 
   def phone_number_without_plus(phone)
@@ -372,7 +396,11 @@ class Whatsapp::Providers::EvolutionService < Whatsapp::Providers::BaseService
   end
 
   def configure_webhook
-    callback_url = "#{webhook_base_url}/webhooks/evolution/#{whatsapp_channel.phone_number.to_s.delete_prefix('+')}"
+    callback_url = if managed_instance.present?
+                     "#{managed_instance.configuration.webhook_base_url}/webhooks/evolution/#{managed_instance.webhook_token}"
+                   else
+                     "#{webhook_base_url}/webhooks/evolution/#{whatsapp_channel.phone_number.to_s.delete_prefix('+')}"
+                   end
 
     response = HTTParty.post(
       "#{base_url}/webhook/set/#{instance_name}",
@@ -383,7 +411,8 @@ class Whatsapp::Providers::EvolutionService < Whatsapp::Providers::BaseService
           enabled: true,
           url: callback_url,
           headers: {
-            apikey: provider_config['api_key']
+            apikey: api_key,
+            'x-evolution-webhook-token': managed_instance&.webhook_token
           },
           webhookByEvents: false,
           events: %w[

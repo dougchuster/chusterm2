@@ -6,7 +6,10 @@ class Channels::EvolutionConnectionHealthJob < ApplicationJob
   queue_as :low
 
   def perform
+    Evolution::SyncConnectionStatusJob.perform_now
+
     Channel::Whatsapp.where(provider: 'evolution').find_each do |channel|
+      next if channel.evolution_instance.present?
       next unless channel.account.active?
 
       service = Whatsapp::Providers::EvolutionService.new(whatsapp_channel: channel)

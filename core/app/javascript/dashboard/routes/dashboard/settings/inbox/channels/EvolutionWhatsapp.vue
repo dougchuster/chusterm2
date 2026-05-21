@@ -1,17 +1,10 @@
+<!-- eslint-disable vue/no-bare-strings-in-template, @intlify/vue-i18n/no-raw-text -->
 <script>
-/* global axios */
 import { mapGetters } from 'vuex';
 import { useVuelidate } from '@vuelidate/core';
 import { useAlert } from 'dashboard/composables';
 import { required } from '@vuelidate/validators';
 import router from '../../../../index';
-import {
-  isEvolutionInboxPhone,
-  normalizeToE164Phone,
-} from 'shared/helpers/Validators';
-
-const isHttpUrl = (value = '') =>
-  value ? value.startsWith('http://') || value.startsWith('https://') : true;
 import NextButton from 'dashboard/components-next/button/Button.vue';
 
 export default {
@@ -22,16 +15,21 @@ export default {
     return { v$: useVuelidate() };
   },
   data() {
-    const gc = window.globalConfig || {};
     return {
       inboxName: '',
-      phoneNumber: '',
-      evolutionApiUrl: gc.EVOLUTION_API_URL || '',
-      evolutionApiKey: gc.EVOLUTION_API_KEY || '',
       instanceName: '',
-      evolutionRemoteInstances: [],
-      evolutionRemoteLoading: false,
-      evolutionRemoteError: '',
+      evolutionConfigured: false,
+      evolutionConfigLoading: false,
+      labels: {
+        notConfigured:
+          'A Evolution API ainda não foi configurada. Acesse Configurações > Evolution API, salve a URL pública, chave global e URL de webhook, depois volte para criar a caixa.',
+        automaticInstance:
+          'A instância será criada automaticamente na Evolution API.',
+        automaticWebhook:
+          'O webhook será configurado automaticamente para o Chatwoot.',
+        qrInsideChatwoot:
+          'Após criar, escaneie o QR Code dentro do próprio Chatwoot.',
+      },
     };
   },
   computed: {
@@ -42,74 +40,43 @@ export default {
   },
   validations: {
     inboxName: { required },
-    phoneNumber: { required, isEvolutionInboxPhone },
-    evolutionApiUrl: { required, isHttpUrl },
-    evolutionApiKey: { required },
     instanceName: { required },
   },
+  async mounted() {
+    await this.loadEvolutionConfiguration();
+  },
   methods: {
-    async loadRemoteEvolutionInstances() {
-      this.v$.evolutionApiUrl.$touch();
-      this.v$.evolutionApiKey.$touch();
-      if (
-        this.v$.evolutionApiUrl.$invalid ||
-        this.v$.evolutionApiKey.$invalid
-      ) {
-        useAlert(
-          this.$t(
-            'INBOX_MGMT.ADD.WHATSAPP.EVOLUTION.DISCOVER_INSTANCES.FIX_URL_KEY'
-          )
-        );
-        return;
-      }
-      this.evolutionRemoteLoading = true;
-      this.evolutionRemoteError = '';
+    async loadEvolutionConfiguration() {
+      this.evolutionConfigLoading = true;
       try {
-        const { data } = await axios.post(
-          `/api/v1/accounts/${this.accountId}/channels/evolution/preview_instances`,
-          {
-            api_url: this.evolutionApiUrl,
-            api_key: this.evolutionApiKey,
-          }
+        const config = await this.$store.dispatch(
+          'evolution/fetchConfiguration',
+          this.accountId
         );
-        this.evolutionRemoteInstances = data.instances || [];
-        if (this.evolutionRemoteInstances.length === 0) {
-          this.evolutionRemoteError = this.$t(
-            'INBOX_MGMT.ADD.WHATSAPP.EVOLUTION.DISCOVER_INSTANCES.EMPTY'
-          );
-        }
-      } catch (e) {
-        this.evolutionRemoteInstances = [];
-        this.evolutionRemoteError =
-          e?.response?.data?.error ||
-          this.$t(
-            'INBOX_MGMT.ADD.WHATSAPP.EVOLUTION.DISCOVER_INSTANCES.FETCH_ERROR'
-          );
+        this.evolutionConfigured = Boolean(config?.configured);
+      } catch {
+        this.evolutionConfigured = false;
       } finally {
-        this.evolutionRemoteLoading = false;
+        this.evolutionConfigLoading = false;
       }
     },
     async createChannel() {
       this.v$.$touch();
-      if (this.v$.$invalid) {
+      if (this.v$.$invalid) return;
+
+      if (!this.evolutionConfigured) {
+        useAlert(
+          'Configure a Evolution API em Configurações > Evolution API antes de criar a caixa.'
+        );
         return;
       }
 
       try {
         const whatsappChannel = await this.$store.dispatch(
-          'inboxes/createChannel',
+          'inboxes/createEvolutionChannel',
           {
             name: this.inboxName?.trim(),
-            channel: {
-              type: 'whatsapp',
-              phone_number: normalizeToE164Phone(this.phoneNumber),
-              provider: 'evolution',
-              provider_config: {
-                api_url: this.evolutionApiUrl,
-                api_key: this.evolutionApiKey,
-                instance_name: this.instanceName,
-              },
-            },
+            instance_name: this.instanceName?.trim(),
           }
         );
 
@@ -132,6 +99,13 @@ export default {
 
 <template>
   <form class="flex flex-wrap flex-col mx-0" @submit.prevent="createChannel()">
+    <div
+      v-if="!evolutionConfigLoading && !evolutionConfigured"
+      class="mb-4 p-4 rounded-lg bg-n-ruby-3 text-sm text-n-ruby-11"
+    >
+      {{ labels.notConfigured }}
+    </div>
+
     <div class="flex-shrink-0 flex-grow-0">
       <label :class="{ error: v$.inboxName.$error }">
         {{ $t('INBOX_MGMT.ADD.WHATSAPP.INBOX_NAME.LABEL') }}
@@ -148,103 +122,18 @@ export default {
     </div>
 
     <div class="flex-shrink-0 flex-grow-0">
-      <label :class="{ error: v$.phoneNumber.$error }">
-        {{ $t('INBOX_MGMT.ADD.WHATSAPP.EVOLUTION.PHONE.LABEL') }}
-        <input
-          v-model="phoneNumber"
-          type="text"
-          :placeholder="
-            $t('INBOX_MGMT.ADD.WHATSAPP.EVOLUTION.PHONE.PLACEHOLDER')
-          "
-          @blur="v$.phoneNumber.$touch"
-        />
-        <span v-if="v$.phoneNumber.$error" class="message">
-          {{ $t('INBOX_MGMT.ADD.WHATSAPP.EVOLUTION.PHONE.ERROR') }}
-        </span>
-        <span v-else class="text-xs text-n-slate-10 block mt-1">
-          {{ $t('INBOX_MGMT.ADD.WHATSAPP.EVOLUTION.PHONE.HELP') }}
-        </span>
-      </label>
-    </div>
-
-    <div class="flex-shrink-0 flex-grow-0">
-      <label :class="{ error: v$.evolutionApiUrl.$error }">
-        {{ $t('INBOX_MGMT.ADD.WHATSAPP.EVOLUTION.API_URL.LABEL') }}
-        <input
-          v-model="evolutionApiUrl"
-          type="url"
-          :placeholder="
-            $t('INBOX_MGMT.ADD.WHATSAPP.EVOLUTION.API_URL.PLACEHOLDER')
-          "
-          @blur="v$.evolutionApiUrl.$touch"
-        />
-        <span v-if="v$.evolutionApiUrl.$error" class="message">
-          {{ $t('INBOX_MGMT.ADD.WHATSAPP.EVOLUTION.API_URL.ERROR') }}
-        </span>
-      </label>
-    </div>
-
-    <div class="flex-shrink-0 flex-grow-0">
-      <label :class="{ error: v$.evolutionApiKey.$error }">
-        {{ $t('INBOX_MGMT.ADD.WHATSAPP.EVOLUTION.API_KEY.LABEL') }}
-        <input
-          v-model="evolutionApiKey"
-          type="text"
-          :placeholder="
-            $t('INBOX_MGMT.ADD.WHATSAPP.EVOLUTION.API_KEY.PLACEHOLDER')
-          "
-          @blur="v$.evolutionApiKey.$touch"
-        />
-        <span v-if="v$.evolutionApiKey.$error" class="message">
-          {{ $t('INBOX_MGMT.ADD.WHATSAPP.EVOLUTION.API_KEY.ERROR') }}
-        </span>
-      </label>
-    </div>
-
-    <div class="flex-shrink-0 flex-grow-0">
       <label :class="{ error: v$.instanceName.$error }">
         {{ $t('INBOX_MGMT.ADD.WHATSAPP.EVOLUTION.INSTANCE_NAME.LABEL') }}
         <input
           v-model="instanceName"
           type="text"
-          list="evolution-instances-datalist-wizard"
           :placeholder="
             $t('INBOX_MGMT.ADD.WHATSAPP.EVOLUTION.INSTANCE_NAME.PLACEHOLDER')
           "
           @blur="v$.instanceName.$touch"
         />
-        <datalist id="evolution-instances-datalist-wizard">
-          <option
-            v-for="i in evolutionRemoteInstances"
-            :key="i.name"
-            :value="i.name"
-          />
-        </datalist>
         <span v-if="v$.instanceName.$error" class="message">
           {{ $t('INBOX_MGMT.ADD.WHATSAPP.EVOLUTION.INSTANCE_NAME.ERROR') }}
-        </span>
-        <span v-if="evolutionRemoteError" class="message block mt-1">
-          {{ evolutionRemoteError }}
-        </span>
-        <div class="mt-2">
-          <NextButton
-            type="button"
-            outline
-            slate
-            sm
-            :is-loading="evolutionRemoteLoading"
-            :label="
-              $t('INBOX_MGMT.ADD.WHATSAPP.EVOLUTION.DISCOVER_INSTANCES.BUTTON')
-            "
-            @click="loadRemoteEvolutionInstances"
-          />
-        </div>
-        <span class="text-xs text-n-slate-10 block mt-1">
-          {{
-            $t(
-              'INBOX_MGMT.ADD.WHATSAPP.EVOLUTION.DISCOVER_INSTANCES.PREVIEW_HELP'
-            )
-          }}
         </span>
       </label>
     </div>
@@ -254,17 +143,17 @@ export default {
         {{ $t('INBOX_MGMT.ADD.WHATSAPP.EVOLUTION.INFO.TITLE') }}
       </p>
       <ul class="list-disc pl-4 space-y-1">
-        <li>{{ $t('INBOX_MGMT.ADD.WHATSAPP.EVOLUTION.INFO.QR_CODE') }}</li>
-        <li>{{ $t('INBOX_MGMT.ADD.WHATSAPP.EVOLUTION.INFO.UNOFFICIAL') }}</li>
-        <li>{{ $t('INBOX_MGMT.ADD.WHATSAPP.EVOLUTION.INFO.BAILEYS') }}</li>
+        <li>{{ labels.automaticInstance }}</li>
+        <li>{{ labels.automaticWebhook }}</li>
+        <li>{{ labels.qrInsideChatwoot }}</li>
       </ul>
     </div>
 
     <div class="flex flex-row justify-end gap-2 py-2 px-0 w-full">
       <NextButton
         type="submit"
-        :disabled="v$.$invalid || uiFlags.isCreating"
-        :is-loading="uiFlags.isCreating"
+        :disabled="v$.$invalid || uiFlags.isCreating || !evolutionConfigured"
+        :is-loading="uiFlags.isCreating || evolutionConfigLoading"
       >
         {{ $t('INBOX_MGMT.ADD.WHATSAPP.EVOLUTION.SUBMIT_BUTTON') }}
       </NextButton>

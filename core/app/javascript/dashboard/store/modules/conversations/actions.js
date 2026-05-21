@@ -193,13 +193,18 @@ const actions = {
   async setActiveChat({ commit, dispatch }, { data, after }) {
     commit(types.SET_CURRENT_CHAT_WINDOW, data);
     commit(types.CLEAR_ALL_MESSAGES_LOADED, data.id);
-    if (data.dataFetched === undefined) {
+    const messages = data.messages || [];
+    const shouldFetchMessages =
+      data.dataFetched === undefined ||
+      (messages.length <= 1 && data.allMessagesLoaded !== true);
+
+    if (shouldFetchMessages) {
       try {
-        await dispatch('fetchPreviousMessages', {
-          after,
-          before: data.messages[0].id,
-          conversationId: data.id,
-        });
+        const fetchParams = { after, conversationId: data.id };
+        if (messages[0]?.id) {
+          fetchParams.before = messages[0].id;
+        }
+        await dispatch('fetchPreviousMessages', fetchParams);
         commit(types.SET_CHAT_DATA_FETCHED, data.id);
       } catch (error) {
         // Ignore error

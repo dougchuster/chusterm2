@@ -783,6 +783,13 @@ const menuItems = computed(() => {
           to: accountScopedRoute('settings_inbox_list'),
         },
         {
+          name: 'Settings Evolution API',
+          label: 'Evolution API',
+          icon: 'i-lucide-message-circle',
+          activeOn: ['settings_evolution_index'],
+          to: accountScopedRoute('settings_evolution_index'),
+        },
+        {
           name: 'Settings Labels',
           label: t('SIDEBAR.LABELS'),
           icon: 'i-lucide-tags',

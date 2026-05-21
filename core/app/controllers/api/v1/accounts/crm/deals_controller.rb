@@ -5,20 +5,7 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
   def index
     authorize CrmDeal, :index?
 
-    @deals = Current.account.crm_deals
-    @deals = @deals.by_pipeline(params[:pipeline_id]) if params[:pipeline_id].present?
-    @deals = @deals.by_stage(params[:stage_id]) if params[:stage_id].present?
-    @deals = @deals.by_legal_area(params[:legal_area]) if params[:legal_area].present?
-    @deals = @deals.where(status: params[:status]) if params[:status].present?
-    @deals = @deals.where(operational_status: params[:operational_status]) if params[:operational_status].present?
-    @deals = @deals.where(source: params[:source]) if params[:source].present?
-    @deals = @deals.where(disposition_reason: params[:disposition_reason]) if params[:disposition_reason].present?
-    @deals = @deals.where(owner_id: params[:owner_id]) if params[:owner_id].present?
-    @deals = @deals.where(conversation_id: params[:conversation_id]) if params[:conversation_id].present?
-    @deals = @deals.where(contact_id: params[:contact_id]) if params[:contact_id].present?
-    @deals = @deals.where('score_total >= ?', params[:score_min].to_i) if params[:score_min].present?
-    @deals = @deals.where('score_total <= ?', params[:score_max].to_i) if params[:score_max].present?
-    @deals = filter_by_search(@deals) if params[:search].present?
+    @deals = filtered_deals(Current.account.crm_deals)
     @deals = @deals.order(created_at: :desc).includes(:crm_pipeline_stage, :crm_loss_reason, :crm_lead_scores, :crm_activities, :contact)
 
     total = @deals.count
@@ -140,13 +127,13 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
   end
 
   def bulk_action
-    authorize CrmDeal, :update?
+    authorize CrmDeal, bulk_destroy_requested? ? :destroy? : :update?
 
-    deal_ids = Array(params[:deal_ids]).compact_blank
-    return render json: { error: 'Nenhum lead selecionado.' }, status: :unprocessable_entity if deal_ids.empty?
+    deals = bulk_deals_scope
+    requested_count = select_all_requested? ? deals.count : Array(params[:deal_ids]).compact_blank.size
+    return render json: { error: 'Nenhum lead selecionado.' }, status: :unprocessable_entity if requested_count.zero?
 
-    deals = Current.account.crm_deals.where(id: deal_ids)
-    result = { requested: deal_ids.size, processed: 0, failed: [] }
+    result = { requested: requested_count, processed: 0, failed: [] }
 
     deals.find_each do |deal|
       process_bulk_deal!(deal)
@@ -188,14 +175,9 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
   def export
     authorize CrmDeal, :export?
 
-    @deals = Current.account.crm_deals
-    @deals = @deals.by_pipeline(params[:pipeline_id]) if params[:pipeline_id].present?
-    @deals = @deals.by_stage(params[:stage_id]) if params[:stage_id].present?
-    @deals = @deals.by_legal_area(params[:legal_area]) if params[:legal_area].present?
-    @deals = @deals.where(status: params[:status]) if params[:status].present?
-    @deals = @deals.where(owner_id: params[:owner_id]) if params[:owner_id].present?
-    @deals = @deals.where('score_total >= ?', params[:score_min].to_i) if params[:score_min].present?
-    @deals = @deals.order(created_at: :desc).includes(:crm_pipeline_stage, :crm_loss_reason, :contact)
+    @deals = filtered_deals(Current.account.crm_deals)
+             .order(created_at: :desc)
+             .includes(:crm_pipeline_stage, :crm_loss_reason, :contact)
 
     filename = "crm_deals_#{Date.today.iso8601}.csv"
     csv_content = build_csv(@deals)
@@ -217,7 +199,8 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
                   :case_type, :urgency_level, :source, :source_detail, :operational_status,
                   :value_estimate_cents, :lgpd_basis,
                   :consent_status, :consent_channel, :consent_collected_at,
-                  :data_retention_until, custom_fields: {}, attribution: {})
+                  :data_retention_until, :contact_name, :contact_phone_number, :contact_email,
+                  custom_fields: {}, attribution: {})
   end
 
   def deal_update_params
@@ -470,7 +453,7 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
   end
 
   def process_bulk_deal!(deal)
-    case params[:action].to_s
+    case requested_bulk_action
     when 'move'
       stage = Current.account.crm_pipeline_stages.find(params[:stage_id])
       Crm::DealMover.new(deal: deal, stage_id: stage.id, actor: Current.user).perform
@@ -511,14 +494,70 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
       )
     when 'apply_label'
       apply_label_to_deal!(deal, params[:label_title])
+    when 'destroy', 'delete', 'purge'
+      Crm::AuditLogger.log(
+        account: Current.account,
+        actor: Current.user,
+        action: 'deal_destroyed',
+        target: deal,
+        payload: { bulk: true }
+      )
+      deal.destroy!
     else
-      raise ArgumentError, 'Acao em lote invalida.'
+      raise ArgumentError, 'Ação em lote inválida.'
     end
+  end
+
+  def filtered_deals(scope, filters = params)
+    urgency = filters[:urgency].presence || filters[:urgency_level]
+
+    scope = scope.by_pipeline(filters[:pipeline_id]) if filters[:pipeline_id].present?
+    scope = scope.by_stage(filters[:stage_id]) if filters[:stage_id].present?
+    scope = scope.by_legal_area(filters[:legal_area]) if filters[:legal_area].present?
+    scope = scope.where(status: filters[:status]) if filters[:status].present?
+    scope = scope.where(operational_status: filters[:operational_status]) if filters[:operational_status].present?
+    scope = scope.where(source: filters[:source]) if filters[:source].present?
+    scope = scope.where(disposition_reason: filters[:disposition_reason]) if filters[:disposition_reason].present?
+    scope = scope.where(conversation_id: filters[:conversation_id]) if filters[:conversation_id].present?
+    scope = scope.where(contact_id: filters[:contact_id]) if filters[:contact_id].present?
+    scope = scope.where(urgency_level: urgency) if urgency.present?
+    scope = filter_by_owner(scope, filters)
+    scope = scope.where('score_total >= ?', filters[:score_min].to_i) if filters[:score_min].present?
+    scope = scope.where('score_total <= ?', filters[:score_max].to_i) if filters[:score_max].present?
+    scope = filter_by_search(scope, filters[:search]) if filters[:search].present?
+    scope
+  end
+
+  def filter_by_owner(scope, filters)
+    return scope if filters[:owner_id].blank?
+
+    filters[:owner_id].to_s == '__unassigned' ? scope.where(owner_id: nil) : scope.where(owner_id: filters[:owner_id])
+  end
+
+  def bulk_deals_scope
+    return filtered_deals(Current.account.crm_deals, params[:filters] || {}) if select_all_requested?
+
+    Current.account.crm_deals.where(id: Array(params[:deal_ids]).compact_blank)
+  end
+
+  def requested_bulk_action
+    request.request_parameters['bulk_action'].presence ||
+      request.request_parameters['action'].presence ||
+      params[:bulk_action].presence ||
+      params[:action].to_s
+  end
+
+  def bulk_destroy_requested?
+    %w[destroy delete purge].include?(requested_bulk_action)
+  end
+
+  def select_all_requested?
+    ActiveModel::Type::Boolean.new.cast(params[:select_all])
   end
 
   def apply_label_to_deal!(deal, label_title)
     title = label_title.to_s.strip
-    raise ArgumentError, 'Etiqueta invalida.' if title.blank?
+    raise ArgumentError, 'Etiqueta inválida.' if title.blank?
 
     label = Current.account.labels.find_by(title: title) || Current.account.labels.find_by(slug: title)
     title = label.title if label
@@ -539,8 +578,8 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
     )
   end
 
-  def filter_by_search(scope)
-    query = params[:search].to_s.downcase.strip
+  def filter_by_search(scope, search)
+    query = search.to_s.downcase.strip
     digits = query.gsub(/\D/, '')
     like_query = "%#{ActiveRecord::Base.sanitize_sql_like(query)}%"
     like_digits = "%#{ActiveRecord::Base.sanitize_sql_like(digits)}%"

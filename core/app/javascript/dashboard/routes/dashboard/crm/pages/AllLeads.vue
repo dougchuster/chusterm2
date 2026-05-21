@@ -6,6 +6,7 @@ import CrmAPI from 'dashboard/api/crm';
 import { useMapGetter, useStore } from 'dashboard/composables/store';
 import CRMScoreBadge from 'dashboard/components/crm/CRMScoreBadge.vue';
 import CRMLegalAreaBadge from 'dashboard/components/crm/CRMLegalAreaBadge.vue';
+import CRMDealDrawer from 'dashboard/components/crm/CRMDealDrawer.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -29,7 +30,7 @@ const OPERATIONAL_STATUS_OPTIONS = [
   { value: 'returning_client', label: 'Retorno' },
   { value: 'base_client', label: 'Cliente base' },
   { value: 'converted_client', label: 'Cliente convertido' },
-  { value: 'invalid', label: 'Invalido' },
+  { value: 'invalid', label: 'Inválido' },
   { value: 'spam', label: 'Spam' },
   { value: 'duplicated', label: 'Duplicado' },
   { value: 'no_lead', label: 'Não é lead' },
@@ -38,23 +39,23 @@ const OPERATIONAL_STATUS_OPTIONS = [
 
 const LEGAL_AREAS = [
   { value: '', label: 'Todas as áreas' },
-  { value: 'previdenciario', label: 'Previdenciario' },
+  { value: 'previdenciario', label: 'Previdenciário' },
   { value: 'trabalhista', label: 'Trabalhista' },
-  { value: 'civil', label: 'Civil' },
-  { value: 'familia', label: 'Familia' },
+  { value: 'civil', label: 'Cível' },
+  { value: 'familia', label: 'Família' },
   { value: 'consumidor', label: 'Consumidor' },
   { value: 'empresarial', label: 'Empresarial' },
-  { value: 'tributario', label: 'Tributario' },
-  { value: 'imobiliario', label: 'Imobiliario' },
+  { value: 'tributario', label: 'Tributário' },
+  { value: 'imobiliario', label: 'Imobiliário' },
   { value: 'penal', label: 'Penal' },
   { value: 'outros', label: 'Outros' },
 ];
 
 const URGENCY_OPTIONS = [
-  { value: '', label: 'Todas as urgencias' },
+  { value: '', label: 'Todas as urgências' },
   { value: 'critica', label: 'Crítica' },
   { value: 'alta', label: 'Alta' },
-  { value: 'media', label: 'Media' },
+  { value: 'media', label: 'Média' },
   { value: 'baixa', label: 'Baixa' },
 ];
 
@@ -66,7 +67,7 @@ const LEAD_SOURCES = [
   { value: 'facebook', label: 'Facebook' },
   { value: 'google_ads', label: 'Google Ads' },
   { value: 'meta_ads', label: 'Meta Ads' },
-  { value: 'indicacao', label: 'Indicacao' },
+  { value: 'indicacao', label: 'Indicação' },
   { value: 'site', label: 'Site' },
   { value: 'lista_importada', label: 'Lista importada' },
   { value: 'cliente_base', label: 'Cliente base' },
@@ -77,7 +78,7 @@ const SCORE_BUCKETS = [
   { value: '', label: 'Todos os scores' },
   { value: 'hot', label: 'Quentes', min: 80 },
   { value: 'qualified', label: 'Qualificados', min: 60, max: 79 },
-  { value: 'medium', label: 'Medios', min: 40, max: 59 },
+  { value: 'medium', label: 'Médios', min: 40, max: 59 },
   { value: 'cold', label: 'Frios', max: 39 },
 ];
 
@@ -89,10 +90,11 @@ const BULK_ACTIONS = [
   { value: 'mark_base_client', label: 'Cliente base' },
   { value: 'discard', label: 'Descartar' },
   { value: 'archive', label: 'Arquivar' },
+  { value: 'destroy', label: 'Excluir do sistema' },
 ];
 
 const DISPOSITION_REASONS = [
-  { value: 'invalid', label: 'Invalido' },
+  { value: 'invalid', label: 'Inválido' },
   { value: 'spam', label: 'Spam' },
   { value: 'duplicated', label: 'Duplicado' },
   { value: 'no_lead', label: 'Não é lead' },
@@ -104,14 +106,18 @@ const stages = ref([]);
 const deals = ref([]);
 const activities = ref([]);
 const selectedDealIds = ref([]);
+const selectAllFiltered = ref(false);
 const loading = ref(true);
 const refreshing = ref(false);
 const savingId = ref('');
+const deletingId = ref('');
 const scoreRefreshingId = ref('');
 const creatingLead = ref(false);
 const showCreateLeadModal = ref(false);
+const showDealDrawer = ref(false);
 const bulkSaving = ref(false);
 const error = ref('');
+const selectedDrawerDealId = ref(null);
 const meta = ref({
   total: 0,
   page: Number(route.query.page || 1),
@@ -140,6 +146,9 @@ const bulkLabelTitle = ref('');
 const bulkDispositionReason = ref('invalid');
 const newLead = ref({
   title: '',
+  contact_name: '',
+  contact_phone_number: '',
+  contact_email: '',
   crm_pipeline_stage_id: '',
   legal_area: '',
   urgency_level: '',
@@ -157,16 +166,25 @@ const extractData = response => {
 
 const extractMeta = response => response?.data?.meta || {};
 
-const selectedDeals = computed(() =>
-  deals.value.filter(deal => selectedDealIds.value.includes(deal.id))
-);
-
 const visibleDealIds = computed(() => deals.value.map(deal => deal.id));
+
+const selectedDealsCount = computed(() =>
+  selectAllFiltered.value
+    ? Number(meta.value.total || selectedDealIds.value.length)
+    : selectedDealIds.value.length
+);
 
 const allVisibleSelected = computed(
   () =>
     visibleDealIds.value.length > 0 &&
     visibleDealIds.value.every(id => selectedDealIds.value.includes(id))
+);
+
+const canSelectAllFiltered = computed(
+  () =>
+    allVisibleSelected.value &&
+    !selectAllFiltered.value &&
+    Number(meta.value.total || 0) > selectedDealIds.value.length
 );
 
 const selectedPipeline = computed(() =>
@@ -282,13 +300,18 @@ const hasPreviousPage = computed(() => pageNumber.value > 1);
 const hasNextPage = computed(() => pageNumber.value < totalPages.value);
 
 const isBulkActionValid = computed(() => {
-  if (!selectedDeals.value.length) return false;
+  if (!selectedDealsCount.value) return false;
   if (bulkAction.value === 'move') return !!bulkStageId.value;
   if (bulkAction.value === 'assign_owner') return !!bulkOwnerId.value;
   if (bulkAction.value === 'update_source') return !!bulkSource.value;
   if (bulkAction.value === 'apply_label') return !!bulkLabelTitle.value;
   if (bulkAction.value === 'discard') return !!bulkDispositionReason.value;
   return true;
+});
+
+const bulkSubmitLabel = computed(() => {
+  if (bulkSaving.value) return 'Aplicando...';
+  return bulkAction.value === 'destroy' ? 'Excluir definitivamente' : 'Aplicar';
 });
 
 function formatCurrency(cents) {
@@ -412,14 +435,19 @@ function dealParams() {
     status: statusFilter.value || undefined,
     stage_id: stageFilter.value || undefined,
     legal_area: legalAreaFilter.value || undefined,
+    urgency: urgencyFilter.value || undefined,
     operational_status: operationalFilter.value || undefined,
-    owner_id:
-      ownerFilter.value && ownerFilter.value !== '__unassigned'
-        ? ownerFilter.value
-        : undefined,
+    owner_id: ownerFilter.value || undefined,
     source: sourceFilter.value || undefined,
     ...scoreParams(),
   };
+}
+
+function bulkFilterParams() {
+  const params = { ...dealParams() };
+  delete params.page;
+  delete params.per_page;
+  return params;
 }
 
 async function loadPipelines() {
@@ -456,14 +484,7 @@ async function loadDeals({ silent = false } = {}) {
       CrmAPI.getActivities({ status: 'pending' }),
     ]);
 
-    deals.value = extractData(dealsResponse).filter(deal => {
-      const matchesUrgency =
-        !urgencyFilter.value ||
-        String(deal.urgency_level || '').toLowerCase() === urgencyFilter.value;
-      const matchesUnassigned =
-        ownerFilter.value !== '__unassigned' || !deal.owner_id;
-      return matchesUrgency && matchesUnassigned;
-    });
+    deals.value = extractData(dealsResponse);
     activities.value = extractData(activitiesResponse);
     meta.value = {
       total: deals.value.length,
@@ -542,6 +563,8 @@ async function goToPage(nextPage) {
 }
 
 function toggleDeal(deal) {
+  selectAllFiltered.value = false;
+
   if (selectedDealIds.value.includes(deal.id)) {
     selectedDealIds.value = selectedDealIds.value.filter(id => id !== deal.id);
   } else {
@@ -550,6 +573,8 @@ function toggleDeal(deal) {
 }
 
 function toggleAllVisible() {
+  selectAllFiltered.value = false;
+
   if (allVisibleSelected.value) {
     selectedDealIds.value = selectedDealIds.value.filter(
       id => !visibleDealIds.value.includes(id)
@@ -561,8 +586,16 @@ function toggleAllVisible() {
   }
 }
 
+function selectAllMatchingDeals() {
+  selectedDealIds.value = [
+    ...new Set([...selectedDealIds.value, ...visibleDealIds.value]),
+  ];
+  selectAllFiltered.value = true;
+}
+
 function clearSelection() {
   selectedDealIds.value = [];
+  selectAllFiltered.value = false;
   bulkAction.value = 'move';
   bulkStageId.value = '';
   bulkOwnerId.value = '';
@@ -575,6 +608,9 @@ function clearSelection() {
 function openCreateLeadModal() {
   newLead.value = {
     title: '',
+    contact_name: '',
+    contact_phone_number: '',
+    contact_email: '',
     crm_pipeline_stage_id: stages.value[0]?.id || '',
     legal_area: '',
     urgency_level: '',
@@ -703,15 +739,87 @@ async function markBaseClient(deal) {
   }
 }
 
+function openDealDrawer(deal) {
+  if (!deal?.id) return;
+  selectedDrawerDealId.value = deal.id;
+  showDealDrawer.value = true;
+}
+
+function onDrawerDealSaved(updatedDeal) {
+  if (!updatedDeal?.id) {
+    loadDeals({ silent: true });
+    return;
+  }
+
+  const index = deals.value.findIndex(deal => deal.id === updatedDeal.id);
+  if (index >= 0) {
+    deals.value[index] = { ...deals.value[index], ...updatedDeal };
+  } else {
+    loadDeals({ silent: true });
+  }
+}
+
+function removeDealFromList(dealId) {
+  deals.value = deals.value.filter(deal => Number(deal.id) !== Number(dealId));
+  selectedDealIds.value = selectedDealIds.value.filter(
+    id => Number(id) !== Number(dealId)
+  );
+  meta.value = {
+    ...meta.value,
+    total: Math.max(Number(meta.value.total || 0) - 1, 0),
+  };
+}
+
+function onDrawerDealDeleted(dealId) {
+  removeDealFromList(dealId);
+  showDealDrawer.value = false;
+  selectedDrawerDealId.value = null;
+}
+
+async function deleteDealPermanently(deal) {
+  if (!deal?.id) return;
+  // eslint-disable-next-line no-alert
+  const confirmed = window.confirm(
+    `Excluir definitivamente "${deal.title || 'este lead'}" do sistema?\nEssa ação não pode ser desfeita.`
+  );
+  if (!confirmed) return;
+
+  deletingId.value = deal.id;
+  error.value = '';
+
+  try {
+    await CrmAPI.deleteDeal(deal.id);
+    removeDealFromList(deal.id);
+  } catch (err) {
+    error.value =
+      err?.response?.data?.message ||
+      err?.response?.data?.error ||
+      'Não foi possível excluir o lead do sistema.';
+  } finally {
+    deletingId.value = '';
+  }
+}
+
 async function applyBulkAction() {
   if (!isBulkActionValid.value) return;
+
+  if (bulkAction.value === 'destroy') {
+    // eslint-disable-next-line no-alert
+    const confirmed = window.confirm(
+      `Excluir definitivamente ${selectedDealsCount.value} lead(s) do sistema?\nEssa ação remove os registros do CRM e não pode ser desfeita.`
+    );
+    if (!confirmed) return;
+  }
+
   bulkSaving.value = true;
   error.value = '';
 
   try {
     await CrmAPI.bulkActionDeals({
-      deal_ids: selectedDealIds.value,
-      action: bulkAction.value,
+      ...(selectAllFiltered.value
+        ? { select_all: true, filters: bulkFilterParams() }
+        : { deal_ids: selectedDealIds.value }),
+      bulk_action: bulkAction.value,
       stage_id: bulkStageId.value || undefined,
       owner_id: bulkOwnerId.value || undefined,
       source: bulkSource.value || undefined,
@@ -750,6 +858,10 @@ async function createLeadFromModal() {
   try {
     const response = await CrmAPI.createDeal({
       title: newLead.value.title.trim(),
+      contact_name: newLead.value.contact_name?.trim() || undefined,
+      contact_phone_number:
+        newLead.value.contact_phone_number?.trim() || undefined,
+      contact_email: newLead.value.contact_email?.trim() || undefined,
       crm_pipeline_id: selectedPipelineId.value,
       crm_pipeline_stage_id:
         newLead.value.crm_pipeline_stage_id || stages.value[0].id,
@@ -959,11 +1071,23 @@ onMounted(async () => {
       </div>
     </section>
 
-    <div v-if="selectedDeals.length" class="crm-leads-bulk">
+    <div v-if="selectedDealsCount" class="crm-leads-bulk">
       <div class="crm-leads-bulk__summary">
         <span class="i-lucide-check-square size-4" />
-        <strong>{{ selectedDeals.length }} lead(s) selecionado(s)</strong>
+        <strong>{{ selectedDealsCount }} lead(s) selecionado(s)</strong>
+        <span v-if="selectAllFiltered" class="crm-leads-bulk__hint">
+          todos os leads do filtro
+        </span>
       </div>
+
+      <button
+        v-if="canSelectAllFiltered"
+        type="button"
+        class="crm-leads-button"
+        @click="selectAllMatchingDeals"
+      >
+        Selecionar todos os {{ meta.total }} do filtro
+      </button>
 
       <select v-model="bulkAction" class="crm-leads-control">
         <option
@@ -1011,7 +1135,7 @@ onMounted(async () => {
           v-model="bulkSourceDetail"
           class="crm-leads-control"
           type="text"
-          placeholder="Campanha, anuncio, planilha..."
+          placeholder="Campanha, anúncio, planilha..."
         />
       </template>
 
@@ -1042,14 +1166,19 @@ onMounted(async () => {
 
       <button
         type="button"
-        class="crm-leads-button crm-leads-button--primary"
+        class="crm-leads-button"
+        :class="
+          bulkAction === 'destroy'
+            ? 'crm-leads-button--danger'
+            : 'crm-leads-button--primary'
+        "
         :disabled="!isBulkActionValid || bulkSaving"
         @click="applyBulkAction"
       >
-        {{ bulkSaving ? 'Aplicando...' : 'Aplicar' }}
+        {{ bulkSubmitLabel }}
       </button>
       <button type="button" class="crm-leads-button" @click="clearSelection">
-        Limpar selecao
+        Limpar seleção
       </button>
     </div>
 
@@ -1107,7 +1236,7 @@ onMounted(async () => {
             />
             <div class="min-w-0">
               <strong>{{ stage.name }}</strong>
-              <span>{{ stage.count }} lead(s) nesta pagina</span>
+              <span>{{ stage.count }} lead(s) nesta página</span>
             </div>
             <em>{{ formatCurrency(stage.value) }}</em>
           </article>
@@ -1121,6 +1250,10 @@ onMounted(async () => {
                   <input
                     type="checkbox"
                     :checked="allVisibleSelected"
+                    :indeterminate="
+                      selectedDealIds.length > 0 && !allVisibleSelected
+                    "
+                    title="Selecionar todos nesta página"
                     @change="toggleAllVisible"
                   />
                 </th>
@@ -1283,17 +1416,31 @@ onMounted(async () => {
                   <div class="crm-leads-actions">
                     <button
                       type="button"
+                      class="crm-leads-action crm-leads-action--score"
                       title="Recalcular score"
                       :disabled="scoreRefreshingId === deal.id"
                       @click="recomputeScore(deal)"
                     >
                       <span class="i-lucide-sparkles size-4" />
                     </button>
-                    <a :href="dealDetailsUrl(deal)" title="Abrir ficha 360">
+                    <button
+                      type="button"
+                      class="crm-leads-action crm-leads-action--edit"
+                      title="Editar lead"
+                      @click="openDealDrawer(deal)"
+                    >
+                      <span class="i-lucide-pencil size-4" />
+                    </button>
+                    <a
+                      class="crm-leads-action crm-leads-action--link"
+                      :href="dealDetailsUrl(deal)"
+                      title="Abrir ficha 360"
+                    >
                       <span class="i-lucide-external-link size-4" />
                     </a>
                     <a
                       v-if="conversationUrl(deal)"
+                      class="crm-leads-action crm-leads-action--conversation"
                       :href="conversationUrl(deal)"
                       title="Abrir conversa"
                     >
@@ -1301,6 +1448,7 @@ onMounted(async () => {
                     </a>
                     <button
                       type="button"
+                      class="crm-leads-action crm-leads-action--won"
                       title="Marcar como ganho"
                       :disabled="savingId === `won-${deal.id}`"
                       @click="markWon(deal)"
@@ -1309,6 +1457,7 @@ onMounted(async () => {
                     </button>
                     <button
                       type="button"
+                      class="crm-leads-action crm-leads-action--base"
                       title="Cliente base"
                       :disabled="savingId === `base-${deal.id}`"
                       @click="markBaseClient(deal)"
@@ -1317,11 +1466,21 @@ onMounted(async () => {
                     </button>
                     <button
                       type="button"
+                      class="crm-leads-action crm-leads-action--discard"
                       title="Descartar"
                       :disabled="savingId === `discard-${deal.id}`"
                       @click="discardDeal(deal)"
                     >
                       <span class="i-lucide-ban size-4" />
+                    </button>
+                    <button
+                      type="button"
+                      class="crm-leads-action crm-leads-action--destroy"
+                      title="Excluir do sistema"
+                      :disabled="deletingId === deal.id"
+                      @click="deleteDealPermanently(deal)"
+                    >
+                      <span class="i-lucide-trash-2 size-4" />
                     </button>
                   </div>
                 </td>
@@ -1332,7 +1491,7 @@ onMounted(async () => {
 
         <footer class="crm-leads-pagination">
           <span>
-            Exibindo pagina {{ pageNumber }} de {{ totalPages }} -
+            Exibindo página {{ pageNumber }} de {{ totalPages }} -
             {{ meta.total || deals.length }} lead(s)
           </span>
           <div class="flex items-center gap-2">
@@ -1382,8 +1541,35 @@ onMounted(async () => {
             <input
               v-model="newLead.title"
               type="text"
-              placeholder="Ex: Revisão de beneficio INSS"
+              placeholder="Ex: Revisão de benefício INSS"
               required
+            />
+          </label>
+
+          <label class="crm-leads-field">
+            <span>Nome do contato</span>
+            <input
+              v-model="newLead.contact_name"
+              type="text"
+              placeholder="Nome do cliente"
+            />
+          </label>
+
+          <label class="crm-leads-field">
+            <span>Telefone do contato</span>
+            <input
+              v-model="newLead.contact_phone_number"
+              type="tel"
+              placeholder="+55 61 99999-9999"
+            />
+          </label>
+
+          <label class="crm-leads-field crm-leads-field--wide">
+            <span>E-mail do contato</span>
+            <input
+              v-model="newLead.contact_email"
+              type="email"
+              placeholder="cliente@email.com"
             />
           </label>
 
@@ -1420,7 +1606,7 @@ onMounted(async () => {
           </label>
 
           <label class="crm-leads-field">
-            <span>Urgencia</span>
+            <span>Urgência</span>
             <select v-model="newLead.urgency_level">
               <option
                 v-for="option in URGENCY_OPTIONS"
@@ -1450,7 +1636,7 @@ onMounted(async () => {
             <input
               v-model="newLead.source_detail"
               type="text"
-              placeholder="Campanha, anuncio, indicacao..."
+              placeholder="Campanha, anúncio, indicação..."
             />
           </label>
 
@@ -1483,6 +1669,14 @@ onMounted(async () => {
         </footer>
       </form>
     </div>
+
+    <CRMDealDrawer
+      v-if="showDealDrawer && selectedDrawerDealId"
+      v-model:show="showDealDrawer"
+      :deal-id="selectedDrawerDealId"
+      @saved="onDrawerDealSaved"
+      @deal-deleted="onDrawerDealDeleted"
+    />
   </div>
 </template>
 
@@ -1602,6 +1796,19 @@ onMounted(async () => {
   color: white;
 }
 
+.crm-leads-button--danger {
+  border-color: rgb(var(--ruby-7));
+  background: rgb(var(--ruby-9));
+  color: white;
+  box-shadow: 0 10px 24px rgb(var(--ruby-9) / 0.18);
+}
+
+.crm-leads-button--danger:hover:not(:disabled) {
+  border-color: rgb(var(--ruby-8));
+  background: rgb(var(--ruby-10));
+  color: white;
+}
+
 .crm-leads-filters,
 .crm-leads-bulk {
   display: grid;
@@ -1631,9 +1838,19 @@ onMounted(async () => {
 
 .crm-leads-bulk__summary {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
   color: rgb(var(--brand-11));
+}
+
+.crm-leads-bulk__hint {
+  border-radius: 999px;
+  background: rgb(var(--brand-3));
+  padding: 0.15rem 0.5rem;
+  color: rgb(var(--brand-11));
+  font-size: 0.75rem;
+  font-weight: 700;
 }
 
 .crm-leads-search {
@@ -2035,30 +2252,36 @@ onMounted(async () => {
     transform 150ms ease;
 }
 
-.crm-leads-actions button:nth-child(1) {
+.crm-leads-action--score {
   color: rgb(var(--brand-11));
   background: rgb(var(--brand-1));
 }
 
-.crm-leads-actions a:nth-child(2),
-.crm-leads-actions a:nth-child(3) {
+.crm-leads-action--edit,
+.crm-leads-action--link,
+.crm-leads-action--conversation {
   color: rgb(var(--blue-11));
   background: rgb(var(--blue-1));
 }
 
-.crm-leads-actions button:nth-last-child(3) {
+.crm-leads-action--won {
   color: rgb(var(--teal-11));
   background: rgb(var(--teal-1));
 }
 
-.crm-leads-actions button:nth-last-child(2) {
+.crm-leads-action--base {
   color: rgb(var(--amber-11));
   background: rgb(var(--amber-1));
 }
 
-.crm-leads-actions button:nth-last-child(1) {
+.crm-leads-action--discard,
+.crm-leads-action--destroy {
   color: rgb(var(--ruby-11));
   background: rgb(var(--ruby-1));
+}
+
+.crm-leads-action--destroy {
+  border-color: rgb(var(--ruby-6));
 }
 
 .crm-leads-actions-button {
@@ -2079,6 +2302,12 @@ onMounted(async () => {
   background: rgb(var(--blue-2));
   color: rgb(var(--blue-11));
   transform: translateY(-1px);
+}
+
+.crm-leads-actions .crm-leads-action--destroy:hover:not(:disabled) {
+  border-color: rgb(var(--ruby-7));
+  background: rgb(var(--ruby-2));
+  color: rgb(var(--ruby-11));
 }
 
 .crm-leads-actions button:disabled {

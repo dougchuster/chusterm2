@@ -5,38 +5,20 @@ class Webhooks::EvolutionEventsJob < ApplicationJob
 
   def perform(params = {})
     phone_number = params[:phone_number] || params['phone_number']
-    channel = find_channel(phone_number)
+    instance_id = params[:evolution_instance_id] || params['evolution_instance_id']
+    evolution_instance = EvolutionInstance.find_by(id: instance_id)
+    channel = evolution_instance&.channel_whatsapp || find_channel(phone_number)
 
     unless channel&.provider == 'evolution'
       Rails.logger.warn "[EVOLUTION] No evolution channel found for #{phone_number}"
       return
     end
 
-    return unless matching_instance?(channel, params)
-    return unless channel.account.active?
+    event = Evolution::WebhookEventBuilder.call(params: params, evolution_instance: evolution_instance, channel: channel)
+    return if event.blank?
+    return if event.status_processed?
 
-    event = normalized_event(params[:event] || params['event'])
-    if channel.reauthorization_required?
-      allowed = %w[connection_update qrcode_updated logout_instance remove_instance]
-      return if allowed.exclude?(event)
-    end
-
-    case event
-    when 'messages_upsert'
-      Whatsapp::IncomingMessageEvolutionService.new(inbox: channel.inbox, params: params).perform
-    when 'messages_update'
-      handle_message_status_update(channel, params)
-    when 'connection_update'
-      handle_connection_update(channel, params)
-    when 'qrcode_updated'
-      handle_qr_update(channel, params)
-    when 'logout_instance'
-      handle_logout_or_remove(channel, params, 'logout_instance')
-    when 'remove_instance'
-      handle_logout_or_remove(channel, params, 'remove_instance')
-    else
-      Rails.logger.info "[EVOLUTION] Unhandled event: #{event}"
-    end
+    Evolution::WebhookProcessorService.new(event: event).perform
   end
 
   private

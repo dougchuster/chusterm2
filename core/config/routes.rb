@@ -221,7 +221,36 @@ Rails.application.routes.draw do
           end
           namespace :channels do
             resource :twilio_channel, only: [:create]
+
+            namespace :evolution do
+              resources :inboxes, only: [:create]
+              resources :instances, only: [:show, :destroy] do
+                member do
+                  get :qr_code
+                  get :connection_status
+                  post :reconnect
+                  post :logout
+                  post :restart
+                  post :sync
+                end
+              end
+            end
+
+            scope :evolution do
+              get 'qr_code', to: 'evolution#qr_code'
+              get 'connection_status', to: 'evolution#connection_status'
+              get 'instances', to: 'evolution#instances'
+              post 'preview_instances', to: 'evolution#preview_instances'
+              post 'link_instance', to: 'evolution#link_instance'
+            end
           end
+
+          namespace :evolution do
+            resource :configuration, only: [:show, :create, :update] do
+              post :validate
+            end
+          end
+
           resources :conversations, only: [:index, :create, :show, :update, :destroy] do
             collection do
               get :meta
@@ -674,6 +703,8 @@ Rails.application.routes.draw do
   post 'webhooks/line/:line_channel_id', to: 'webhooks/line#process_payload'
   post 'webhooks/telegram/:bot_token', to: 'webhooks/telegram#process_payload'
   post 'webhooks/sms/:phone_number', to: 'webhooks/sms#process_payload'
+  get 'webhooks/evolution/:webhook_token', to: 'webhooks/evolution#verify', format: false
+  post 'webhooks/evolution/:webhook_token', to: 'webhooks/evolution#process_payload', format: false
   get 'webhooks/evolution/*phone_number', to: 'webhooks/evolution#verify', format: false
   post 'webhooks/evolution/*phone_number', to: 'webhooks/evolution#process_payload', format: false
   get 'webhooks/whatsapp/:phone_number', to: 'webhooks/whatsapp#verify'

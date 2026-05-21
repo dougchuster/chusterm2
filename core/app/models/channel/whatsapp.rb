@@ -37,6 +37,8 @@ class Channel::Whatsapp < ApplicationRecord
 
   validate :validate_provider_config
 
+  has_one :evolution_instance, foreign_key: :channel_whatsapp_id, dependent: :destroy, inverse_of: :channel_whatsapp
+
   after_create :sync_templates
   before_destroy :teardown_webhooks
   after_commit :setup_webhooks, on: :create, if: :should_auto_setup_webhooks?
@@ -48,6 +50,8 @@ class Channel::Whatsapp < ApplicationRecord
   # Evolution (Baileys): persist connection / session diagnostics in provider_config for UI + ops.
   def evolution_update_health!(state:, error: nil)
     return unless provider == 'evolution'
+
+    evolution_instance&.update_connection!(state: state, error: error)
 
     config = provider_config.to_h
     config['last_connection_state'] = state
@@ -81,8 +85,18 @@ class Channel::Whatsapp < ApplicationRecord
 
   def evolution_health_for_api
     cfg = provider_config || {}
+    managed = evolution_instance
     {
-      last_connection_state: cfg['last_connection_state'],
+      evolution_instance_id: managed&.id,
+      instance_name: managed&.instance_name || cfg['instance_name'],
+      connection_state: managed&.connection_state,
+      provisioning_status: managed&.provisioning_status,
+      phone_number: managed&.phone_number || phone_number,
+      profile_name: managed&.profile_name,
+      profile_picture_url: managed&.profile_picture_url,
+      last_sync_at: managed&.last_sync_at,
+      last_error: managed&.last_error,
+      last_connection_state: managed&.connection_state || cfg['last_connection_state'],
       last_connection_error: cfg['last_connection_error'],
       last_connection_event_at: cfg['last_connection_event_at'],
       last_warning_code: cfg['evolution_last_warning_code'],
@@ -144,6 +158,8 @@ class Channel::Whatsapp < ApplicationRecord
   end
 
   def validate_provider_config
+    return if provider == 'evolution' && provider_config['source'] == 'managed_evolution' && account&.evolution_api_configuration.present?
+
     errors.add(:provider_config, 'Invalid Credentials') unless provider_service.validate_provider_config?
   end
 
@@ -164,6 +180,8 @@ class Channel::Whatsapp < ApplicationRecord
   end
 
   def should_auto_setup_webhooks?
+    return false if provider == 'evolution' && provider_config['source'] == 'managed_evolution'
+
     # Only auto-setup webhooks for whatsapp_cloud provider with manual setup
     # Embedded signup calls setup_webhooks explicitly in EmbeddedSignupService
     return true if provider == 'evolution'

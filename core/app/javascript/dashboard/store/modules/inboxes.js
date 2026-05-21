@@ -6,6 +6,7 @@ import WebChannel from '../../api/channel/webChannel';
 import FBChannel from '../../api/channel/fbChannel';
 import TwilioChannel from '../../api/channel/twilioChannel';
 import WhatsappChannel from '../../api/channel/whatsappChannel';
+import EvolutionAPI from '../../api/evolution';
 import { throwErrorMessage } from '../utils/api';
 import AnalyticsHelper from '../../helper/AnalyticsHelper';
 import camelcaseKeys from 'camelcase-keys';
@@ -283,6 +284,24 @@ export const actions = {
     } catch (error) {
       commit(types.default.SET_INBOXES_UI_FLAG, { isCreating: false });
       throw error;
+    }
+  },
+  createEvolutionChannel: async ({ commit, rootGetters }, params) => {
+    try {
+      commit(types.default.SET_INBOXES_UI_FLAG, { isCreating: true });
+      const accountId = rootGetters.getCurrentAccountId;
+      const response = await EvolutionAPI.createInbox(accountId, params);
+      commit(types.default.ADD_INBOXES, response.data);
+      commit(types.default.SET_INBOXES_UI_FLAG, { isCreating: false });
+      sendAnalyticsEvent('evolution');
+      return response.data;
+    } catch (error) {
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error.message;
+      commit(types.default.SET_INBOXES_UI_FLAG, { isCreating: false });
+      throw new Error(errorMessage);
     }
   },
   ...channelActions,

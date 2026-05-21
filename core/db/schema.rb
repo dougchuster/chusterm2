@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_05_07_000001) do
+ActiveRecord::Schema[7.1].define(version: 2026_05_19_010003) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -1310,6 +1310,79 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_07_000001) do
     t.index ["name", "account_id"], name: "index_email_templates_on_name_and_account_id", unique: true
   end
 
+  create_table "evolution_api_configurations", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "base_url", null: false
+    t.string "webhook_base_url", null: false
+    t.text "global_api_key"
+    t.string "webhook_secret_digest"
+    t.string "health_status", default: "unknown", null: false
+    t.datetime "last_health_check_at"
+    t.text "last_health_error"
+    t.jsonb "settings", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_evolution_api_configurations_on_account_id", unique: true
+  end
+
+  create_table "evolution_instances", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "inbox_id"
+    t.bigint "channel_whatsapp_id"
+    t.bigint "evolution_api_configuration_id", null: false
+    t.string "instance_name", null: false
+    t.string "external_instance_id"
+    t.string "webhook_token", null: false
+    t.string "connection_state", default: "unknown", null: false
+    t.string "provisioning_status", default: "pending", null: false
+    t.string "phone_number"
+    t.string "profile_name"
+    t.string "profile_picture_url"
+    t.text "latest_qr"
+    t.string "latest_qr_hash"
+    t.datetime "latest_qr_at"
+    t.datetime "last_connected_at"
+    t.datetime "last_disconnected_at"
+    t.datetime "last_sync_at"
+    t.integer "failure_count", default: 0, null: false
+    t.datetime "circuit_open_until"
+    t.text "last_error"
+    t.jsonb "metadata", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "instance_name"], name: "index_evolution_instances_on_account_id_and_instance_name", unique: true
+    t.index ["account_id"], name: "index_evolution_instances_on_account_id"
+    t.index ["channel_whatsapp_id"], name: "index_evolution_instances_on_channel_whatsapp_id"
+    t.index ["connection_state"], name: "index_evolution_instances_on_connection_state"
+    t.index ["evolution_api_configuration_id"], name: "idx_evo_instances_on_configuration_id"
+    t.index ["inbox_id"], name: "index_evolution_instances_on_inbox_id"
+    t.index ["provisioning_status"], name: "index_evolution_instances_on_provisioning_status"
+    t.index ["webhook_token"], name: "index_evolution_instances_on_webhook_token", unique: true
+  end
+
+  create_table "evolution_webhook_events", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "inbox_id"
+    t.bigint "evolution_instance_id"
+    t.string "event_name", null: false
+    t.string "instance_name"
+    t.string "message_id"
+    t.string "event_uid"
+    t.string "status", default: "received", null: false
+    t.jsonb "payload", default: {}, null: false
+    t.text "error_message"
+    t.datetime "processed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_evolution_webhook_events_on_account_id"
+    t.index ["event_name"], name: "index_evolution_webhook_events_on_event_name"
+    t.index ["evolution_instance_id", "event_uid"], name: "idx_evo_webhook_events_on_instance_event_uid", unique: true, where: "(event_uid IS NOT NULL)"
+    t.index ["evolution_instance_id", "message_id", "event_name"], name: "idx_evo_events_instance_message_event"
+    t.index ["evolution_instance_id"], name: "index_evolution_webhook_events_on_evolution_instance_id"
+    t.index ["inbox_id"], name: "index_evolution_webhook_events_on_inbox_id"
+    t.index ["status"], name: "index_evolution_webhook_events_on_status"
+  end
+
   create_table "folders", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "category_id", null: false
@@ -1488,6 +1561,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_07_000001) do
     t.index ["conversation_id", "account_id", "message_type", "created_at"], name: "index_messages_on_conversation_account_type_created"
     t.index ["conversation_id"], name: "index_messages_on_conversation_id"
     t.index ["created_at"], name: "index_messages_on_created_at"
+    t.index ["inbox_id", "source_id"], name: "idx_messages_on_inbox_id_source_id_unique", unique: true, where: "(source_id IS NOT NULL)"
     t.index ["inbox_id"], name: "index_messages_on_inbox_id"
     t.index ["sender_type", "sender_id"], name: "index_messages_on_sender_type_and_sender_id"
   end
@@ -1823,6 +1897,14 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_07_000001) do
   add_foreign_key "crm_checklist_templates", "accounts"
   add_foreign_key "crm_external_connections", "accounts"
   add_foreign_key "crm_external_connections", "users"
+  add_foreign_key "evolution_api_configurations", "accounts"
+  add_foreign_key "evolution_instances", "accounts"
+  add_foreign_key "evolution_instances", "channel_whatsapp"
+  add_foreign_key "evolution_instances", "evolution_api_configurations"
+  add_foreign_key "evolution_instances", "inboxes"
+  add_foreign_key "evolution_webhook_events", "accounts"
+  add_foreign_key "evolution_webhook_events", "evolution_instances"
+  add_foreign_key "evolution_webhook_events", "inboxes"
   add_foreign_key "inboxes", "portals"
   create_trigger("accounts_after_insert_row_tr", :generated => true, :compatibility => 1).
       on("accounts").

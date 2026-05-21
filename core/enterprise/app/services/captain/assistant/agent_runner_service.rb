@@ -117,9 +117,14 @@ class Captain::Assistant::AgentRunnerService
 
   def recoverable_error_response(error_message)
     {
-      'response' => 'Entendi. Me conta um pouco mais sobre o que aconteceu e em que ponto está essa situação?',
+      'response' => recoverable_response_message,
       'reasoning' => "Recovered from agent error: #{error_message}"
     }
+  end
+
+  def recoverable_response_message
+    @assistant.config['fallback_message'].presence ||
+      'Recebi sua mensagem. Para iniciarmos a análise do seu caso com atenção, me informe por gentileza: qual é o seu objetivo no INSS, se você já fez alguma simulação ou pedido, e se possui CNIS atualizado ou carteira de trabalho para conferência.'
   end
 
   def apply_deterministic_crm_actions(response)

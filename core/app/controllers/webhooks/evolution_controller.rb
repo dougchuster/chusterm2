@@ -1,19 +1,24 @@
 # frozen_string_literal: true
 
 class Webhooks::EvolutionController < ActionController::API
-  before_action :load_channel
+  before_action :load_target
   before_action :verify_api_key
   before_action :verify_instance, only: :process_payload
 
   def process_payload
-    phone_number = params[:phone_number]
+    phone_number = params[:phone_number] || @channel&.phone_number&.delete_prefix('+')
 
     if phone_number.blank? || @channel.blank?
       head :unprocessable_entity
       return
     end
 
-    Webhooks::EvolutionEventsJob.perform_later(params.to_unsafe_hash.merge(phone_number: phone_number))
+    Webhooks::EvolutionEventsJob.perform_later(
+      params.to_unsafe_hash.merge(
+        phone_number: phone_number,
+        evolution_instance_id: @evolution_instance&.id
+      )
+    )
     head :ok
   end
 
@@ -24,20 +29,40 @@ class Webhooks::EvolutionController < ActionController::API
 
   private
 
-  def load_channel
-    phone_number = params[:phone_number].to_s
+  def load_target
+    load_instance_from_token
+    return if @channel.present?
+
+    load_channel_from_phone(params[:phone_number] || params[:webhook_token])
+  end
+
+  def load_instance_from_token
+    token = params[:webhook_token].to_s
+    return if token.blank?
+
+    @evolution_instance = EvolutionInstance.find_by(webhook_token: token)
+    @channel = @evolution_instance&.channel_whatsapp
+  end
+
+  def load_channel_from_phone(raw_phone)
+    phone_number = raw_phone.to_s
     return if phone_number.blank?
 
     normalized_phone = phone_number.delete_prefix('+')
     @channel = Channel::Whatsapp.find_by(phone_number: normalized_phone) ||
                Channel::Whatsapp.find_by(phone_number: "+#{normalized_phone}")
+    @evolution_instance = @channel&.evolution_instance
   end
 
   def verify_api_key
     provided = request.headers['apikey'] || request.headers['Authorization']&.delete_prefix('Bearer ')
+    token = request.headers['x-evolution-webhook-token'] || params[:webhook_token].presence
+    return if @evolution_instance&.webhook_token.present? && token_matches?(@evolution_instance.webhook_token, token.to_s)
+
     allowed_keys = [
       ENV['EVOLUTION_API_KEY'].presence,
-      @channel&.provider_config&.dig('api_key').presence
+      @channel&.provider_config&.dig('api_key').presence,
+      @evolution_instance&.configuration&.global_api_key.presence
     ].compact
     return if provided.present? && allowed_keys.any? { |key| token_matches?(key, provided) }
 
@@ -54,7 +79,7 @@ class Webhooks::EvolutionController < ActionController::API
   def verify_instance
     return if @channel.blank?
 
-    configured_instance = @channel.provider_config&.dig('instance_name')
+    configured_instance = @evolution_instance&.instance_name || @channel.provider_config&.dig('instance_name')
     incoming_instance = params[:instance].presence || params.dig(:evolution, :instance)
     return if configured_instance.blank? || incoming_instance.blank?
     return if incoming_instance == configured_instance

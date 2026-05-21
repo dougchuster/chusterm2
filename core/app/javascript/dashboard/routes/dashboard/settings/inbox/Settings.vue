@@ -107,6 +107,7 @@ export default {
       evolutionQrCode: '',
       evolutionQrLoading: false,
       evolutionQrError: '',
+      evolutionHealth: null,
       evolutionQrTimer: null,
       evolutionQrAttempts: 0,
       evolutionInstancesList: [],
@@ -114,6 +115,7 @@ export default {
       evolutionInstancesError: '',
       evolutionPickedInstance: '',
       evolutionLinking: false,
+      evolutionActionLoading: '',
       captainAssistantId: '',
       captainAiMode: 'auto',
       captainAutoReply: true,
@@ -139,6 +141,12 @@ export default {
       return (
         this.isAWhatsAppChannel && this.whatsAppAPIProvider === 'evolution'
       );
+    },
+    evolutionInstance() {
+      return this.inbox.evolution_instance || {};
+    },
+    evolutionInstanceId() {
+      return this.evolutionInstance.id;
     },
     whatsAppAPIProviderName() {
       if (this.isAWhatsAppCloudChannel) {
@@ -434,6 +442,7 @@ export default {
         const { data } = await axios.get(
           `/api/v1/accounts/${accountId}/channels/evolution/qr_code?inbox_id=${inboxId}`
         );
+        this.evolutionHealth = data.evolution_health || null;
         if (data.qrcode) {
           this.evolutionQrCode = data.qrcode;
           this.evolutionQrLoading = false;
@@ -522,6 +531,60 @@ export default {
         useAlert(err);
       } finally {
         this.evolutionLinking = false;
+      }
+    },
+    async runEvolutionInstanceAction(action) {
+      if (!this.evolutionInstanceId) {
+        useAlert('Instância Evolution ainda não está vinculada a esta caixa.');
+        return;
+      }
+
+      this.evolutionActionLoading = action;
+      try {
+        await axios.post(
+          `/api/v1/accounts/${this.accountId}/channels/evolution/instances/${this.evolutionInstanceId}/${action}`
+        );
+        useAlert('Ação enviada para a Evolution API.');
+        await this.$store.dispatch('inboxes/get');
+        if (action === 'reconnect') {
+          this.startEvolutionQrFetch();
+        }
+      } catch (e) {
+        useAlert(
+          e?.response?.data?.error || e?.response?.data?.message || e.message
+        );
+      } finally {
+        this.evolutionActionLoading = '';
+      }
+    },
+    async deleteEvolutionInstance() {
+      if (!this.evolutionInstanceId) {
+        useAlert('Instância Evolution ainda não está vinculada a esta caixa.');
+        return;
+      }
+
+      const confirmDelete = window.confirm;
+      if (
+        !confirmDelete(
+          'Excluir a instância na Evolution API? A caixa continuará existindo, mas o WhatsApp será desconectado.'
+        )
+      ) {
+        return;
+      }
+
+      this.evolutionActionLoading = 'delete';
+      try {
+        await axios.delete(
+          `/api/v1/accounts/${this.accountId}/channels/evolution/instances/${this.evolutionInstanceId}`
+        );
+        useAlert('Exclusão da instância enviada para a Evolution API.');
+        await this.$store.dispatch('inboxes/get');
+      } catch (e) {
+        useAlert(
+          e?.response?.data?.error || e?.response?.data?.message || e.message
+        );
+      } finally {
+        this.evolutionActionLoading = '';
       }
     },
     fetchSharedData() {
@@ -1107,6 +1170,82 @@ export default {
               "
             >
               <div class="flex flex-col gap-3">
+                <div
+                  v-if="evolutionInstanceId"
+                  class="grid gap-2 rounded-lg bg-n-alpha-2 p-3 text-sm"
+                >
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="font-medium text-n-slate-12">
+                      {{ evolutionInstance.instance_name }}
+                    </span>
+                    <span class="rounded-md bg-n-alpha-2 px-2 py-1 text-xs">
+                      {{
+                        evolutionInstance.connection_state ||
+                        evolutionHealth?.last_connection_state ||
+                        'unknown'
+                      }}
+                    </span>
+                    <span
+                      v-if="evolutionInstance.provisioning_status"
+                      class="rounded-md bg-n-alpha-2 px-2 py-1 text-xs"
+                    >
+                      {{ evolutionInstance.provisioning_status }}
+                    </span>
+                  </div>
+                  <div class="text-xs text-n-slate-10">
+                    <span v-if="evolutionInstance.phone_number">
+                      Telefone: {{ evolutionInstance.phone_number }}
+                    </span>
+                    <span v-if="evolutionInstance.last_sync_at">
+                      Última sincronização:
+                      {{ evolutionInstance.last_sync_at }}
+                    </span>
+                  </div>
+                  <div
+                    v-if="evolutionInstance.last_error"
+                    class="text-xs text-n-ruby-10"
+                  >
+                    {{ evolutionInstance.last_error }}
+                  </div>
+                  <div class="flex flex-wrap gap-2">
+                    <NextButton
+                      type="button"
+                      outline
+                      slate
+                      sm
+                      :is-loading="evolutionActionLoading === 'reconnect'"
+                      label="Reconectar"
+                      @click="runEvolutionInstanceAction('reconnect')"
+                    />
+                    <NextButton
+                      type="button"
+                      outline
+                      slate
+                      sm
+                      :is-loading="evolutionActionLoading === 'logout'"
+                      label="Desconectar"
+                      @click="runEvolutionInstanceAction('logout')"
+                    />
+                    <NextButton
+                      type="button"
+                      outline
+                      slate
+                      sm
+                      :is-loading="evolutionActionLoading === 'restart'"
+                      label="Reiniciar"
+                      @click="runEvolutionInstanceAction('restart')"
+                    />
+                    <NextButton
+                      type="button"
+                      outline
+                      ruby
+                      sm
+                      :is-loading="evolutionActionLoading === 'delete'"
+                      label="Excluir instância"
+                      @click="deleteEvolutionInstance"
+                    />
+                  </div>
+                </div>
                 <div
                   v-if="evolutionQrLoading"
                   class="flex items-center gap-2 text-sm text-n-slate-10"
