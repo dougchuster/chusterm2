@@ -79,7 +79,7 @@ module Evolution
         message.update(status: :failed, external_error: status_error(data))
       end
 
-      track_evolution_campaign_status(source_id, data, message: message, normalized_status: normalized_status)
+      track_evolution_campaign_status(message.source_id || source_ids.first, data, message: message, normalized_status: normalized_status)
     end
 
     def handle_connection_update

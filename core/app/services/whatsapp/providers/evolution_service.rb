@@ -113,7 +113,7 @@ class Whatsapp::Providers::EvolutionService < Whatsapp::Providers::BaseService
     return Evolution::InstanceService.new(instance: managed_instance).connection_state if managed_instance.present?
 
     response = HTTParty.get(
-      "#{base_url}/instance/connectionState/#{instance_name}",
+      "#{base_url}/instance/connectionState/#{encoded_instance_name}",
       headers: api_headers,
       timeout: HTTP_TIMEOUT
     )
@@ -242,7 +242,7 @@ class Whatsapp::Providers::EvolutionService < Whatsapp::Providers::BaseService
 
   def connect_instance
     HTTParty.get(
-      "#{base_url}/instance/connect/#{instance_name}",
+      "#{base_url}/instance/connect/#{encoded_instance_name}",
       headers: api_headers,
       timeout: HTTP_TIMEOUT
     )
@@ -297,7 +297,7 @@ class Whatsapp::Providers::EvolutionService < Whatsapp::Providers::BaseService
 
   def send_text_message(phone_number, message)
     response = HTTParty.post(
-      "#{base_url}/message/sendText/#{instance_name}",
+      "#{base_url}/message/sendText/#{encoded_instance_name}",
       headers: api_headers,
       timeout: HTTP_TIMEOUT,
       body: {
@@ -313,7 +313,7 @@ class Whatsapp::Providers::EvolutionService < Whatsapp::Providers::BaseService
     type = attachment_type(attachment)
 
     response = HTTParty.post(
-      "#{base_url}/message/sendMedia/#{instance_name}",
+      "#{base_url}/message/sendMedia/#{encoded_instance_name}",
       headers: api_headers,
       timeout: HTTP_TIMEOUT,
       body: {
@@ -337,7 +337,7 @@ class Whatsapp::Providers::EvolutionService < Whatsapp::Providers::BaseService
     end
 
     response = HTTParty.post(
-      "#{base_url}/message/sendText/#{instance_name}",
+      "#{base_url}/message/sendText/#{encoded_instance_name}",
       headers: api_headers,
       timeout: HTTP_TIMEOUT,
       body: {
@@ -403,7 +403,7 @@ class Whatsapp::Providers::EvolutionService < Whatsapp::Providers::BaseService
                    end
 
     response = HTTParty.post(
-      "#{base_url}/webhook/set/#{instance_name}",
+      "#{base_url}/webhook/set/#{encoded_instance_name}",
       headers: api_headers,
       timeout: HTTP_TIMEOUT,
       body: {
@@ -440,5 +440,9 @@ class Whatsapp::Providers::EvolutionService < Whatsapp::Providers::BaseService
       ENV['RAILS_INTERNAL_URL'].presence ||
       ENV['FRONTEND_URL'].presence ||
       'http://core:3000'
+  end
+
+  def encoded_instance_name
+    ERB::Util.url_encode(instance_name.to_s)
   end
 end
