@@ -1,5 +1,6 @@
 class CrmPipeline < ApplicationRecord
   belongs_to :account
+  belongs_to :inbox, optional: true
   has_many :crm_pipeline_stages, -> { order(position: :asc) }, dependent: :destroy
   has_many :crm_deals, dependent: :restrict_with_error
 
@@ -7,6 +8,7 @@ class CrmPipeline < ApplicationRecord
 
   validates :account, :name, :slug, presence: true
   validates :slug, uniqueness: { scope: :account_id }
+  validates :inbox_id, uniqueness: { scope: :account_id }, allow_nil: true
 
   scope :active, -> { where(archived_at: nil) }
   scope :archived, -> { where.not(archived_at: nil) }

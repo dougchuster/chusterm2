@@ -39,13 +39,12 @@ class Crm::TriageFromConversation
 
   def find_or_create_deal
     existing = @account.crm_deals.open_deals.find_by(conversation_id: @conversation.id)
-    return existing if existing
+    return align_deal_to_channel_pipeline(existing) if existing
 
-    default_pipeline = @account.crm_pipelines.active.find_by(is_default: true) ||
-                       @account.crm_pipelines.active.first
-    raise 'No active pipeline found' unless default_pipeline
+    pipeline = pipeline_for_conversation
+    raise 'No active pipeline found' unless pipeline
 
-    first_stage = default_pipeline.crm_pipeline_stages.active.order(:position).first
+    first_stage = pipeline.crm_pipeline_stages.active.order(:position).first
     raise 'No active pipeline stage found' unless first_stage
 
     contact = @conversation.contact
@@ -57,10 +56,46 @@ class Crm::TriageFromConversation
         contact_id: contact&.id,
         conversation_id: @conversation.id,
         inbox_id: @conversation.inbox_id,
-        crm_pipeline_id: default_pipeline.id,
+        crm_pipeline_id: pipeline.id,
         crm_pipeline_stage_id: first_stage.id
       }
     ).perform
+  end
+
+  def pipeline_for_conversation
+    inbox = @conversation.inbox
+    if inbox
+      provisioned = Crm::ChannelPipelineProvisioner.new(
+        account: @account,
+        inbox: inbox,
+        actor: @actor
+      ).perform
+      return provisioned if provisioned
+    end
+
+    @account.crm_pipelines.active.find_by(is_default: true) ||
+      @account.crm_pipelines.active.first
+  end
+
+  def align_deal_to_channel_pipeline(deal)
+    pipeline = pipeline_for_conversation
+    return deal unless pipeline
+    return deal if deal.crm_pipeline_id == pipeline.id
+
+    current_stage_slug = deal.crm_pipeline_stage&.slug
+    target_stage = pipeline.crm_pipeline_stages.active.find_by(slug: current_stage_slug) ||
+                   pipeline.crm_pipeline_stages.active.order(:position).first
+    return deal unless target_stage
+
+    deal.update!(crm_pipeline: pipeline, crm_pipeline_stage: target_stage, inbox_id: @conversation.inbox_id)
+    Crm::AuditLogger.log(
+      account: @account,
+      actor: @actor,
+      action: 'deal_channel_pipeline_aligned',
+      target: deal,
+      payload: { inbox_id: @conversation.inbox_id, pipeline_id: pipeline.id }
+    )
+    deal
   end
 
   def apply_triage(deal, triage)

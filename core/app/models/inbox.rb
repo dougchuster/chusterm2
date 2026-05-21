@@ -40,6 +40,12 @@
 #
 
 class Inbox < ApplicationRecord
+  CRM_PIPELINE_CHANNEL_TYPES = %w[
+    Channel::Sms
+    Channel::TwilioSms
+    Channel::Whatsapp
+  ].freeze
+
   include Reportable
   include Avatarable
   include OutOfOffisable
@@ -75,6 +81,7 @@ class Inbox < ApplicationRecord
   has_one :captain_inbox, dependent: :destroy, class_name: 'CaptainInbox'
   has_one :captain_assistant, through: :captain_inbox, class_name: 'Captain::Assistant'
   has_one :evolution_instance, dependent: :destroy
+  has_one :crm_pipeline, dependent: :nullify
   has_many :webhooks, dependent: :destroy_async
   has_many :hooks, dependent: :destroy_async, class_name: 'Integrations::Hook'
 
@@ -83,6 +90,7 @@ class Inbox < ApplicationRecord
   after_destroy :delete_round_robin_agents
 
   after_create_commit :dispatch_create_event
+  after_create_commit :ensure_crm_channel_pipeline
   after_update_commit :dispatch_update_event
 
   scope :order_by_name, -> { order('lower(name) ASC') }
@@ -255,6 +263,14 @@ class Inbox < ApplicationRecord
 
   def delete_round_robin_agents
     ::AutoAssignment::InboxRoundRobinService.new(inbox: self).clear_queue
+  end
+
+  def ensure_crm_channel_pipeline
+    return unless CRM_PIPELINE_CHANNEL_TYPES.include?(channel_type)
+
+    Crm::ChannelPipelineProvisioner.new(account: account, inbox: self).perform
+  rescue StandardError => e
+    Rails.logger.warn("[CRM] channel pipeline provisioning failed for inbox #{id}: #{e.message}")
   end
 
   def check_channel_type?

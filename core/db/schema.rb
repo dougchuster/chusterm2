@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_05_19_010003) do
+ActiveRecord::Schema[7.1].define(version: 2026_05_21_000001) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -1104,6 +1104,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_19_010003) do
     t.index ["crm_pipeline_id", "crm_pipeline_stage_id"], name: "index_crm_deals_on_crm_pipeline_id_and_crm_pipeline_stage_id"
     t.index ["data_retention_until"], name: "index_crm_deals_on_data_retention_until"
     t.index ["disposition_reason"], name: "index_crm_deals_on_disposition_reason"
+    t.index ["inbox_id"], name: "index_crm_deals_on_inbox_id"
     t.index ["legal_area"], name: "index_crm_deals_on_legal_area"
     t.index ["operational_status"], name: "index_crm_deals_on_operational_status"
     t.index ["owner_id"], name: "index_crm_deals_on_owner_id"
@@ -1210,8 +1211,11 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_19_010003) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.jsonb "scoring_config", default: {}, null: false
+    t.bigint "inbox_id"
+    t.index ["account_id", "inbox_id"], name: "idx_crm_pipelines_account_inbox_unique", unique: true, where: "(inbox_id IS NOT NULL)"
     t.index ["account_id", "slug"], name: "index_crm_pipelines_on_account_id_and_slug", unique: true
     t.index ["account_id"], name: "index_crm_pipelines_on_account_id"
+    t.index ["inbox_id"], name: "index_crm_pipelines_on_inbox_id"
     t.index ["scoring_config"], name: "idx_crm_pipelines_scoring_config", using: :gin
   end
 
@@ -1897,6 +1901,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_19_010003) do
   add_foreign_key "crm_checklist_templates", "accounts"
   add_foreign_key "crm_external_connections", "accounts"
   add_foreign_key "crm_external_connections", "users"
+  add_foreign_key "crm_pipelines", "inboxes", on_delete: :nullify
   add_foreign_key "evolution_api_configurations", "accounts"
   add_foreign_key "evolution_instances", "accounts"
   add_foreign_key "evolution_instances", "channel_whatsapp"

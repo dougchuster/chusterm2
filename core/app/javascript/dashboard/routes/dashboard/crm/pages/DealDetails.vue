@@ -19,6 +19,7 @@ const stages = ref([]);
 const auditEvents = ref([]);
 const loading = ref(true);
 const saving = ref(false);
+const deleting = ref(false);
 const scoreRefreshing = ref(false);
 const ownerUpdating = ref(false);
 const assigneeUpdating = ref(false);
@@ -131,6 +132,42 @@ const contactUrl = computed(() =>
     : ''
 );
 
+const primaryContactName = computed(
+  () => contact.value?.name || deal.value?.contact_name || 'Contato sem nome'
+);
+
+const primaryPhone = computed(
+  () => contact.value?.phone_number || deal.value?.contact_phone_number || ''
+);
+
+const primaryEmail = computed(
+  () => contact.value?.email || deal.value?.contact_email || ''
+);
+
+const pipelineName = computed(
+  () => deal.value?.pipeline?.name || 'Pipeline não informado'
+);
+
+const channelName = computed(
+  () =>
+    deal.value?.inbox?.name ||
+    conversation.value?.inbox?.name ||
+    'Canal não informado'
+);
+
+const currentStageIndex = computed(() =>
+  stages.value.findIndex(
+    stage => Number(stage.id) === Number(deal.value?.crm_pipeline_stage_id)
+  )
+);
+
+const currentStageName = computed(
+  () =>
+    stages.value[currentStageIndex.value]?.name ||
+    deal.value?.stage?.name ||
+    'Etapa não informada'
+);
+
 const ownerName = computed(
   () =>
     contact.value?.crm_owner?.name ||
@@ -139,6 +176,29 @@ const ownerName = computed(
     )?.name ||
     'Sem responsável'
 );
+
+const recordFacts = computed(() => [
+  {
+    label: 'Canal',
+    value: channelName.value,
+    icon: 'i-lucide-inbox',
+  },
+  {
+    label: 'Pipeline',
+    value: pipelineName.value,
+    icon: 'i-lucide-git-branch',
+  },
+  {
+    label: 'Etapa atual',
+    value: currentStageName.value,
+    icon: 'i-lucide-milestone',
+  },
+  {
+    label: 'Responsável',
+    value: ownerName.value,
+    icon: 'i-lucide-user-check',
+  },
+]);
 
 const assigneeName = computed(
   () =>
@@ -422,6 +482,26 @@ async function reopenDeal() {
   }
 }
 
+async function deleteDealPermanently() {
+  if (!deal.value?.id) return;
+  const confirmed = window.confirm(
+    `Excluir definitivamente "${deal.value.title || 'este lead'}" do sistema?\nEssa ação remove o registro do CRM e não pode ser desfeita.`
+  );
+  if (!confirmed) return;
+
+  deleting.value = true;
+  error.value = '';
+  try {
+    await CrmAPI.deleteDeal(dealId.value);
+    router.push(crmUrl.value);
+  } catch (e) {
+    error.value =
+      e?.response?.data?.error || 'Não foi possível excluir este lead.';
+  } finally {
+    deleting.value = false;
+  }
+}
+
 async function completeActivity(activity) {
   try {
     await CrmAPI.completeActivity(activity.id, 'Concluída pela ficha 360');
@@ -693,6 +773,15 @@ onMounted(() => {
           Descartar
         </button>
         <button
+          type="button"
+          class="h-9 rounded-lg border border-ruby-300 px-3 text-sm font-semibold text-ruby-700 hover:bg-ruby-50 disabled:opacity-50"
+          :disabled="saving || deleting"
+          @click="deleteDealPermanently"
+        >
+          <span class="i-lucide-trash-2 mr-1 inline-block size-4 align-[-2px]" />
+          {{ deleting ? 'Excluindo...' : 'Excluir' }}
+        </button>
+        <button
           v-if="deal.status !== 'open'"
           type="button"
           class="h-9 rounded-lg border border-n-weak px-3 text-sm font-semibold text-n-slate-11 hover:bg-n-slate-3 disabled:opacity-50"
@@ -728,6 +817,92 @@ onMounted(() => {
     </div>
 
     <div v-else class="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <section class="crm-record-strip">
+        <div class="crm-record-strip__identity">
+          <div class="crm-record-avatar">
+            {{ primaryContactName.slice(0, 2).toUpperCase() }}
+          </div>
+          <div class="min-w-0">
+            <p class="m-0 text-xs font-semibold uppercase text-n-slate-10">
+              Lead / Cliente
+            </p>
+            <h2 class="m-0 truncate text-lg font-semibold text-n-slate-12">
+              {{ primaryContactName }}
+            </h2>
+            <div class="mt-1 flex flex-wrap gap-2 text-xs text-n-slate-10">
+              <span v-if="primaryPhone">{{ primaryPhone }}</span>
+              <span v-if="primaryEmail">{{ primaryEmail }}</span>
+              <span v-if="!primaryPhone && !primaryEmail">
+                Sem telefone ou e-mail registrado
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="crm-record-strip__facts">
+          <div
+            v-for="fact in recordFacts"
+            :key="fact.label"
+            class="crm-record-fact"
+          >
+            <span :class="fact.icon" class="size-4 text-n-slate-9" />
+            <div class="min-w-0">
+              <span class="crm-record-fact__label">{{ fact.label }}</span>
+              <strong>{{ fact.value }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="crm-record-strip__actions">
+          <a
+            v-if="conversationUrl"
+            :href="conversationUrl"
+            class="crm-secondary-button"
+          >
+            <span class="i-lucide-message-square size-4" />
+            Conversa
+          </a>
+          <a v-if="contactUrl" :href="contactUrl" class="crm-secondary-button">
+            <span class="i-lucide-user-round size-4" />
+            Contato
+          </a>
+          <button
+            type="button"
+            class="crm-primary-button"
+            @click="showNewActivity = true; activeTab = 'activities'"
+          >
+            <span class="i-lucide-calendar-plus size-4" />
+            Nova tarefa
+          </button>
+        </div>
+      </section>
+
+      <section v-if="stages.length" class="crm-stage-path">
+        <button
+          v-for="(stage, index) in stages"
+          :key="stage.id"
+          type="button"
+          class="crm-stage-path__item"
+          :class="{
+            'crm-stage-path__item--done': index < currentStageIndex,
+            'crm-stage-path__item--active': index === currentStageIndex,
+          }"
+          :disabled="saving || deal.status !== 'open'"
+          @click="moveStage(stage.id)"
+        >
+          <span class="crm-stage-path__dot">
+            <span
+              :class="
+                index <= currentStageIndex
+                  ? 'i-lucide-check size-3'
+                  : 'i-lucide-circle size-3'
+              "
+            />
+          </span>
+          <span>{{ stage.name }}</span>
+        </button>
+      </section>
+
       <section
         class="grid gap-3 border-b border-n-weak p-4 sm:grid-cols-2 xl:grid-cols-4"
       >
@@ -1329,6 +1504,120 @@ onMounted(() => {
   min-width: 0;
 }
 
+.crm-record-strip {
+  display: grid;
+  grid-template-columns: minmax(16rem, 1fr) minmax(18rem, 1.4fr) auto;
+  align-items: center;
+  gap: 1rem;
+  border-bottom: 1px solid rgb(var(--slate-5));
+  background: rgb(var(--slate-1));
+  padding: 1rem;
+}
+
+.crm-record-strip__identity,
+.crm-record-strip__actions,
+.crm-record-fact {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.crm-record-strip__actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.crm-record-strip__facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.crm-record-avatar {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  flex: none;
+  place-content: center;
+  border: 1px solid rgb(var(--slate-5));
+  border-radius: 0.75rem;
+  background: rgb(var(--brand-2));
+  color: rgb(var(--brand-11));
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.crm-record-fact {
+  border: 1px solid rgb(var(--slate-5));
+  border-radius: 0.5rem;
+  background: rgb(var(--slate-2));
+  padding: 0.65rem;
+}
+
+.crm-record-fact__label {
+  display: block;
+  color: rgb(var(--slate-10));
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.crm-record-fact strong {
+  display: block;
+  overflow: hidden;
+  color: rgb(var(--slate-12));
+  font-size: 0.875rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crm-stage-path {
+  display: grid;
+  grid-auto-columns: minmax(8rem, 1fr);
+  grid-auto-flow: column;
+  gap: 0.5rem;
+  overflow-x: auto;
+  border-bottom: 1px solid rgb(var(--slate-5));
+  background: rgb(var(--slate-2));
+  padding: 0.75rem 1rem;
+}
+
+.crm-stage-path__item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 2.5rem;
+  border: 1px solid rgb(var(--slate-5));
+  border-radius: 0.5rem;
+  background: rgb(var(--slate-1));
+  color: rgb(var(--slate-11));
+  gap: 0.5rem;
+  padding: 0 0.65rem;
+  text-align: left;
+}
+
+.crm-stage-path__item--done {
+  border-color: rgb(var(--teal-6));
+  color: rgb(var(--teal-11));
+}
+
+.crm-stage-path__item--active {
+  border-color: rgb(var(--brand-8));
+  background: rgb(var(--brand-2));
+  color: rgb(var(--brand-11));
+  font-weight: 700;
+}
+
+.crm-stage-path__dot {
+  display: grid;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: none;
+  place-content: center;
+  border-radius: 999px;
+  background: rgb(var(--slate-3));
+}
+
 .crm-field {
   display: grid;
   gap: 0.35rem;
@@ -1420,6 +1709,7 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.4rem;
   min-height: 2.25rem;
   border-radius: 0.5rem;
   padding: 0 0.875rem;
@@ -1445,6 +1735,18 @@ onMounted(() => {
 }
 
 @media (max-width: 760px) {
+  .crm-record-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .crm-record-strip__facts {
+    grid-template-columns: 1fr;
+  }
+
+  .crm-record-strip__actions {
+    justify-content: stretch;
+  }
+
   .crm-primary-button,
   .crm-secondary-button {
     width: 100%;

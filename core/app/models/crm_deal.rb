@@ -6,6 +6,7 @@ class CrmDeal < ApplicationRecord
   belongs_to :crm_pipeline_stage
   belongs_to :contact, optional: true
   belongs_to :conversation, optional: true
+  belongs_to :inbox, optional: true
   belongs_to :crm_loss_reason, optional: true
   has_many :crm_activities, dependent: :destroy
   has_many :crm_intake_answers, dependent: :destroy

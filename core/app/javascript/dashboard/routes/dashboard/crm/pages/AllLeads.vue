@@ -193,6 +193,10 @@ const selectedPipeline = computed(() =>
   )
 );
 
+const selectedPipelineChannel = computed(
+  () => selectedPipeline.value?.inbox?.name || ''
+);
+
 const stageById = computed(() => {
   const map = {};
   stages.value.forEach(stage => {
@@ -267,7 +271,7 @@ const kpis = computed(() => [
   {
     label: 'Abertos',
     value: openLeads.value,
-    hint: selectedPipeline.value?.name || 'Todos os pipelines',
+    hint: selectedPipelineChannel.value || selectedPipeline.value?.name || 'Todos os pipelines',
     icon: 'i-lucide-radio-tower',
     tone: 'teal',
   },
@@ -380,6 +384,12 @@ function dealStageName(deal) {
   );
 }
 
+function pipelineOptionLabel(pipeline) {
+  return pipeline.inbox?.name
+    ? `${pipeline.inbox.name} - ${pipeline.name}`
+    : pipeline.name;
+}
+
 function contactUrl(deal) {
   return deal.contact_id
     ? `/app/accounts/${accountId.value}/contacts/${deal.contact_id}`
@@ -456,6 +466,8 @@ async function loadPipelines() {
 
   if (!selectedPipelineId.value && pipelines.value.length) {
     selectedPipelineId.value =
+      pipelines.value.find(pipeline => pipeline.inbox_id || pipeline.inbox)
+        ?.id ||
       pipelines.value.find(
         pipeline => pipeline.is_default || pipeline.isDefault
       )?.id || pipelines.value[0].id;
@@ -863,6 +875,7 @@ async function createLeadFromModal() {
         newLead.value.contact_phone_number?.trim() || undefined,
       contact_email: newLead.value.contact_email?.trim() || undefined,
       crm_pipeline_id: selectedPipelineId.value,
+      inbox_id: selectedPipeline.value?.inbox_id || undefined,
       crm_pipeline_stage_id:
         newLead.value.crm_pipeline_stage_id || stages.value[0].id,
       operational_status: 'active',
@@ -927,14 +940,14 @@ onMounted(async () => {
           @change="onPipelineChange"
         >
           <option value="">Todos os pipelines</option>
-          <option
-            v-for="pipeline in pipelines"
-            :key="pipeline.id"
-            :value="pipeline.id"
-          >
-            {{ pipeline.name }}
-          </option>
-        </select>
+        <option
+          v-for="pipeline in pipelines"
+          :key="pipeline.id"
+          :value="pipeline.id"
+        >
+          {{ pipelineOptionLabel(pipeline) }}
+        </option>
+      </select>
         <button
           type="button"
           class="crm-leads-button"

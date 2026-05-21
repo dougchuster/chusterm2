@@ -5,7 +5,7 @@ class Api::V1::Accounts::Crm::PipelinesController < Api::V1::Accounts::Crm::Base
     authorize CrmPipeline, :index?
 
     @pipelines = Current.account.crm_pipelines.active.default_first
-                         .includes(:crm_pipeline_stages)
+                         .includes(:inbox, :crm_pipeline_stages)
     render json: serialize_pipelines(@pipelines)
   end
 
@@ -47,7 +47,7 @@ class Api::V1::Accounts::Crm::PipelinesController < Api::V1::Accounts::Crm::Base
     authorize CrmPipeline, :index?
 
     @pipelines = Current.account.crm_pipelines.archived.default_first
-                         .includes(:crm_pipeline_stages)
+                         .includes(:inbox, :crm_pipeline_stages)
     render json: serialize_pipelines(@pipelines)
   end
 
@@ -83,7 +83,7 @@ class Api::V1::Accounts::Crm::PipelinesController < Api::V1::Accounts::Crm::Base
   end
 
   def pipeline_params
-    params.require(:pipeline).permit(:name, :slug, :kind, :is_default, :position, scoring_config: {})
+    params.require(:pipeline).permit(:name, :slug, :kind, :is_default, :position, :inbox_id, scoring_config: {})
   end
 
   def serialize_pipelines(pipelines)
@@ -96,6 +96,8 @@ class Api::V1::Accounts::Crm::PipelinesController < Api::V1::Accounts::Crm::Base
       name: pipeline.name,
       slug: pipeline.slug,
       kind: pipeline.kind,
+      inbox_id: pipeline.inbox_id,
+      inbox: pipeline.inbox ? { id: pipeline.inbox.id, name: pipeline.inbox.name, channel_type: pipeline.inbox.channel_type } : nil,
       is_default: pipeline.is_default,
       position: pipeline.position,
       scoring_config: pipeline.scoring_config || {},

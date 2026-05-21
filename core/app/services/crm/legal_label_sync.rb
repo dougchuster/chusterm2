@@ -30,6 +30,12 @@ module Crm
       'risk' => '#dc2626'
     }.freeze
 
+    CATEGORY_BY_PREFIX = {
+      'doc' => 'document',
+      'rel' => 'relationship',
+      'temp' => 'temperature'
+    }.freeze
+
     REPLACEABLE_CATEGORIES = %w[area temperature relationship].freeze
 
     def initialize(conversation:, triage:, actor: nil)
@@ -151,7 +157,7 @@ module Crm
     end
 
     def create_label(slug)
-      category = slug.split('.').first
+      category = category_for(slug)
       @account.labels.create!(
         title: slug.tr('.', '_'),
         slug: slug,
@@ -161,6 +167,11 @@ module Crm
         is_system: true,
         show_on_sidebar: false
       )
+    end
+
+    def category_for(slug)
+      prefix = slug.split('.').first
+      CATEGORY_BY_PREFIX.fetch(prefix, prefix)
     end
 
     def scope_for(category)

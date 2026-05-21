@@ -6,7 +6,7 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
     authorize CrmDeal, :index?
 
     @deals = filtered_deals(Current.account.crm_deals)
-    @deals = @deals.order(created_at: :desc).includes(:crm_pipeline_stage, :crm_loss_reason, :crm_lead_scores, :crm_activities, :contact)
+    @deals = @deals.order(created_at: :desc).includes(:crm_pipeline, :crm_pipeline_stage, :crm_loss_reason, :crm_lead_scores, :crm_activities, :contact, :inbox)
 
     total = @deals.count
     per_page_param = params[:per_page].to_i
@@ -246,6 +246,9 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
       next_best_action: deal.next_best_action,
       crm_pipeline_id: deal.crm_pipeline_id,
       crm_pipeline_stage_id: deal.crm_pipeline_stage_id,
+      pipeline: deal.crm_pipeline ? { id: deal.crm_pipeline.id, name: deal.crm_pipeline.name, inbox_id: deal.crm_pipeline.inbox_id } : nil,
+      inbox_id: deal.inbox_id,
+      inbox: serialize_deal_inbox(deal),
       contact_id: deal.contact_id,
       contact_name: deal.contact&.name,
       contact_phone_number: deal.contact&.phone_number,
@@ -325,6 +328,13 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
       created_at: conversation.created_at,
       last_activity_at: conversation.last_activity_at
     }
+  end
+
+  def serialize_deal_inbox(deal)
+    inbox = deal.inbox || deal.conversation&.inbox
+    return nil unless inbox
+
+    { id: inbox.id, name: inbox.name, channel_type: inbox.channel_type }
   end
 
   def serialize_messages_for(deal)
@@ -520,6 +530,7 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
     scope = scope.where(disposition_reason: filters[:disposition_reason]) if filters[:disposition_reason].present?
     scope = scope.where(conversation_id: filters[:conversation_id]) if filters[:conversation_id].present?
     scope = scope.where(contact_id: filters[:contact_id]) if filters[:contact_id].present?
+    scope = scope.where(inbox_id: filters[:inbox_id]) if filters[:inbox_id].present?
     scope = scope.where(urgency_level: urgency) if urgency.present?
     scope = filter_by_owner(scope, filters)
     scope = scope.where('score_total >= ?', filters[:score_min].to_i) if filters[:score_min].present?
