@@ -184,7 +184,7 @@ if inbox.blank? && defined?(Channel::Whatsapp)
       evolution_instance = EvolutionInstance.find_or_initialize_by(account: account, inbox: inbox)
       evolution_instance.assign_attributes(
         channel_whatsapp: channel,
-        evolution_api_configuration: evolution_configuration,
+        configuration: evolution_configuration,
         instance_name: instance_name,
         connection_state: 'connecting',
         provisioning_status: 'pending',
@@ -194,6 +194,25 @@ if inbox.blank? && defined?(Channel::Whatsapp)
       evolution_instance.save!
     end
   end
+end
+
+if inbox.present? && defined?(EvolutionInstance) && evolution_configuration&.persisted? && inbox.channel.is_a?(Channel::Whatsapp)
+  instance_name = ENV['DRA_PAULA_INSTANCE_NAME'].presence ||
+                  ENV['INSTANCE_NAME'].presence ||
+                  inbox.channel.provider_config.to_h['instance_name'].presence ||
+                  'Dra_Paula_Matos'
+
+  evolution_instance = EvolutionInstance.find_or_initialize_by(account: account, inbox: inbox)
+  evolution_instance.assign_attributes(
+    channel_whatsapp: inbox.channel,
+    configuration: evolution_configuration,
+    instance_name: instance_name,
+    connection_state: evolution_instance.connection_state.presence || 'connecting',
+    provisioning_status: evolution_instance.provisioning_status.presence || 'pending',
+    phone_number: inbox.channel.phone_number
+  )
+  evolution_instance.webhook_token ||= SecureRandom.urlsafe_base64(32)
+  evolution_instance.save!
 end
 
 if inbox
