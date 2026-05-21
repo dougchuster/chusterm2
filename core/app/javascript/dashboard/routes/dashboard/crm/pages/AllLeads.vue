@@ -932,10 +932,10 @@ onMounted(async () => {
         </div>
       </div>
 
-      <div class="flex flex-wrap items-center gap-2">
+      <div class="crm-leads-header__actions">
         <select
           v-model="selectedPipelineId"
-          class="crm-leads-control"
+          class="crm-leads-control crm-leads-control--pipeline"
           :disabled="loading || refreshing"
           @change="onPipelineChange"
         >
@@ -1719,6 +1719,16 @@ onMounted(async () => {
   padding: 1.15rem 1.25rem;
 }
 
+.crm-leads-header__actions {
+  display: flex;
+  flex: 1 1 34rem;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  min-width: min(100%, 28rem);
+}
+
 .crm-leads-header__icon {
   display: grid;
   width: 2.75rem;
@@ -1751,6 +1761,11 @@ onMounted(async () => {
   flex: 1 1 11rem;
   max-width: 18rem;
   padding: 0 0.75rem;
+}
+
+.crm-leads-control--pipeline {
+  flex: 1 1 24rem;
+  max-width: 36rem;
 }
 
 .crm-leads-inline-select {
@@ -1824,7 +1839,8 @@ onMounted(async () => {
 
 .crm-leads-filters,
 .crm-leads-bulk {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.625rem;
   border-bottom: 1px solid rgb(var(--slate-5));
@@ -1832,20 +1848,16 @@ onMounted(async () => {
 }
 
 .crm-leads-filters {
-  grid-template-columns:
-    minmax(18rem, 1.35fr) repeat(4, minmax(10.5rem, 0.8fr))
-    minmax(13rem, 0.95fr) repeat(3, minmax(10.5rem, 0.8fr))
-    auto;
   background: rgb(var(--slate-1));
 }
 
 .crm-leads-filters .crm-leads-control {
-  width: 100%;
+  flex: 1 1 12.5rem;
+  width: auto;
   max-width: none;
 }
 
 .crm-leads-bulk {
-  grid-template-columns: minmax(15rem, auto) repeat(4, minmax(11rem, 1fr)) auto auto;
   background: rgb(var(--brand-2));
 }
 
@@ -1869,6 +1881,7 @@ onMounted(async () => {
 .crm-leads-search {
   position: relative;
   display: block;
+  flex: 999 1 28rem;
   min-width: 0;
   height: 2.375rem;
   overflow: hidden;
@@ -1921,6 +1934,7 @@ onMounted(async () => {
 .crm-leads-filters__actions {
   display: flex;
   flex: 0 0 auto;
+  margin-left: auto;
   gap: 0.5rem;
 }
 

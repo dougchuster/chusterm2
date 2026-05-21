@@ -26,13 +26,13 @@ const FOLDERS = [
   {
     key: 'area',
     title: 'Setor jurídico',
-    description: 'Areas do caso, como INSS, Trabalhista e Familia.',
+    description: 'Áreas do caso, como INSS, Trabalhista e Família.',
     icon: 'i-lucide-scale',
   },
   {
     key: 'location',
     title: 'Localidade',
-    description: 'Estados, cidades e regioes para segmentacao local.',
+    description: 'Estados, cidades e regiões para segmentação local.',
     icon: 'i-lucide-globe',
   },
   {
@@ -49,14 +49,14 @@ const FOLDERS = [
   },
   {
     key: 'restriction',
-    title: 'Restricoes',
+    title: 'Restrições',
     description: 'Opt-out, não chamar e regras de cuidado.',
     icon: 'i-lucide-shield-alert',
   },
   {
     key: 'custom',
     title: 'Outras categorias',
-    description: 'Pastas livres criadas pela operacao.',
+    description: 'Pastas livres criadas pela operação.',
     icon: 'i-lucide-tags',
   },
 ];
@@ -70,7 +70,7 @@ const CATEGORY_KIND_OPTIONS = FOLDERS.map(folder => ({
 const pageText = {
   title: 'Categorias',
   subtitle:
-    'Organize suas listas em pastas, importe contatos, exporte audiencias e acompanhe duplicados.',
+    'Organize suas listas em pastas, importe contatos, exporte audiências e acompanhe duplicados.',
   allFolders: 'Pastas',
   backToFolders: 'Voltar para pastas',
   backToFolder: 'Voltar para pasta',
@@ -87,8 +87,8 @@ const pageText = {
   import: 'Importar',
   exportCsv: 'Exportar CSV',
   exportSheet: 'Google Sheets',
-  latestImport: 'Ultima importacao',
-  noLatestImport: 'Sem importacoes',
+  latestImport: 'Última importação',
+  noLatestImport: 'Sem importações',
   importHistory: 'Histórico de importações',
   contactsListTitle: 'Contatos da lista',
   listActions: 'Ações da lista',
@@ -106,14 +106,14 @@ const pageText = {
   folderEmpty: 'Nenhuma lista criada nesta pasta.',
   detailEmpty: 'Nenhum contato nesta lista.',
   duplicateHint:
-    'Duplicados por CPF/identificador, e-mail ou telefone serao atualizados e sinalizados.',
+    'Duplicados por CPF/identificador, e-mail ou telefone serão atualizados e sinalizados.',
   createSuccess: 'Lista criada.',
   updateSuccess: 'Lista atualizada.',
-  deleteSuccess: 'Lista excluida.',
-  importSuccess: 'Importacao enviada. Os duplicados serao atualizados.',
-  exportSuccess: 'Exportacao iniciada.',
+  deleteSuccess: 'Lista excluída.',
+  importSuccess: 'Importação enviada. Os duplicados serão atualizados.',
+  exportSuccess: 'Exportação iniciada.',
   exportError: 'Não foi possível exportar a lista.',
-  genericError: 'Não foi possível concluir a acao.',
+  genericError: 'Não foi possível concluir a ação.',
 };
 
 const categories = ref([]);
@@ -903,7 +903,7 @@ onMounted(async () => {
                 >
                   <div class="flex items-center justify-between gap-2">
                     <span class="font-medium text-n-slate-12">
-                      {{ item.filename || `Importacao #${item.id}` }}
+                      {{ item.filename || `Importação #${item.id}` }}
                     </span>
                     <span class="text-xs text-n-slate-10">
                       {{ importStatusLabel(item.status) }}
@@ -1025,7 +1025,7 @@ onMounted(async () => {
       ref="deleteDialogRef"
       type="alert"
       :title="pageText.delete"
-      description="A lista sera removida dos contatos antes de ser excluida."
+      description="A lista será removida dos contatos antes de ser excluída."
       :confirm-button-label="pageText.delete"
       :is-loading="isDeletingCategory"
       @confirm="deleteCategory"

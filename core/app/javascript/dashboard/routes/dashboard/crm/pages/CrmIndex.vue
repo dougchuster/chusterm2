@@ -16,9 +16,9 @@ const agents = useMapGetter('agents/getVerifiedAgents');
 
 const DEFAULT_STAGES = [
   { name: 'Novo lead', probabilityPct: 10, color: '#38bdf8' },
-  { name: 'Em qualificacao', probabilityPct: 25, color: '#a78bfa' },
+  { name: 'Em qualificação', probabilityPct: 25, color: '#a78bfa' },
   { name: 'Proposta', probabilityPct: 55, color: '#f59e0b' },
-  { name: 'Negociacao', probabilityPct: 75, color: '#22c55e' },
+  { name: 'Negociação', probabilityPct: 75, color: '#22c55e' },
   { name: 'Ganho', probabilityPct: 100, color: '#14b8a6' },
   { name: 'Perdido', probabilityPct: 0, color: '#f43f5e' },
 ];

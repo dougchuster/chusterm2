@@ -125,7 +125,7 @@ const templateModels = [
   },
   {
     key: 'reativacao_lead_frio',
-    name: 'Reativacao de lead frio',
+    name: 'Reativação de lead frio',
     description: 'Reabre oportunidades antigas com uma abordagem leve.',
     icon: 'i-lucide-snowflake',
     channel: 'whatsapp',
@@ -246,14 +246,14 @@ const stats = computed(() => [
   {
     label: 'Total',
     value: cadences.value.length,
-    hint: 'Cadencias criadas',
+    hint: 'Cadências criadas',
     icon: 'i-lucide-send',
     tone: 'blue',
   },
   {
     label: 'Ativas',
     value: activeCadences.value,
-    hint: 'Em operacao',
+    hint: 'Em operação',
     icon: 'i-lucide-play-circle',
     tone: 'teal',
   },
@@ -538,10 +538,10 @@ onMounted(loadCadences);
         <span class="crm-cadences-hero__icon i-lucide-send size-5" />
         <div>
           <span class="crm-cadences-kicker">Nutricao e follow-up</span>
-          <h1>Cadencias do CRM</h1>
+          <h1>Cadências do CRM</h1>
           <p>
             Modele sequências de contato para leads, documentos pendentes,
-            consultas e reativacao da base.
+            consultas e reativação da base.
           </p>
         </div>
       </div>
@@ -764,7 +764,7 @@ onMounted(loadCadences);
         <header class="crm-drawer__header">
           <div>
             <span class="crm-cadences-kicker">
-              {{ editingId ? 'Edição' : 'Criacao guiada' }}
+              {{ editingId ? 'Edição' : 'Criação guiada' }}
             </span>
             <h2>{{ drawerTitle }}</h2>
             <p>Configure dados, canal padrão e passos da sequência.</p>

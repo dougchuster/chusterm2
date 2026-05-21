@@ -107,6 +107,7 @@ COPY app/controllers/dashboard_controller.rb ./app/controllers/dashboard_control
 COPY app/controllers/evo_manager_controller.rb ./app/controllers/evo_manager_controller.rb
 COPY config/initializers/ai_agents.rb ./config/initializers/ai_agents.rb
 COPY config/initializers/enterprise_unlock.rb ./config/initializers/enterprise_unlock.rb
+COPY config/initializers/sidekiq.rb ./config/initializers/sidekiq.rb
 COPY lib/chatwoot_app.rb ./lib/chatwoot_app.rb
 COPY lib/chatwoot_hub.rb ./lib/chatwoot_hub.rb
 COPY lib/llm_constants.rb ./lib/llm_constants.rb
@@ -151,6 +152,7 @@ COPY app/views/api/v1/models/_inbox.json.jbuilder ./app/views/api/v1/models/_inb
 COPY app/views/api/v1/conversations/partials/_conversation.json.jbuilder ./app/views/api/v1/conversations/partials/_conversation.json.jbuilder
 COPY app/views/api/v1/accounts/labels/ ./app/views/api/v1/accounts/labels/
 COPY app/finders/conversation_finder.rb ./app/finders/conversation_finder.rb
+COPY app/finders/message_finder.rb ./app/finders/message_finder.rb
 COPY app/models/account.rb ./app/models/account.rb
 COPY app/models/attachment.rb ./app/models/attachment.rb
 COPY app/models/campaign.rb ./app/models/campaign.rb
@@ -210,6 +212,7 @@ COPY enterprise/lib/captain/tools/handoff_tool.rb ./enterprise/lib/captain/tools
 COPY app/listeners/crm_captain_triage_listener.rb ./app/listeners/crm_captain_triage_listener.rb
 COPY app/dispatchers/async_dispatcher.rb ./app/dispatchers/async_dispatcher.rb
 COPY app/policies/label_policy.rb ./app/policies/label_policy.rb
+COPY app/policies/contact_policy.rb ./app/policies/contact_policy.rb
 COPY app/policies/crm_*.rb ./app/policies/
 # Patches de migrations da imagem base do Chatwoot com incompatibilidades de versao
 COPY db/migrate/20231211010807_add_cached_labels_list.rb ./db/migrate/

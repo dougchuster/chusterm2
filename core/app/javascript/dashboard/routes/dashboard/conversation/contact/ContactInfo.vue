@@ -214,10 +214,26 @@ export default {
               target="_blank"
               rel="noopener nofollow noreferrer"
               class="leading-3"
+              title="Abrir contato em nova aba"
             >
               <span class="i-lucide-external-link text-sm text-n-slate-10" />
             </a>
           </div>
+        </div>
+
+        <div v-if="contact.id" class="contact-panel-quick-actions">
+          <a :href="contactProfileLink" class="contact-panel-quick-link">
+            <span class="i-lucide-user-round-search size-4" />
+            Abrir contato
+          </a>
+          <button
+            type="button"
+            class="contact-panel-quick-link"
+            @click="toggleEditModal"
+          >
+            <span class="i-lucide-pencil size-4" />
+            Editar dados
+          </button>
         </div>
 
         <p v-if="additionalAttributes.description" class="break-words mb-0.5">
@@ -339,3 +355,41 @@ export default {
     />
   </div>
 </template>
+
+<style scoped>
+.contact-panel-quick-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.contact-panel-quick-link {
+  display: inline-flex;
+  min-width: 0;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border: 1px solid rgb(var(--slate-5));
+  border-radius: 0.5rem;
+  background: rgb(var(--slate-2));
+  padding: 0 0.65rem;
+  color: rgb(var(--slate-12));
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.1;
+  text-decoration: none;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.contact-panel-quick-link:hover {
+  border-color: rgb(var(--blue-6));
+  background: rgb(var(--blue-2));
+  color: rgb(var(--blue-11));
+  text-decoration: none;
+}
+</style>

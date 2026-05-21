@@ -23,13 +23,13 @@ const DEFAULT_SORT_FIELD = 'last_activity_at';
 const DEBOUNCE_DELAY = 300;
 const LIST_OWNER_WITHOUT = 'without_owner';
 const CRM_FILTER_TEXT = {
-  title: 'Central de segmentacao',
+  title: 'Central de segmentação',
   subtitle: 'Organize contatos por categorias, setor jurídico e responsável.',
   listTitle: 'Filtros da lista',
   listSubtitle:
     'Refine a tabela por relacionamento, etapa, categoria e responsável.',
   relationship: 'Relacionamento',
-  lifecycle: 'Qualificacao',
+  lifecycle: 'Qualificação',
   owner: 'Responsável',
   label: 'Categoria',
   sourceList: 'Lista',
@@ -60,7 +60,7 @@ const CRM_FILTER_TEXT = {
   responsiblePeople: 'Responsáveis',
   responsiblePeopleDescription:
     'Acompanhe rapidamente quem cuida da carteira de contatos.',
-  activeAudience: 'Audiencia ativa',
+  activeAudience: 'Audiência ativa',
   campaignCta: 'Criar campanha',
   saveSegment: 'Salvar segmento',
 };
@@ -69,7 +69,7 @@ const CATEGORY_KIND_OPTIONS = [
   { value: 'location', label: 'Localidade' },
   { value: 'campaign', label: 'Campanha' },
   { value: 'origin', label: 'Origem' },
-  { value: 'restriction', label: 'Restricao' },
+  { value: 'restriction', label: 'Restrição' },
   { value: 'custom', label: 'Livre' },
 ];
 const CATEGORY_COLORS = [
@@ -89,7 +89,7 @@ const IMPORT_TEXT = {
   downloadErrors: 'Baixar erros',
 };
 const CATEGORIES_PAGE_TEXT = {
-  title: 'Gestao de categorias',
+  title: 'Gestão de categorias',
   subtitle:
     'Categorias por tipo, responsáveis e audiência pronta para campanhas.',
   totalCategories: 'Categorias',
@@ -420,13 +420,13 @@ const categoryGroups = computed(() => {
     {
       key: 'location',
       title: 'Localidade',
-      description: 'Estados, cidades ou regioes para campanhas locais.',
+      description: 'Estados, cidades ou regiões para campanhas locais.',
       icon: 'i-lucide-map-pin',
     },
     {
       key: 'campaign',
       title: 'Campanhas e listas',
-      description: 'Audiencias de remarketing, importações e ações comerciais.',
+      description: 'Audiências de remarketing, importações e ações comerciais.',
       icon: 'i-lucide-megaphone',
     },
     {
@@ -444,7 +444,7 @@ const categoryGroups = computed(() => {
     {
       key: 'custom',
       title: 'Outras categorias',
-      description: 'Grupos livres criados pela operacao.',
+      description: 'Grupos livres criados pela operação.',
       icon: 'i-lucide-tags',
     },
   ];
@@ -586,7 +586,7 @@ const importStatusLabel = status =>
   })[status] || status;
 
 const importTitle = item =>
-  item.metadata?.source_list || item.filename || `Importacao #${item.id}`;
+  item.metadata?.source_list || item.filename || `Importação #${item.id}`;
 const importProgress = item =>
   `${item.processed_records || 0}/${item.total_records || 0} ${IMPORT_TEXT.processed}`;
 const importFailures = item =>
@@ -931,7 +931,7 @@ const createCategory = async () => {
         title,
         color,
         kind: newCategoryKind.value,
-        description: 'Categoria de contato para segmentacao e campanhas',
+        description: 'Categoria de contato para segmentação e campanhas',
       },
     });
     await fetchContactCategories();

@@ -377,10 +377,10 @@ onMounted(loadData);
             <div class="mb-3 flex items-center justify-between gap-2">
               <div>
                 <h3 class="text-sm font-semibold text-n-slate-12">
-                  Faixas de classificacao
+                  Faixas de classificação
                 </h3>
                 <p class="text-xs text-n-slate-9">
-                  Defina a pontuacao minima para cada categoria.
+                  Defina a pontuação mínima para cada categoria.
                 </p>
               </div>
             </div>

@@ -3,7 +3,7 @@
 schedule_file = 'config/schedule.yml'
 
 Sidekiq.configure_client do |config|
-  config.redis = Redis::Config.app
+  config.redis = Redis::Config.app.merge(network_timeout: ENV.fetch('SIDEKIQ_REDIS_NETWORK_TIMEOUT', 10).to_i)
 end
 
 # Logs whenever a job is pulled off Redis for execution.
@@ -16,7 +16,7 @@ class ChusteRMDequeuedLogger
 end
 
 Sidekiq.configure_server do |config|
-  config.redis = Redis::Config.app
+  config.redis = Redis::Config.app.merge(network_timeout: ENV.fetch('SIDEKIQ_REDIS_NETWORK_TIMEOUT', 10).to_i)
 
   if ActiveModel::Type::Boolean.new.cast(ENV.fetch('ENABLE_SIDEKIQ_DEQUEUE_LOGGER', false))
     config.server_middleware do |chain|

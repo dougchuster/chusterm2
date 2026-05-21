@@ -562,7 +562,7 @@ onMounted(loadData);
             <div>
               <h3>Condicoes visuais</h3>
               <p>
-                Execute a automacao somente quando o lead cumprir estes
+                Execute a automação somente quando o lead cumprir estes
                 criterios.
               </p>
             </div>

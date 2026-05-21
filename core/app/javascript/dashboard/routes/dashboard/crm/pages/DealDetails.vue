@@ -52,7 +52,7 @@ const legalAreas = [
   { value: 'previdenciario', label: 'Previdenciario' },
   { value: 'trabalhista', label: 'Trabalhista' },
   { value: 'civil', label: 'Civil' },
-  { value: 'familia', label: 'Familia' },
+  { value: 'familia', label: 'Família' },
   { value: 'consumidor', label: 'Consumidor' },
   { value: 'empresarial', label: 'Empresarial' },
   { value: 'tributario', label: 'Tributario' },
@@ -69,7 +69,7 @@ const sources = [
   { value: 'facebook', label: 'Facebook' },
   { value: 'google_ads', label: 'Google Ads' },
   { value: 'meta_ads', label: 'Meta Ads' },
-  { value: 'indicacao', label: 'Indicacao' },
+  { value: 'indicacao', label: 'Indicação' },
   { value: 'site', label: 'Site' },
   { value: 'lista_importada', label: 'Lista importada' },
   { value: 'cliente_base', label: 'Cliente Base' },
@@ -1449,7 +1449,7 @@ onMounted(() => {
               <option value="">Selecione</option>
               <option value="consent">Consentimento</option>
               <option value="contract">Contrato</option>
-              <option value="legal_obligation">Obrigacao legal</option>
+              <option value="legal_obligation">Obrigação legal</option>
               <option value="legitimate_interest">Interesse legitimo</option>
             </select>
           </label>
