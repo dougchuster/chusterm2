@@ -53,7 +53,11 @@ module Evolution
       parsed = get("/instance/connectionState/#{escape(instance_name)}")
       return 'unknown' unless parsed.is_a?(Hash)
 
-      parsed.dig('instance', 'state') || parsed.dig('instance', 'status') || parsed['state'] || parsed['status'] || 'unknown'
+      safe_dig(parsed, 'instance', 'state') ||
+        safe_dig(parsed, 'instance', 'status') ||
+        parsed['state'] ||
+        parsed['status'] ||
+        'unknown'
     end
 
     def logout(instance_name:)
@@ -103,17 +107,20 @@ module Evolution
       Array(raw_list).filter_map do |raw|
         next unless raw.is_a?(Hash)
 
-        name = raw['name'] || raw['instanceName'] || raw.dig('instance', 'instanceName') || raw.dig('instance', 'name')
+        name = raw['name'] ||
+               raw['instanceName'] ||
+               safe_dig(raw, 'instance', 'instanceName') ||
+               safe_dig(raw, 'instance', 'name')
         next if name.blank?
 
         {
           name: name,
           connection_status: raw['connectionStatus'] || raw['status'] ||
-            raw.dig('instance', 'status') || raw.dig('instance', 'state'),
-          owner_jid: raw['ownerJid'] || raw['owner'] || raw.dig('instance', 'ownerJid'),
+            safe_dig(raw, 'instance', 'status') || safe_dig(raw, 'instance', 'state'),
+          owner_jid: raw['ownerJid'] || raw['owner'] || safe_dig(raw, 'instance', 'ownerJid'),
           phone_number: normalize_phone(raw['ownerJid'] || raw['owner'] || raw['number']),
-          profile_name: raw['profileName'] || raw.dig('profile', 'name'),
-          profile_picture_url: raw['profilePicUrl'] || raw['profilePictureUrl'] || raw.dig('profile', 'pictureUrl')
+          profile_name: raw['profileName'] || safe_dig(raw, 'profile', 'name'),
+          profile_picture_url: raw['profilePicUrl'] || raw['profilePictureUrl'] || safe_dig(raw, 'profile', 'pictureUrl')
         }.compact
       end
     end
@@ -182,7 +189,7 @@ module Evolution
       return parsed if parsed.is_a?(String)
       return response.body.to_s.truncate(300) unless parsed.is_a?(Hash)
 
-      message = parsed['message'] || parsed.dig('error', 'message') || parsed.dig('response', 'message')
+      message = parsed['message'] || safe_dig(parsed, 'error', 'message') || safe_dig(parsed, 'response', 'message')
       message = message.flatten.join(', ') if message.is_a?(Array)
       message.presence || response.body.to_s.truncate(300)
     end
@@ -225,8 +232,21 @@ module Evolution
       ERB::Util.url_encode(value.to_s)
     end
 
+    def safe_dig(value, *keys)
+      keys.reduce(value) do |memo, key|
+        return nil unless memo.respond_to?(:[])
+
+        memo = memo[key]
+        return nil if memo.is_a?(String) && key != keys.last
+
+        memo
+      end
+    end
+
     def normalize_phone(value)
       phone = value.to_s.split('@').first
+      return nil if phone.blank?
+
       digits = phone.gsub(/\D/, '')
       digits.present? ? "+#{digits}" : nil
     end
