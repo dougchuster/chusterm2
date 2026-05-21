@@ -113,12 +113,14 @@ module Evolution
                safe_dig(raw, 'instance', 'name')
         next if name.blank?
 
+        phone_number = first_real_phone(raw)
+
         {
           name: name,
           connection_status: raw['connectionStatus'] || raw['status'] ||
             safe_dig(raw, 'instance', 'status') || safe_dig(raw, 'instance', 'state'),
           owner_jid: raw['ownerJid'] || raw['owner'] || safe_dig(raw, 'instance', 'ownerJid'),
-          phone_number: normalize_phone(raw['ownerJid'] || raw['owner'] || raw['number']),
+          phone_number: phone_number,
           profile_name: raw['profileName'] || safe_dig(raw, 'profile', 'name'),
           profile_picture_url: raw['profilePicUrl'] || raw['profilePictureUrl'] || safe_dig(raw, 'profile', 'pictureUrl')
         }.compact
@@ -244,11 +246,33 @@ module Evolution
     end
 
     def normalize_phone(value)
-      phone = value.to_s.split('@').first
+      text = value.to_s
+      return nil if text.blank? || text.include?('@lid')
+
+      phone = text.split('@').first
       return nil if phone.blank?
 
       digits = phone.gsub(/\D/, '')
+      return nil if lid_like_number?(digits)
+
       digits.present? ? "+#{digits}" : nil
+    end
+
+    def first_real_phone(raw)
+      [
+        raw['ownerJid'],
+        safe_dig(raw, 'instance', 'ownerJid'),
+        raw['wuid'],
+        safe_dig(raw, 'instance', 'wuid'),
+        raw['number'],
+        safe_dig(raw, 'instance', 'number'),
+        raw['owner'],
+        safe_dig(raw, 'instance', 'owner')
+      ].filter_map { |candidate| normalize_phone(candidate) }.first
+    end
+
+    def lid_like_number?(digits)
+      digits.start_with?('1000') && digits.length >= 12
     end
   end
 end

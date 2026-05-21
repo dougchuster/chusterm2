@@ -33,6 +33,9 @@ class Webhooks::EvolutionController < ActionController::API
     load_instance_from_token
     return if @channel.present?
 
+    load_instance_from_name
+    return if @channel.present?
+
     load_channel_from_phone(params[:phone_number] || params[:webhook_token])
   end
 
@@ -42,6 +45,17 @@ class Webhooks::EvolutionController < ActionController::API
 
     @evolution_instance = EvolutionInstance.find_by(webhook_token: token)
     @channel = @evolution_instance&.channel_whatsapp
+  end
+
+  def load_instance_from_name
+    incoming_instance = params[:instance].presence || params.dig(:evolution, :instance).presence
+    return if incoming_instance.blank?
+
+    matches = EvolutionInstance.where(instance_name: incoming_instance)
+    return unless matches.one?
+
+    @evolution_instance = matches.first
+    @channel = @evolution_instance.channel_whatsapp
   end
 
   def load_channel_from_phone(raw_phone)
@@ -55,7 +69,7 @@ class Webhooks::EvolutionController < ActionController::API
   end
 
   def verify_api_key
-    provided = request.headers['apikey'] || request.headers['Authorization']&.delete_prefix('Bearer ')
+    provided = request.headers['apikey'] || request.headers['Authorization']&.delete_prefix('Bearer ') || params[:apikey].presence
     token = request.headers['x-evolution-webhook-token'] || params[:webhook_token].presence
     return if @evolution_instance&.webhook_token.present? && token_matches?(@evolution_instance.webhook_token, token.to_s)
 

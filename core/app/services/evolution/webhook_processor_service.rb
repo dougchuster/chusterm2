@@ -56,13 +56,13 @@ module Evolution
     end
 
     def update_message_status(data)
-      source_id = evolution_message_id(data)
-      return if source_id.blank?
+      source_ids = evolution_message_ids(data)
+      return if source_ids.blank?
 
-      message = @channel.inbox.messages.find_by(source_id: source_id)
+      message = @channel.inbox.messages.where(source_id: source_ids).first
       unless message
-        Rails.logger.info "[EVOLUTION] Status update ignored; source_id=#{source_id} inbox_id=#{@channel.inbox_id}"
-        track_evolution_campaign_status(source_id, data)
+        Rails.logger.info "[EVOLUTION] Status update ignored; source_ids=#{source_ids.join(',')} inbox_id=#{@channel.inbox&.id}"
+        source_ids.each { |source_id| track_evolution_campaign_status(source_id, data) }
         return
       end
 
@@ -94,6 +94,7 @@ module Evolution
         @channel.reauthorized! if @channel.reauthorization_required?
         @channel.evolution_clear_session_warnings!
         @channel.evolution_update_health!(state: state, error: nil)
+        sync_instance_identity_from_connection!(data)
         @instance&.update_connection!(state: state, error: nil)
       when 'close', 'closed', 'disconnected'
         @channel.authorization_error!
@@ -151,9 +152,14 @@ module Evolution
       expected.blank? || received.blank? || received == expected
     end
 
-    def evolution_message_id(data)
+    def evolution_message_ids(data)
       key = data[:key] || {}
-      key[:id] || data[:keyId] || data[:messageId] || data[:id]
+      [
+        key[:id],
+        data[:keyId],
+        data[:messageId],
+        data[:id]
+      ].compact_blank.map(&:to_s).uniq
     end
 
     def normalized_delivery_status(status)
@@ -192,6 +198,48 @@ module Evolution
       @event.failed!(error)
       Rails.logger.warn({ component: 'evolution', action: 'webhook_failed', event_id: @event.id, error: error }.to_json)
       false
+    end
+
+    def sync_instance_identity_from_connection!(data)
+      phone_number = real_phone_from_connection(data)
+      profile_name = data[:profileName] || data[:profile_name]
+      profile_picture_url = data[:profilePictureUrl] || data[:profile_picture_url]
+
+      @instance&.update!(
+        {
+          phone_number: phone_number,
+          profile_name: profile_name,
+          profile_picture_url: profile_picture_url
+        }.compact_blank
+      )
+
+      sync_channel_phone!(phone_number) if phone_number.present?
+    end
+
+    def real_phone_from_connection(data)
+      [
+        data[:wuid],
+        data[:sender],
+        data[:ownerJid],
+        data[:owner],
+        @params[:sender]
+      ].filter_map { |candidate| normalize_real_phone(candidate) }.first
+    end
+
+    def normalize_real_phone(value)
+      text = value.to_s
+      return if text.blank? || text.include?('@lid')
+      return unless text.include?('@s.whatsapp.net')
+
+      digits = text.split('@').first.gsub(/\D/, '')
+      digits.present? ? "+#{digits}" : nil
+    end
+
+    def sync_channel_phone!(phone_number)
+      return if @channel.blank? || @channel.phone_number == phone_number
+      return if Channel::Whatsapp.where(phone_number: phone_number).where.not(id: @channel.id).exists?
+
+      @channel.update!(phone_number: phone_number)
     end
 
     def broadcast(type, extra = {})

@@ -58,7 +58,7 @@ class Webhooks::EvolutionEventsJob < ApplicationJob
 
     message = channel.inbox.messages.find_by(source_id: source_id)
     unless message
-      Rails.logger.info "[EVOLUTION] Status update ignored; message source_id=#{source_id} was not found for inbox_id=#{channel.inbox_id}"
+      Rails.logger.info "[EVOLUTION] Status update ignored; message source_id=#{source_id} was not found for inbox_id=#{channel.inbox&.id}"
       track_evolution_campaign_status(channel, source_id, data)
       return
     end
