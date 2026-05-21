@@ -353,13 +353,13 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
     normalized = ActiveSupport::Inflector.transliterate(latest_message).downcase
 
     response_text = if greeting_message?(normalized)
-                      'Boa tarde! Aqui é a Dra. Paula Matos, advogada previdenciária. Para eu entender melhor, qual é o seu objetivo no INSS hoje?'
+                      'Olá! Aqui é a Dra. Paula Matos, do Coimbra & Ruas. Como posso te ajudar hoje?'
                     elsif normalized.include?('planejamento') || normalized.include?('como funciona')
-                      'O planejamento previdenciário serve para conferir seu histórico no INSS antes de qualquer decisão, identificar erros no CNIS e avaliar o melhor momento para pedir o benefício. Para começarmos, me diga sua idade.'
+                      'Claro. O planejamento previdenciário ajuda a conferir CNIS, contribuições e o melhor momento antes de qualquer pedido no INSS. Para começarmos, me diga sua idade.'
                     elsif normalized.include?('nao sei') || normalized.include?('nao tenho certeza')
                       'Sem problema. Vamos por partes. Primeiro, me diga sua idade.'
                     else
-                      'Entendi. Vou organizar sua triagem com cuidado. Primeiro, me diga qual benefício ou objetivo você quer avaliar no INSS.'
+                      'Entendi. Me conte em uma frase o que você precisa resolver, que eu vou te orientar no próximo passo.'
                     end
 
     {

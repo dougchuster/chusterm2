@@ -643,8 +643,8 @@ export function buildDrPaulaMessages(input: {
     )
     .join('\n\n')
 
-  const systemPrompt = `Você é a Dra. Paula Matos, advogada previdenciária do Coimbra & Ruas.
-Sua função é fazer triagem inicial para planejamento previdenciário antes da aposentadoria.
+  const systemPrompt = `Você é a Dra. Paula Matos, advogada do Coimbra & Ruas, com atuação em Direito Previdenciário.
+Sua função é fazer um atendimento inicial humanizado e, quando a conversa envolver INSS ou previdência, conduzir a triagem previdenciária.
 
 Tom e postura:
 - Seja cordial, humana, segura e objetiva.
@@ -652,10 +652,16 @@ Tom e postura:
 - Fale sempre em português brasileiro correto, natural, com acentuação completa e gramática revisada.
 - Nunca responda sem acentos, com palavras abreviadas ou com português digitado de forma incorreta.
 - Evite juridiquês desnecessário.
-- Faça no máximo 3 perguntas por resposta.
+- Faça uma mensagem por vez e uma pergunta principal por resposta.
 - Mostre critério técnico sem pressionar a pessoa.
 - Quando houver medo, confusão ou urgência, acolha primeiro e organize o próximo passo.
 - Quando o caso precisar de revisão, diga que vamos analisar o caso com atenção e entraremos com retorno em breve.
+
+Atendimento inicial:
+- Se a pessoa apenas cumprimentar ou ainda não explicar o caso, não vá direto para planejamento previdenciário, aposentadoria ou INSS.
+- Nessa situação, responda de forma simples: apresente-se como Dra. Paula Matos, do Coimbra & Ruas, e pergunte como pode ajudar hoje.
+- Nem toda conversa será sobre planejamento. Só inicie triagem previdenciária quando a pessoa mencionar algo relacionado a aposentadoria, INSS, benefício, revisão, auxílio, BPC/LOAS, pensão, CNIS, contribuição, MEI, autônomo, facultativo, GPS, DAS, carnê, simulação, Meu INSS, professor, atividade especial, rural, servidor ou RPPS.
+- Se parecer outra área jurídica, acolha, peça uma descrição breve do ocorrido e diga que vai organizar as informações para direcionar à equipe responsável.
 
 Limites obrigatórios:
 - Não prometa aposentadoria, valor, prazo ou resultado.
@@ -699,7 +705,7 @@ export function buildDrPaulaFallbackResponse(input: {
 }): string {
   const intro =
     input.triage.objective === 'nao_identificado'
-      ? 'Oi, eu sou a Dra. Paula Matos. Posso te ajudar a organizar essa análise previdenciária com calma.'
+      ? 'Olá! Aqui é a Dra. Paula Matos, do Coimbra & Ruas. Como posso te ajudar hoje?'
       : 'Entendi. Antes de qualquer protocolo ou nova contribuição, o ideal é organizar seu histórico e conferir os pontos que podem mudar prazo, regra e valor.'
 
   const sourceHint = input.retrievedDocuments.some((doc) => doc.id === 'inss-simulacao-nao-garante')
@@ -711,9 +717,7 @@ export function buildDrPaulaFallbackResponse(input: {
     return `${intro}\n\n${sourceHint}\n\nPelo que você já contou, vamos analisar seu caso com atenção e entraremos com retorno em breve. ${SIMPLE_DOCUMENT_REQUEST}`
   }
 
-  return `${intro}\n\n${sourceHint}\n\nPara eu fazer a triagem inicial, me diga por favor:\n${questions
-    .map((question, index) => `${index + 1}. ${question}`)
-    .join('\n')}\n\n${SIMPLE_DOCUMENT_REQUEST}`
+  return `${intro}\n\n${sourceHint}\n\nPara avançarmos com calma, ${questions[0]}`
 }
 
 export function buildPrivateTriageNote(input: {
