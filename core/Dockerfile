@@ -88,6 +88,7 @@ COPY enterprise/app/models/enterprise/concerns/attachment.rb ./enterprise/app/mo
 COPY enterprise/app/models/enterprise/concerns/inbox.rb ./enterprise/app/models/enterprise/concerns/inbox.rb
 COPY enterprise/app/controllers/api/v1/accounts/captain/assistants_controller.rb ./enterprise/app/controllers/api/v1/accounts/captain/assistants_controller.rb
 COPY enterprise/app/controllers/api/v1/accounts/captain/inboxes_controller.rb ./enterprise/app/controllers/api/v1/accounts/captain/inboxes_controller.rb
+COPY enterprise/app/controllers/enterprise/api/v1/accounts_controller.rb ./enterprise/app/controllers/enterprise/api/v1/accounts_controller.rb
 COPY enterprise/app/views/api/v1/accounts/captain/inboxes/ ./enterprise/app/views/api/v1/accounts/captain/inboxes/
 COPY enterprise/app/models/concerns/agentable.rb ./enterprise/app/models/concerns/agentable.rb
 COPY enterprise/lib/captain/prompts/assistant.liquid ./enterprise/lib/captain/prompts/assistant.liquid

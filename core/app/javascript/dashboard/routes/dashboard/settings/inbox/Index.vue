@@ -121,7 +121,7 @@ const openDelete = inbox => {
         <div
           v-for="inbox in filteredInboxesList"
           :key="inbox.id"
-          class="flex justify-between flex-row items-center gap-4 py-3"
+          class="flex justify-between flex-row items-center gap-4 px-4 py-3 sm:px-5"
         >
           <div class="flex items-center gap-4 min-w-0">
             <div

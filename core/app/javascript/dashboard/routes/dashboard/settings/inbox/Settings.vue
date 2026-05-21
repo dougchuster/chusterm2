@@ -117,6 +117,7 @@ export default {
       evolutionLinking: false,
       evolutionActionLoading: '',
       captainAssistantId: '',
+      captainLinkedAssistantId: '',
       captainAiMode: 'auto',
       captainAutoReply: true,
       captainHandoffStrategy: 'human_request_or_score',
@@ -791,36 +792,56 @@ export default {
     toggleLockToSingleConversation(value) {
       this.locktoSingleConversation = value;
     },
-    async loadCaptainSettings() {
-      if (!this.currentInboxId || !this.accountId) return;
-      this.captainLoading = true;
-      try {
-        await this.$store.dispatch('captainAssistants/get');
-        const inboxId = parseInt(this.currentInboxId, 10);
-        const assistantInboxResults = await Promise.all(
-          this.captainAssistantsList.map(async assistant => {
+    normalizeCaptainInboxRecord(record) {
+      return record?.captain_inbox || record || {};
+    },
+    findCaptainInboxLink(records, inboxId) {
+      return (records || []).find(record => {
+        const captainInbox = this.normalizeCaptainInboxRecord(record);
+        return Number(captainInbox.inbox_id) === Number(inboxId);
+      });
+    },
+    async fetchCaptainInboxLink(inboxId) {
+      await this.$store.dispatch('captainAssistants/get');
+      const assistantInboxResults = await Promise.all(
+        this.captainAssistantsList.map(async assistant => {
+          try {
             const resp = await axios.get(
               `/api/v1/accounts/${this.accountId}/captain/assistants/${assistant.id}/inboxes`
             );
             const records = resp.data?.payload ?? [];
-            const match = records.find(
-              r => r.captain_inbox?.inbox_id === inboxId
-            );
-            return match ? { assistant, match } : null;
-          })
-        );
-        const linkedAssistant = assistantInboxResults.find(Boolean);
+            const match = this.findCaptainInboxLink(records, inboxId);
+            return match
+              ? {
+                  assistant,
+                  captainInbox: this.normalizeCaptainInboxRecord(match),
+                }
+              : null;
+          } catch {
+            return null;
+          }
+        })
+      );
+      return assistantInboxResults.find(Boolean) || null;
+    },
+    async loadCaptainSettings() {
+      if (!this.currentInboxId || !this.accountId) return;
+      this.captainLoading = true;
+      try {
+        const inboxId = parseInt(this.currentInboxId, 10);
+        const linkedAssistant = await this.fetchCaptainInboxLink(inboxId);
         if (linkedAssistant) {
-          const { assistant, match } = linkedAssistant;
+          const { assistant, captainInbox } = linkedAssistant;
           this.captainAssistantId = String(assistant.id);
-          this.captainAiMode = match.captain_inbox.ai_mode || 'auto';
-          this.captainAutoReply =
-            match.captain_inbox.auto_reply_enabled ?? true;
+          this.captainLinkedAssistantId = String(assistant.id);
+          this.captainAiMode = captainInbox.ai_mode || 'auto';
+          this.captainAutoReply = captainInbox.auto_reply_enabled ?? true;
           this.captainHandoffStrategy =
-            match.captain_inbox.handoff_strategy || 'human_request_or_score';
+            captainInbox.handoff_strategy || 'human_request_or_score';
           return;
         }
         this.captainAssistantId = '';
+        this.captainLinkedAssistantId = '';
       } catch {
         // silently ignore
       } finally {
@@ -844,26 +865,21 @@ export default {
               },
             }
           );
+          this.captainLinkedAssistantId = String(this.captainAssistantId);
         } else {
-          const assistantInboxResults = await Promise.all(
-            this.captainAssistantsList.map(async assistant => {
-              const resp = await axios.get(
-                `/api/v1/accounts/${this.accountId}/captain/assistants/${assistant.id}/inboxes`
-              );
-              const records = resp.data?.payload ?? [];
-              const match = records.find(
-                r => r.captain_inbox?.inbox_id === inboxId
-              );
-              return match ? { assistant, match } : null;
-            })
-          );
-          const linkedAssistant = assistantInboxResults.find(Boolean);
+          const linkedAssistant =
+            (await this.fetchCaptainInboxLink(inboxId)) ||
+            (this.captainLinkedAssistantId && {
+              assistant: { id: this.captainLinkedAssistantId },
+            });
           if (linkedAssistant) {
             await axios.delete(
               `/api/v1/accounts/${this.accountId}/captain/assistants/${linkedAssistant.assistant.id}/inboxes/${inboxId}`
             );
           }
+          this.captainLinkedAssistantId = '';
         }
+        await this.loadCaptainSettings();
         useAlert('Agente de IA atualizado com sucesso');
       } catch {
         useAlert('Erro ao salvar configurações do Capitão de IA');
