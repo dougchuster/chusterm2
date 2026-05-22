@@ -19,6 +19,14 @@ class CrmDeal < ApplicationRecord
   validates :operational_status, inclusion: { in: OPERATIONAL_STATUSES }, allow_blank: true
   validates :value_estimate_cents, numericality: { greater_than_or_equal_to: 0, only_integer: true }
   validates :probability_pct, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 100, only_integer: true }
+  validates :contact_id,
+            uniqueness: {
+              scope: [:account_id, :crm_pipeline_id],
+              conditions: -> { where(status: 'open') },
+              message: 'já possui um lead aberto neste kanban'
+            },
+            allow_blank: true,
+            if: :open?
 
   scope :open_deals, -> { where(status: 'open') }
   scope :active_pipeline, -> { where(status: 'open', operational_status: ['active', 'returning_client']) }

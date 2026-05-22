@@ -24,11 +24,20 @@ class Whatsapp::Providers::EvolutionService < Whatsapp::Providers::BaseService
     end
   end
 
-  def send_template(_phone_number, _template_info, _message)
-    # Evolution API / Baileys does not support official message templates
-    # Templates are a Meta Business API concept; with Baileys you send regular messages
-    Rails.logger.info '[EVOLUTION] Template sending not supported on unofficial API — sending as regular text'
-    nil
+  def send_template(phone_number, _template_info, message)
+    # Evolution/Baileys is not bound to Meta template windows. If any caller still
+    # routes a reply here as a template, send the visible message text as a normal
+    # WhatsApp message instead of silently dropping it.
+    if message.content.blank?
+      message.update!(
+        status: :failed,
+        external_error: 'Evolution API não suporta templates oficiais sem texto visível.'
+      )
+      return
+    end
+
+    Rails.logger.info '[EVOLUTION] Template oficial ignorado; enviando texto normal pela Evolution API'
+    send_text_message(phone_number, message)
   end
 
   def sync_templates
@@ -360,11 +369,29 @@ class Whatsapp::Providers::EvolutionService < Whatsapp::Providers::BaseService
   def process_response(response, message)
     if response.success?
       parsed = response.parsed_response
-      parsed.dig('key', 'id') || parsed['messageId']
+      extract_message_id(parsed)
     else
       handle_error(response, message)
       nil
     end
+  end
+
+  def extract_message_id(parsed)
+    parsed = JSON.parse(parsed) if parsed.is_a?(String) && parsed.strip.start_with?('{', '[')
+
+    case parsed
+    when Array
+      parsed.filter_map { |item| extract_message_id(item) }.first
+    when Hash
+      parsed.dig('key', 'id') ||
+        parsed.dig('message', 'key', 'id') ||
+        parsed.dig('data', 'key', 'id') ||
+        parsed.dig('data', 'message', 'key', 'id') ||
+        parsed['messageId'] ||
+        parsed['id']
+    end
+  rescue StandardError
+    nil
   end
 
   def error_message(response = nil)

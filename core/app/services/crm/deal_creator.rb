@@ -10,12 +10,22 @@ class Crm::DealCreator
       attributes = deal_attributes
       contact = resolve_contact
       attributes[:contact_id] ||= contact.id if contact
+      @last_deal_attributes = attributes
+
+      existing_deal = find_existing_open_deal(attributes)
+      return reuse_existing_deal(existing_deal, attributes) if existing_deal
 
       deal = @account.crm_deals.create!(attributes)
       Crm::AuditLogger.log(account: @account, actor: @actor, action: 'deal_created', target: deal)
       Crm::ApplyChecklistTemplate.new(deal: deal, actor: @actor).perform if deal.case_type.present?
       deal
     end
+  rescue ActiveRecord::RecordNotUnique
+    attributes = @last_deal_attributes || deal_attributes
+    existing_deal = find_existing_open_deal(attributes)
+    return reuse_existing_deal(existing_deal, attributes) if existing_deal
+
+    raise
   end
 
   private
@@ -56,6 +66,38 @@ class Crm::DealCreator
     return @account.contacts.find_by(phone_number: phone_number) if phone_number.present?
 
     nil
+  end
+
+  def find_existing_open_deal(attributes)
+    contact_id = attributes[:contact_id]
+    pipeline_id = attributes[:crm_pipeline_id]
+    return if contact_id.blank? || pipeline_id.blank?
+
+    @account.crm_deals.open_deals
+            .where(contact_id: contact_id, crm_pipeline_id: pipeline_id)
+            .order(updated_at: :desc, id: :desc)
+            .first
+  end
+
+  def reuse_existing_deal(deal, attributes)
+    updates = {}
+    %i[conversation_id inbox_id team_id owner_id assignee_id].each do |key|
+      updates[key] = attributes[key] if attributes[key].present? && deal.public_send(key) != attributes[key]
+    end
+    deal.update!(updates) if updates.present?
+    Crm::AuditLogger.log(
+      account: @account,
+      actor: @actor,
+      action: 'deal_reused_for_contact_pipeline',
+      target: deal,
+      payload: {
+        contact_id: deal.contact_id,
+        crm_pipeline_id: deal.crm_pipeline_id,
+        conversation_id: attributes[:conversation_id],
+        inbox_id: attributes[:inbox_id]
+      }
+    )
+    deal
   end
 
   def normalize_phone_number(value)

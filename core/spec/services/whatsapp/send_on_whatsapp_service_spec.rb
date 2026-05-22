@@ -310,6 +310,64 @@ describe Whatsapp::SendOnWhatsappService do
         expect { described_class.new(message: message).perform }.not_to raise_error
       end
 
+      it 'sends Evolution replies as normal text outside the official template window' do
+        allow_any_instance_of(Channel::Whatsapp).to receive(:setup_webhooks)
+        evolution_channel = create(
+          :channel_whatsapp,
+          provider: 'evolution',
+          provider_config: {
+            'api_url' => 'http://evolution.test',
+            'api_key' => 'evo-key',
+            'instance_name' => 'Dra Paula'
+          },
+          sync_templates: false,
+          validate_provider_config: false
+        )
+        contact = create(:contact, phone_number: '+556199999999', account: evolution_channel.account)
+        evolution_contact_inbox = create(:contact_inbox, contact: contact, inbox: evolution_channel.inbox, source_id: '211750628651261')
+        evolution_conversation = create(:conversation, contact: contact, contact_inbox: evolution_contact_inbox, inbox: evolution_channel.inbox)
+        create(:message, message_type: :incoming, content: 'Oi', conversation: evolution_conversation,
+                         account: evolution_conversation.account, created_at: 2.days.ago)
+        message = create(:message, message_type: :outgoing, content: 'Boa tarde, tudo bem?',
+                                   conversation: evolution_conversation, account: evolution_conversation.account)
+
+        stub_request(:post, 'http://evolution.test/message/sendText/Dra%20Paula')
+          .with(
+            headers: { 'apikey' => 'evo-key', 'Content-Type' => 'application/json' },
+            body: { number: '556199999999', text: 'Boa tarde, tudo bem?' }.to_json
+          )
+          .to_return(status: 200, body: { key: { id: 'EVO-1' } }.to_json, headers: { 'content-type' => 'application/json' })
+
+        described_class.new(message: message).perform
+
+        expect(message.reload.source_id).to eq('EVO-1')
+      end
+
+      it 'fails Evolution replies when the contact only has an unresolved LID identifier' do
+        allow_any_instance_of(Channel::Whatsapp).to receive(:setup_webhooks)
+        evolution_channel = create(
+          :channel_whatsapp,
+          provider: 'evolution',
+          provider_config: {
+            'api_url' => 'http://evolution.test',
+            'api_key' => 'evo-key',
+            'instance_name' => 'Dra Paula'
+          },
+          sync_templates: false,
+          validate_provider_config: false
+        )
+        contact = create(:contact, account: evolution_channel.account, additional_attributes: { 'whatsapp_lid_unresolved' => true })
+        evolution_contact_inbox = create(:contact_inbox, contact: contact, inbox: evolution_channel.inbox, source_id: '211750628651261')
+        evolution_conversation = create(:conversation, contact: contact, contact_inbox: evolution_contact_inbox, inbox: evolution_channel.inbox)
+        message = create(:message, message_type: :outgoing, content: 'Boa tarde',
+                                   conversation: evolution_conversation, account: evolution_conversation.account)
+
+        described_class.new(message: message).perform
+
+        expect(message.reload).to be_failed
+        expect(message.external_error).to include('sem telefone real')
+      end
+
       it 'processes template with rich text formatting' do
         processed_params = { 'body' => { '1' => '*Bold text* and _italic text_' } }
         rich_text_template_params = build_sample_template_params(processed_params)
