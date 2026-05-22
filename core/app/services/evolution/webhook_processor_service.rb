@@ -265,6 +265,8 @@ module Evolution
       return if jid.blank? || jid.to_s.end_with?('@g.us')
 
       phone = normalize_profile_phone(jid)
+      return sync_lid_contact_profile!(jid.to_s, data) if phone.blank?
+
       source_id = phone&.delete_prefix('+') || jid.to_s.split('@').first
       return if source_id.blank?
 
@@ -281,8 +283,40 @@ module Evolution
       ).perform
 
       contact = contact_inbox.contact
-      contact.update!(name: name) if name.present? && contact.name.to_s.start_with?('+')
+      contact.update!(name: name) if should_update_contact_name?(contact, name)
       attach_contact_avatar(contact, profile_picture_url)
+    end
+
+    def sync_lid_contact_profile!(jid, data)
+      contact = contact_for_lid(jid)
+      unless contact
+        Rails.logger.info({ component: 'evolution', action: 'lid_contact_profile_skipped', jid: jid, reason: 'missing_phone_alias' }.to_json)
+        return
+      end
+
+      name = data[:pushName] || data[:pushname] || data[:name] || data[:notify]
+      contact.update!(name: name) if should_update_contact_name?(contact, name)
+
+      profile_picture_url = data[:profilePictureUrl] || data[:profile_picture_url] || data[:profilePicUrl] || data[:picture] || data[:imgUrl]
+      attach_contact_avatar(contact, profile_picture_url)
+    end
+
+    def contact_for_lid(jid)
+      source_id = jid.split('@').first
+      by_contact_inbox = target_inbox.contact_inboxes.includes(:contact).find_by(source_id: source_id)&.contact
+      return by_contact_inbox if by_contact_inbox
+
+      target_inbox.account.contacts
+                  .where("jsonb_exists(additional_attributes -> 'whatsapp_lid_jids', :jid)", jid: jid)
+                  .first ||
+        target_inbox.account.contacts.find_by(identifier: jid)
+    end
+
+    def should_update_contact_name?(contact, name)
+      return false if name.blank?
+
+      current = contact.name.to_s
+      current.blank? || current.start_with?('+') || current.match?(/\A[a-z]+-[a-z]+-\d+\z/)
     end
 
     def normalize_profile_phone(value)

@@ -60,4 +60,66 @@ RSpec.describe Evolution::WebhookProcessorService do
     expect(contact.additional_attributes['whatsapp_profile_picture_url']).to eq('https://example.com/avatar.png')
     expect(event.reload.status).to eq('processed')
   end
+
+  it 'skips LID-only contact updates until a real message links the contact' do
+    event = EvolutionWebhookEvent.create!(
+      account: account,
+      inbox: inbox,
+      evolution_instance: instance,
+      event_name: 'contacts.update',
+      instance_name: instance.instance_name,
+      payload: {
+        event: 'contacts.update',
+        instance: instance.instance_name,
+        data: [
+          {
+            remoteJid: '162710608166981@lid',
+            pushName: 'Contato LID'
+          }
+        ]
+      }
+    )
+
+    expect do
+      described_class.new(event: event).perform
+    end.not_to change { account.contacts.count }
+
+    expect(event.reload.status).to eq('processed')
+  end
+
+  it 'updates an existing unresolved LID contact profile without creating duplicates' do
+    contact = create(
+      :contact,
+      account: account,
+      name: 'long-brook-384',
+      identifier: '162710608166981@lid',
+      additional_attributes: { 'whatsapp_lid_jids' => ['162710608166981@lid'] }
+    )
+    create(:contact_inbox, contact: contact, inbox: inbox, source_id: '162710608166981')
+
+    event = EvolutionWebhookEvent.create!(
+      account: account,
+      inbox: inbox,
+      evolution_instance: instance,
+      event_name: 'contacts.update',
+      instance_name: instance.instance_name,
+      payload: {
+        event: 'contacts.update',
+        instance: instance.instance_name,
+        data: [
+          {
+            remoteJid: '162710608166981@lid',
+            pushName: 'Contato LID'
+          }
+        ]
+      }
+    )
+
+    expect do
+      described_class.new(event: event).perform
+    end.not_to change { account.contacts.count }
+
+    expect(contact.reload.name).to eq('Contato LID')
+    expect(event.reload.status).to eq('processed')
+  end
 end
