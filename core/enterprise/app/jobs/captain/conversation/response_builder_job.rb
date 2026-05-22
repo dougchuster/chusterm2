@@ -16,6 +16,7 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
     @burst_started_at = normalize_time(burst_started_at)
 
     return unless conversation_pending?
+    return unless inbox_captain_active?
     ensure_captain_state!
     return if ai_response_paused?
     return unless latest_public_message_needs_ai_response?
@@ -307,7 +308,7 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
 
   def attachment_pending_for_ai_context?(attachment)
     return audio_pending_for_ai_context?(attachment) if attachment.audio?
-    return media_pending_for_ai_context?(attachment) if attachment.image? || attachment.file?
+    return media_pending_for_ai_context?(attachment) if attachment.image? || attachment.video? || attachment.file?
 
     false
   end
@@ -321,7 +322,9 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
 
   def media_pending_for_ai_context?(attachment)
     return false unless Llm::GeminiMultimodalService.active?(purpose: :media)
-    return false if attachment.meta&.dig('image_description').present? || attachment.meta&.dig('ocr_text').present?
+    return false if attachment.meta&.dig('image_description').present? ||
+                    attachment.meta&.dig('video_description').present? ||
+                    attachment.meta&.dig('ocr_text').present?
 
     status = attachment.meta&.dig('media_understanding_status')
     status.blank? || status == 'processing'
@@ -374,6 +377,10 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
 
   def ai_response_paused?
     @conversation.captain_conversation_state&.human_controlled?
+  end
+
+  def inbox_captain_active?
+    @inbox.captain_active?
   end
 
   def ensure_captain_state!

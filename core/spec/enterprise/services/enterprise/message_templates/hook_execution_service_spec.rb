@@ -163,6 +163,25 @@ RSpec.describe MessageTemplates::HookExecutionService do
     end
   end
 
+  context 'when conversation is marked as human controlled' do
+    before do
+      conversation.update!(status: :open)
+      CaptainConversationState.for_conversation!(conversation).apply_ai_mode!(
+        mode: 'human_only',
+        reason: 'Atendimento assumido por humano'
+      )
+      inbox.update!(greeting_enabled: true, greeting_message: 'Hello! How can we help you?', enable_email_collect: false)
+    end
+
+    it 'does not schedule Captain or send automatic public templates' do
+      expect(Captain::Conversation::ResponseBuilderJob).not_to receive(:perform_later)
+
+      expect do
+        create(:message, conversation: conversation, message_type: :incoming, account: account)
+      end.not_to(change { conversation.reload.messages.template.count })
+    end
+  end
+
   context 'when message is outgoing' do
     it 'does not schedule captain response job' do
       expect(Captain::Conversation::ResponseBuilderJob).not_to receive(:perform_later)

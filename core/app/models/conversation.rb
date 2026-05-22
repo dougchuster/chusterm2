@@ -160,6 +160,7 @@ class Conversation < ApplicationRecord
   end
 
   def bot_handoff!
+    mark_captain_human_controlled!
     update(waiting_since: Time.current) if waiting_since.blank?
     open!
     dispatcher_dispatch(CONVERSATION_BOT_HANDOFF)
@@ -269,6 +270,20 @@ class Conversation < ApplicationRecord
 
   def notify_conversation_creation
     dispatcher_dispatch(CONVERSATION_CREATED)
+  end
+
+  def mark_captain_human_controlled!
+    return unless defined?(::CaptainConversationState)
+    return unless inbox&.captain_responsible?
+
+    state = captain_conversation_state || ::CaptainConversationState.for_conversation!(self)
+    state.apply_ai_mode!(
+      mode: 'human_only',
+      reason: state.handoff_reason.presence || 'Atendimento assumido por humano',
+      actor: Current.user
+    )
+  rescue StandardError => e
+    Rails.logger.warn("[CAPTAIN] Failed to mark conversation #{id} as human controlled: #{e.message}")
   end
 
   def notify_conversation_updation

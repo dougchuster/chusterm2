@@ -132,7 +132,22 @@ module Evolution
             remoteJid: remote_jid
           }
         },
-        limit: limit
+        take: limit,
+        limit: limit,
+        orderBy: {
+          messageTimestamp: 'desc'
+        }
+      }, timeout: 30)
+    end
+
+    def find_chats(instance_name:, limit: 50)
+      post("/chat/findChats/#{escape(instance_name)}", {
+        where: {},
+        take: limit,
+        skip: 0,
+        orderBy: {
+          updatedAt: 'desc'
+        }
       }, timeout: 30)
     end
 

@@ -89,6 +89,30 @@ RSpec.describe Whatsapp::IncomingMessageEvolutionService do
     expect(message.attachments.first.file_type).to eq('image')
   end
 
+  it 'prefers decrypted message-level base64 over the encrypted WhatsApp media URL' do
+    described_class.new(
+      inbox: inbox,
+      params: payload(
+        id: 'MSG-IMG-2',
+        remote_jid: '556184410419@s.whatsapp.net',
+        body: '',
+        message_type: 'imageMessage',
+        message: {
+          base64: Base64.strict_encode64('decrypted-image'),
+          imageMessage: {
+            mimetype: 'image/jpeg',
+            url: 'https://mmg.whatsapp.net/encrypted-media.enc'
+          }
+        }
+      )
+    ).perform
+
+    attachment = inbox.messages.find_by!(source_id: 'MSG-IMG-2').attachments.first
+    expect(attachment.file).to be_attached
+    expect(attachment.file.blob.download).to eq('decrypted-image')
+    expect(attachment.file.blob.filename.to_s).to end_with('.jpg')
+  end
+
   def payload(id:, remote_jid:, body: 'Oi', sender_pn: nil, from_me: false, message_type: 'conversation', message: nil)
     key = {
       remoteJid: remote_jid,

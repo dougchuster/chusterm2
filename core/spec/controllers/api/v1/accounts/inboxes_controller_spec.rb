@@ -315,7 +315,7 @@ RSpec.describe 'Inboxes API', type: :request do
       let(:admin) { create(:user, account: account, role: :administrator) }
 
       it 'deletes inbox' do
-        expect(DeleteObjectJob).to receive(:perform_later).with(inbox, admin, anything).once
+        expect(DeleteObjectJob).to receive(:perform_now).with(inbox, admin, anything).once
 
         perform_enqueued_jobs(only: DeleteObjectJob) do
           delete "/api/v1/accounts/#{account.id}/inboxes/#{inbox.id}",

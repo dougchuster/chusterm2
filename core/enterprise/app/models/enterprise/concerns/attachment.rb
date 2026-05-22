@@ -15,7 +15,7 @@ module Enterprise::Concerns::Attachment
   end
 
   def enqueue_media_understanding
-    return unless file_type.to_sym.in?(%i[image file])
+    return unless file_type.to_sym.in?(%i[image video file])
 
     Messages::MediaUnderstandingJob.perform_later(id)
   end

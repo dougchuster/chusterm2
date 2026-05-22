@@ -28,6 +28,7 @@ class MessageTemplates::HookExecutionService
   end
 
   def should_send_out_of_office_message?
+    return false if captain_human_controlled?
     return false if captain_handling_conversation?
     return false if conversation.campaign.present?
     # should not send if its a tweet message
@@ -46,6 +47,7 @@ class MessageTemplates::HookExecutionService
   end
 
   def should_send_greeting?
+    return false if captain_human_controlled?
     return false if captain_handling_conversation?
     return false if conversation.campaign.present?
     # should not send if its a tweet message
@@ -60,6 +62,7 @@ class MessageTemplates::HookExecutionService
 
   # TODO: we should be able to reduce this logic once we have a toggle for email collect messages
   def should_send_email_collect?
+    return false if captain_human_controlled?
     return false if captain_handling_conversation?
     return false if conversation.campaign.present?
 
@@ -104,6 +107,7 @@ class MessageTemplates::HookExecutionService
   def should_process_captain_response?
     message.incoming? &&
       inbox.captain_responsible? &&
+      !captain_human_controlled? &&
       captain_manageable_conversation?
   end
 
@@ -139,6 +143,10 @@ class MessageTemplates::HookExecutionService
 
   def captain_handling_conversation?
     conversation.pending? && inbox.captain_assistant.present?
+  end
+
+  def captain_human_controlled?
+    conversation.captain_conversation_state&.human_controlled?
   end
 end
 MessageTemplates::HookExecutionService.prepend_mod_with('MessageTemplates::HookExecutionService')

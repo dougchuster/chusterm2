@@ -69,6 +69,9 @@
   def destroy
     ::DeleteObjectJob.perform_now(@inbox, Current.user, request.ip) if @inbox.present?
     render status: :ok, json: { message: I18n.t('messages.inbox_deletetion_response') }
+  rescue ActiveRecord::RecordNotDestroyed => e
+    message = e.record&.errors&.full_messages&.to_sentence.presence || e.message
+    render status: :unprocessable_entity, json: { message: message }
   end
 
   private

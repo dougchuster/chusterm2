@@ -25,13 +25,13 @@ module Llm
 
     def understand_media(attachment)
       prompt = <<~PROMPT
-        Analise este anexo para um CRM juridico. Retorne somente JSON valido, sem markdown.
+        Analise este anexo para um CRM jurídico. Retorne somente JSON válido, sem markdown.
         Campos:
-        - image_description: descricao objetiva do que aparece no arquivo, se aplicavel.
-        - ocr_text: texto legivel extraido do arquivo, se houver.
-        - document_guess: tipo provavel do documento em snake_case, como rg, cpf, cnh, ctps, cnis, comprovante_residencia, procuracao, contrato, termo_rescisao, extrato, peticao, decisao, outro.
+        - image_description: descrição objetiva do que aparece no arquivo, se aplicável.
+        - ocr_text: texto legível extraído do arquivo, se houver.
+        - document_guess: tipo provável do documento em snake_case, como rg, cpf, cnh, ctps, cnis, comprovante_residencia, procuracao, contrato, termo_rescisao, extrato, peticao, decisao, outro.
 
-        Se nao tiver certeza, use string vazia no campo incerto.
+        Se não tiver certeza, use string vazia no campo incerto.
       PROMPT
 
       response = with_inline_data(attachment) { |b64, mime| call_generate_content(b64, mime, prompt) }

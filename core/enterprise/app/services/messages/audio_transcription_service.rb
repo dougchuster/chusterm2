@@ -27,10 +27,16 @@ class Messages::AudioTranscriptionService
 
   def can_transcribe?
     return false unless account.feature_enabled?('captain_integration')
-    return false if account.audio_transcriptions.blank?
+    return false unless audio_transcription_enabled?
     return false unless Llm::MediaConfig.transcription_configured?
 
     account.usage_limits[:captain][:responses][:current_available].positive?
+  end
+
+  def audio_transcription_enabled?
+    return true if account.audio_transcriptions.nil?
+
+    ActiveModel::Type::Boolean.new.cast(account.audio_transcriptions)
   end
 
   def fetch_audio_file

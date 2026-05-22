@@ -39,6 +39,15 @@ class Api::V1::Accounts::Channels::Evolution::InstancesController < Api::V1::Acc
     render json: { ok: true, instance: serialize(@instance.reload) }
   end
 
+  def sync_history
+    Evolution::SyncHistoryJob.perform_later(
+      @instance.id,
+      limit: sync_history_params[:limit].presence || Evolution::HistorySyncService::DEFAULT_LIMIT,
+      contact_limit: sync_history_params[:contact_limit].presence || Evolution::HistorySyncService::DEFAULT_CONTACT_LIMIT
+    )
+    render json: { ok: true, instance: serialize(@instance.reload) }
+  end
+
   def destroy
     Evolution::DeleteInstanceJob.perform_later(@instance.id)
     render json: { ok: true, instance: serialize(@instance.reload) }
@@ -48,6 +57,10 @@ class Api::V1::Accounts::Channels::Evolution::InstancesController < Api::V1::Acc
 
   def set_instance
     @instance = Current.account.evolution_instances.find(params[:id])
+  end
+
+  def sync_history_params
+    params.permit(:limit, :contact_limit)
   end
 
   def serialize(instance)

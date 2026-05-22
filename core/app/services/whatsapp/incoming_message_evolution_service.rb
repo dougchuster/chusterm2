@@ -129,7 +129,10 @@ class Whatsapp::IncomingMessageEvolutionService
   end
 
   def message_type_key
-    @data[:messageType] || @data['messageType'] || 'conversation'
+    explicit_type = @data[:messageType] || @data['messageType']
+    return explicit_type if explicit_type.present?
+
+    (message_payload.keys.map(&:to_s) & %w[imageMessage videoMessage audioMessage documentMessage stickerMessage]).first || 'conversation'
   end
 
   def has_media?
@@ -221,7 +224,7 @@ class Whatsapp::IncomingMessageEvolutionService
   def attach_media
     media = media_data
     mimetype = media[:mimetype] || media['mimetype'] || 'application/octet-stream'
-    filename = media[:fileName] || media['fileName'] || "media_#{Time.now.to_i}"
+    filename = media[:fileName] || media['fileName'] || media[:title] || media['title'] || default_media_filename(mimetype)
 
     file_type = if mimetype.start_with?('image')
                   :image
@@ -253,20 +256,20 @@ class Whatsapp::IncomingMessageEvolutionService
   end
 
   def media_file(media, mimetype, filename)
-    url = downloadable_media_url(media)
-    return Down.download(url) if url.present?
-
     base64_payload = media_base64_payload(media)
     base64_payload ||= fetch_media_base64_from_evolution
-    return if base64_payload.blank?
+    if base64_payload.present?
+      decoded = decode_base64_payload(base64_payload)
+      return if decoded.blank?
 
-    decoded = decode_base64_payload(base64_payload)
-    return if decoded.blank?
-
-    StringIO.new(decoded).tap do |io|
-      io.define_singleton_method(:original_filename) { filename }
-      io.define_singleton_method(:content_type) { mimetype }
+      return StringIO.new(decoded).tap do |io|
+        io.define_singleton_method(:original_filename) { filename }
+        io.define_singleton_method(:content_type) { mimetype }
+      end
     end
+
+    url = downloadable_media_url(media)
+    Down.download(url) if url.present?
   end
 
   def downloadable_media_url(media)
@@ -281,9 +284,15 @@ class Whatsapp::IncomingMessageEvolutionService
       media['base64'],
       media[:media],
       media['media'],
+      message_payload[:base64],
+      message_payload['base64'],
       @data[:base64],
       @data['base64']
     ].compact_blank.first
+  end
+
+  def message_payload
+    @data[:message] || @data['message'] || {}
   end
 
   def fetch_media_base64_from_evolution
@@ -304,10 +313,31 @@ class Whatsapp::IncomingMessageEvolutionService
   def decode_base64_payload(payload)
     raw = payload.to_s
     raw = raw.split(',', 2).last if raw.start_with?('data:')
-    Base64.decode64(raw)
+    raw = raw.delete(" \n\r\t")
+    Base64.strict_decode64(raw)
   rescue ArgumentError => e
     Rails.logger.warn "[EVOLUTION] Invalid media base64 payload: #{e.message}"
     nil
+  end
+
+  def default_media_filename(mimetype)
+    extension = extension_from_content_type(mimetype)
+    extension.present? ? "media_#{Time.now.to_i}.#{extension}" : "media_#{Time.now.to_i}"
+  end
+
+  def extension_from_content_type(mimetype)
+    subtype = mimetype.to_s.downcase.split(';').first.to_s.split('/').last.to_s
+    return if subtype.blank? || subtype == 'octet-stream'
+
+    {
+      'jpeg' => 'jpg',
+      'x-m4a' => 'm4a',
+      'x-wav' => 'wav',
+      'mpeg' => 'mp3',
+      'ogg' => 'ogg',
+      'quicktime' => 'mov',
+      'plain' => 'txt'
+    }.fetch(subtype, subtype)
   end
 
   def find_message_by_source_id(source_id)
@@ -357,12 +387,17 @@ class Whatsapp::IncomingMessageEvolutionService
   end
 
   def sync_contact_avatar!
-    return if @contact.blank? || @contact.avatar.attached?
-
-    url = profile_picture_url_from_payload.presence || fetch_profile_picture_url
-    return if url.blank?
+    return if @contact.blank?
 
     attrs = @contact.additional_attributes.to_h
+    cached_url = attrs['whatsapp_profile_picture_url']
+    payload_url = profile_picture_url_from_payload.presence
+    return if payload_url.blank? && cached_url.present? && @contact.avatar.attached?
+
+    url = payload_url || fetch_profile_picture_url
+    return if url.blank?
+    return if cached_url == url && @contact.avatar.attached?
+
     @contact.update!(additional_attributes: attrs.merge('whatsapp_profile_picture_url' => url))
     Avatar::AvatarFromUrlJob.perform_later(@contact, url)
   rescue StandardError => e
@@ -383,7 +418,14 @@ class Whatsapp::IncomingMessageEvolutionService
       instance_name: instance.instance_name,
       number: phone
     )
-    parsed['profilePictureUrl'] || parsed['profile_picture_url'] || parsed.dig('data', 'profilePictureUrl')
+    parsed['profilePictureUrl'] ||
+      parsed['profilePicUrl'] ||
+      parsed['profile_picture_url'] ||
+      parsed['pictureUrl'] ||
+      parsed['url'] ||
+      parsed.dig('data', 'profilePictureUrl') ||
+      parsed.dig('data', 'profilePicUrl') ||
+      parsed.dig('profile', 'pictureUrl')
   rescue StandardError => e
     Rails.logger.info "[EVOLUTION] Profile picture fetch skipped: #{e.message}"
     nil

@@ -26,13 +26,13 @@ const copy = {
   ai: 'IA',
   loading: 'Carregando...',
   serviceMode: 'Modo de atendimento',
-  interventionReason: 'Motivo da intervencao',
+  interventionReason: 'Motivo da intervenção',
   scorePrefix: 'Score atual:',
   pointsSuffix: 'pts',
   flow: 'Fluxo:',
   deal: 'Deal vinculado:',
   nextAction: 'Próxima ação',
-  legalArea: 'Area:',
+  legalArea: 'Área:',
   documents: 'Docs:',
   owner: 'Responsável:',
   viewDeal: 'Ver deal',
@@ -140,7 +140,7 @@ async function loadState() {
     if (status === 404) {
       error.value = 'Nenhum controle de IA encontrado para esta conversa.';
     } else if (status === 401 || status === 403) {
-      error.value = 'Sem permissao para acessar o controle da IA.';
+      error.value = 'Sem permissão para acessar o controle da IA.';
     } else {
       error.value =
         e?.response?.data?.message ||
@@ -230,11 +230,19 @@ watch(() => props.conversationId, loadState, { immediate: true });
           :disabled="saving"
           rows="2"
           class="resize-none rounded-lg border border-n-weak bg-n-alpha-black2 px-2 py-1.5 text-sm text-n-slate-12 outline-none"
-          placeholder="Ex.: cliente pediu humano, caso sensível, dúvida jurídica especifica"
+          placeholder="Ex.: cliente pediu humano, caso sensível, dúvida jurídica específica"
         />
       </label>
 
       <div class="flex flex-wrap gap-1">
+        <NextButton
+          label="Humano assumiu"
+          size="xs"
+          color="ruby"
+          variant="solid"
+          :disabled="saving || currentMode === 'human_only'"
+          @click="saveMode('human_only')"
+        />
         <NextButton
           label="Pausar IA"
           size="xs"

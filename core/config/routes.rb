@@ -232,6 +232,7 @@ Rails.application.routes.draw do
                   post :logout
                   post :restart
                   post :sync
+                  post :sync_history
                 end
               end
             end

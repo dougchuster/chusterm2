@@ -347,6 +347,17 @@ RSpec.describe Conversation do
       expect(conversation.reload.status).to eq('open')
     end
 
+    it 'marks Captain state as human only when the inbox has a Captain assistant' do
+      assistant = create(:captain_assistant, account: conversation.account)
+      create(:captain_inbox, inbox: conversation.inbox, captain_assistant: assistant)
+
+      conversation.bot_handoff!
+
+      state = conversation.reload.captain_conversation_state
+      expect(state.ai_mode).to eq('human_only')
+      expect(state.handoff_reason).to eq('Atendimento assumido por humano')
+    end
+
     it 'dispatches CONVERSATION_BOT_HANDOFF event' do
       expect(Rails.configuration.dispatcher).to receive(:dispatch)
         .with(described_class::CONVERSATION_BOT_HANDOFF, anything, hash_including(conversation: conversation))

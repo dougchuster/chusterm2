@@ -99,4 +99,31 @@ RSpec.describe Evolution::Client do
       )
     end
   end
+
+  describe '#find_messages' do
+    it 'requests recent messages for a remote jid' do
+      request = stub_request(:post, 'https://evolution.example.com/chat/findMessages/dra_paula')
+                .with(
+                  headers: {
+                    'apikey' => 'global-key',
+                    'Content-Type' => 'application/json'
+                  },
+                  body: {
+                    where: { key: { remoteJid: '556199999999@s.whatsapp.net' } },
+                    take: 30,
+                    limit: 30,
+                    orderBy: { messageTimestamp: 'desc' }
+                  }.to_json
+                )
+                .to_return(status: 200, body: '[]', headers: { 'Content-Type' => 'application/json' })
+
+      client.find_messages(
+        instance_name: 'dra_paula',
+        remote_jid: '556199999999@s.whatsapp.net',
+        limit: 30
+      )
+
+      expect(request).to have_been_requested
+    end
+  end
 end

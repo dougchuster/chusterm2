@@ -6,6 +6,9 @@ class Messages::MediaUnderstandingService
     image/webp
     image/heic
     image/heif
+    video/mp4
+    video/quicktime
+    video/webm
   ].freeze
 
   attr_reader :attachment, :message, :account
@@ -24,7 +27,7 @@ class Messages::MediaUnderstandingService
     return mark_skipped('gemini_multimodal_not_configured') unless Llm::GeminiMultimodalService.active?(purpose: :media)
 
     update_meta(media_understanding_status: 'processing')
-    result = Llm::GeminiMultimodalService.new.understand_media(attachment)
+    result = understand_attachment
     return mark_failed('empty_media_understanding_result') if result.blank?
 
     update_meta(result.merge(media_understanding_status: 'processed', media_understanding_error: nil))
@@ -41,8 +44,16 @@ class Messages::MediaUnderstandingService
   def supported_attachment?
     return false unless attachment.file.attached?
     return true if attachment.image?
+    return SUPPORTED_FILE_CONTENT_TYPES.include?(attachment.file.blob.content_type.to_s) if attachment.video?
 
     attachment.file? && SUPPORTED_FILE_CONTENT_TYPES.include?(attachment.file.blob.content_type.to_s)
+  end
+
+  def understand_attachment
+    multimodal = Llm::GeminiMultimodalService.new
+    return { video_description: multimodal.describe_video(attachment) } if attachment.video?
+
+    multimodal.understand_media(attachment)
   end
 
   def already_processed?
@@ -56,6 +67,7 @@ class Messages::MediaUnderstandingService
       success: true,
       result: {
         image_description: attachment.meta&.dig('image_description'),
+        video_description: attachment.meta&.dig('video_description'),
         ocr_text: attachment.meta&.dig('ocr_text'),
         document_guess: attachment.meta&.dig('document_guess')
       }

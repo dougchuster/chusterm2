@@ -74,6 +74,15 @@ RSpec.describe Captain::Conversation::ResponseBuilderJob, type: :job do
         end.not_to(change { conversation.messages.outgoing.count })
       end
 
+      it 'does not send a queued response after Captain auto reply is disabled on the inbox' do
+        allow(inbox).to receive(:captain_active?).and_return(false)
+
+        expect(mock_llm_chat_service).not_to receive(:generate_response)
+        expect do
+          described_class.perform_now(conversation, assistant)
+        end.not_to(change { conversation.messages.outgoing.count })
+      end
+
       it 'does not send another response when the latest public message is already from the assistant' do
         create(:message, conversation: conversation, content: 'Already answered', message_type: :outgoing, sender: assistant)
 

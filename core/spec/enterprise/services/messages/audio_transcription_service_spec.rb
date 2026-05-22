@@ -52,6 +52,18 @@ RSpec.describe Messages::AudioTranscriptionService, type: :service do
       end
     end
 
+    context 'when audio transcription setting is unset' do
+      before do
+        account.update!(audio_transcriptions: nil)
+        allow(service).to receive(:transcribe_audio).and_return('Transcription with default setting')
+      end
+
+      it 'treats transcription as enabled when the provider is configured' do
+        result = service.perform
+        expect(result).to eq({ success: true, transcriptions: 'Transcription with default setting' })
+      end
+    end
+
     context 'when attachment already has transcribed text' do
       before do
         attachment.update!(meta: { transcribed_text: 'Existing transcription' })

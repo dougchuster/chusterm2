@@ -116,6 +116,7 @@ export default {
       evolutionPickedInstance: '',
       evolutionLinking: false,
       evolutionActionLoading: '',
+      evolutionHistorySyncing: false,
       captainAssistantId: '',
       captainLinkedAssistantId: '',
       captainAiMode: 'auto',
@@ -586,6 +587,27 @@ export default {
         );
       } finally {
         this.evolutionActionLoading = '';
+      }
+    },
+    async syncEvolutionHistory() {
+      if (!this.evolutionInstanceId) {
+        useAlert('Instância Evolution ainda não está vinculada a esta caixa.');
+        return;
+      }
+
+      this.evolutionHistorySyncing = true;
+      try {
+        await axios.post(
+          `/api/v1/accounts/${this.accountId}/channels/evolution/instances/${this.evolutionInstanceId}/sync_history`,
+          { limit: 80, contact_limit: 200 }
+        );
+        useAlert('Sincronização de histórico enviada. As conversas serão atualizadas em segundo plano.');
+      } catch (e) {
+        useAlert(
+          e?.response?.data?.error || e?.response?.data?.message || e.message
+        );
+      } finally {
+        this.evolutionHistorySyncing = false;
       }
     },
     fetchSharedData() {
@@ -1250,6 +1272,15 @@ export default {
                       :is-loading="evolutionActionLoading === 'restart'"
                       label="Reiniciar"
                       @click="runEvolutionInstanceAction('restart')"
+                    />
+                    <NextButton
+                      type="button"
+                      outline
+                      slate
+                      sm
+                      :is-loading="evolutionHistorySyncing"
+                      label="Sincronizar histórico"
+                      @click="syncEvolutionHistory"
                     />
                     <NextButton
                       type="button"

@@ -287,6 +287,8 @@ class Message < ApplicationRecord
         attachment_audio_content_for_llm(attachment)
       when 'image'
         attachment_image_content_for_llm(attachment)
+      when 'video'
+        attachment_video_content_for_llm(attachment)
       else
         attachment_document_content_for_llm(attachment)
       end
@@ -295,7 +297,7 @@ class Message < ApplicationRecord
 
   def attachment_audio_content_for_llm(attachment)
     transcription = attachment.meta&.dig('transcribed_text').presence
-    "[Audio enviado]\nTranscricao: #{transcription}" if transcription.present?
+    "[Áudio enviado]\nTranscrição: #{transcription}" if transcription.present?
   end
 
   def attachment_image_content_for_llm(attachment)
@@ -305,11 +307,18 @@ class Message < ApplicationRecord
 
     media_parts = []
     media_parts << "[Imagem enviada]"
-    media_parts << "Descricao: #{description}" if description.present?
-    media_parts << "Texto extraido: #{ocr_text}" if ocr_text.present?
-    media_parts << "Tipo provavel: #{document_guess}" if document_guess.present?
+    media_parts << "Descrição: #{description}" if description.present?
+    media_parts << "Texto extraído: #{ocr_text}" if ocr_text.present?
+    media_parts << "Tipo provável: #{document_guess}" if document_guess.present?
 
     media_parts.size > 1 ? media_parts.join("\n") : nil
+  end
+
+  def attachment_video_content_for_llm(attachment)
+    description = attachment.meta&.dig('video_description').presence
+    return unless description.present?
+
+    "[Vídeo enviado]\nDescrição: #{description}"
   end
 
   def attachment_document_content_for_llm(attachment)
@@ -318,8 +327,8 @@ class Message < ApplicationRecord
     return if ocr_text.blank? && document_guess.blank?
 
     document_parts = ["[Documento enviado]"]
-    document_parts << "Texto extraido: #{ocr_text}" if ocr_text.present?
-    document_parts << "Tipo provavel: #{document_guess}" if document_guess.present?
+    document_parts << "Texto extraído: #{ocr_text}" if ocr_text.present?
+    document_parts << "Tipo provável: #{document_guess}" if document_guess.present?
     document_parts.join("\n")
   end
 
