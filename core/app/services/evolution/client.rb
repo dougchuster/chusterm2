@@ -255,7 +255,9 @@ module Evolution
         url: url,
         headers: headers,
         webhookByEvents: false,
+        webhook_by_events: false,
         webhookBase64: true,
+        webhook_base64: true,
         events: events
       }
     end
@@ -267,7 +269,9 @@ module Evolution
           url: url,
           headers: headers,
           webhookByEvents: false,
+          webhook_by_events: false,
           webhookBase64: true,
+          webhook_base64: true,
           events: events
         }
       }

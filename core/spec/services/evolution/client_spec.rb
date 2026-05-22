@@ -19,7 +19,9 @@ RSpec.describe Evolution::Client do
                     url: 'https://chatwoot.example.com/webhooks/evolution/token',
                     headers: { 'x-evolution-webhook-token' => 'token' },
                     webhookByEvents: false,
+                    webhook_by_events: false,
                     webhookBase64: true,
+                    webhook_base64: true,
                     events: %w[MESSAGES_UPSERT CONNECTION_UPDATE]
                   }.to_json
                 )
