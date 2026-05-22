@@ -57,4 +57,22 @@ RSpec.describe Crm::ChannelPipelineProvisioner do
     expect(CrmPipeline.exists?(pipeline.id)).to be false
     expect(CrmDeal.exists?(deal.id)).to be false
   end
+
+  it 'removes the exclusive pipeline through the real inbox destroy callback' do
+    create_legacy_pipeline!
+    pipeline = described_class.new(account: account, inbox: inbox).perform
+    stage = pipeline.crm_pipeline_stages.first
+    deal = CrmDeal.create!(
+      account: account,
+      inbox: inbox,
+      crm_pipeline: pipeline,
+      crm_pipeline_stage: stage,
+      title: 'Atendimento removido com o canal'
+    )
+
+    inbox.destroy!
+
+    expect(CrmPipeline.exists?(pipeline.id)).to be false
+    expect(CrmDeal.exists?(deal.id)).to be false
+  end
 end

@@ -19,19 +19,27 @@ module Evolution
     def perform
       return summary(status: 'skipped', reason: 'missing_instance_or_inbox') if @instance.blank? || @inbox.blank?
 
-      contact_inboxes.each do |contact_inbox|
-        sync_contact_inbox(contact_inbox)
-      end
+      remote_jids_for_sync.each { |remote_jid| sync_remote_jid(remote_jid) }
 
       summary(status: 'ok')
     end
 
     private
 
-    def sync_contact_inbox(contact_inbox)
-      remote_jids_for(contact_inbox).each do |remote_jid|
-        sync_remote_jid(remote_jid)
-      end
+    def remote_jids_for_sync
+      (known_remote_jids + discovered_remote_jids).compact_blank.uniq.first(@contact_limit)
+    end
+
+    def known_remote_jids
+      contact_inboxes.flat_map { |contact_inbox| remote_jids_for(contact_inbox) }
+    end
+
+    def discovered_remote_jids
+      payload = @client.find_chats(instance_name: @instance.instance_name, limit: @contact_limit)
+      extract_entries(payload).filter_map { |entry| remote_jid_from_chat(entry) }.uniq
+    rescue StandardError => e
+      Rails.logger.warn({ component: 'evolution', action: 'chat_discovery_failed', instance_id: @instance.id, error: e.message }.to_json)
+      []
     end
 
     def sync_remote_jid(remote_jid)
@@ -81,13 +89,17 @@ module Evolution
 
         [
           payload['messages'],
+          payload['chats'],
           safe_dig(payload, 'messages', 'records'),
+          safe_dig(payload, 'chats', 'records'),
           payload['records'],
           payload['data'],
           safe_dig(payload, 'data', 'messages'),
+          safe_dig(payload, 'data', 'chats'),
           safe_dig(payload, 'data', 'records'),
           payload['response'],
           safe_dig(payload, 'response', 'messages'),
+          safe_dig(payload, 'response', 'chats'),
           safe_dig(payload, 'response', 'records')
         ].find { |value| value.is_a?(Array) } || []
       else
@@ -107,6 +119,35 @@ module Evolution
     def remote_jid_matches?(entry, remote_jid)
       jid = entry.dig(:key, :remoteJid) || entry[:remoteJid] || entry[:remote_jid]
       jid.blank? || jid.to_s.casecmp?(remote_jid.to_s)
+    end
+
+    def remote_jid_from_chat(entry)
+      data = entry.respond_to?(:with_indifferent_access) ? entry.with_indifferent_access : entry
+      return unless data.respond_to?(:[])
+
+      raw_jid = data[:remoteJid] || data[:remote_jid] || data[:jid] || data[:id] || data.dig(:key, :remoteJid)
+      normalized = normalize_remote_jid(raw_jid)
+      return unless usable_remote_jid?(normalized)
+
+      normalized
+    end
+
+    def normalize_remote_jid(value)
+      text = value.to_s.strip
+      return if text.blank?
+      return text if text.include?('@')
+
+      digits = text.gsub(/\D/, '')
+      digits.present? ? "#{digits}@s.whatsapp.net" : nil
+    end
+
+    def usable_remote_jid?(jid)
+      text = jid.to_s
+      return false if text.blank?
+      return false if text.end_with?('@g.us')
+      return false if text.include?('status@broadcast')
+
+      text.end_with?('@s.whatsapp.net') || text.end_with?('@lid')
     end
 
     def remote_jids_for(contact_inbox)

@@ -34,6 +34,7 @@ RSpec.describe Evolution::HistorySyncService do
   before do
     allow(Evolution::Client).to receive(:new).and_return(client)
     allow(client).to receive(:fetch_profile_picture_url).and_return({})
+    allow(client).to receive(:find_chats).and_return([])
     clear_enqueued_jobs
   end
 
@@ -85,5 +86,42 @@ RSpec.describe Evolution::HistorySyncService do
 
     expect(inbox.messages.where(source_id: 'HIST-1').count).to eq(1)
     expect(result[:imported]).to eq(0)
+  end
+
+  it 'discovers remote chats that are not yet contacts in Chatwoot' do
+    allow(client).to receive(:find_chats).and_return(
+      [
+        {
+          id: '556188877777@s.whatsapp.net',
+          name: 'Ana Cliente'
+        }.with_indifferent_access
+      ]
+    )
+    allow(client).to receive(:find_messages).and_return([])
+    allow(client).to receive(:find_messages).with(
+      instance_name: 'dra_paula',
+      remote_jid: '556188877777@s.whatsapp.net',
+      limit: 20
+    ).and_return(
+      [
+        {
+          key: {
+            remoteJid: '556188877777@s.whatsapp.net',
+            fromMe: false,
+            id: 'HIST-REMOTE-1'
+          },
+          pushName: 'Ana Cliente',
+          message: { conversation: 'Quero recuperar meu histórico.' },
+          messageType: 'conversation'
+        }.with_indifferent_access
+      ]
+    )
+
+    result = described_class.new(instance: instance, limit: 20).perform
+
+    message = inbox.messages.find_by!(source_id: 'HIST-REMOTE-1')
+    expect(message.content).to eq('Quero recuperar meu histórico.')
+    expect(message.conversation.contact.phone_number).to eq('+556188877777')
+    expect(result[:imported]).to eq(1)
   end
 end
