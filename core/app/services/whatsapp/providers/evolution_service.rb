@@ -417,6 +417,7 @@ class Whatsapp::Providers::EvolutionService < Whatsapp::Providers::BaseService
         webhook_by_events: false,
         webhookBase64: true,
         webhook_base64: true,
+        base64: true,
         events: %w[
           MESSAGES_UPSERT
           MESSAGES_SET

@@ -258,6 +258,7 @@ module Evolution
         webhook_by_events: false,
         webhookBase64: true,
         webhook_base64: true,
+        base64: true,
         events: events
       }
     end
@@ -272,6 +273,7 @@ module Evolution
           webhook_by_events: false,
           webhookBase64: true,
           webhook_base64: true,
+          base64: true,
           events: events
         }
       }
