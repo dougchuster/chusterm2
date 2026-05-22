@@ -26,7 +26,7 @@ class CrmDeal < ApplicationRecord
               message: 'já possui um lead aberto neste kanban'
             },
             allow_blank: true,
-            if: :open?
+            if: :open_status?
 
   scope :open_deals, -> { where(status: 'open') }
   scope :active_pipeline, -> { where(status: 'open', operational_status: ['active', 'returning_client']) }
@@ -98,6 +98,10 @@ class CrmDeal < ApplicationRecord
   end
 
   private
+
+  def open_status?
+    status == 'open'
+  end
 
   def trigger_lifecycle_recalculation
     return unless contact
