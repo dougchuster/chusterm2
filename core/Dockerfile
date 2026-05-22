@@ -237,6 +237,7 @@ COPY db/migrate/20260506*.rb ./db/migrate/
 COPY db/migrate/20260507*.rb ./db/migrate/
 COPY db/migrate/20260519*.rb ./db/migrate/
 COPY db/migrate/20260521*.rb ./db/migrate/
+COPY db/migrate/20260522*.rb ./db/migrate/
 COPY lib/tasks/crm_labels.rake ./lib/tasks/crm_labels.rake
 COPY lib/tasks/crm_contacts.rake ./lib/tasks/crm_contacts.rake
 COPY lib/tasks/crm_channel_pipelines.rake ./lib/tasks/crm_channel_pipelines.rake
