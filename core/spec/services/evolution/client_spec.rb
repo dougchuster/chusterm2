@@ -15,14 +15,12 @@ RSpec.describe Evolution::Client do
                     'Content-Type' => 'application/json'
                   },
                   body: {
-                    webhook: {
-                      enabled: true,
-                      url: 'https://chatwoot.example.com/webhooks/evolution/token',
-                      headers: { 'x-evolution-webhook-token' => 'token' },
-                      webhookByEvents: false,
-                      webhookBase64: true,
-                      events: %w[MESSAGES_UPSERT CONNECTION_UPDATE]
-                    }
+                    enabled: true,
+                    url: 'https://chatwoot.example.com/webhooks/evolution/token',
+                    headers: { 'x-evolution-webhook-token' => 'token' },
+                    webhookByEvents: false,
+                    webhookBase64: true,
+                    events: %w[MESSAGES_UPSERT CONNECTION_UPDATE]
                   }.to_json
                 )
                 .to_return(status: 201, body: '{}', headers: { 'Content-Type' => 'application/json' })

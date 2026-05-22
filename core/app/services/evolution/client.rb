@@ -52,11 +52,11 @@ module Evolution
     end
 
     def set_webhook(instance_name:, url:, headers:, events:)
-      post("/webhook/set/#{escape(instance_name)}", legacy_webhook_payload(url: url, headers: headers, events: events), timeout: 15)
+      post("/webhook/set/#{escape(instance_name)}", webhook_payload(url: url, headers: headers, events: events), timeout: 15)
     rescue Evolution::ApiError => e
       raise unless [400, 404, 405, 422].include?(e.status)
 
-      post("/webhook/set/#{escape(instance_name)}", webhook_payload(url: url, events: events), timeout: 15)
+      post("/webhook/set/#{escape(instance_name)}", legacy_webhook_payload(url: url, headers: headers, events: events), timeout: 15)
     end
 
     def find_webhook(instance_name:)
@@ -249,10 +249,11 @@ module Evolution
       }
     end
 
-    def webhook_payload(url:, events:)
+    def webhook_payload(url:, headers:, events:)
       {
         enabled: true,
         url: url,
+        headers: headers,
         webhookByEvents: false,
         webhookBase64: true,
         events: events

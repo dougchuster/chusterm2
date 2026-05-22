@@ -407,33 +407,31 @@ class Whatsapp::Providers::EvolutionService < Whatsapp::Providers::BaseService
       headers: api_headers,
       timeout: HTTP_TIMEOUT,
       body: {
-        webhook: {
-          enabled: true,
-          url: callback_url,
-          headers: {
-            apikey: api_key,
-            'x-evolution-webhook-token': managed_instance&.webhook_token
-          },
-          webhookByEvents: false,
-          events: %w[
-            MESSAGES_UPSERT
-            MESSAGES_SET
-            MESSAGES_UPDATE
-            MESSAGES_DELETE
-            CONNECTION_UPDATE
-            QRCODE_UPDATED
-            SEND_MESSAGE
-            CONTACTS_SET
-            CONTACTS_UPSERT
-            CONTACTS_UPDATE
-            CHATS_SET
-            CHATS_UPSERT
-            CHATS_UPDATE
-            LOGOUT_INSTANCE
-            REMOVE_INSTANCE
-          ],
-          webhookBase64: true
-        }
+        enabled: true,
+        url: callback_url,
+        headers: {
+          apikey: api_key,
+          'x-evolution-webhook-token': managed_instance&.webhook_token
+        }.compact,
+        webhookByEvents: false,
+        webhookBase64: true,
+        events: %w[
+          MESSAGES_UPSERT
+          MESSAGES_SET
+          MESSAGES_UPDATE
+          MESSAGES_DELETE
+          CONNECTION_UPDATE
+          QRCODE_UPDATED
+          SEND_MESSAGE
+          CONTACTS_SET
+          CONTACTS_UPSERT
+          CONTACTS_UPDATE
+          CHATS_SET
+          CHATS_UPSERT
+          CHATS_UPDATE
+          LOGOUT_INSTANCE
+          REMOVE_INSTANCE
+        ]
       }.to_json
     )
 
