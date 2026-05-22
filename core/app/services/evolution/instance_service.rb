@@ -4,10 +4,18 @@ module Evolution
   class InstanceService
     EVENTS = %w[
       MESSAGES_UPSERT
+      MESSAGES_SET
       MESSAGES_UPDATE
+      MESSAGES_DELETE
       CONNECTION_UPDATE
       QRCODE_UPDATED
       SEND_MESSAGE
+      CONTACTS_SET
+      CONTACTS_UPSERT
+      CONTACTS_UPDATE
+      CHATS_SET
+      CHATS_UPSERT
+      CHATS_UPDATE
       LOGOUT_INSTANCE
       REMOVE_INSTANCE
     ].freeze
@@ -22,6 +30,7 @@ module Evolution
 
       @instance.update!(provisioning_status: 'creating', last_error: nil)
       create_remote_instance_unless_present!
+      configure_settings!
       configure_webhook!
       @instance.update!(provisioning_status: 'waiting_qr', failure_count: 0, circuit_open_until: nil)
       broadcast('provisioned')
@@ -39,6 +48,22 @@ module Evolution
         headers: webhook_headers,
         events: EVENTS
       )
+    end
+
+    def configure_settings!
+      @client.set_settings(
+        instance_name: @instance.instance_name,
+        reject_call: true,
+        groups_ignore: true,
+        always_online: false,
+        read_messages: false,
+        read_status: false,
+        sync_full_history: true
+      )
+    rescue Evolution::ApiError => e
+      raise unless [400, 404, 405, 422].include?(e.status)
+
+      Rails.logger.warn({ component: 'evolution', action: 'settings_sync_skipped', instance_id: @instance.id, error: e.message }.to_json)
     end
 
     def qr_code_payload

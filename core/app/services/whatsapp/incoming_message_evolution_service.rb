@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+require 'base64'
+require 'stringio'
+
 # Processes incoming webhook payloads from Evolution API (Baileys).
 #
 # Evolution API sends payloads like:
@@ -18,7 +21,7 @@
 class Whatsapp::IncomingMessageEvolutionService
   include ::Whatsapp::IncomingMessageServiceHelpers
 
-  pattr_initialize [:inbox!, :params!]
+  pattr_initialize [:inbox!, :params!, { import_history: false }]
 
   IGNORABLE_MESSAGE_TYPES = %w[
     reactionMessage
@@ -38,9 +41,9 @@ class Whatsapp::IncomingMessageEvolutionService
 
     key = @data[:key] || @data['key'] || {}
 
-    # Skip messages sent by ourselves
     from_me = key[:fromMe] || key['fromMe']
-    return if ActiveModel::Type::Boolean.new.cast(from_me)
+    @from_me = ActiveModel::Type::Boolean.new.cast(from_me)
+    return if @from_me && !import_history
 
     source_id = key[:id] || key['id']
     return if source_id.blank?
@@ -83,7 +86,8 @@ class Whatsapp::IncomingMessageEvolutionService
 
   def message_event?
     event = params[:event] || params['event']
-    event.to_s.downcase.tr('.', '_').include?('messages_upsert')
+    normalized = event.to_s.downcase.tr('.', '_')
+    normalized.include?('messages_upsert') || normalized.include?('messages_set')
   end
 
   def phone_from_jid
@@ -109,6 +113,8 @@ class Whatsapp::IncomingMessageEvolutionService
   end
 
   def contact_name
+    return phone_from_jid if @from_me
+
     @data[:pushName] || @data['pushName'] || phone_from_jid || remote_jid_from_key.split('@').first
   end
 
@@ -150,6 +156,7 @@ class Whatsapp::IncomingMessageEvolutionService
     @contact_inbox = contact_inbox
     @contact = contact_inbox.contact
     persist_lid_alias! if lid_remote_jid?
+    sync_contact_avatar!
   end
 
   def contact_with_phone(phone)
@@ -199,9 +206,12 @@ class Whatsapp::IncomingMessageEvolutionService
       content: message_body,
       account_id: inbox.account_id,
       inbox_id: inbox.id,
-      message_type: :incoming,
-      sender: @contact,
-      source_id: source_id
+      message_type: @from_me ? :outgoing : :incoming,
+      status: @from_me ? :delivered : :sent,
+      sender: @from_me ? nil : @contact,
+      source_id: source_id,
+      created_at: external_created_at,
+      content_attributes: message_content_attributes
     )
 
     attach_media if has_media?
@@ -210,9 +220,6 @@ class Whatsapp::IncomingMessageEvolutionService
 
   def attach_media
     media = media_data
-    url = media[:url] || media['url'] || media[:directPath] || media['directPath']
-    return if url.blank?
-
     mimetype = media[:mimetype] || media['mimetype'] || 'application/octet-stream'
     filename = media[:fileName] || media['fileName'] || "media_#{Time.now.to_i}"
 
@@ -232,7 +239,9 @@ class Whatsapp::IncomingMessageEvolutionService
     )
 
     begin
-      downloaded = Down.download(url)
+      downloaded = media_file(media, mimetype, filename)
+      return if downloaded.blank?
+
       attachment.file.attach(
         io: downloaded,
         filename: filename,
@@ -241,6 +250,64 @@ class Whatsapp::IncomingMessageEvolutionService
     rescue Down::Error => e
       Rails.logger.error "[EVOLUTION] Media download failed: #{e.message}"
     end
+  end
+
+  def media_file(media, mimetype, filename)
+    url = downloadable_media_url(media)
+    return Down.download(url) if url.present?
+
+    base64_payload = media_base64_payload(media)
+    base64_payload ||= fetch_media_base64_from_evolution
+    return if base64_payload.blank?
+
+    decoded = decode_base64_payload(base64_payload)
+    return if decoded.blank?
+
+    StringIO.new(decoded).tap do |io|
+      io.define_singleton_method(:original_filename) { filename }
+      io.define_singleton_method(:content_type) { mimetype }
+    end
+  end
+
+  def downloadable_media_url(media)
+    [media[:url], media['url'], media[:mediaUrl], media['mediaUrl']].compact_blank.find do |url|
+      url.to_s.start_with?('http://', 'https://')
+    end
+  end
+
+  def media_base64_payload(media)
+    [
+      media[:base64],
+      media['base64'],
+      media[:media],
+      media['media'],
+      @data[:base64],
+      @data['base64']
+    ].compact_blank.first
+  end
+
+  def fetch_media_base64_from_evolution
+    instance = inbox.evolution_instance
+    return if instance.blank?
+
+    parsed = Evolution::Client.new(configuration: instance.configuration).get_base64_from_media_message(
+      instance_name: instance.instance_name,
+      message: { key: @data[:key] || @data['key'] },
+      convert_to_mp4: message_type_key == 'videoMessage'
+    )
+    parsed['base64'] || parsed.dig('data', 'base64') || parsed['media'] || parsed.dig('data', 'media')
+  rescue StandardError => e
+    Rails.logger.warn "[EVOLUTION] Media base64 fetch failed: #{e.message}"
+    nil
+  end
+
+  def decode_base64_payload(payload)
+    raw = payload.to_s
+    raw = raw.split(',', 2).last if raw.start_with?('data:')
+    Base64.decode64(raw)
+  rescue ArgumentError => e
+    Rails.logger.warn "[EVOLUTION] Invalid media base64 payload: #{e.message}"
+    nil
   end
 
   def find_message_by_source_id(source_id)
@@ -287,6 +354,58 @@ class Whatsapp::IncomingMessageEvolutionService
     updates = { additional_attributes: attrs }
     updates[:identifier] = sender_pn_from_key if sender_pn_from_key.present? && @contact.identifier.blank?
     @contact.update!(updates)
+  end
+
+  def sync_contact_avatar!
+    return if @contact.blank? || @contact.avatar.attached?
+
+    url = profile_picture_url_from_payload.presence || fetch_profile_picture_url
+    return if url.blank?
+
+    attrs = @contact.additional_attributes.to_h
+    @contact.update!(additional_attributes: attrs.merge('whatsapp_profile_picture_url' => url))
+    Avatar::AvatarFromUrlJob.perform_later(@contact, url)
+  rescue StandardError => e
+    Rails.logger.warn "[EVOLUTION] Contact avatar sync failed: #{e.message}"
+  end
+
+  def profile_picture_url_from_payload
+    @data[:profilePictureUrl] || @data['profilePictureUrl'] ||
+      @data[:profile_picture_url] || @data['profile_picture_url']
+  end
+
+  def fetch_profile_picture_url
+    phone = phone_from_jid
+    instance = inbox.evolution_instance
+    return if phone.blank? || instance.blank?
+
+    parsed = Evolution::Client.new(configuration: instance.configuration).fetch_profile_picture_url(
+      instance_name: instance.instance_name,
+      number: phone
+    )
+    parsed['profilePictureUrl'] || parsed['profile_picture_url'] || parsed.dig('data', 'profilePictureUrl')
+  rescue StandardError => e
+    Rails.logger.info "[EVOLUTION] Profile picture fetch skipped: #{e.message}"
+    nil
+  end
+
+  def external_created_at
+    timestamp = @data[:messageTimestamp] || @data['messageTimestamp']
+    return if timestamp.blank?
+
+    numeric_timestamp = timestamp.to_i
+    numeric_timestamp /= 1000 if numeric_timestamp > 99_999_999_999
+    Time.zone.at(numeric_timestamp)
+  rescue StandardError
+    nil
+  end
+
+  def message_content_attributes
+    attrs = {}
+    attrs[:external_created_at] = external_created_at.iso8601 if external_created_at.present?
+    attrs[:external_echo] = true if @from_me
+    attrs[:external_import] = true if import_history
+    attrs
   end
 
   def lid_contact_attributes

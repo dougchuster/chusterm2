@@ -13,6 +13,7 @@ module Evolution
       return if @event.status_processed?
       return mark_failed!('Evolution channel not found') unless @channel&.provider == 'evolution'
       return mark_failed!('Inactive account') unless @channel.account.active?
+      return mark_failed!('Evolution inbox not found') unless target_inbox
       return mark_failed!('Instance mismatch') unless matching_instance?
 
       @event.status_processing!
@@ -20,8 +21,14 @@ module Evolution
       case normalized_event
       when 'messages_upsert'
         process_incoming_message
+      when 'messages_set'
+        process_message_history
       when 'messages_update'
         handle_message_status_update
+      when 'contacts_set', 'contacts_upsert', 'contacts_update'
+        process_contact_updates
+      when 'chats_set', 'chats_upsert', 'chats_update'
+        process_chat_updates
       when 'connection_update'
         handle_connection_update
       when 'qrcode_updated'
@@ -45,7 +52,29 @@ module Evolution
     def process_incoming_message
       return if @channel.reauthorization_required?
 
-      Whatsapp::IncomingMessageEvolutionService.new(inbox: @channel.inbox, params: @params).perform
+      Whatsapp::IncomingMessageEvolutionService.new(inbox: target_inbox, params: @params).perform
+    end
+
+    def process_message_history
+      return if @channel.reauthorization_required?
+
+      each_payload_entry do |entry|
+        next if entry.blank?
+
+        Whatsapp::IncomingMessageEvolutionService.new(
+          inbox: target_inbox,
+          params: @params.merge(data: entry, event: 'messages.set'),
+          import_history: true
+        ).perform
+      end
+    end
+
+    def process_contact_updates
+      each_payload_entry { |entry| sync_contact_profile!(entry.with_indifferent_access) if entry.present? }
+    end
+
+    def process_chat_updates
+      each_payload_entry { |entry| sync_contact_profile!(entry.with_indifferent_access) if entry.present? }
     end
 
     def handle_message_status_update
@@ -59,9 +88,9 @@ module Evolution
       source_ids = evolution_message_ids(data)
       return if source_ids.blank?
 
-      message = @channel.inbox.messages.where(source_id: source_ids).first
+      message = target_inbox.messages.where(source_id: source_ids).first
       unless message
-        Rails.logger.info "[EVOLUTION] Status update ignored; source_ids=#{source_ids.join(',')} inbox_id=#{@channel.inbox&.id}"
+        Rails.logger.info "[EVOLUTION] Status update ignored; source_ids=#{source_ids.join(',')} inbox_id=#{target_inbox.id}"
         source_ids.each { |source_id| track_evolution_campaign_status(source_id, data) }
         return
       end
@@ -142,8 +171,23 @@ module Evolution
         Channel::Whatsapp.find_by(phone_number: "+#{normalized_phone}")
     end
 
+    def each_payload_entry
+      data = @params[:data]
+      entries =
+        if data.is_a?(Hash) && data[:messages].is_a?(Array)
+          data[:messages]
+        elsif data.is_a?(Hash) && data['messages'].is_a?(Array)
+          data['messages']
+        else
+          Array.wrap(data)
+        end
+
+      entries.each { |entry| yield(entry) }
+    end
+
     def normalized_event
-      @event.event_name.presence || (@params[:event] || @params['event']).to_s.downcase.tr('.', '_')
+      raw_event = @event.event_name.presence || @params[:event] || @params['event']
+      raw_event.to_s.downcase.tr('.', '_')
     end
 
     def matching_instance?
@@ -214,6 +258,57 @@ module Evolution
       )
 
       sync_channel_phone!(phone_number) if phone_number.present?
+    end
+
+    def sync_contact_profile!(data)
+      jid = data[:id] || data[:remoteJid] || data[:remote_jid] || data.dig(:key, :remoteJid)
+      return if jid.blank? || jid.to_s.end_with?('@g.us')
+
+      phone = normalize_profile_phone(jid)
+      source_id = phone&.delete_prefix('+') || jid.to_s.split('@').first
+      return if source_id.blank?
+
+      name = data[:pushName] || data[:pushname] || data[:name] || data[:notify] || phone
+      profile_picture_url = data[:profilePictureUrl] || data[:profile_picture_url] || data[:picture] || data[:imgUrl]
+      contact_inbox = ContactInboxWithContactBuilder.new(
+        source_id: source_id,
+        inbox: target_inbox,
+        contact_attributes: {
+          name: name,
+          phone_number: phone,
+          additional_attributes: { 'whatsapp_jid' => jid.to_s }.compact
+        }.compact
+      ).perform
+
+      contact = contact_inbox.contact
+      contact.update!(name: name) if name.present? && contact.name.to_s.start_with?('+')
+      attach_contact_avatar(contact, profile_picture_url)
+    end
+
+    def normalize_profile_phone(value)
+      text = value.to_s
+      return if text.blank? || text.include?('@lid')
+
+      digits = text.split('@').first.gsub(/\D/, '')
+      digits.present? ? "+#{digits}" : nil
+    end
+
+    def attach_contact_avatar(contact, profile_picture_url)
+      return if profile_picture_url.blank?
+
+      attrs = contact.additional_attributes.to_h
+      return if attrs['whatsapp_profile_picture_url'] == profile_picture_url && contact.avatar.attached?
+
+      contact.update!(additional_attributes: attrs.merge('whatsapp_profile_picture_url' => profile_picture_url))
+      Avatar::AvatarFromUrlJob.perform_later(contact, profile_picture_url)
+    rescue StandardError => e
+      Rails.logger.warn({ component: 'evolution', action: 'contact_avatar_sync_failed', contact_id: contact.id, error: e.message }.to_json)
+    end
+
+    def target_inbox
+      @target_inbox ||= @instance&.inbox ||
+                        @channel&.inbox ||
+                        Inbox.find_by(channel_type: @channel.class.name, channel_id: @channel.id)
     end
 
     def real_phone_from_connection(data)

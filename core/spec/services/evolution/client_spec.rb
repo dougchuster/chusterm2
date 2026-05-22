@@ -38,6 +38,40 @@ RSpec.describe Evolution::Client do
     end
   end
 
+  describe '#set_settings' do
+    it 'uses the documented settings payload and enables full history sync' do
+      request = stub_request(:post, 'https://evolution.example.com/settings/set/dra_paula')
+                .with(
+                  headers: {
+                    'apikey' => 'global-key',
+                    'Content-Type' => 'application/json'
+                  },
+                  body: {
+                    reject_call: true,
+                    msg_call: 'Não podemos atender chamadas por este canal. Envie uma mensagem por escrito, por favor.',
+                    groups_ignore: true,
+                    always_online: false,
+                    read_messages: false,
+                    read_status: false,
+                    sync_full_history: true
+                  }.to_json
+                )
+                .to_return(status: 201, body: '{}', headers: { 'Content-Type' => 'application/json' })
+
+      client.set_settings(
+        instance_name: 'dra_paula',
+        reject_call: true,
+        groups_ignore: true,
+        always_online: false,
+        read_messages: false,
+        read_status: false,
+        sync_full_history: true
+      )
+
+      expect(request).to have_been_requested
+    end
+  end
+
   describe '#fetch_instances' do
     it 'normalizes connected phone and profile metadata' do
       stub_request(:get, 'https://evolution.example.com/instance/fetchInstances')

@@ -50,10 +50,49 @@ RSpec.describe Whatsapp::IncomingMessageEvolutionService do
     expect(inbox.contact_inboxes.first.source_id).to eq('211750628651261')
   end
 
-  def payload(id:, remote_jid:, body: 'Oi', sender_pn: nil)
+  it 'imports outgoing historical messages without resending them' do
+    described_class.new(
+      inbox: inbox,
+      params: payload(id: 'MSG-HISTORY-1', remote_jid: '556184410419@s.whatsapp.net', body: 'Mensagem antiga', from_me: true),
+      import_history: true
+    ).perform
+
+    message = inbox.messages.find_by!(source_id: 'MSG-HISTORY-1')
+    expect(message).to be_outgoing
+    expect(message).to be_delivered
+    expect(message.sender).to be_nil
+    expect(message.content_attributes['external_echo']).to be true
+    expect(message.content_attributes['external_import']).to be true
+  end
+
+  it 'attaches base64 media received from Evolution webhooks' do
+    described_class.new(
+      inbox: inbox,
+      params: payload(
+        id: 'MSG-IMG-1',
+        remote_jid: '556184410419@s.whatsapp.net',
+        body: '',
+        message_type: 'imageMessage',
+        message: {
+          imageMessage: {
+            mimetype: 'image/png',
+            fileName: 'documento.png',
+            base64: Base64.strict_encode64('fake-image')
+          }
+        }
+      )
+    ).perform
+
+    message = inbox.messages.find_by!(source_id: 'MSG-IMG-1')
+    expect(message.attachments.count).to eq(1)
+    expect(message.attachments.first.file).to be_attached
+    expect(message.attachments.first.file_type).to eq('image')
+  end
+
+  def payload(id:, remote_jid:, body: 'Oi', sender_pn: nil, from_me: false, message_type: 'conversation', message: nil)
     key = {
       remoteJid: remote_jid,
-      fromMe: false,
+      fromMe: from_me,
       id: id
     }
     key[:senderPn] = sender_pn if sender_pn.present?
@@ -63,8 +102,8 @@ RSpec.describe Whatsapp::IncomingMessageEvolutionService do
       data: {
         key: key,
         pushName: 'Savia',
-        message: { conversation: body },
-        messageType: 'conversation'
+        message: message || { conversation: body },
+        messageType: message_type
       }
     }.with_indifferent_access
   end

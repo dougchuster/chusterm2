@@ -88,6 +88,7 @@ class Inbox < ApplicationRecord
   enum sender_name_type: { friendly: 0, professional: 1 }
 
   after_destroy :delete_round_robin_agents
+  before_destroy :destroy_crm_channel_pipeline, prepend: true
 
   after_create_commit :dispatch_create_event
   after_create_commit :ensure_crm_channel_pipeline
@@ -263,6 +264,14 @@ class Inbox < ApplicationRecord
 
   def delete_round_robin_agents
     ::AutoAssignment::InboxRoundRobinService.new(inbox: self).clear_queue
+  end
+
+  def destroy_crm_channel_pipeline
+    Crm::ChannelPipelineDestroyer.new(inbox: self).perform
+  rescue StandardError => e
+    Rails.logger.error("[CRM] channel pipeline deletion failed for inbox #{id}: #{e.message}")
+    errors.add(:base, 'Não foi possível excluir o kanban vinculado a esta caixa de entrada.')
+    throw(:abort)
   end
 
   def ensure_crm_channel_pipeline

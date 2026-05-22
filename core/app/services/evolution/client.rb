@@ -29,8 +29,26 @@ module Evolution
         alwaysOnline: false,
         readMessages: false,
         readStatus: false,
-        syncFullHistory: false
+        syncFullHistory: true
       }, timeout: 15)
+    end
+
+    def set_settings(instance_name:, reject_call:, groups_ignore:, always_online:, read_messages:, read_status:, sync_full_history:)
+      payload = {
+        reject_call: reject_call,
+        msg_call: 'Não podemos atender chamadas por este canal. Envie uma mensagem por escrito, por favor.',
+        groups_ignore: groups_ignore,
+        always_online: always_online,
+        read_messages: read_messages,
+        read_status: read_status,
+        sync_full_history: sync_full_history
+      }
+
+      post("/settings/set/#{escape(instance_name)}", payload, timeout: 15)
+    rescue Evolution::ApiError => e
+      raise unless [400, 422].include?(e.status)
+
+      post("/settings/set/#{escape(instance_name)}", payload.deep_transform_keys { |key| key.to_s.camelize(:lower) }, timeout: 15)
     end
 
     def set_webhook(instance_name:, url:, headers:, events:)
@@ -92,6 +110,30 @@ module Evolution
         caption: caption,
         fileName: file_name
       }, timeout: 45)
+    end
+
+    def fetch_profile_picture_url(instance_name:, number:)
+      post("/chat/fetchProfilePictureUrl/#{escape(instance_name)}", {
+        number: number.to_s.delete_prefix('+')
+      }, timeout: 15)
+    end
+
+    def get_base64_from_media_message(instance_name:, message:, convert_to_mp4: false)
+      post("/chat/getBase64FromMediaMessage/#{escape(instance_name)}", {
+        message: message,
+        convertToMp4: convert_to_mp4
+      }, timeout: 45)
+    end
+
+    def find_messages(instance_name:, remote_jid:, limit: 50)
+      post("/chat/findMessages/#{escape(instance_name)}", {
+        where: {
+          key: {
+            remoteJid: remote_jid
+          }
+        },
+        limit: limit
+      }, timeout: 30)
     end
 
     def normalize_instances_response(parsed)

@@ -39,4 +39,22 @@ RSpec.describe Crm::ChannelPipelineProvisioner do
     expect(deal.reload.crm_pipeline_id).to eq(pipeline.id)
     expect(deal.crm_pipeline_stage.slug).to eq('qualificado')
   end
+
+  it 'removes the exclusive pipeline and its deals when the inbox is deleted' do
+    create_legacy_pipeline!
+    pipeline = described_class.new(account: account, inbox: inbox).perform
+    stage = pipeline.crm_pipeline_stages.first
+    deal = CrmDeal.create!(
+      account: account,
+      inbox: inbox,
+      crm_pipeline: pipeline,
+      crm_pipeline_stage: stage,
+      title: 'Atendimento do canal'
+    )
+
+    Crm::ChannelPipelineDestroyer.new(inbox: inbox).perform
+
+    expect(CrmPipeline.exists?(pipeline.id)).to be false
+    expect(CrmDeal.exists?(deal.id)).to be false
+  end
 end
