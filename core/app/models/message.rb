@@ -369,6 +369,8 @@ class Message < ApplicationRecord
   end
 
   def execute_after_create_commit_callbacks
+    return if external_import?
+
     # rails issue with order of active record callbacks being executed https://github.com/rails/rails/issues/20911
     reopen_conversation
     mark_pending_conversation_as_open_for_human_response
@@ -379,6 +381,10 @@ class Message < ApplicationRecord
     update_contact_activity
     track_campaign_reply
     track_campaign_opt_out
+  end
+
+  def external_import?
+    ActiveModel::Type::Boolean.new.cast(content_attributes['external_import'])
   end
 
   def update_contact_activity

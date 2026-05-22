@@ -3,6 +3,8 @@
 require 'rails_helper'
 
 RSpec.describe Evolution::HistorySyncService do
+  include ActiveJob::TestHelper
+
   let(:account) { create(:account) }
   let(:configuration) { create(:evolution_api_configuration, account: account) }
   let(:channel) do
@@ -32,6 +34,7 @@ RSpec.describe Evolution::HistorySyncService do
   before do
     allow(Evolution::Client).to receive(:new).and_return(client)
     allow(client).to receive(:fetch_profile_picture_url).and_return({})
+    clear_enqueued_jobs
   end
 
   it 'imports missing messages from the Evolution history endpoint' do
@@ -51,7 +54,10 @@ RSpec.describe Evolution::HistorySyncService do
       ]
     )
 
-    result = described_class.new(instance: instance, limit: 20).perform
+    result = nil
+    expect do
+      result = described_class.new(instance: instance, limit: 20).perform
+    end.not_to have_enqueued_job(SendReplyJob)
 
     message = inbox.messages.find_by!(source_id: 'HIST-1')
     expect(message.content).to eq('Tenho dúvidas sobre aposentadoria.')

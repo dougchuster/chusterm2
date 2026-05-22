@@ -76,6 +76,20 @@ RSpec.describe SendReplyJob do
       described_class.perform_now(message.id)
     end
 
+    it 'does not send messages imported from external history' do
+      whatsapp_channel = create(:channel_whatsapp, sync_templates: false)
+      message = create(
+        :message,
+        conversation: create(:conversation, inbox: whatsapp_channel.inbox),
+        message_type: :outgoing,
+        content_attributes: { external_import: true, external_echo: true }
+      )
+
+      expect(Whatsapp::SendOnWhatsappService).not_to receive(:new)
+
+      described_class.perform_now(message.id)
+    end
+
     it 'calls ::Sms::SendOnSmsService when its sms message' do
       sms_channel = create(:channel_sms)
       message = create(:message, conversation: create(:conversation, inbox: sms_channel.inbox))
