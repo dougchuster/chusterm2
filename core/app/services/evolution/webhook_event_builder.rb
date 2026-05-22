@@ -55,8 +55,30 @@ module Evolution
     end
 
     def message_id
-      data = @params[:data] || {}
+      payload_entries.filter_map { |entry| message_id_from(entry) }.first
+    end
+
+    def payload_entries
+      data = @params[:data]
+      return [] if data.blank?
+
+      if data.is_a?(Hash) && data[:messages].is_a?(Array)
+        data[:messages]
+      elsif data.is_a?(Hash) && data['messages'].is_a?(Array)
+        data['messages']
+      else
+        Array.wrap(data)
+      end
+    end
+
+    def message_id_from(entry)
+      return if entry.blank?
+
+      data = entry.respond_to?(:with_indifferent_access) ? entry.with_indifferent_access : entry
+      return unless data.respond_to?(:[])
+
       key = data[:key] || {}
+      key = key.with_indifferent_access if key.respond_to?(:with_indifferent_access)
       key[:id] || data[:keyId] || data[:messageId] || data[:id]
     end
 
