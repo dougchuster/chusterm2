@@ -152,6 +152,15 @@ RSpec.describe Attachment do
       it 'preserves meta data with file attachments' do
         expect(image_attachment.meta['description']).to eq('Test image')
       end
+
+      it 'builds push_event_data even when active storage metadata is missing' do
+        allow(image_attachment.file).to receive(:metadata).and_return(nil)
+
+        event_data = nil
+        expect { event_data = image_attachment.push_event_data }.not_to raise_error
+        expect(event_data[:width]).to be_nil
+        expect(event_data[:height]).to be_nil
+      end
     end
   end
 

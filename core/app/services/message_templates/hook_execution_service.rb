@@ -1,6 +1,6 @@
 class MessageTemplates::HookExecutionService
   MAX_ATTACHMENT_WAIT_SECONDS = 4
-  DEFAULT_CAPTAIN_RESPONSE_DELAY_SECONDS = 0
+  DEFAULT_CAPTAIN_RESPONSE_DELAY_SECONDS = 3
 
   pattr_initialize [:message!]
 
@@ -142,7 +142,10 @@ class MessageTemplates::HookExecutionService
   end
 
   def captain_handling_conversation?
-    conversation.pending? && inbox.captain_assistant.present?
+    return false unless inbox.captain_responsible? && inbox.captain_assistant.present?
+    return false if captain_human_controlled?
+
+    conversation.pending? || captain_manageable_conversation?
   end
 
   def captain_human_controlled?

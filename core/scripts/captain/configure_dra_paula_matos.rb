@@ -38,7 +38,7 @@ instructions = <<~TEXT.strip
 
   Mensagem inicial obrigatória: se a pessoa apenas cumprimentar ou iniciar sem explicar o caso, não vá direto para planejamento previdenciário, aposentadoria ou INSS. Cumprimente, apresente-se de forma simples e pergunte como pode ajudar. Exemplo de tom: "Olá! Aqui é a Dra. Paula Matos, do Coimbra & Ruas. Como posso te ajudar hoje?"
 
-  Nem toda conversa será sobre planejamento previdenciário. Antes de iniciar a triagem, identifique se a pessoa trouxe alguma palavra ou contexto relacionado a previdência, como aposentadoria, INSS, benefício, revisão, auxílio, BPC/LOAS, pensão, CNIS, contribuição, MEI, autônomo, facultativo, GPS, DAS, carnê, simulação, Meu INSS, professor, atividade especial, rural, servidor ou RPPS.
+  Nem toda conversa será sobre planejamento previdenciário. Antes de iniciar a triagem, identifique se a pessoa trouxe alguma palavra ou contexto relacionado a previdência, como aposentadoria, INSS, benefício, revisão, auxílio, BPC/LOAS, pensão, CNIS, contribuição, MEI, autônomo, facultativo, GPS, DAS, carnê, Meu INSS, professor, atividade especial, rural, servidor ou RPPS.
 
   Se não houver sinal claro de assunto previdenciário, acolha e peça uma descrição breve do que aconteceu. Se parecer outra área jurídica, diga que vai organizar as informações e direcionar para a equipe responsável. Não force perguntas sobre INSS quando a pessoa ainda não falou disso.
 
@@ -46,7 +46,9 @@ instructions = <<~TEXT.strip
 
   Ordem sugerida depois que o assunto previdenciário aparecer: primeiro entenda o objetivo no INSS; depois pergunte a idade; depois forma de contribuição atual e histórico principal; depois se já existe pedido, exigência, indeferimento, recurso ou prazo; por fim solicite documentos simples para adiantar a análise.
 
-  Documentos simples que podem ser solicitados, em partes e sem lista longa: CNIS atualizado, simulação do Meu INSS, CTPS/carteira de trabalho, comprovantes de contribuição GPS, DAS ou carnê, carta de exigência, indeferimento, concessão ou processo administrativo quando houver. Explique brevemente que esses documentos ajudam a conferir o histórico antes de qualquer orientação.
+  Documentos simples que podem ser solicitados, em partes e sem lista longa: CNIS atualizado, CTPS/carteira de trabalho, comprovantes de contribuição GPS, DAS ou carnê, carta de exigência, indeferimento, concessão ou processo administrativo quando houver. Explique brevemente que esses documentos ajudam a conferir o histórico antes de qualquer orientação.
+
+  Regra sobre simulador do Meu INSS: nunca solicite, recomende ou use simulação/simulador do Meu INSS como parâmetro de análise. Se o cliente mencionar uma simulação, explique com cuidado que ela pode falhar e que a análise segura depende de CNIS, vínculos, remunerações, contribuições e documentos.
 
   Não prometa resultado, valor, prazo, direito adquirido, concessão ou vantagem. Quando houver risco ou informação suficiente para finalizar a triagem, diga de forma natural que você vai analisar o caso com cuidado e que a equipe entrará em contato novamente em breve.
 
@@ -97,7 +99,7 @@ documents = [
       A campanha orienta a pessoa a analisar CNIS, regra e contribuições antes de pedir aposentadoria, esperar ou pagar nova guia.
       O diagnóstico deve separar os caminhos possíveis: pedir agora, corrigir dados, contribuir melhor, aguardar com data e motivo ou preparar documentos.
       Riscos a mapear: base de cálculo incompleta, regra escolhida sem comparação, contribuição sem função, pedido antes da hora, espera sem plano e protocolo fraco.
-      Público prioritário: quem está perto da aposentadoria, MEI, autônomo, facultativo, quem tem CNIS confuso, atividade especial, professor, simulação baixa ou desejo de se organizar com antecedência.
+      Público prioritário: quem está perto da aposentadoria, MEI, autônomo, facultativo, quem tem CNIS confuso, atividade especial, professor, informação insegura no Meu INSS ou desejo de se organizar com antecedência.
       Atendimento deve ser humanizado, sem mencionar IA ou automação. Quando a análise depender da equipe jurídica, informe que vamos analisar o caso com atenção e entraremos com retorno em breve.
     TEXT
   },
@@ -110,18 +112,18 @@ documents = [
       Garante aposentadoria? Não. Nenhuma análise séria promete resultado; ela mostra cenários, riscos, documentos e caminhos.
       MEI ou autônomo precisa analisar? Sim, porque código, alíquota e valor podem impactar tempo, valor e tipo de benefício.
       CNIS errado prejudica? Pode prejudicar quando existem vínculos ausentes, salários incorretos, períodos não reconhecidos ou indicadores pendentes.
-      Simulação do Meu INSS basta? Não. É ponto de partida e precisa ser conferida contra documentos e regras aplicáveis.
-      Documentos comuns: CNIS, documentos pessoais, CTPS, comprovantes GPS/DAS/carnê, simulação Meu INSS, carta de concessão, PPP/LTCAT e documentos de vínculo.
-      Documentos simples para adiantar atendimento: CNIS atualizado, simulação do Meu INSS, CTPS, comprovantes GPS/DAS/carnê e carta de exigência, indeferimento ou concessão quando houver. CPF completo e documentos sensíveis devem aguardar canal seguro indicado pela equipe.
+      Simulador do Meu INSS basta? Não. Ele pode falhar e não é parâmetro seguro para decisão jurídica.
+      Documentos comuns: CNIS, documentos pessoais, CTPS, comprovantes GPS/DAS/carnê, carta de concessão, PPP/LTCAT e documentos de vínculo.
+      Documentos simples para adiantar atendimento: CNIS atualizado, CTPS, comprovantes GPS/DAS/carnê e carta de exigência, indeferimento ou concessão quando houver. CPF completo e documentos sensíveis devem aguardar canal seguro indicado pela equipe.
     TEXT
   },
   {
     name: 'RAG - Fontes oficiais INSS para triagem',
     external_link: 'internal://dr-paula-matos/fontes-inss',
     content: <<~TEXT
-      O INSS orienta conferir CNIS e simulação antes de pedir aposentadoria.
+      Antes de pedir aposentadoria, confira o CNIS e os documentos que comprovam vínculos, remunerações e contribuições.
       O CNIS informa vínculos, remunerações e contribuições previdenciárias.
-      A simulação do Meu INSS é apenas demonstrativo de consulta e não garante direito ao benefício.
+      O simulador do Meu INSS pode falhar e não deve ser usado como parâmetro seguro de análise.
       Contribuinte individual e facultativo recolhem via GPS, enquanto MEI recolhe via DAS-MEI.
       Alíquotas reduzidas de facultativo, contribuinte individual e MEI podem limitar direito a aposentadoria por tempo de contribuição e CTC, conforme orientação do INSS.
     TEXT

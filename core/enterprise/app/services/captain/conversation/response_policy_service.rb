@@ -2,6 +2,13 @@ class Captain::Conversation::ResponsePolicyService
   FALLBACK_RESPONSE = 'Entendi. Pode me contar com calma o que aconteceu para eu entender melhor?'.freeze
 
   BANNED_REPLACEMENTS = [
+    [/\bA simula[cç][aã]o do Meu INSS ajuda como ponto de partida, mas n[aã]o garante o direito nem substitui a leitura dos documentos\.?/i,
+     'O simulador do Meu INSS não é parâmetro seguro; a análise precisa considerar CNIS, vínculos, remunerações, contribuições e documentos.'],
+    [/\bse voc[eê] j[aá] fez alguma simula[cç][aã]o ou pedido\b/i, 'se você já fez algum pedido'],
+    [/\bsimula[cç][aã]o pelo aplicativo Meu INSS\b/i, 'CNIS atualizado'],
+    [/\bsimula[cç][aã]o do Meu INSS\b/i, 'CNIS atualizado'],
+    [/\bsimula[cç][aã]o Meu INSS\b/i, 'CNIS atualizado'],
+    [/\bsimulador do (?:Meu )?INSS\b/i, 'CNIS atualizado'],
     [/\bSou a Dra\.?\s+Julia,\s+do\s+Coimbra\s*&\s*Ruas\s+Advocacia\b/i, 'Sou a Dra. Julia, advogada do Coimbra & Ruas Advocacia'],
     [/\bsou a Dra\.?\s+Julia,\s+do\s+Coimbra\s*&\s*Ruas\s+Advocacia\b/i, 'sou a Dra. Julia, advogada do Coimbra & Ruas Advocacia'],
     [/\bpoxa,?\s*/i, ''],
@@ -31,6 +38,7 @@ class Captain::Conversation::ResponsePolicyService
   def apply(content)
     text = content.to_s.dup
     BANNED_REPLACEMENTS.each { |pattern, replacement| text.gsub!(pattern, replacement) }
+    text = cleanup_repeated_document_terms(text)
     text = limit_questions_for_stepwise_triage(text)
     text = remove_public_formatting(text)
     text = collapse_repeated_name_mentions(text)
@@ -41,6 +49,17 @@ class Captain::Conversation::ResponsePolicyService
   end
 
   private
+
+  def cleanup_repeated_document_terms(text)
+    text
+      .gsub(/\bCNIS atualizado,\s*CNIS atualizado,\s*/i, 'CNIS atualizado, ')
+      .gsub(/\bCNIS atualizado,\s*CNIS atualizado\s+e\s+/i, 'CNIS atualizado e ')
+      .gsub(/\bCNIS atualizado,\s*CNIS atualizado\b/i, 'CNIS atualizado')
+      .gsub(/\bCNIS atualizado;\s*CNIS atualizado;\s*/i, 'CNIS atualizado; ')
+      .gsub(/\bCNIS atualizado;\s*CNIS atualizado\b/i, 'CNIS atualizado')
+      .gsub(/,\s*,+/, ',')
+      .gsub(/;\s*;+/, ';')
+  end
 
   def limit_questions_for_stepwise_triage(text)
     return text unless ActiveModel::Type::Boolean.new.cast(assistant&.config&.dig('stepwise_triage'))

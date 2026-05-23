@@ -59,6 +59,21 @@ RSpec.describe Captain::Conversation::ResponseBuilderJob, type: :job do
         expect(content.scan(/S[áa]via/i).size).to eq(1)
       end
 
+      it 'does not ask for Meu INSS simulation as an analysis parameter' do
+        allow(mock_llm_chat_service).to receive(:generate_response).and_return(
+          {
+            'response' => 'Para adiantar, envie CNIS atualizado, simulação do Meu INSS, CTPS e comprovantes.'
+          }
+        )
+
+        described_class.perform_now(conversation, assistant)
+
+        content = conversation.messages.outgoing.last.content
+        expect(content).not_to match(/simulação do Meu INSS/i)
+        expect(content).to include('CNIS atualizado')
+        expect(content).to include('CTPS')
+      end
+
       it 'increments usage response' do
         described_class.perform_now(conversation, assistant)
         account.reload

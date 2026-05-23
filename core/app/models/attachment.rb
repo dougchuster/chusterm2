@@ -109,13 +109,15 @@ class Attachment < ApplicationRecord
   end
 
   def file_metadata
+    blob_metadata = (file.metadata || {}).with_indifferent_access
+
     metadata = {
       extension: extension,
       data_url: file_url,
       thumb_url: thumb_url,
-      file_size: file.byte_size,
-      width: file.metadata[:width],
-      height: file.metadata[:height],
+      file_size: file.attached? ? file.byte_size : 0,
+      width: blob_metadata[:width],
+      height: blob_metadata[:height],
       image_description: meta&.[]('image_description') || '',
       ocr_text: meta&.[]('ocr_text') || '',
       document_guess: meta&.[]('document_guess') || '',

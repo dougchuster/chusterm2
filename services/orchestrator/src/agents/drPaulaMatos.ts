@@ -34,7 +34,7 @@ export interface PrevidenciarioTriageSnapshot {
     | 'pedido_em_analise'
     | 'pedido_negado'
     | 'beneficio_concedido_duvida'
-    | 'simulacao_meu_inss'
+    | 'consulta_meu_inss'
     | 'nao_informado'
   concerns: string[]
   documentsMentioned: string[]
@@ -69,13 +69,11 @@ export interface PrevidenciarioScoreOutput {
 }
 
 const SIMPLE_DOCUMENT_REQUEST =
-  'Para adiantar a análise pela equipe responsável, se você tiver fácil, já pode separar ou enviar apenas o que for simples e seguro pelo canal atual: CNIS atualizado, simulação do Meu INSS, CTPS ou comprovantes GPS/DAS/carnê, e, se houver, carta de exigência, indeferimento ou concessão. Não envie CPF completo nem documentos sensíveis por canal inseguro; se necessário, a equipe indicará o canal adequado.'
+  'Para adiantar a análise pela equipe responsável, se você tiver fácil, já pode separar ou enviar apenas o que for simples e seguro pelo canal atual: CNIS atualizado, CTPS ou comprovantes GPS/DAS/carnê, e, se houver, carta de exigência, indeferimento ou concessão. Não envie CPF completo nem documentos sensíveis por canal inseguro; se necessário, a equipe indicará o canal adequado.'
 
 const COIMBRA_PAGE_URL = 'https://planejamento.coimbraeruas.com.br/'
 const INSS_PRE_REQUEST_URL =
   'https://www.gov.br/inss/pt-br/noticias/aposentadoria-o-que-pode-ser-conferido-no-meu-inss-antes-de-fazer-o-pedido'
-const INSS_SIMULATION_URL =
-  'https://www.gov.br/inss/pt-br/noticias/nao-perca-as-contas-inss-oferece-calculadora-para-simulacao-de-aposentadoria'
 const INSS_CNIS_URL =
   'https://www.gov.br/inss/pt-br/noticias/saiba-como-consultar-extratos-de-contribuicoes-pelo-site-ou-aplicativo-meu-inss'
 const INSS_CONTRIBUTION_URL =
@@ -121,32 +119,32 @@ export const DR_PAULA_MATOS_KNOWLEDGE: KnowledgeDocument[] = [
     source: 'Coimbra & Ruas',
     sourceUrl: COIMBRA_PAGE_URL,
     type: 'rag',
-    tags: ['mei', 'autônomo', 'professor', 'especial', 'simulação', 'cnis'],
+    tags: ['mei', 'autônomo', 'professor', 'especial', 'cnis'],
     priority: 8,
     content:
-      'A consultoria é especialmente relevante para quem está a poucos anos da aposentadoria, contribui por conta própria, tem CNIS confuso, tem tempo especial ou de professor, recebeu simulação baixa ou quer se organizar com antecedência.',
+      'A consultoria é especialmente relevante para quem está a poucos anos da aposentadoria, contribui por conta própria, tem CNIS confuso, tem tempo especial ou de professor, recebeu informação insegura no Meu INSS ou quer se organizar com antecedência.',
   },
   {
     id: 'inss-conferir-cnis',
-    title: 'Conferir CNIS e simulação antes do pedido',
+    title: 'Conferir CNIS antes do pedido',
     source: 'INSS',
     sourceUrl: INSS_PRE_REQUEST_URL,
     type: 'rag',
-    tags: ['inss', 'cnis', 'meu inss', 'simulação', 'documentos'],
+    tags: ['inss', 'cnis', 'meu inss', 'documentos'],
     priority: 9,
     content:
-      'O INSS orienta que o trabalhador confira o Extrato de Contribuições (CNIS) e faça simulação no Meu INSS antes de pedir aposentadoria. Devem ser observadas datas de entrada e saída, contribuições abaixo do salário mínimo desde 2019, vínculos pendentes, períodos de regime próprio e informações divergentes ou incompletas.',
+      'Antes de pedir aposentadoria, o ponto técnico mais seguro é conferir o Extrato de Contribuições (CNIS). Devem ser observadas datas de entrada e saída, contribuições abaixo do salário mínimo desde 2019, vínculos pendentes, períodos de regime próprio e informações divergentes ou incompletas.',
   },
   {
     id: 'inss-simulacao-nao-garante',
-    title: 'Simulação do Meu INSS não garante direito',
-    source: 'INSS',
-    sourceUrl: INSS_SIMULATION_URL,
+    title: 'Simulador do Meu INSS não é parâmetro seguro',
+    source: 'Coimbra & Ruas',
+    sourceUrl: COIMBRA_PAGE_URL,
     type: 'guardrail',
-    tags: ['simulação', 'meu inss', 'garantia', 'documentos'],
+    tags: ['simulador', 'meu inss', 'garantia', 'documentos'],
     priority: 10,
     content:
-      'A calculadora do Meu INSS é um demonstrativo para consulta e não garante direito ao benefício. Quando a simulação indica requisitos, o segurado ainda precisa fazer o pedido para o INSS analisar de fato, podendo ser solicitados documentos.',
+      'Não solicite, recomende ou use o simulador do Meu INSS como parâmetro seguro de análise. Se o cliente mencionar uma simulação, explique com cuidado que ela pode falhar e não substitui a leitura jurídica do CNIS, vínculos, remunerações, contribuições e documentos.',
   },
   {
     id: 'inss-extrato-cnis',
@@ -190,7 +188,7 @@ export const DR_PAULA_MATOS_KNOWLEDGE: KnowledgeDocument[] = [
     tags: ['faq', 'documentos', 'cnis', 'ctps', 'ppp'],
     priority: 7,
     content:
-      'Os documentos dependem do caso, mas normalmente CNIS, documentos pessoais, carteira de trabalho, comprovantes de contribuição, documentos de atividade especial e registros de vínculo podem ser importantes. Para adiantar o atendimento, podem ser solicitados documentos simples: CNIS atualizado, simulação do Meu INSS, CTPS, comprovantes GPS/DAS/carnê e carta de exigência, indeferimento ou concessão quando houver. CPF completo e documentos sensíveis devem aguardar canal seguro indicado pela equipe.',
+      'Os documentos dependem do caso, mas normalmente CNIS, documentos pessoais, carteira de trabalho, comprovantes de contribuição, documentos de atividade especial e registros de vínculo podem ser importantes. Para adiantar o atendimento, podem ser solicitados documentos simples: CNIS atualizado, CTPS, comprovantes GPS/DAS/carnê e carta de exigência, indeferimento ou concessão quando houver. CPF completo e documentos sensíveis devem aguardar canal seguro indicado pela equipe.',
   },
 ]
 
@@ -222,7 +220,7 @@ function detectObjective(normalizedText: string): PrevidenciarioTriageSnapshot['
   if (hasAny(normalizedText, ['mei', 'autonomo', 'facultativo', 'gps', 'das', 'codigo', 'contribuir'])) {
     return 'avaliar_contribuicoes'
   }
-  if (hasAny(normalizedText, ['regra', 'comparar', 'simulacao', 'meu inss', 'quando posso'])) {
+  if (hasAny(normalizedText, ['regra', 'comparar', 'meu inss', 'quando posso'])) {
     return 'comparar_regras'
   }
   if (hasAny(normalizedText, ['dar entrada', 'protocolar', 'pedir aposentadoria', 'ja posso aposentar'])) {
@@ -247,7 +245,7 @@ function detectInssStatus(
     return 'pedido_em_analise'
   }
   if (hasAny(normalizedText, ['simulacao', 'simulador', 'meu inss mostrou', 'data no meu inss'])) {
-    return 'simulacao_meu_inss'
+    return 'consulta_meu_inss'
   }
   if (hasAny(normalizedText, ['ainda nao fiz pedido', 'nao dei entrada', 'sem pedido'])) {
     return 'sem_pedido'
@@ -281,7 +279,6 @@ function detectDocuments(normalizedText: string): string[] {
     ['cnis', ['cnis', 'extrato de contribuicao']],
     ['ctps', ['ctps', 'carteira de trabalho']],
     ['gps_das_carne', ['gps', 'das', 'carne', 'guia']],
-    ['simulacao_meu_inss', ['simulacao', 'simulador', 'meu inss']],
     ['carta_concessao', ['carta de concessao', 'concessao']],
     ['ppp_ltcat', ['ppp', 'ltcat', 'atividade especial']],
     ['documentos_pessoais', ['rg', 'cpf', 'documentos pessoais']],
@@ -299,7 +296,8 @@ function detectConcerns(normalizedText: string): string[] {
   const concerns: string[] = []
   const checks: Array<[string, string[]]> = [
     ['cnis_incompleto', ['cnis incompleto', 'vinculo faltando', 'salario errado', 'indicador', 'lacuna']],
-    ['simulacao_baixa', ['simulacao baixa', 'valor baixo', 'renda menor']],
+    ['simulador_nao_confiavel', ['simulacao baixa', 'simulador', 'meu inss mostrou', 'data no meu inss']],
+    ['valor_baixo', ['valor baixo', 'renda menor']],
     ['pedido_antes_da_hora', ['pedir antes da hora', 'dar entrada agora', 'protocolar agora']],
     ['contribuir_sem_retorno', ['contribuir sem retorno', 'pagar inss', 'codigo errado', 'aliquota']],
     ['regra_desconhecida', ['nao sei minha regra', 'qual regra', 'regra']],
@@ -361,8 +359,8 @@ function buildSuggestedQuestions(missingFields: string[]): string[] {
   const questions: Record<string, string> = {
     objetivo: 'Você quer pedir aposentadoria agora, planejar com antecedência, revisar CNIS ou avaliar contribuições futuras?',
     forma_contribuicao: 'Como você contribuiu ou contribui hoje: CLT, MEI, autônomo, facultativo, servidor, professor ou atividade especial?',
-    situacao_inss: 'No INSS, você ainda não fez pedido, tem pedido em análise, recebeu negativa ou apenas viu uma simulação no Meu INSS?',
-    documentos: 'Você já tem CNIS atualizado, CTPS, carnês/GPS/DAS ou simulação do Meu INSS para a análise?',
+    situacao_inss: 'No INSS, você ainda não fez pedido, tem pedido em análise, recebeu negativa ou benefício concedido?',
+    documentos: 'Você já tem CNIS atualizado, CTPS ou carnês/GPS/DAS para a análise?',
     maior_preocupacao: 'O que mais preocupa agora: pedir antes da hora, valor baixo, CNIS incompleto, contribuição sem retorno ou risco de exigência/negativa?',
   }
 
@@ -469,8 +467,11 @@ export function scorePrevidenciarioLead(input: {
   if (triage.concerns.includes('contribuir_sem_retorno')) {
     riskScore += addFactor(factors, 'risco_contribuicao_sem_funcao', 4)
   }
-  if (triage.concerns.includes('simulacao_baixa')) {
+  if (triage.concerns.includes('valor_baixo')) {
     riskScore += addFactor(factors, 'risco_valor_baixo', 3)
+  }
+  if (triage.concerns.includes('simulador_nao_confiavel')) {
+    riskScore += addFactor(factors, 'simulador_nao_e_parametro_seguro', 3)
   }
   if (triage.contributionProfile.some((p) => ['atividade_especial', 'professor', 'servidor'].includes(p))) {
     riskScore += addFactor(factors, 'regra_especial_ou_rpps', 5)
@@ -486,9 +487,6 @@ export function scorePrevidenciarioLead(input: {
   }
   if (triage.documentsMentioned.includes('gps_das_carne')) {
     documentScore += addFactor(factors, 'comprovantes_contribuicao', 4)
-  }
-  if (triage.documentsMentioned.includes('simulacao_meu_inss')) {
-    documentScore += addFactor(factors, 'simulacao_meu_inss', 2)
   }
   if (triage.documentsMentioned.includes('ppp_ltcat')) {
     documentScore += addFactor(factors, 'documento_atividade_especial', 4)
@@ -580,7 +578,7 @@ function buildNextBestAction(
     return `Completar triagem perguntando: ${buildSuggestedQuestions(triage.missingFields).join(' ')}`
   }
   if (classification === 'prioridade_maxima' || classification === 'qualificado') {
-    return 'Encaminhar para diagnóstico previdenciário com CNIS, simulação do Meu INSS e documentos simples de contribuição.'
+    return 'Encaminhar para diagnóstico previdenciário com CNIS, CTPS e documentos simples de contribuição.'
   }
   return 'Responder à dúvida principal e coletar objetivo, forma de contribuição, situação no INSS e documentos simples existentes.'
 }
@@ -660,7 +658,7 @@ Tom e postura:
 Atendimento inicial:
 - Se a pessoa apenas cumprimentar ou ainda não explicar o caso, não vá direto para planejamento previdenciário, aposentadoria ou INSS.
 - Nessa situação, responda de forma simples: apresente-se como Dra. Paula Matos, do Coimbra & Ruas, e pergunte como pode ajudar hoje.
-- Nem toda conversa será sobre planejamento. Só inicie triagem previdenciária quando a pessoa mencionar algo relacionado a aposentadoria, INSS, benefício, revisão, auxílio, BPC/LOAS, pensão, CNIS, contribuição, MEI, autônomo, facultativo, GPS, DAS, carnê, simulação, Meu INSS, professor, atividade especial, rural, servidor ou RPPS.
+- Nem toda conversa será sobre planejamento. Só inicie triagem previdenciária quando a pessoa mencionar algo relacionado a aposentadoria, INSS, benefício, revisão, auxílio, BPC/LOAS, pensão, CNIS, contribuição, MEI, autônomo, facultativo, GPS, DAS, carnê, Meu INSS, professor, atividade especial, rural, servidor ou RPPS.
 - Se parecer outra área jurídica, acolha, peça uma descrição breve do ocorrido e diga que vai organizar as informações para direcionar à equipe responsável.
 
 Limites obrigatórios:
@@ -670,13 +668,14 @@ Limites obrigatórios:
 - Se a pessoa enviar dado sensível, oriente que documentos completos sejam enviados apenas pelo canal seguro indicado pela equipe.
 - Não revele o score interno ao cliente.
 - Não use expressões como "vou transferir para um humano", "sou IA", "como assistente virtual" ou similares.
+- Nunca solicite, recomende ou use o simulador do Meu INSS como parâmetro de análise. Se o cliente mencionar uma simulação, explique que ela pode falhar e que a análise segura depende de CNIS, vínculos, remunerações, contribuições e documentos.
 
 Objetivo da triagem:
-1. Entender se a pessoa quer pedir agora, planejar, corrigir CNIS, avaliar contribuições, comparar regras, revisar simulação, negativa ou benefício concedido.
+1. Entender se a pessoa quer pedir agora, planejar, corrigir CNIS, avaliar contribuições, comparar regras, revisar negativa ou benefício concedido.
 2. Identificar forma de contribuição: CLT, MEI, autônomo, facultativo, servidor, professor, rural ou atividade especial.
-3. Identificar situação no INSS: sem pedido, pedido em análise, negativa, benefício concedido com dúvida ou simulação Meu INSS.
-4. Mapear documentos: CNIS, CTPS, comprovantes GPS/DAS/carnê, simulação, carta de concessão, PPP/LTCAT e documentos de vínculo.
-5. Solicitar documentos simples para adiantar a análise: CNIS atualizado, simulação do Meu INSS, CTPS, comprovantes GPS/DAS/carnê e carta de exigência, indeferimento ou concessão quando houver.
+3. Identificar situação no INSS: sem pedido, pedido em análise, negativa ou benefício concedido com dúvida.
+4. Mapear documentos: CNIS, CTPS, comprovantes GPS/DAS/carnê, carta de concessão, PPP/LTCAT e documentos de vínculo.
+5. Solicitar documentos simples para adiantar a análise: CNIS atualizado, CTPS, comprovantes GPS/DAS/carnê e carta de exigência, indeferimento ou concessão quando houver.
 6. Encaminhar para a equipe jurídica responsável quando houver prazo, exigência, negativa, CNIS crítico, atividade especial/professor/RPPS ou contribuição sem estratégia.
 
 Documentos simples que podem ser solicitados:
@@ -709,7 +708,7 @@ export function buildDrPaulaFallbackResponse(input: {
       : 'Entendi. Antes de qualquer protocolo ou nova contribuição, o ideal é organizar seu histórico e conferir os pontos que podem mudar prazo, regra e valor.'
 
   const sourceHint = input.retrievedDocuments.some((doc) => doc.id === 'inss-simulacao-nao-garante')
-    ? 'A simulação do Meu INSS ajuda como ponto de partida, mas não garante o direito nem substitui a leitura dos documentos.'
+    ? 'O simulador do Meu INSS não é parâmetro seguro; a análise precisa considerar CNIS, vínculos, remunerações, contribuições e documentos.'
     : 'O CNIS costuma ser o ponto de partida, porque mostra vínculos, remunerações e contribuições que podem alterar a decisão.'
 
   const questions = input.triage.suggestedQuestions
@@ -734,6 +733,6 @@ export function buildPrivateTriageNote(input: {
     `Documentos: ${input.triage.documentsMentioned.join(', ') || 'não informados'}`,
     `Pendências: ${input.triage.missingFields.join(', ') || 'sem pendências essenciais'}`,
     `Próxima ação: ${input.score.nextBestAction}`,
-    `Documentos simples a adiantar: CNIS atualizado; simulação do Meu INSS; CTPS; comprovantes GPS/DAS/carnê; carta de exigência, indeferimento ou concessão, se houver.`,
+    `Documentos simples a adiantar: CNIS atualizado; CTPS; comprovantes GPS/DAS/carnê; carta de exigência, indeferimento ou concessão, se houver.`,
   ].join('\n')
 }

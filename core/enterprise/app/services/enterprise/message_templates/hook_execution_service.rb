@@ -41,6 +41,10 @@ module Enterprise::MessageTemplates::HookExecutionService
   end
 
   def captain_handling_conversation?
-    conversation.pending? && inbox.respond_to?(:captain_assistant) && inbox.captain_assistant.present?
+    return false unless inbox.respond_to?(:captain_assistant) && inbox.captain_assistant.present?
+    return false if captain_human_controlled?
+    return false unless inbox.respond_to?(:captain_responsible?) && inbox.captain_responsible?
+
+    conversation.pending? || captain_manageable_conversation?
   end
 end

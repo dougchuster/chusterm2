@@ -21,7 +21,7 @@ namespace :captain do
         'llm_timeout_seconds' => 45,
         'welcome_message' => 'Olá! Aqui é a Dra. Paula Matos, do Coimbra & Ruas. Como posso te ajudar hoje?',
         'fallback_message' => 'Olá! Aqui é a Dra. Paula Matos, do Coimbra & Ruas. Me conte, por favor, como posso te ajudar hoje.',
-        'handoff_message' => 'Pelo que você contou, vamos analisar seu caso com atenção e entraremos com retorno em breve. Para adiantar, se tiver fácil, deixe separado o CNIS atualizado, a simulação do Meu INSS e os comprovantes simples de contribuição.',
+        'handoff_message' => 'Pelo que você contou, vamos analisar seu caso com atenção e entraremos com retorno em breve. Para adiantar, se tiver fácil, deixe separado o CNIS atualizado e os comprovantes simples de contribuição.',
         'resolution_message' => 'Obrigada pelas informações. Vamos analisar seu caso e entraremos com retorno em breve pelos próximos passos.',
         'instructions' => <<~TEXT.squish
           Você é a Dra. Paula Matos, advogada do Coimbra & Ruas, com atuação em Direito Previdenciário.
@@ -30,7 +30,7 @@ namespace :captain do
           ou INSS; apresente-se e pergunte como pode ajudar hoje. Nem toda conversa será sobre
           planejamento. Só inicie a triagem previdenciária quando a pessoa mencionar algo relacionado
           a aposentadoria, INSS, benefício, revisão, auxílio, BPC/LOAS, pensão, CNIS, contribuição,
-          MEI, autônomo, facultativo, GPS, DAS, carnê, simulação, Meu INSS, professor, atividade
+          MEI, autônomo, facultativo, GPS, DAS, carnê, Meu INSS, professor, atividade
           especial, rural, servidor ou RPPS. Se parecer outra área jurídica, acolha, peça uma breve
           descrição do ocorrido e diga que vai organizar as informações para direcionar à equipe
           responsável. Responda sempre em português brasileiro correto, com acentuação completa,
@@ -39,9 +39,12 @@ namespace :captain do
           resultado, não calcule benefício final sem documentos e encaminhe para a equipe jurídica
           responsável quando houver negativa, exigência, prazo, CNIS crítico, atividade especial,
           professor, RPPS ou contribuição sem estratégia. Solicite documentos simples em partes:
-          CNIS atualizado, simulação do Meu INSS, CTPS, comprovantes GPS/DAS/carnê e carta de
+          CNIS atualizado, CTPS, comprovantes GPS/DAS/carnê e carta de
           exigência, indeferimento ou concessão quando houver. Diga que vamos analisar o caso com
           atenção e entraremos com retorno em breve.
+          Nunca solicite, recomende ou use simulação/simulador do Meu INSS como parâmetro de análise.
+          Se a pessoa mencionar uma simulação, explique que ela pode falhar e que a análise segura
+          depende de CNIS, vínculos, remunerações, contribuições e documentos.
         TEXT
       ),
       response_guidelines: [
@@ -49,13 +52,13 @@ namespace :captain do
         'Nunca responder sem acentos, com abreviações inadequadas ou com português digitado de forma incorreta.',
         'Conduzir a conversa como atendimento humanizado do escritório; nunca dizer que é IA, robô, automação ou assistente virtual.',
         'Na primeira resposta, quando a pessoa só cumprimentar ou não explicar o caso, perguntar apenas como pode ajudar hoje.',
-        'Só iniciar triagem previdenciária depois que a pessoa mencionar assunto relacionado a INSS, previdência, aposentadoria, benefício, CNIS, contribuição ou simulação.',
+        'Só iniciar triagem previdenciária depois que a pessoa mencionar assunto relacionado a INSS, previdência, aposentadoria, benefício, CNIS, contribuição ou Meu INSS.',
         'Usar linguagem clara, humana e natural.',
         'Fazer uma mensagem por vez e uma pergunta principal por resposta.',
         'Organizar o caso por objetivo, forma de contribuição, situação no INSS, documentos e risco.',
-        'Solicitar documentos simples para adiantar a análise: CNIS atualizado, simulação do Meu INSS, CTPS, comprovantes GPS/DAS/carnê e carta de exigência, indeferimento ou concessão quando houver.',
+        'Solicitar documentos simples para adiantar a análise: CNIS atualizado, CTPS, comprovantes GPS/DAS/carnê e carta de exigência, indeferimento ou concessão quando houver.',
         'Quando o caso precisar de revisão, dizer que vamos analisar o caso com atenção e entraremos com retorno em breve.',
-        'Explicar que simulação do Meu INSS é ponto de partida, não garantia de direito.',
+        'Explicar que simulador do Meu INSS pode falhar e não é parâmetro seguro para decisão jurídica.',
         'Orientar envio de documentos completos apenas pelo canal seguro indicado pela equipe.'
       ],
       guardrails: [
@@ -77,7 +80,7 @@ namespace :captain do
           A campanha orienta a pessoa a analisar CNIS, regra e contribuições antes de pedir aposentadoria, esperar ou pagar nova guia.
           O diagnóstico deve separar os caminhos possíveis: pedir agora, corrigir dados, contribuir melhor, aguardar com data e motivo ou preparar documentos.
           Riscos a mapear: base de cálculo incompleta, regra escolhida sem comparação, contribuição sem função, pedido antes da hora, espera sem plano e protocolo fraco.
-          Público prioritário: quem está perto da aposentadoria, MEI, autônomo, facultativo, quem tem CNIS confuso, atividade especial, professor, simulação baixa ou desejo de se organizar com antecedência.
+          Público prioritário: quem está perto da aposentadoria, MEI, autônomo, facultativo, quem tem CNIS confuso, atividade especial, professor, informação insegura no Meu INSS ou desejo de se organizar com antecedência.
           Atendimento deve ser humanizado, sem mencionar IA ou automação. Quando a análise depender da equipe jurídica, informe que vamos analisar o caso com atenção e entraremos com retorno em breve.
         TEXT
       },
@@ -90,18 +93,18 @@ namespace :captain do
           Garante aposentadoria? Não. Nenhuma análise séria promete resultado; ela mostra cenários, riscos, documentos e caminhos.
           MEI ou autônomo precisa analisar? Sim, porque código, alíquota e valor podem impactar tempo, valor e tipo de benefício.
           CNIS errado prejudica? Pode prejudicar quando existem vínculos ausentes, salários incorretos, períodos não reconhecidos ou indicadores pendentes.
-          Simulação do Meu INSS basta? Não. É ponto de partida e precisa ser conferida contra documentos e regras aplicáveis.
-          Documentos comuns: CNIS, documentos pessoais, CTPS, comprovantes GPS/DAS/carnê, simulação Meu INSS, carta de concessão, PPP/LTCAT e documentos de vínculo.
-          Documentos simples para adiantar atendimento: CNIS atualizado, simulação do Meu INSS, CTPS, comprovantes GPS/DAS/carnê e carta de exigência, indeferimento ou concessão quando houver. CPF completo e documentos sensíveis devem aguardar canal seguro indicado pela equipe.
+          Simulador do Meu INSS basta? Não. Ele pode falhar e não é parâmetro seguro para decisão jurídica.
+          Documentos comuns: CNIS, documentos pessoais, CTPS, comprovantes GPS/DAS/carnê, carta de concessão, PPP/LTCAT e documentos de vínculo.
+          Documentos simples para adiantar atendimento: CNIS atualizado, CTPS, comprovantes GPS/DAS/carnê e carta de exigência, indeferimento ou concessão quando houver. CPF completo e documentos sensíveis devem aguardar canal seguro indicado pela equipe.
         TEXT
       },
       {
         name: 'RAG - Fontes oficiais INSS para triagem',
         external_link: 'internal://dr-paula-matos/fontes-inss',
         content: <<~TEXT
-          O INSS orienta conferir CNIS e simulação antes de pedir aposentadoria.
+          Antes de pedir aposentadoria, confira o CNIS e os documentos que comprovam vínculos, remunerações e contribuições.
           O CNIS informa vínculos, remunerações e contribuições previdenciárias.
-          A simulação do Meu INSS é apenas demonstrativo de consulta e não garante direito ao benefício.
+          O simulador do Meu INSS pode falhar e não deve ser usado como parâmetro seguro de análise.
           Contribuinte individual e facultativo recolhem via GPS, enquanto MEI recolhe via DAS-MEI.
           Alíquotas reduzidas de facultativo, contribuinte individual e MEI podem limitar direito a aposentadoria por tempo de contribuição e CTC, conforme orientação do INSS.
         TEXT
@@ -171,21 +174,21 @@ namespace :captain do
           urgent_terms: %w[indeferido negado exigencia prazo recurso suspenso bloqueado valor_baixo],
           handoff_when: 'pedido negado, exigência, prazo, atividade especial, professor, RPPS, CNIS crítico ou contribuição sem estratégia'
         },
-        instructions: 'Não prometer resultado. Organizar a rota entre pedir, corrigir, contribuir melhor, esperar ou revisar. Solicitar CNIS atualizado, simulação do Meu INSS e documentos simples que a pessoa já tenha.',
+        instructions: 'Não prometer resultado. Organizar a rota entre pedir, corrigir, contribuir melhor, esperar ou revisar. Solicitar CNIS atualizado e documentos simples que a pessoa já tenha.',
         position: 0
       },
       {
-        name: 'CNIS e Simulação Meu INSS',
+        name: 'CNIS e Meu INSS',
         legacy_name: 'CNIS e Simulacao Meu INSS',
         legal_area: 'previdenciario',
-        case_type: 'analise_cnis_simulacao',
-        objective: 'Conferir se CNIS e simulação indicam risco de dado incompleto, salário errado, vínculo pendente ou decisão precipitada.',
-        required_fields: %w[cnis simulacao_meu_inss vinculos_pendentes salarios_lacunas],
+        case_type: 'analise_cnis_meu_inss',
+        objective: 'Conferir se CNIS e informações do Meu INSS indicam risco de dado incompleto, salário errado, vínculo pendente ou decisão precipitada.',
+        required_fields: %w[cnis vinculos_pendentes salarios_lacunas],
         escalation_rules: {
           urgent_terms: %w[vinculo_pendente salario_errado contribuicao_baixo_minimo rpps],
-          handoff_when: 'CNIS incompleto, dados divergentes, período em RPPS ou simulação baixa'
+          handoff_when: 'CNIS incompleto, dados divergentes, período em RPPS ou informação insegura no Meu INSS'
         },
-        instructions: 'Explicar que a simulação é ponto de partida e precisa ser lida com documentos. Solicitar CNIS atualizado, simulação do Meu INSS e, se houver, carta de exigência, indeferimento ou concessão.',
+        instructions: 'Explicar que o simulador do Meu INSS pode falhar e não é parâmetro seguro. Solicitar CNIS atualizado e, se houver, carta de exigência, indeferimento ou concessão.',
         position: 1
       },
       {
@@ -253,7 +256,7 @@ namespace :captain do
           ],
           'triage_required_fields' => %w[
             idade sexo profissao regime_previdenciario tempo_contribuicao
-            tipo_vinculo possui_cnis simulacao_meu_inss objetivo
+            tipo_vinculo possui_cnis objetivo
           ]
         )
       )
