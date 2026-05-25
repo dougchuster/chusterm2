@@ -24,7 +24,7 @@ module Evolution
         instanceName: instance_name,
         integration: 'WHATSAPP-BAILEYS',
         qrcode: true,
-        rejectCall: true,
+        rejectCall: false,
         groupsIgnore: true,
         alwaysOnline: false,
         readMessages: false,
@@ -36,7 +36,7 @@ module Evolution
     def set_settings(instance_name:, reject_call:, groups_ignore:, always_online:, read_messages:, read_status:, sync_full_history:)
       payload = {
         reject_call: reject_call,
-        msg_call: 'Não podemos atender chamadas por este canal. Envie uma mensagem por escrito, por favor.',
+        msg_call: '',
         groups_ignore: groups_ignore,
         always_online: always_online,
         read_messages: read_messages,

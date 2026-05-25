@@ -43,7 +43,6 @@ class Whatsapp::IncomingMessageEvolutionService
 
     from_me = key[:fromMe] || key['fromMe']
     @from_me = ActiveModel::Type::Boolean.new.cast(from_me)
-    return if @from_me && !import_history
 
     source_id = key[:id] || key['id']
     return if source_id.blank?
@@ -59,7 +58,7 @@ class Whatsapp::IncomingMessageEvolutionService
 
     ActiveRecord::Base.transaction do
       set_conversation
-      create_message(source_id)
+      create_message(source_id) unless @from_me && link_existing_outgoing_echo(source_id)
     end
   end
 
@@ -219,6 +218,43 @@ class Whatsapp::IncomingMessageEvolutionService
 
     attach_media if has_media?
     @message.save!
+  end
+
+  def link_existing_outgoing_echo(source_id)
+    return false if import_history
+
+    message = recent_unlinked_outgoing_messages.find { |candidate| outgoing_echo_match?(candidate) }
+    return false if message.blank?
+
+    attrs = message.content_attributes.to_h.merge('external_echo' => true)
+    attrs['external_created_at'] = external_created_at.iso8601 if external_created_at.present?
+
+    message.update!(source_id: source_id, status: :delivered, content_attributes: attrs)
+    true
+  end
+
+  def recent_unlinked_outgoing_messages
+    @conversation.messages
+                 .outgoing
+                 .where(source_id: [nil, ''])
+                 .where(private: false)
+                 .where('created_at > ?', 2.minutes.ago)
+                 .includes(:attachments)
+                 .reorder(created_at: :desc)
+  end
+
+  def outgoing_echo_match?(candidate)
+    candidate.content.to_s.strip == message_body.to_s.strip ||
+      (has_media? && candidate.attachments.any? { |attachment| attachment.file_type == echo_attachment_type })
+  end
+
+  def echo_attachment_type
+    case message_type_key
+    when 'imageMessage' then 'image'
+    when 'videoMessage' then 'video'
+    when 'audioMessage' then 'audio'
+    else 'file'
+    end
   end
 
   def attach_media

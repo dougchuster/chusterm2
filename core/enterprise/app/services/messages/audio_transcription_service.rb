@@ -12,24 +12,30 @@ class Messages::AudioTranscriptionService
   end
 
   def perform
-    return { error: 'Transcription limit exceeded' } unless can_transcribe?
     return { error: 'Message not found' } if message.blank?
+    return existing_result if already_transcribed?
+    return mark_skipped('captain_integration_disabled') unless account.feature_enabled?('captain_integration')
+    return mark_skipped('audio_transcription_disabled') unless audio_transcription_enabled?
+    return mark_skipped('audio_transcription_not_configured') unless Llm::MediaConfig.transcription_configured?
+    return mark_skipped('transcription_limit_exceeded') unless response_usage_available?
 
+    update_meta(media_understanding_status: 'processing', media_understanding_error: nil)
     transcriptions = transcribe_audio
+    return mark_failed('empty_audio_transcription_result') if transcriptions.blank?
+
     Rails.logger.info "Audio transcription successful: #{transcriptions}"
     { success: true, transcriptions: transcriptions }
   rescue Faraday::UnauthorizedError
     Rails.logger.warn('Skipping audio transcription: transcription provider configuration is invalid or disabled (401 Unauthorized).')
-    { error: 'Transcription provider configuration is invalid or disabled (401)' }
+    mark_failed('Transcription provider configuration is invalid or disabled (401)')
+  rescue StandardError => e
+    Rails.logger.warn("[AudioTranscription] Failed for attachment #{attachment.id}: #{e.message}")
+    mark_failed(e.message)
   end
 
   private
 
-  def can_transcribe?
-    return false unless account.feature_enabled?('captain_integration')
-    return false unless audio_transcription_enabled?
-    return false unless Llm::MediaConfig.transcription_configured?
-
+  def response_usage_available?
     account.usage_limits[:captain][:responses][:current_available].positive?
   end
 
@@ -37,6 +43,14 @@ class Messages::AudioTranscriptionService
     return true if account.audio_transcriptions.nil?
 
     ActiveModel::Type::Boolean.new.cast(account.audio_transcriptions)
+  end
+
+  def already_transcribed?
+    attachment.meta&.[]('transcribed_text').present?
+  end
+
+  def existing_result
+    { success: true, transcriptions: attachment.meta['transcribed_text'] }
   end
 
   def fetch_audio_file
@@ -108,7 +122,11 @@ class Messages::AudioTranscriptionService
   def update_transcription(transcribed_text)
     return if transcribed_text.blank?
 
-    attachment.update!(meta: (attachment.meta || {}).merge('transcribed_text' => transcribed_text))
+    update_meta(
+      transcribed_text: transcribed_text,
+      media_understanding_status: 'processed',
+      media_understanding_error: nil
+    )
     message.reload.send_update_event
     message.account.increment_response_usage
 
@@ -138,5 +156,30 @@ class Messages::AudioTranscriptionService
 
   def transcription_model
     Llm::MediaConfig.transcription_model.presence || WHISPER_MODEL
+  end
+
+  def mark_skipped(reason)
+    update_meta(media_understanding_status: 'skipped', media_understanding_error: reason)
+    notify_message_update
+    { error: reason }
+  end
+
+  def mark_failed(reason)
+    update_meta(media_understanding_status: 'failed', media_understanding_error: reason.to_s.truncate(500))
+    notify_message_update
+    { error: reason }
+  end
+
+  def update_meta(values)
+    normalized_values = values.stringify_keys
+    next_meta = (attachment.meta || {}).merge(normalized_values)
+    next_meta.delete('media_understanding_error') if normalized_values['media_understanding_error'].nil?
+
+    attachment.update!(meta: next_meta)
+  end
+
+  def notify_message_update
+    message.reload.send_update_event
+    message.reindex if ChusteRMApp.advanced_search_allowed?
   end
 end

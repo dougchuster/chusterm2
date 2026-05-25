@@ -53,7 +53,7 @@ module Evolution
     def configure_settings!
       @client.set_settings(
         instance_name: @instance.instance_name,
-        reject_call: true,
+        reject_call: false,
         groups_ignore: true,
         always_online: false,
         read_messages: false,

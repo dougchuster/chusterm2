@@ -315,9 +315,12 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
 
   def audio_pending_for_ai_context?(attachment)
     return false if attachment.meta&.dig('transcribed_text').present?
+
+    status = attachment.meta&.dig('media_understanding_status')
+    return false if %w[failed skipped].include?(status)
     return false unless account.audio_transcriptions.present? && Llm::MediaConfig.transcription_configured?
 
-    true
+    status.blank? || status == 'processing'
   end
 
   def media_pending_for_ai_context?(attachment)

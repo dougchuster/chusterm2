@@ -42,6 +42,31 @@ const statusConfig = computed(() => {
       };
     }
 
+    if (!mediaStatus.value) {
+      return null;
+    }
+
+    if (mediaStatus.value === 'failed') {
+      return {
+        label: 'Falha na transcricao',
+        icon: 'i-lucide-circle-alert',
+        className:
+          'bg-ruby-50 text-ruby-700 ring-ruby-200 dark:bg-ruby-950/40 dark:text-ruby-300 dark:ring-ruby-900',
+      };
+    }
+
+    if (mediaStatus.value === 'skipped') {
+      return {
+        label: 'Audio nao transcrito',
+        icon: 'i-lucide-circle-minus',
+        className: 'bg-n-alpha-2 text-n-slate-11 ring-n-weak',
+      };
+    }
+
+    if (mediaStatus.value !== 'processing') {
+      return null;
+    }
+
     return {
       label: 'Transcrevendo audio',
       icon: 'i-lucide-loader-circle animate-spin',

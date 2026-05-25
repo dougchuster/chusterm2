@@ -193,6 +193,7 @@ COPY app/services/whatsapp/embedded_signup/ ./app/services/whatsapp/embedded_sig
 COPY app/controllers/api/v1/accounts/whatsapp/ ./app/controllers/api/v1/accounts/whatsapp/
 COPY app/models/whatsapp_embedded_onboarding.rb ./app/models/whatsapp_embedded_onboarding.rb
 COPY db/migrate/20260508*.rb ./db/migrate/
+COPY enterprise/app/jobs/messages/audio_transcription_job.rb ./enterprise/app/jobs/messages/audio_transcription_job.rb
 COPY enterprise/app/jobs/messages/media_understanding_job.rb ./enterprise/app/jobs/messages/media_understanding_job.rb
 COPY enterprise/app/services/messages/audio_transcription_service.rb ./enterprise/app/services/messages/audio_transcription_service.rb
 COPY enterprise/app/services/messages/media_understanding_service.rb ./enterprise/app/services/messages/media_understanding_service.rb
