@@ -164,7 +164,7 @@ class Whatsapp::IncomingMessageEvolutionService
   def contact_with_phone(phone)
     phone_with_plus = phone.start_with?('+') ? phone : "+#{phone}"
 
-    ::ContactInboxWithContactBuilder.new(
+    contact_inbox = ::ContactInboxWithContactBuilder.new(
       source_id: phone,
       inbox: inbox,
       contact_attributes: {
@@ -174,6 +174,9 @@ class Whatsapp::IncomingMessageEvolutionService
         additional_attributes: lid_contact_attributes
       }
     ).perform
+
+    merge_lid_contact_if_needed!(contact_inbox)
+    contact_inbox
   end
 
   def unresolved_lid_contact
@@ -189,9 +192,11 @@ class Whatsapp::IncomingMessageEvolutionService
   end
 
   def set_conversation
-    @conversation = @contact_inbox.conversations
-                                  .where.not(status: :resolved)
-                                  .last
+    @conversation = @contact.conversations
+                            .where(inbox_id: inbox.id)
+                            .where.not(status: :resolved)
+                            .reorder(updated_at: :desc, id: :desc)
+                            .first
 
     return if @conversation
 
@@ -201,6 +206,43 @@ class Whatsapp::IncomingMessageEvolutionService
       contact_id: @contact.id,
       contact_inbox_id: @contact_inbox.id
     )
+  end
+
+  def merge_lid_contact_if_needed!(canonical_contact_inbox)
+    lid_contact_inbox = unresolved_lid_contact_inbox
+    return if canonical_contact_inbox.blank? || lid_contact_inbox.blank?
+    return if lid_contact_inbox.id == canonical_contact_inbox.id
+
+    canonical_contact = canonical_contact_inbox.contact
+    lid_contact = lid_contact_inbox.contact
+    moved_conversation_ids = lid_contact_inbox.conversations.pluck(:id)
+
+    canonical_attrs = canonical_contact.additional_attributes.to_h
+    lid_attrs = lid_contact.additional_attributes.to_h
+    lid_jids = (Array(canonical_attrs['whatsapp_lid_jids']) + Array(lid_attrs['whatsapp_lid_jids']) + [remote_jid_from_key]).compact_blank.uniq
+    canonical_attrs['whatsapp_lid_jids'] = lid_jids
+    canonical_attrs['whatsapp_sender_pn'] = sender_pn_from_key if sender_pn_from_key.present?
+    canonical_attrs['whatsapp_lid_last_seen_at'] = Time.current.iso8601
+    canonical_attrs['whatsapp_lid_unresolved'] = false
+
+    canonical_contact.update!(
+      additional_attributes: canonical_attrs,
+      identifier: canonical_contact.identifier.presence || sender_pn_from_key.presence
+    )
+
+    lid_contact_inbox.update!(contact: canonical_contact)
+    Conversation.where(id: moved_conversation_ids).update_all(
+      contact_id: canonical_contact.id,
+      contact_inbox_id: canonical_contact_inbox.id,
+      updated_at: Time.current
+    )
+    Message.where(conversation_id: moved_conversation_ids, sender: lid_contact).update_all(sender_id: canonical_contact.id)
+  end
+
+  def unresolved_lid_contact_inbox
+    return unless lid_remote_jid?
+
+    inbox.contact_inboxes.includes(:contact).find_by(source_id: remote_jid_from_key.split('@').first)
   end
 
   def create_message(source_id)
