@@ -17,6 +17,25 @@
       font-family: 'Inter', sans-serif;
     }
 
+    :root {
+      --bg-base: #f8fafc;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --card-bg: rgba(255, 255, 255, 0.74);
+      --card-border: rgba(255, 255, 255, 0.82);
+      --form-bg: rgba(255, 255, 255, 0.92);
+      --hero-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.86) 0%, rgba(241, 245, 249, 0.58) 100%);
+      --input-bg: rgba(241, 245, 249, 0.86);
+      --input-border: #dbe4ef;
+      --input-text: #0f172a;
+      --btn-bg: #111827;
+      --btn-hover: #1f2937;
+      --btn-text: #ffffff;
+      --btn-shadow: 0 14px 28px rgba(15, 23, 42, 0.22);
+      --btn-border: rgba(15, 23, 42, 1);
+      color-scheme: light;
+    }
+
     .auth-modern {
       position: fixed;
       inset: 0;
@@ -28,44 +47,46 @@
       transition: background-color 0.5s ease, color 0.5s ease;
     }
 
-    .auth-modern.light {
+    html[data-theme="light"], .auth-modern.light {
       --bg-base: #f8fafc;
       --text-main: #0f172a;
       --text-muted: #64748b;
-      --card-bg: rgba(255, 255, 255, 0.7);
-      --card-border: rgba(255, 255, 255, 0.8);
-      --form-bg: rgba(255, 255, 255, 0.9);
-      --hero-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(248, 250, 252, 0.4) 100%);
-      --input-bg: rgba(241, 245, 249, 0.8);
-      --input-border: #e2e8f0;
+      --card-bg: rgba(255, 255, 255, 0.74);
+      --card-border: rgba(255, 255, 255, 0.82);
+      --form-bg: rgba(255, 255, 255, 0.92);
+      --hero-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.86) 0%, rgba(241, 245, 249, 0.58) 100%);
+      --input-bg: rgba(241, 245, 249, 0.86);
+      --input-border: #dbe4ef;
       --input-text: #0f172a;
-      --btn-bg: #0f172a;
-      --btn-hover: #1e293b;
+      --btn-bg: #111827;
+      --btn-hover: #1f2937;
       --btn-text: #ffffff;
-      --btn-shadow: 0 4px 14px 0 rgba(15, 23, 42, 0.39);
+      --btn-shadow: 0 14px 28px rgba(15, 23, 42, 0.22);
       --btn-border: rgba(15, 23, 42, 1);
       background-color: var(--bg-base);
       color: var(--text-main);
+      color-scheme: light;
     }
 
-    .auth-modern.dark {
-      --bg-base: #0b0f19;
-      --text-main: #ffffff;
-      --text-muted: #94a3b8;
-      --card-bg: rgba(15, 23, 42, 0.4);
-      --card-border: rgba(255, 255, 255, 0.12);
-      --form-bg: rgba(2, 6, 23, 0.5);
-      --hero-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 100%);
-      --input-bg: rgba(0, 0, 0, 0.2);
-      --input-border: rgba(255, 255, 255, 0.1);
-      --input-text: #ffffff;
-      --btn-bg: #ffffff;
-      --btn-hover: #f8fafc;
-      --btn-text: #0f172a;
-      --btn-shadow: 0 4px 14px 0 rgba(255, 255, 255, 0.25);
-      --btn-border: rgba(255, 255, 255, 1);
+    html[data-theme="dark"], .auth-modern.dark {
+      --bg-base: #060e20;
+      --text-main: #f7f8ff;
+      --text-muted: #aab4d0;
+      --card-bg: rgba(15, 30, 63, 0.72);
+      --card-border: rgba(189, 194, 255, 0.18);
+      --form-bg: rgba(6, 18, 44, 0.68);
+      --hero-bg: linear-gradient(135deg, rgba(15, 30, 63, 0.86) 0%, rgba(6, 18, 44, 0.62) 100%);
+      --input-bg: rgba(6, 14, 32, 0.56);
+      --input-border: rgba(189, 194, 255, 0.2);
+      --input-text: #f7f8ff;
+      --btn-bg: #bdc2ff;
+      --btn-hover: #d4d7ff;
+      --btn-text: #06122c;
+      --btn-shadow: 0 16px 32px rgba(0, 0, 0, 0.32);
+      --btn-border: rgba(189, 194, 255, 0.92);
       background-color: var(--bg-base);
       color: var(--text-main);
+      color-scheme: dark;
     }
 
     .theme-toggle-btn {
@@ -95,40 +116,18 @@
       inset: 0;
       z-index: 0;
       overflow: hidden;
-      background-color: var(--bg-base);
+      background:
+        linear-gradient(135deg, rgba(189, 194, 255, 0.08), transparent 34%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 52%),
+        var(--bg-base);
       transition: background-color 0.5s ease;
     }
-
-    .orb {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(100px);
-      animation: float 20s infinite ease-in-out alternate;
-    }
-
-    .auth-modern.dark .orb { mix-blend-mode: screen; opacity: 0.8; }
-    .auth-modern.light .orb { mix-blend-mode: multiply; opacity: 0.35; }
-
-    .orb-1 { width: 700px; height: 700px; background: #16a34a; top: -150px; left: -150px; animation-duration: 25s; }
-    .orb-2 { width: 600px; height: 600px; background: #15803d; bottom: -150px; right: -100px; animation-duration: 28s; animation-delay: -5s; }
-    .orb-3 { width: 500px; height: 500px; background: #22c55e; top: 40%; left: 30%; animation-duration: 22s; animation-delay: -10s; opacity: 0.6; }
-
-    .auth-modern.light .orb-1 { background: #bbf7d0; }
-    .auth-modern.light .orb-2 { background: #a7f3d0; }
-    .auth-modern.light .orb-3 { background: #d1fae5; }
 
     .glass-overlay {
       position: absolute;
       inset: 0;
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
       pointer-events: none;
-    }
-
-    @keyframes float {
-      0%   { transform: translate(0, 0) scale(1); }
-      33%  { transform: translate(40px, -60px) scale(1.1); }
-      66%  { transform: translate(-30px, 30px) scale(0.9); }
-      100% { transform: translate(0, 0) scale(1); }
     }
 
     .auth-wrapper {
@@ -435,9 +434,6 @@
 
 <main class="auth-modern" id="auth-main">
   <div class="auth-bg-elements">
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="orb orb-3"></div>
     <div class="glass-overlay"></div>
   </div>
 
@@ -570,20 +566,29 @@
     var iconSun = document.getElementById('theme-icon-sun');
     var iconMoon= document.getElementById('theme-icon-moon');
 
+    function getPreferredTheme() {
+      var stored = localStorage.getItem('color_scheme') || localStorage.getItem('chusterm-login-theme');
+      if (stored === 'dark' || stored === 'light') return stored;
+      return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+    }
+
     function apply(theme) {
       main.className = 'auth-modern ' + theme;
+      document.documentElement.dataset.theme = theme;
+      document.body.dataset.theme = theme;
+      document.body.classList.toggle('theme-dark', theme === 'dark');
+      document.body.classList.toggle('theme-light', theme === 'light');
+      document.body.classList.toggle('dark', theme === 'dark');
       iconSun.style.display  = theme === 'dark' ? 'block' : 'none';
       iconMoon.style.display = theme === 'dark' ? 'none'  : 'block';
     }
 
-    var saved = localStorage.getItem('chusterm-login-theme');
-    if (!saved) {
-      saved = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
-    }
+    var saved = getPreferredTheme();
     apply(saved);
 
     btn.addEventListener('click', function() {
       saved = saved === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('color_scheme', saved);
       localStorage.setItem('chusterm-login-theme', saved);
       apply(saved);
     });
