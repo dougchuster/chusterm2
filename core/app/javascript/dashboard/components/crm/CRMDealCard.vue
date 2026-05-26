@@ -25,7 +25,7 @@ const props = defineProps({
 
 const emit = defineEmits([
   'recompute-score',
-  'open-drawer',
+  'openDrawer',
   'delete-deal',
   'updateTitle',
   'toggleSelect',
@@ -35,6 +35,7 @@ const emit = defineEmits([
 
 const isEditingTitle = ref(false);
 const titleDraft = ref('');
+const pointerStart = ref(null);
 
 const score = computed(() =>
   Number(props.deal.score_total ?? props.deal.score ?? 0)
@@ -119,6 +120,32 @@ const nextAction = computed(
   () => props.deal.next_best_action || props.deal.nextBestAction || ''
 );
 
+const hasConversation = computed(
+  () => !!(props.deal.conversation_id || props.deal.conversation?.id)
+);
+
+const unreadCount = computed(() =>
+  Number(
+    props.deal.unread_count ||
+      props.deal.conversation_unread_count ||
+      props.deal.unread_messages_count ||
+      0
+  )
+);
+
+const aiMode = computed(
+  () => props.deal.ai_mode || props.deal.captain_ai_mode || ''
+);
+
+const aiHumanControlled = computed(() =>
+  ['paused', 'human_only'].includes(aiMode.value)
+);
+
+const aiBadgeLabel = computed(() => {
+  if (!aiMode.value) return '';
+  return aiHumanControlled.value ? 'Humano' : 'IA';
+});
+
 watch(
   () => props.deal.title,
   value => {
@@ -149,13 +176,35 @@ function saveTitleEdit() {
     emit('updateTitle', { deal: props.deal, title: nextTitle });
   }
 }
+
+function rememberPointerStart(event) {
+  pointerStart.value = { x: event.clientX, y: event.clientY };
+}
+
+function shouldIgnoreOpen(event) {
+  if (!event || !pointerStart.value) return false;
+  const dx = Math.abs(event.clientX - pointerStart.value.x);
+  const dy = Math.abs(event.clientY - pointerStart.value.y);
+  return dx + dy > 8;
+}
+
+function openAttendance(event) {
+  if (shouldIgnoreOpen(event)) return;
+  emit('openDrawer', props.deal);
+}
 </script>
 
 <template>
   <article
     class="group flex min-w-0 cursor-grab flex-col gap-2 rounded-xl border border-n-weak bg-n-slate-2 p-3 shadow-sm transition-all duration-150 hover:border-n-slate-6 hover:shadow-md active:cursor-grabbing"
     :class="selected ? 'ring-2 ring-n-brand/30' : ''"
-    @dblclick="emit('open-drawer', deal)"
+    tabindex="0"
+    role="button"
+    title="Abrir atendimento no Kanban"
+    @pointerdown="rememberPointerStart"
+    @click="openAttendance"
+    @keydown.enter.prevent="emit('openDrawer', deal)"
+    @keydown.space.prevent="emit('openDrawer', deal)"
   >
     <!-- Header: nome do contato + score badge -->
     <div class="flex items-start justify-between gap-2">
@@ -197,6 +246,41 @@ function saveTitleEdit() {
         :classification="classification"
         size="sm"
       />
+    </div>
+
+    <div
+      v-if="hasConversation || aiBadgeLabel || unreadCount"
+      class="flex flex-wrap items-center gap-1"
+    >
+      <span
+        v-if="hasConversation"
+        class="inline-flex items-center gap-1 rounded-full bg-n-teal-3 px-1.5 py-0.5 text-[0.68rem] font-semibold text-n-teal-11"
+        title="Conversa vinculada"
+      >
+        <span class="i-lucide-message-square size-3" />
+        Chat
+      </span>
+      <span
+        v-if="aiBadgeLabel"
+        class="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[0.68rem] font-semibold"
+        :class="
+          aiHumanControlled
+            ? 'bg-n-ruby-3 text-n-ruby-11'
+            : 'bg-n-brand/10 text-n-brand'
+        "
+        title="Controle da IA"
+      >
+        <span class="i-lucide-bot size-3" />
+        {{ aiBadgeLabel }}
+      </span>
+      <span
+        v-if="unreadCount"
+        class="inline-flex items-center gap-1 rounded-full bg-n-ruby-3 px-1.5 py-0.5 text-[0.68rem] font-semibold text-n-ruby-11"
+        title="Mensagens nao lidas"
+      >
+        <span class="i-lucide-circle-dot size-3" />
+        {{ unreadCount > 9 ? '9+' : unreadCount }}
+      </span>
     </div>
 
     <!-- Referência do atendimento (somente se diferente do nome) -->
@@ -284,6 +368,21 @@ function saveTitleEdit() {
       class="flex items-center justify-between gap-2 pt-1 mt-0.5 border-t border-n-slate-4/60"
     >
       <div class="flex items-center gap-1">
+        <button
+          type="button"
+          class="relative grid size-7 place-content-center rounded-md border border-n-teal-6 bg-n-teal-2 text-n-teal-10 transition-colors duration-150 hover:bg-n-teal-3 disabled:opacity-50"
+          title="Atender no Kanban"
+          @click.stop="emit('openDrawer', deal)"
+        >
+          <span class="i-lucide-message-square-text size-3" />
+          <span
+            v-if="unreadCount"
+            class="absolute -right-1 -top-1 grid min-w-4 place-content-center rounded-full bg-n-ruby-9 px-1 text-[0.58rem] font-bold leading-4 text-white"
+          >
+            {{ unreadCount > 9 ? '9+' : unreadCount }}
+          </span>
+        </button>
+
         <button
           type="button"
           class="grid size-7 place-content-center rounded-md border border-n-weak bg-n-slate-1 text-n-slate-10 transition-colors duration-150 hover:bg-n-slate-3 hover:text-n-slate-12 disabled:opacity-50"

@@ -6,6 +6,7 @@ import Draggable from 'vuedraggable';
 import CrmAPI from 'dashboard/api/crm';
 import CRMDealCard from 'dashboard/components/crm/CRMDealCard.vue';
 import CRMDealDrawer from 'dashboard/components/crm/CRMDealDrawer.vue';
+import CRMKanbanChatDrawer from 'dashboard/components/crm/CRMKanbanChatDrawer.vue';
 import { useMapGetter, useStore } from 'dashboard/composables/store';
 
 const route = useRoute();
@@ -54,6 +55,8 @@ const error = ref('');
 const purgingOrphans = ref(false);
 const selectedDeal = ref(null);
 const showDrawer = ref(false);
+const selectedAttendanceDeal = ref(null);
+const showAttendanceDrawer = ref(false);
 const selectedDealIds = ref([]);
 const kanbanViewportRef = ref(null);
 const isPanningBoard = ref(false);
@@ -774,9 +777,32 @@ const markBaseClient = async deal => {
   }
 };
 
+const openAttendanceDrawer = deal => {
+  selectedAttendanceDeal.value = deal;
+  showAttendanceDrawer.value = true;
+};
+
 const openDealDrawer = deal => {
   selectedDeal.value = deal;
   showDrawer.value = true;
+  showAttendanceDrawer.value = false;
+};
+
+const onAttendanceDealUpdated = updatedDeal => {
+  if (!updatedDeal?.id) return;
+
+  const index = deals.value.findIndex(deal => deal.id === updatedDeal.id);
+  if (index >= 0) {
+    deals.value[index] = { ...deals.value[index], ...updatedDeal };
+  } else {
+    deals.value = [updatedDeal, ...deals.value];
+  }
+
+  selectedAttendanceDeal.value = {
+    ...(selectedAttendanceDeal.value || {}),
+    ...updatedDeal,
+  };
+  buildBoardColumns();
 };
 
 const onDrawerDealUpdated = () => {
@@ -852,6 +878,10 @@ watch(showDrawer, val => {
   if (!val) selectedDeal.value = null;
 });
 
+watch(showAttendanceDrawer, val => {
+  if (!val) selectedAttendanceDeal.value = null;
+});
+
 onMounted(() => {
   store.dispatch('labels/get');
   store.dispatch('agents/get');
@@ -862,6 +892,7 @@ onMounted(() => {
 <template>
   <div
     class="crm-page flex h-full w-full min-w-0 flex-col overflow-hidden bg-n-slate-2 text-n-slate-12 dark:bg-n-background"
+    :class="{ 'crm-page--attendance-open': showAttendanceDrawer }"
   >
     <header
       class="border-b border-n-weak bg-n-background px-4 py-4 dark:bg-n-slate-1 sm:px-5"
@@ -1832,7 +1863,7 @@ onMounted(() => {
           </div>
           <div
             ref="kanbanViewportRef"
-            class="max-w-full flex-1 overflow-auto p-3 min-h-[560px]"
+            class="crm-kanban-board max-w-full flex-1 overflow-auto p-3 min-h-[560px]"
             :class="
               isPanningBoard ? 'cursor-grabbing select-none' : 'cursor-grab'
             "
@@ -1888,7 +1919,7 @@ onMounted(() => {
                       :score-refreshing="scoreRefreshingId === element.id"
                       :selected="isDealSelected(element)"
                       @recompute-score="recomputeScore"
-                      @open-drawer="openDealDrawer"
+                      @open-drawer="openAttendanceDrawer"
                       @delete-deal="deleteDeal"
                       @update-title="updateDealTitle"
                       @toggle-select="toggleDealSelection"
@@ -1925,5 +1956,28 @@ onMounted(() => {
       @saved="onDrawerDealUpdated"
       @deal-deleted="onDealDeleted"
     />
+
+    <CRMKanbanChatDrawer
+      v-if="showAttendanceDrawer && selectedAttendanceDeal"
+      v-model:show="showAttendanceDrawer"
+      :deal="selectedAttendanceDeal"
+      :stages="stages"
+      :agents="agents"
+      :account-id="accountId"
+      @deal-updated="onAttendanceDealUpdated"
+      @open-deal-drawer="openDealDrawer"
+    />
   </div>
 </template>
+
+<style scoped>
+.crm-kanban-board {
+  transition: padding-right 180ms ease;
+}
+
+@media (min-width: 1024px) {
+  .crm-page--attendance-open .crm-kanban-board {
+    padding-right: min(34rem, 42vw);
+  }
+}
+</style>
