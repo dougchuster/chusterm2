@@ -205,5 +205,8 @@ describe('CRMKanbanChatDrawer', () => {
     expect(wrapper.get('audio').attributes('src')).toBe(
       'https://cdn.test/audio.mp3'
     );
+
+    await wrapper.get('button[title="Ocultar resumo"]').trigger('click');
+    expect(wrapper.text()).not.toContain('Resumo do atendimento');
   });
 });

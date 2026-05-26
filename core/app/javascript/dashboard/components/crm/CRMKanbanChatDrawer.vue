@@ -74,6 +74,7 @@ const searchOpen = ref(false);
 const searchQuery = ref('');
 const activeSearchIndex = ref(0);
 const summaryExpanded = ref(false);
+const summaryDismissed = ref(false);
 const searchInputRef = ref(null);
 const timelineItemRefs = new Map();
 let loadToken = 0;
@@ -216,7 +217,7 @@ const summaryText = computed(
 );
 
 const shouldShowSummary = computed(
-  () => humanControlled.value || Boolean(summaryText.value)
+  () => !summaryDismissed.value && (humanControlled.value || Boolean(summaryText.value))
 );
 
 const summaryPreview = computed(() => {
@@ -607,6 +608,7 @@ async function loadContext() {
   error.value = '';
   localEvents.value = [];
   summaryExpanded.value = false;
+  summaryDismissed.value = false;
   localDeal.value = { ...props.deal };
   messages.value = (props.deal.messages || []).map(normalizeMessage);
   activities.value = props.deal.activities || [];
@@ -1114,6 +1116,14 @@ onBeforeUnmount(() => {
                 {{ summaryExpanded ? 'Ver menos' : 'Ver mais' }}
               </button>
             </div>
+            <button
+              type="button"
+              class="crm-attendance-summary__close"
+              title="Ocultar resumo"
+              @click="summaryDismissed = true"
+            >
+              <span class="i-lucide-x size-3.5" />
+            </button>
           </article>
 
           <article
@@ -1626,9 +1636,7 @@ onBeforeUnmount(() => {
 }
 
 .crm-attendance-summary {
-  position: sticky;
-  top: 0;
-  z-index: 1;
+  position: relative;
   display: flex;
   align-items: flex-start;
   gap: 0.65rem;
@@ -1664,6 +1672,28 @@ onBeforeUnmount(() => {
   font-size: 0.74rem;
   font-weight: 850;
   padding: 0;
+}
+
+.crm-attendance-summary__close {
+  display: grid;
+  width: 1.65rem;
+  height: 1.65rem;
+  flex: 0 0 auto;
+  place-content: center;
+  border: 1px solid rgb(var(--ds-shell-warning) / 0.32);
+  border-radius: 999px;
+  background: rgb(var(--ds-shell-panel) / 0.58);
+  color: rgb(var(--ds-shell-warning));
+  transition:
+    background 0.16s ease,
+    color 0.16s ease,
+    border-color 0.16s ease;
+}
+
+.crm-attendance-summary__close:hover {
+  border-color: rgb(var(--ds-shell-warning) / 0.58);
+  background: rgb(var(--ds-shell-warning-soft));
+  color: rgb(var(--ds-fg-default));
 }
 
 .crm-attendance-loading-strip {
