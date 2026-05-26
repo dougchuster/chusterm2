@@ -36,7 +36,7 @@ module Evolution
     def set_settings(instance_name:, reject_call:, groups_ignore:, always_online:, read_messages:, read_status:, sync_full_history:)
       payload = {
         reject_call: reject_call,
-        msg_call: '',
+        msg_call: 'Não podemos atender chamadas por este canal. Envie uma mensagem por escrito, por favor.',
         groups_ignore: groups_ignore,
         always_online: always_online,
         read_messages: read_messages,
@@ -145,6 +145,18 @@ module Evolution
         where: {},
         take: limit,
         skip: 0,
+        orderBy: {
+          updatedAt: 'desc'
+        }
+      }, timeout: 30)
+    end
+
+    def find_contacts(instance_name:, where: {}, limit: 500, skip: 0)
+      post("/chat/findContacts/#{escape(instance_name)}", {
+        where: where,
+        take: limit,
+        limit: limit,
+        skip: skip,
         orderBy: {
           updatedAt: 'desc'
         }

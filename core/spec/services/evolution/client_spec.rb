@@ -126,4 +126,28 @@ RSpec.describe Evolution::Client do
       expect(request).to have_been_requested
     end
   end
+
+  describe '#find_contacts' do
+    it 'requests contacts for an instance' do
+      request = stub_request(:post, 'https://evolution.example.com/chat/findContacts/dra_paula')
+                .with(
+                  headers: {
+                    'apikey' => 'global-key',
+                    'Content-Type' => 'application/json'
+                  },
+                  body: {
+                    where: {},
+                    take: 25,
+                    limit: 25,
+                    skip: 0,
+                    orderBy: { updatedAt: 'desc' }
+                  }.to_json
+                )
+                .to_return(status: 200, body: '[]', headers: { 'Content-Type' => 'application/json' })
+
+      client.find_contacts(instance_name: 'dra_paula', limit: 25)
+
+      expect(request).to have_been_requested
+    end
+  end
 end

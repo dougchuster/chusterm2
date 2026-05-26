@@ -98,6 +98,36 @@ RSpec.describe Captain::Conversation::ResponseBuilderJob, type: :job do
         end.not_to(change { conversation.messages.outgoing.count })
       end
 
+      it 'does not send a queued response after a human has replied to the latest incoming message' do
+        agent = create(:user, account: account, role: :agent)
+        create(:message, conversation: conversation, content: 'Vou assumir por aqui.', message_type: :outgoing,
+                         sender: agent, account: account, inbox: inbox)
+
+        expect(mock_llm_chat_service).not_to receive(:generate_response)
+        expect do
+          described_class.perform_now(conversation, assistant)
+        end.not_to(change { conversation.messages.outgoing.where(sender_type: 'Captain::Assistant').count })
+
+        state = conversation.reload.captain_conversation_state
+        expect(conversation.status).to eq('open')
+        expect(state.ai_mode).to eq('human_only')
+        expect(state.handoff_reason).to eq('Atendimento humano detectado; IA pausada automaticamente.')
+      end
+
+      it 'does not send AI responses to customer contacts' do
+        conversation.contact.update!(contact_type: :customer)
+
+        expect(mock_llm_chat_service).not_to receive(:generate_response)
+        expect do
+          described_class.perform_now(conversation, assistant)
+        end.not_to(change { conversation.messages.outgoing.where(sender_type: 'Captain::Assistant').count })
+
+        state = conversation.reload.captain_conversation_state
+        expect(conversation.status).to eq('open')
+        expect(state.ai_mode).to eq('human_only')
+        expect(state.handoff_reason).to eq('Contato classificado como cliente; atendimento por IA desativado.')
+      end
+
       it 'does not send another response when the latest public message is already from the assistant' do
         create(:message, conversation: conversation, content: 'Already answered', message_type: :outgoing, sender: assistant)
 
@@ -239,6 +269,7 @@ RSpec.describe Captain::Conversation::ResponseBuilderJob, type: :job do
     let(:mock_message_builder) { instance_double(Captain::OpenAiMessageBuilderService) }
 
     before do
+      captain_inbox_association
       create(:message, conversation: conversation, content: 'Hello with image', message_type: :incoming)
       allow(account).to receive(:feature_enabled?).and_return(false)
       allow(account).to receive(:feature_enabled?).with('captain_integration_v2').and_return(false)
@@ -352,6 +383,7 @@ RSpec.describe Captain::Conversation::ResponseBuilderJob, type: :job do
     let(:mock_llm_chat_service) { instance_double(Captain::Llm::AssistantChatService) }
 
     before do
+      captain_inbox_association
       create(:message, conversation: conversation, content: 'Hello', message_type: :incoming)
       allow(Captain::Llm::AssistantChatService).to receive(:new).and_return(mock_llm_chat_service)
       allow(account).to receive(:feature_enabled?).and_return(false)

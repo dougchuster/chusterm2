@@ -14,11 +14,13 @@ module Evolution
       @imported = 0
       @scanned = 0
       @failed = 0
+      @saved_contacts_result = {}
     end
 
     def perform
       return summary(status: 'skipped', reason: 'missing_instance_or_inbox') if @instance.blank? || @inbox.blank?
 
+      sync_saved_contacts
       remote_jids_for_sync.each { |remote_jid| sync_remote_jid(remote_jid) }
 
       summary(status: 'ok')
@@ -28,6 +30,17 @@ module Evolution
 
     def remote_jids_for_sync
       (known_remote_jids + discovered_remote_jids).compact_blank.uniq.first(@contact_limit)
+    end
+
+    def sync_saved_contacts
+      @saved_contacts_result = Evolution::SavedContactsSyncService.new(
+        instance: @instance,
+        client: @client,
+        limit: @contact_limit
+      ).perform
+    rescue StandardError => e
+      @saved_contacts_result = { status: 'error', reason: e.message, imported: 0, scanned: 0, failed: 1 }
+      Rails.logger.warn({ component: 'evolution', action: 'saved_contacts_pre_sync_failed', instance_id: @instance.id, error: e.message }.to_json)
     end
 
     def known_remote_jids
@@ -185,7 +198,8 @@ module Evolution
         inbox_id: @inbox&.id,
         scanned: @scanned,
         imported: @imported,
-        failed: @failed
+        failed: @failed,
+        saved_contacts: @saved_contacts_result
       }.compact
     end
   end

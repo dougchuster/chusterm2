@@ -18,6 +18,8 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
     return unless conversation_pending?
     return unless inbox_captain_active?
     ensure_captain_state!
+    return if customer_contact_handoff!
+    return if public_human_response_after_latest_incoming?
     return if ai_response_paused?
     return unless latest_public_message_needs_ai_response?
     return if wait_for_debounce_window?
@@ -376,6 +378,35 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
 
   def greeting_message?(normalized)
     normalized.match?(/\A(oi|ola|bom dia|boa tarde|boa noite|tudo bem|opa)[\s!.?]*\z/)
+  end
+
+  def customer_contact_handoff!
+    return false unless Crm::SavedContactCustomerClassifier.customer_contact?(@conversation.contact)
+
+    mark_conversation_human_only!('Contato classificado como cliente; atendimento por IA desativado.')
+    true
+  end
+
+  def public_human_response_after_latest_incoming?
+    latest_incoming = latest_public_incoming_message
+    return false if latest_incoming.blank?
+
+    human_replied = @conversation.messages
+                                 .outgoing
+                                 .where(private: false)
+                                 .where.not(sender_type: ['AgentBot', 'Captain::Assistant'])
+                                 .where('id > ? OR created_at >= ?', latest_incoming.id, latest_incoming.created_at)
+                                 .exists?
+    return false unless human_replied
+
+    mark_conversation_human_only!('Atendimento humano detectado; IA pausada automaticamente.')
+    true
+  end
+
+  def mark_conversation_human_only!(reason)
+    state = @conversation.captain_conversation_state || CaptainConversationState.for_conversation!(@conversation)
+    state.apply_ai_mode!(mode: 'human_only', reason: reason, actor: nil)
+    @conversation.bot_handoff! if @conversation.pending? || @conversation.snoozed?
   end
 
   def ai_response_paused?

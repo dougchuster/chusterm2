@@ -34,6 +34,7 @@ RSpec.describe Evolution::HistorySyncService do
   before do
     allow(Evolution::Client).to receive(:new).and_return(client)
     allow(client).to receive(:fetch_profile_picture_url).and_return({})
+    allow(client).to receive(:find_contacts).and_return([])
     allow(client).to receive(:find_chats).and_return([])
     clear_enqueued_jobs
   end
@@ -123,5 +124,28 @@ RSpec.describe Evolution::HistorySyncService do
     expect(message.content).to eq('Quero recuperar meu histórico.')
     expect(message.conversation.contact.phone_number).to eq('+556188877777')
     expect(result[:imported]).to eq(1)
+  end
+
+  it 'imports Evolution saved contacts as CRM customers before syncing history' do
+    allow(client).to receive(:find_contacts).and_return(
+      [
+        {
+          id: '556188877777@s.whatsapp.net',
+          name: 'Ana Cliente',
+          pushName: 'Ana',
+          isSaved: true
+        }.with_indifferent_access
+      ]
+    )
+    allow(client).to receive(:find_messages).and_return([])
+
+    result = described_class.new(instance: instance, limit: 20).perform
+
+    imported_contact = account.contacts.find_by!(phone_number: '+556188877777')
+    expect(imported_contact).to be_customer
+    expect(imported_contact.crm_relationship_status).to eq('customer')
+    expect(imported_contact.crm_lifecycle_stage).to eq('customer')
+    expect(imported_contact.additional_attributes['whatsapp_saved_contact']).to be true
+    expect(result[:saved_contacts][:imported]).to eq(1)
   end
 end

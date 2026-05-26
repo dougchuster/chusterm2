@@ -117,14 +117,14 @@ class Captain::Assistant::AgentRunnerService
 
   def recoverable_error_response(error_message)
     {
-      'response' => recoverable_response_message,
+      'response' => concise_recoverable_response_message,
       'reasoning' => "Recovered from agent error: #{error_message}"
     }
   end
 
-  def recoverable_response_message
+  def concise_recoverable_response_message
     @assistant.config['fallback_message'].presence ||
-      'Recebi sua mensagem. Para iniciarmos a análise do seu caso com atenção, me informe por gentileza: qual é o seu objetivo no INSS e se você já fez algum pedido, exigência ou recurso. Se tiver CNIS atualizado ou carteira de trabalho, isso ajuda na conferência.'
+      'Recebi sua mensagem. Me diga em uma frase qual e seu objetivo no INSS e se ja existe pedido, exigencia ou recurso.'
   end
 
   def apply_deterministic_crm_actions(response)

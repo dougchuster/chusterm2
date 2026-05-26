@@ -28,6 +28,31 @@ RSpec.describe Whatsapp::IncomingMessageEvolutionService do
     expect(inbox.contact_inboxes.first.source_id).to eq('556184410419')
   end
 
+  it 'promotes an incoming Evolution saved contact payload to customer' do
+    described_class.new(
+      inbox: inbox,
+      params: payload(id: 'MSG-SAVED-1', remote_jid: '556184410419@s.whatsapp.net', saved: true)
+    ).perform
+
+    contact = inbox.contacts.first
+    expect(contact).to be_customer
+    expect(contact.crm_relationship_status).to eq('customer')
+    expect(contact.crm_lifecycle_stage).to eq('customer')
+    expect(contact.additional_attributes['saved_contact_customer']).to be true
+    expect(contact.additional_attributes['whatsapp_saved_contact']).to be true
+  end
+
+  it 'does not promote a regular incoming contact payload to customer' do
+    described_class.new(
+      inbox: inbox,
+      params: payload(id: 'MSG-REGULAR-1', remote_jid: '556184410419@s.whatsapp.net')
+    ).perform
+
+    contact = inbox.contacts.first
+    expect(contact).not_to be_customer
+    expect(contact.crm_relationship_status).to eq('lead')
+  end
+
   it 'uses the stored LID alias when a later message arrives without senderPn' do
     described_class.new(inbox: inbox, params: payload(id: 'MSG-1', remote_jid: remote_lid, sender_pn: sender_pn, body: 'Oi')).perform
     first_conversation = inbox.conversations.first
@@ -113,7 +138,7 @@ RSpec.describe Whatsapp::IncomingMessageEvolutionService do
     expect(attachment.file.blob.filename.to_s).to end_with('.jpg')
   end
 
-  def payload(id:, remote_jid:, body: 'Oi', sender_pn: nil, from_me: false, message_type: 'conversation', message: nil)
+  def payload(id:, remote_jid:, body: 'Oi', sender_pn: nil, from_me: false, message_type: 'conversation', message: nil, saved: false)
     key = {
       remoteJid: remote_jid,
       fromMe: from_me,
@@ -121,7 +146,7 @@ RSpec.describe Whatsapp::IncomingMessageEvolutionService do
     }
     key[:senderPn] = sender_pn if sender_pn.present?
 
-    {
+    payload = {
       event: 'messages.upsert',
       data: {
         key: key,
@@ -130,5 +155,7 @@ RSpec.describe Whatsapp::IncomingMessageEvolutionService do
         messageType: message_type
       }
     }.with_indifferent_access
+    payload[:data][:isMyContact] = true if saved
+    payload
   end
 end

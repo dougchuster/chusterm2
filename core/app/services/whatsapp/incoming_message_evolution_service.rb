@@ -176,6 +176,7 @@ class Whatsapp::IncomingMessageEvolutionService
     ).perform
 
     merge_lid_contact_if_needed!(contact_inbox)
+    promote_saved_contact_payload!(contact_inbox)
     contact_inbox
   end
 
@@ -243,6 +244,33 @@ class Whatsapp::IncomingMessageEvolutionService
     return unless lid_remote_jid?
 
     inbox.contact_inboxes.includes(:contact).find_by(source_id: remote_jid_from_key.split('@').first)
+  end
+
+  def promote_saved_contact_payload!(contact_inbox)
+    return unless saved_contact_payload?
+
+    Crm::SavedContactCustomerClassifier.promote!(
+      contact_inbox.contact,
+      source: 'evolution_message_payload',
+      metadata: {
+        'whatsapp_saved_contact' => true,
+        'whatsapp_remote_jid' => remote_jid_from_key,
+        'whatsapp_saved_contact_name' => contact_name
+      }
+    )
+  end
+
+  def saved_contact_payload?
+    [
+      @data[:isSaved],
+      @data['isSaved'],
+      @data[:isMyContact],
+      @data['isMyContact'],
+      @data.dig(:contact, :isSaved),
+      @data.dig('contact', 'isSaved'),
+      @data.dig(:contact, :isMyContact),
+      @data.dig('contact', 'isMyContact')
+    ].any? { |value| ActiveModel::Type::Boolean.new.cast(value) }
   end
 
   def create_message(source_id)

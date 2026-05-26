@@ -1,5 +1,9 @@
 class Captain::Conversation::ResponsePolicyService
   FALLBACK_RESPONSE = 'Entendi. Pode me contar com calma o que aconteceu para eu entender melhor?'.freeze
+  REPEATED_INTRO_FALLBACK = 'Entendi. Vou seguir pelo contexto da conversa. Qual ponto voce quer priorizar agora?'.freeze
+  MAX_RESPONSE_SENTENCES = 2
+  MAX_RESPONSE_QUESTIONS = 1
+  MAX_RESPONSE_CHARACTERS = 320
 
   BANNED_REPLACEMENTS = [
     [/\bA simula[cç][aã]o do Meu INSS ajuda como ponto de partida, mas n[aã]o garante o direito nem substitui a leitura dos documentos\.?/i,
@@ -32,7 +36,9 @@ class Captain::Conversation::ResponsePolicyService
     [/\bsem pressa,?\s*[ée] s[oó] pra a gente ganhar tempo[.?!]?/i, ''],
     [/\bsem pressa,?\s*[ée] s[oó] para a gente ganhar tempo[.?!]?/i, ''],
     [/\bs[oó] pra a gente ganhar tempo[.?!]?/i, ''],
-    [/\bs[oó] para a gente ganhar tempo[.?!]?/i, '']
+    [/\bs[oó] para a gente ganhar tempo[.?!]?/i, ''],
+    [/\bse puder,?\s*/i, ''],
+    [/\bse conseguir,?\s*/i, '']
   ].freeze
 
   TITLE_TOKENS = %w[dr dra doutor doutora sr sra senhor senhora].freeze
@@ -45,9 +51,11 @@ class Captain::Conversation::ResponsePolicyService
     text = cleanup_repeated_document_terms(text)
     text = limit_questions_for_stepwise_triage(text)
     text = remove_public_formatting(text)
+    text = suppress_repeated_intro(text)
     text = collapse_repeated_name_mentions(text)
     text = fix_interrogative_case_after_comma(text)
     text = normalize_spacing(text)
+    text = enforce_brevity(text)
     text = capitalize_first_letter(text)
     text.presence || FALLBACK_RESPONSE
   end
@@ -85,6 +93,57 @@ class Captain::Conversation::ResponsePolicyService
       .gsub(/(^|[;:\n]\s*)\d+\.\s+/, '\1')
       .gsub(/[#{emoji_ranges}]/, '')
       .gsub(/[–—]/, '-')
+  end
+
+  def suppress_repeated_intro(text)
+    return text unless previous_ai_response?
+
+    stripped = text.sub(repeated_intro_regex, '').strip
+    return text if stripped == text.strip
+
+    stripped.presence || REPEATED_INTRO_FALLBACK
+  end
+
+  def previous_ai_response?
+    conversation.messages
+                .where(sender_type: 'Captain::Assistant', private: false)
+                .exists?
+  end
+
+  def repeated_intro_regex
+    /\A(?:ol[aá]|oi)[!.]?\s+(?:aqui\s+[ée]|sou)\s+.{0,220}?(?:como\s+posso\s+(?:te|lhe)\s+ajudar(?:\s+hoje)?|em\s+que\s+posso\s+(?:te|lhe)\s+ajudar)[.?!]?\s*/i
+  end
+
+  def enforce_brevity(text)
+    text = limit_question_count(text)
+    text = limit_sentence_count(text)
+    limit_character_count(text)
+  end
+
+  def limit_question_count(text)
+    return text if text.count('?') <= MAX_RESPONSE_QUESTIONS
+
+    first_question_end = text.index('?')
+    return text if first_question_end.blank?
+
+    text[0..first_question_end]
+  end
+
+  def limit_sentence_count(text)
+    sentences = text.scan(/[^.!?\n]+[.!?]?/).map(&:strip).compact_blank
+    return text if sentences.size <= MAX_RESPONSE_SENTENCES
+
+    sentences.first(MAX_RESPONSE_SENTENCES).join(' ')
+  end
+
+  def limit_character_count(text)
+    return text if text.length <= MAX_RESPONSE_CHARACTERS
+
+    shortened = text[0...MAX_RESPONSE_CHARACTERS]
+    cut_at = shortened.rindex(/[.!?]/) || shortened.rindex(/[;,]/) || shortened.rindex(' ')
+    shortened = shortened[0..cut_at] if cut_at && cut_at > 120
+    shortened = shortened.to_s.strip
+    shortened.match?(/[.!?]\z/) ? shortened : "#{shortened}."
   end
 
   def emoji_ranges

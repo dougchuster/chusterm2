@@ -17,6 +17,8 @@ class MessageTemplates::HookExecutionService
   delegate :contact, to: :conversation
 
   def trigger_templates
+    return perform_customer_handoff if customer_contact?
+
     ::MessageTemplates::Template::OutOfOffice.new(conversation: conversation).perform if should_send_out_of_office_message?
     ::MessageTemplates::Template::Greeting.new(conversation: conversation).perform if should_send_greeting?
     ::MessageTemplates::Template::EmailCollect.new(conversation: conversation).perform if inbox.enable_email_collect && should_send_email_collect?
@@ -108,6 +110,7 @@ class MessageTemplates::HookExecutionService
     message.incoming? &&
       inbox.captain_responsible? &&
       !captain_human_controlled? &&
+      !customer_contact? &&
       captain_manageable_conversation?
   end
 
@@ -139,6 +142,21 @@ class MessageTemplates::HookExecutionService
     return if conversation.campaign.present?
 
     ::MessageTemplates::Template::OutOfOffice.perform_if_applicable(conversation)
+  end
+
+  def perform_customer_handoff
+    Rails.logger.info("Customer contact detected, disabling Captain for conversation: #{conversation.id}")
+    state = conversation.captain_conversation_state || CaptainConversationState.for_conversation!(conversation)
+    state.apply_ai_mode!(
+      mode: 'human_only',
+      reason: 'Contato classificado como cliente; atendimento por IA desativado.',
+      actor: nil
+    )
+    conversation.bot_handoff! if conversation.pending? || conversation.snoozed?
+  end
+
+  def customer_contact?
+    Crm::SavedContactCustomerClassifier.customer_contact?(contact)
   end
 
   def captain_handling_conversation?
