@@ -1028,7 +1028,7 @@ onMounted(() => {
       >
         <label class="relative min-w-0">
           <span
-            class="pointer-events-none absolute left-3 top-1/2 grid size-5 -translate-y-1/2 place-content-center rounded-md bg-n-brand/10 text-n-brand"
+            class="crm-kanban-filter-icon crm-kanban-filter-icon--search rounded-md bg-n-brand/10 text-n-brand"
           >
             <span class="i-lucide-search size-3.5" />
           </span>
@@ -1043,13 +1043,13 @@ onMounted(() => {
 
         <label class="relative min-w-0">
           <span
-            class="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-n-slate-9"
+            class="crm-kanban-filter-icon text-n-slate-9"
           >
             <span class="i-lucide-scale size-3.5" />
           </span>
           <select
             v-model="filterÁrea"
-            class="h-9 w-full appearance-none rounded-lg border border-transparent bg-n-slate-1 pl-8 pr-8 text-sm font-medium text-n-slate-12 outline-none transition-colors duration-150 hover:border-n-slate-6 focus:border-n-brand focus:bg-n-background focus:ring-2 focus:ring-n-brand/15 dark:bg-n-slate-2 dark:focus:bg-n-slate-1"
+            class="h-9 w-full appearance-none rounded-lg border border-transparent bg-n-slate-1 pl-10 pr-8 text-sm font-medium text-n-slate-12 outline-none transition-colors duration-150 hover:border-n-slate-6 focus:border-n-brand focus:bg-n-background focus:ring-2 focus:ring-n-brand/15 dark:bg-n-slate-2 dark:focus:bg-n-slate-1"
             @change="onApplyFilters"
           >
             <option
@@ -1067,13 +1067,13 @@ onMounted(() => {
 
         <label class="relative min-w-0">
           <span
-            class="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-n-slate-9"
+            class="crm-kanban-filter-icon text-n-slate-9"
           >
             <span class="i-lucide-siren size-3.5" />
           </span>
           <select
             v-model="filterUrgency"
-            class="h-9 w-full appearance-none rounded-lg border border-transparent bg-n-slate-1 pl-8 pr-8 text-sm font-medium text-n-slate-12 outline-none transition-colors duration-150 hover:border-n-slate-6 focus:border-n-brand focus:bg-n-background focus:ring-2 focus:ring-n-brand/15 dark:bg-n-slate-2 dark:focus:bg-n-slate-1"
+            class="h-9 w-full appearance-none rounded-lg border border-transparent bg-n-slate-1 pl-10 pr-8 text-sm font-medium text-n-slate-12 outline-none transition-colors duration-150 hover:border-n-slate-6 focus:border-n-brand focus:bg-n-background focus:ring-2 focus:ring-n-brand/15 dark:bg-n-slate-2 dark:focus:bg-n-slate-1"
             @change="onApplyFilters"
           >
             <option
@@ -1509,6 +1509,28 @@ onMounted(() => {
 .crm-command-header select:focus {
   border-color: rgb(var(--ds-shell-focus));
   box-shadow: 0 0 0 3px rgb(var(--ds-shell-glow));
+}
+
+.crm-kanban-filter-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  display: grid;
+  width: 1.25rem;
+  height: 1.25rem;
+  place-content: center;
+  transform: translateY(-50%);
+  line-height: 1;
+  pointer-events: none;
+}
+
+.crm-kanban-filter-icon :deep(svg),
+.crm-kanban-filter-icon :deep(span) {
+  display: block;
+}
+
+.crm-kanban-filter-icon--search {
+  color: rgb(var(--ds-shell-accent));
 }
 
 .crm-command-kpis,
