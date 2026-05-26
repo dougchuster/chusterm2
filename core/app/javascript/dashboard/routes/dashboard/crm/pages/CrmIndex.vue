@@ -1026,9 +1026,9 @@ onMounted(() => {
       <div
         class="grid min-w-0 items-center gap-2 rounded-xl border border-n-weak bg-n-background p-2 shadow-sm dark:bg-n-slate-1 md:grid-cols-[minmax(16rem,1.25fr)_minmax(11rem,0.7fr)_minmax(11rem,0.7fr)_auto_auto]"
       >
-        <label class="relative min-w-0">
+        <label class="crm-kanban-filter-control">
           <span
-            class="crm-kanban-filter-icon crm-kanban-filter-icon--search rounded-md bg-n-brand/10 text-n-brand"
+            class="crm-kanban-filter-control__icon crm-kanban-filter-control__icon--search"
           >
             <span class="i-lucide-search size-3.5" />
           </span>
@@ -1036,20 +1036,20 @@ onMounted(() => {
             v-model="filterSearch"
             type="search"
             placeholder="Buscar deal ou contato"
-            class="h-9 w-full rounded-lg border border-transparent bg-n-slate-1 pl-10 pr-3 text-sm font-medium text-n-slate-12 outline-none transition-colors duration-150 placeholder:text-n-slate-9 hover:border-n-slate-6 focus:border-n-brand focus:bg-n-background focus:ring-2 focus:ring-n-brand/15 dark:bg-n-slate-2 dark:focus:bg-n-slate-1"
+            class="crm-kanban-filter-control__input"
             @input="onApplyFilters"
           />
         </label>
 
-        <label class="relative min-w-0">
+        <label class="crm-kanban-filter-control">
           <span
-            class="crm-kanban-filter-icon text-n-slate-9"
+            class="crm-kanban-filter-control__icon text-n-slate-9"
           >
             <span class="i-lucide-scale size-3.5" />
           </span>
           <select
             v-model="filterÁrea"
-            class="h-9 w-full appearance-none rounded-lg border border-transparent bg-n-slate-1 pl-10 pr-8 text-sm font-medium text-n-slate-12 outline-none transition-colors duration-150 hover:border-n-slate-6 focus:border-n-brand focus:bg-n-background focus:ring-2 focus:ring-n-brand/15 dark:bg-n-slate-2 dark:focus:bg-n-slate-1"
+            class="crm-kanban-filter-control__select"
             @change="onApplyFilters"
           >
             <option
@@ -1061,19 +1061,19 @@ onMounted(() => {
             </option>
           </select>
           <span
-            class="i-lucide-chevron-down pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-n-slate-9"
+            class="crm-kanban-filter-control__chevron i-lucide-chevron-down"
           />
         </label>
 
-        <label class="relative min-w-0">
+        <label class="crm-kanban-filter-control">
           <span
-            class="crm-kanban-filter-icon text-n-slate-9"
+            class="crm-kanban-filter-control__icon text-n-slate-9"
           >
             <span class="i-lucide-siren size-3.5" />
           </span>
           <select
             v-model="filterUrgency"
-            class="h-9 w-full appearance-none rounded-lg border border-transparent bg-n-slate-1 pl-10 pr-8 text-sm font-medium text-n-slate-12 outline-none transition-colors duration-150 hover:border-n-slate-6 focus:border-n-brand focus:bg-n-background focus:ring-2 focus:ring-n-brand/15 dark:bg-n-slate-2 dark:focus:bg-n-slate-1"
+            class="crm-kanban-filter-control__select"
             @change="onApplyFilters"
           >
             <option
@@ -1085,7 +1085,7 @@ onMounted(() => {
             </option>
           </select>
           <span
-            class="i-lucide-chevron-down pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-n-slate-9"
+            class="crm-kanban-filter-control__chevron i-lucide-chevron-down"
           />
         </label>
 
@@ -1511,26 +1511,84 @@ onMounted(() => {
   box-shadow: 0 0 0 3px rgb(var(--ds-shell-glow));
 }
 
-.crm-kanban-filter-icon {
-  position: absolute;
-  left: 0.75rem;
-  top: 50%;
+.crm-kanban-filter-control {
+  display: flex;
+  min-width: 0;
+  height: 2.5rem;
+  align-items: center;
+  gap: 0.55rem;
+  overflow: hidden;
+  border: 1px solid rgb(var(--ds-shell-border) / 0.62);
+  border-radius: 0.75rem;
+  background: rgb(var(--ds-shell-panel-sunken) / 0.92);
+  padding: 0 0.75rem;
+  color: rgb(var(--ds-fg-default));
+  transition:
+    border-color 0.16s ease,
+    background 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.crm-kanban-filter-control:focus-within {
+  border-color: rgb(var(--ds-shell-focus));
+  background: rgb(var(--ds-shell-panel));
+  box-shadow: 0 0 0 3px rgb(var(--ds-shell-glow));
+}
+
+.crm-kanban-filter-control__icon {
   display: grid;
   width: 1.25rem;
   height: 1.25rem;
+  flex: 0 0 1.25rem;
   place-content: center;
-  transform: translateY(-50%);
+  border-radius: 0.45rem;
   line-height: 1;
-  pointer-events: none;
 }
 
-.crm-kanban-filter-icon :deep(svg),
-.crm-kanban-filter-icon :deep(span) {
-  display: block;
-}
-
-.crm-kanban-filter-icon--search {
+.crm-kanban-filter-control__icon--search {
+  background: rgb(var(--ds-shell-accent-soft));
   color: rgb(var(--ds-shell-accent));
+}
+
+.crm-kanban-filter-control__icon :deep(span),
+.crm-kanban-filter-control__icon :deep(svg),
+.crm-kanban-filter-control__chevron {
+  display: block;
+  flex: 0 0 auto;
+}
+
+.crm-kanban-filter-control__input,
+.crm-kanban-filter-control__select {
+  min-width: 0;
+  height: 100%;
+  flex: 1 1 auto;
+  border: 0 !important;
+  background: transparent !important;
+  color: rgb(var(--ds-fg-default));
+  font-size: 0.875rem;
+  font-weight: 600;
+  outline: none;
+  box-shadow: none !important;
+}
+
+.crm-kanban-filter-control__input {
+  padding: 0;
+}
+
+.crm-kanban-filter-control__input::placeholder {
+  color: rgb(var(--slate-9));
+}
+
+.crm-kanban-filter-control__select {
+  appearance: none;
+  padding: 0;
+}
+
+.crm-kanban-filter-control__chevron {
+  width: 1rem;
+  height: 1rem;
+  color: rgb(var(--slate-9));
+  pointer-events: none;
 }
 
 .crm-command-kpis,
