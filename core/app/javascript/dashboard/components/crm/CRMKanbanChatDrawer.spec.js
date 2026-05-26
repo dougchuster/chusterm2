@@ -70,6 +70,14 @@ describe('CRMKanbanChatDrawer', () => {
     MessageApi.getPreviousMessages.mockResolvedValue({
       data: { payload: [] },
     });
+    MessageApi.create.mockResolvedValue({
+      data: {
+        id: 44,
+        content: 'Mensagem enviada',
+        message_type: 'outgoing',
+        created_at: '2026-05-26T10:01:00.000Z',
+      },
+    });
     ConversationApi.markMessageRead.mockResolvedValue({});
     CaptainConversationStateAPI.show.mockResolvedValue({
       data: {
@@ -119,5 +127,29 @@ describe('CRMKanbanChatDrawer', () => {
 
     await assumeButton.trigger('click');
     expect(CaptainConversationStateAPI.update).not.toHaveBeenCalled();
+  });
+
+  it('allows the operator to write and send a chat message from the drawer', async () => {
+    const wrapper = mountDrawer();
+
+    await flushPromises();
+    await nextTick();
+
+    const textarea = wrapper.get('textarea[aria-label="Responder ao cliente"]');
+    expect(textarea.attributes('disabled')).toBeUndefined();
+
+    await textarea.setValue('Ola, vou assumir seu atendimento.');
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Enviar')
+      .trigger('click');
+    await flushPromises();
+
+    expect(MessageApi.create).toHaveBeenCalledWith({
+      conversationId: 55,
+      message: 'Ola, vou assumir seu atendimento.',
+      private: false,
+    });
+    expect(wrapper.text()).toContain('Mensagem enviada');
   });
 });
