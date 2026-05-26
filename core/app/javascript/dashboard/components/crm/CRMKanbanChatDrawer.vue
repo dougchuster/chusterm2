@@ -73,6 +73,7 @@ const timelineRef = ref(null);
 const searchOpen = ref(false);
 const searchQuery = ref('');
 const activeSearchIndex = ref(0);
+const summaryExpanded = ref(false);
 const searchInputRef = ref(null);
 const timelineItemRefs = new Map();
 let loadToken = 0;
@@ -116,6 +117,21 @@ const contactUrl = computed(() => {
   if (!contactId.value) return '';
   return `/app/accounts/${props.accountId}/contacts/${contactId.value}`;
 });
+
+const contactAvatarUrl = computed(
+  () =>
+    localDeal.value?.contact?.thumbnail ||
+    localDeal.value?.contact?.avatar_url ||
+    localDeal.value?.contact?.avatarUrl ||
+    localDeal.value?.contact_thumbnail ||
+    localDeal.value?.contact_avatar_url ||
+    props.deal?.contact?.thumbnail ||
+    props.deal?.contact?.avatar_url ||
+    props.deal?.contact?.avatarUrl ||
+    props.deal?.contact_thumbnail ||
+    props.deal?.contact_avatar_url ||
+    ''
+);
 
 const attendanceNumber = computed(() => {
   const titleNumber = String(localDeal.value?.title || '').match(/#\s*(\d+)/);
@@ -202,6 +218,21 @@ const summaryText = computed(
 const shouldShowSummary = computed(
   () => humanControlled.value || Boolean(summaryText.value)
 );
+
+const summaryPreview = computed(() => {
+  const text =
+    summaryText.value ||
+    'Sem resumo salvo. Assuma o atendimento e registre o contexto.';
+  if (summaryExpanded.value || text.length <= 170) return text;
+  return `${text.slice(0, 167).trim()}...`;
+});
+
+const summaryIsLong = computed(() => {
+  const text =
+    summaryText.value ||
+    'Sem resumo salvo. Assuma o atendimento e registre o contexto.';
+  return text.length > 170;
+});
 
 const normalizedSearchQuery = computed(() =>
   searchQuery.value.trim().toLocaleLowerCase('pt-BR')
@@ -390,6 +421,77 @@ function messageSender(message) {
   return message.senderName || contactName.value || 'Contato';
 }
 
+function messageDirectionIcon(message) {
+  const direction = messageDirection(message);
+  if (direction === 'outgoing') return 'i-lucide-arrow-up-right';
+  if (direction === 'private') return 'i-lucide-lock-keyhole';
+  return 'i-lucide-arrow-down-left';
+}
+
+function messageDirectionLabel(message) {
+  const direction = messageDirection(message);
+  if (direction === 'outgoing') return 'Enviada';
+  if (direction === 'private') return 'Nota interna';
+  return 'Recebida';
+}
+
+function attachmentUrl(attachment) {
+  return (
+    attachment.data_url ||
+    attachment.external_url ||
+    attachment.download_url ||
+    attachment.url ||
+    attachment.file_url ||
+    ''
+  );
+}
+
+function attachmentPreviewUrl(attachment) {
+  return (
+    attachment.thumb_url ||
+    attachment.thumbnail_url ||
+    attachment.preview_url ||
+    attachmentUrl(attachment)
+  );
+}
+
+function attachmentType(attachment) {
+  return String(
+    attachment.file_type ||
+      attachment.fileType ||
+      attachment.content_type ||
+      attachment.contentType ||
+      attachment.meta?.content_type ||
+      ''
+  ).toLowerCase();
+}
+
+function attachmentExtension(attachment) {
+  const url = attachmentUrl(attachment).split('?')[0];
+  const match = url.match(/\.([a-z0-9]+)$/i);
+  return match?.[1]?.toLowerCase() || '';
+}
+
+function isImageAttachment(attachment) {
+  const type = attachmentType(attachment);
+  const extension = attachmentExtension(attachment);
+  return (
+    type === 'image' ||
+    type.startsWith('image/') ||
+    ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif'].includes(extension)
+  );
+}
+
+function isAudioAttachment(attachment) {
+  const type = attachmentType(attachment);
+  const extension = attachmentExtension(attachment);
+  return (
+    type === 'audio' ||
+    type.startsWith('audio/') ||
+    ['mp3', 'ogg', 'wav', 'm4a', 'aac', 'webm'].includes(extension)
+  );
+}
+
 function attachmentLabel(attachment) {
   return (
     attachment.fallback_title ||
@@ -504,6 +606,7 @@ async function loadContext() {
   loading.value = true;
   error.value = '';
   localEvents.value = [];
+  summaryExpanded.value = false;
   localDeal.value = { ...props.deal };
   messages.value = (props.deal.messages || []).map(normalizeMessage);
   activities.value = props.deal.activities || [];
@@ -749,8 +852,16 @@ onBeforeUnmount(() => {
     <section class="crm-attendance-panel" aria-label="Atendimento no Kanban">
       <header class="crm-attendance-header">
         <div class="crm-attendance-contact-head">
-          <div class="crm-attendance-avatar" aria-hidden="true">
-            {{ headerContactName.slice(0, 1).toUpperCase() }}
+          <div class="crm-attendance-avatar">
+            <img
+              v-if="contactAvatarUrl"
+              class="crm-attendance-avatar__image"
+              :src="contactAvatarUrl"
+              :alt="headerContactName"
+            />
+            <span v-else>
+              {{ headerContactName.slice(0, 1).toUpperCase() }}
+            </span>
           </div>
           <div class="min-w-0">
             <h2 class="m-0 truncate text-lg font-semibold text-n-slate-12">
@@ -993,12 +1104,15 @@ onBeforeUnmount(() => {
             <span class="i-lucide-sparkles size-4 text-n-amber-9" />
             <div class="min-w-0">
               <p>Resumo do atendimento</p>
-              <strong>
-                {{
-                  summaryText ||
-                  'Sem resumo salvo. Assuma o atendimento e registre o contexto.'
-                }}
-              </strong>
+              <strong>{{ summaryPreview }}</strong>
+              <button
+                v-if="summaryIsLong"
+                type="button"
+                class="crm-attendance-summary__toggle"
+                @click="summaryExpanded = !summaryExpanded"
+              >
+                {{ summaryExpanded ? 'Ver menos' : 'Ver mais' }}
+              </button>
             </div>
           </article>
 
@@ -1023,7 +1137,14 @@ onBeforeUnmount(() => {
               :class="messageClass(item.message)"
             >
               <div class="crm-attendance-message__meta">
-                <span>{{ messageSender(item.message) }}</span>
+                <span class="crm-attendance-message__sender">
+                  <span
+                    class="crm-attendance-message__direction"
+                    :class="messageDirectionIcon(item.message)"
+                    :title="messageDirectionLabel(item.message)"
+                  />
+                  {{ messageSender(item.message) }}
+                </span>
                 <time>{{ formatDateTime(item.message.createdAt) }}</time>
               </div>
               <p v-if="item.message.content" class="whitespace-pre-wrap">
@@ -1033,16 +1154,51 @@ onBeforeUnmount(() => {
                 v-if="item.message.attachments.length"
                 class="crm-attendance-attachments"
               >
-                <a
+                <figure
                   v-for="attachment in item.message.attachments"
                   :key="attachment.id || attachment.fallback_title"
-                  :href="attachment.data_url || attachment.external_url"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  class="crm-attendance-attachment"
                 >
-                  <span class="i-lucide-paperclip size-3.5" />
-                  {{ attachmentLabel(attachment) }}
-                </a>
+                  <a
+                    v-if="isImageAttachment(attachment) && attachmentUrl(attachment)"
+                    class="crm-attendance-attachment__image"
+                    :href="attachmentUrl(attachment)"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <img
+                      :src="attachmentPreviewUrl(attachment)"
+                      :alt="attachmentLabel(attachment)"
+                      loading="lazy"
+                    />
+                  </a>
+
+                  <div
+                    v-else-if="isAudioAttachment(attachment) && attachmentUrl(attachment)"
+                    class="crm-attendance-attachment__audio"
+                  >
+                    <span class="i-lucide-audio-lines size-4" />
+                    <div class="min-w-0 flex-1">
+                      <span class="crm-attendance-attachment__audio-label">
+                        {{ attachmentLabel(attachment) }}
+                      </span>
+                      <audio controls preload="metadata" :src="attachmentUrl(attachment)">
+                        Seu navegador nao suporta audio.
+                      </audio>
+                    </div>
+                  </div>
+
+                  <a
+                    v-else
+                    class="crm-attendance-attachment__file"
+                    :href="attachmentUrl(attachment)"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <span class="i-lucide-paperclip size-3.5" />
+                    {{ attachmentLabel(attachment) }}
+                  </a>
+                </figure>
               </div>
             </div>
           </article>
@@ -1092,8 +1248,8 @@ onBeforeUnmount(() => {
 
 .crm-attendance-panel {
   display: flex;
-  width: min(37rem, 46vw);
-  min-width: 28rem;
+  width: min(46rem, 58vw);
+  min-width: 34rem;
   max-width: calc(100vw - 1.5rem);
   height: calc(100vh - 1.5rem);
   flex-direction: column;
@@ -1154,6 +1310,13 @@ onBeforeUnmount(() => {
   color: rgb(var(--ds-fg-default));
   font-size: 1rem;
   font-weight: 850;
+  overflow: hidden;
+}
+
+.crm-attendance-avatar__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .crm-attendance-header-meta {
@@ -1443,12 +1606,10 @@ onBeforeUnmount(() => {
   flex: 1;
   overflow-y: auto;
   background:
-    linear-gradient(
-      90deg,
-      transparent 0,
-      transparent calc(50% - 1px),
-      rgb(var(--ds-shell-divider) / 0.7) 50%,
-      transparent calc(50% + 1px)
+    radial-gradient(
+      circle at 18% 0%,
+      rgb(var(--ds-shell-accent-soft) / 0.34),
+      transparent 23rem
     ),
     rgb(var(--ds-shell-panel-sunken) / 0.32);
   padding: 0.875rem 0.95rem;
@@ -1469,6 +1630,7 @@ onBeforeUnmount(() => {
   top: 0;
   z-index: 1;
   display: flex;
+  align-items: flex-start;
   gap: 0.65rem;
   margin-bottom: 0.75rem;
   border: 1px solid rgb(var(--ds-shell-warning) / 0.5);
@@ -1492,6 +1654,16 @@ onBeforeUnmount(() => {
   font-size: 0.84rem;
   font-weight: 650;
   line-height: 1.4;
+}
+
+.crm-attendance-summary__toggle {
+  margin-top: 0.35rem;
+  border: 0;
+  background: transparent;
+  color: rgb(var(--ds-shell-warning));
+  font-size: 0.74rem;
+  font-weight: 850;
+  padding: 0;
 }
 
 .crm-attendance-loading-strip {
@@ -1553,9 +1725,9 @@ onBeforeUnmount(() => {
 
 .crm-attendance-message {
   width: fit-content;
-  max-width: min(86%, 27rem);
+  max-width: min(82%, 34rem);
   border: 1px solid rgb(var(--ds-shell-border) / 0.58);
-  border-radius: 0.78rem;
+  border-radius: 0.9rem;
   padding: 0.6rem 0.72rem;
   box-shadow: 0 10px 24px rgb(var(--ds-shell-shadow-soft));
 }
@@ -1590,11 +1762,34 @@ onBeforeUnmount(() => {
   font-weight: 800;
 }
 
-.crm-attendance-message__meta span {
+.crm-attendance-message__sender {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.28rem;
   max-width: 12rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.crm-attendance-message__direction {
+  display: inline-grid;
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  place-content: center;
+  border-radius: 999px;
+  background: rgb(var(--ds-shell-panel-strong) / 0.82);
+  color: rgb(var(--ds-fg-subtle));
+}
+
+.crm-attendance-message--incoming .crm-attendance-message__direction {
+  color: rgb(var(--ds-shell-accent));
+}
+
+.crm-attendance-message--outgoing .crm-attendance-message__direction {
+  color: rgb(var(--ds-shell-secondary));
 }
 
 .crm-attendance-message p {
@@ -1611,7 +1806,14 @@ onBeforeUnmount(() => {
   margin-top: 0.55rem;
 }
 
-.crm-attendance-attachments a {
+.crm-attendance-attachment {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+}
+
+.crm-attendance-attachment__file {
   display: inline-flex;
   min-width: 0;
   max-width: 100%;
@@ -1626,6 +1828,51 @@ onBeforeUnmount(() => {
   font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.crm-attendance-attachment__image {
+  display: block;
+  overflow: hidden;
+  width: min(19rem, 100%);
+  border: 1px solid rgb(var(--ds-shell-border) / 0.48);
+  border-radius: 0.75rem;
+  background: rgb(var(--ds-shell-panel-strong) / 0.78);
+}
+
+.crm-attendance-attachment__image img {
+  display: block;
+  width: 100%;
+  max-height: 16rem;
+  object-fit: cover;
+}
+
+.crm-attendance-attachment__audio {
+  display: flex;
+  width: min(22rem, 100%);
+  align-items: center;
+  gap: 0.55rem;
+  border: 1px solid rgb(var(--ds-shell-border) / 0.55);
+  border-radius: 0.75rem;
+  background: rgb(var(--ds-shell-panel-strong) / 0.72);
+  padding: 0.55rem;
+  color: rgb(var(--ds-fg-muted));
+}
+
+.crm-attendance-attachment__audio-label {
+  display: block;
+  overflow: hidden;
+  margin-bottom: 0.25rem;
+  color: rgb(var(--ds-fg-default));
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crm-attendance-attachment__audio audio {
+  display: block;
+  width: 100%;
+  height: 2rem;
 }
 
 .crm-attendance-composer {

@@ -301,6 +301,8 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
       name: contact.name,
       email: contact.email,
       phone_number: contact.phone_number,
+      thumbnail: contact.try(:thumbnail) || contact.try(:avatar_url),
+      avatar_url: contact.try(:avatar_url),
       identifier: contact.identifier,
       relationship_status: contact.try(:relationship_status),
       lifecycle_stage: contact.try(:lifecycle_stage),

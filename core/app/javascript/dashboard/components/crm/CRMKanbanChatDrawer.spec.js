@@ -39,6 +39,11 @@ const baseDeal = {
   id: 7,
   title: 'Atendimento #55',
   contact_name: 'Maria Cliente',
+  contact: {
+    id: 9,
+    name: 'Maria Cliente',
+    thumbnail: 'https://cdn.test/maria.jpg',
+  },
   conversation_id: 100,
   conversation_display_id: 55,
   crm_pipeline_stage_id: 3,
@@ -46,6 +51,33 @@ const baseDeal = {
   messages: [],
   activities: [],
 };
+
+const longSummary =
+  'Cliente relata urgencia no andamento do processo, enviou documentos por imagem e audio, pediu retorno ainda hoje e aguarda validacao do advogado responsavel antes de seguir para contrato.';
+
+const mediaMessages = [
+  {
+    id: 10,
+    content: 'Segue documento e audio.',
+    message_type: 'incoming',
+    sender_name: 'Maria Cliente',
+    created_at: '2026-05-26T09:59:00.000Z',
+    attachments: [
+      {
+        id: 101,
+        file_type: 'image',
+        data_url: 'https://cdn.test/documento.png',
+        fallback_title: 'documento.png',
+      },
+      {
+        id: 102,
+        file_type: 'audio',
+        data_url: 'https://cdn.test/audio.mp3',
+        fallback_title: 'audio.mp3',
+      },
+    ],
+  },
+];
 
 const mountDrawer = () =>
   mount(CRMKanbanChatDrawer, {
@@ -63,12 +95,12 @@ describe('CRMKanbanChatDrawer', () => {
     CrmAPI.getDeal.mockResolvedValue({
       data: {
         ...baseDeal,
-        summary: 'Cliente quer avaliar o caso.',
+        summary: longSummary,
         conversation: { id: 100, display_id: 55 },
       },
     });
     MessageApi.getPreviousMessages.mockResolvedValue({
-      data: { payload: [] },
+      data: { payload: mediaMessages },
     });
     MessageApi.create.mockResolvedValue({
       data: {
@@ -151,5 +183,27 @@ describe('CRMKanbanChatDrawer', () => {
       private: false,
     });
     expect(wrapper.text()).toContain('Mensagem enviada');
+  });
+
+  it('renders contact avatar, compact summary, direction icons and media attachments', async () => {
+    const wrapper = mountDrawer();
+
+    await flushPromises();
+    await nextTick();
+
+    const avatar = wrapper.get('img[alt="Maria Cliente"]');
+    expect(avatar.attributes('src')).toBe('https://cdn.test/maria.jpg');
+    expect(wrapper.text()).toContain('Ver mais');
+    expect(wrapper.text()).not.toContain(longSummary);
+
+    expect(wrapper.find('.crm-attendance-message__direction').exists()).toBe(
+      true
+    );
+    expect(wrapper.get('img[alt="documento.png"]').attributes('src')).toBe(
+      'https://cdn.test/documento.png'
+    );
+    expect(wrapper.get('audio').attributes('src')).toBe(
+      'https://cdn.test/audio.mp3'
+    );
   });
 });
