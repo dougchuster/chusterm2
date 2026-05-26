@@ -19,6 +19,7 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
     return unless inbox_captain_active?
     ensure_captain_state!
     return if customer_contact_handoff!
+    return if public_human_response_exists?
     return if public_human_response_after_last_ai?
     return if public_human_response_after_latest_incoming?
     return if ai_response_paused?
@@ -395,10 +396,19 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
     human_replied = @conversation.messages
                                  .outgoing
                                  .where(private: false)
-                                 .where.not(sender_type: ['AgentBot', 'Captain::Assistant'])
                                  .where('id > ? OR created_at >= ?', latest_incoming.id, latest_incoming.created_at)
-                                 .exists?
+                                 .any? { |candidate| public_human_message?(candidate) }
     return false unless human_replied
+
+    mark_conversation_human_only!('Atendimento humano detectado; IA pausada automaticamente.')
+    true
+  end
+
+  def public_human_response_exists?
+    return false unless @conversation.messages
+                                      .outgoing
+                                      .where(private: false)
+                                      .any? { |candidate| public_human_message?(candidate) }
 
     mark_conversation_human_only!('Atendimento humano detectado; IA pausada automaticamente.')
     true
@@ -419,9 +429,27 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
     @conversation.messages
                  .outgoing
                  .where(private: false)
-                 .where.not(sender_type: ['AgentBot', 'Captain::Assistant'])
                  .reorder(id: :desc)
-                 .first
+                 .detect { |candidate| public_human_message?(candidate) }
+  end
+
+  def public_human_message?(candidate)
+    return false unless candidate.outgoing? && !candidate.private?
+    return false if candidate.sender_type.in?(['AgentBot', 'Captain::Assistant'])
+    return false if content_attribute(candidate, 'automation_rule_id').present?
+    return false if additional_attribute(candidate, 'campaign_id').present?
+
+    candidate.sender_type.present? || ActiveModel::Type::Boolean.new.cast(content_attribute(candidate, 'external_echo'))
+  end
+
+  def content_attribute(candidate, key)
+    attrs = candidate.content_attributes.to_h
+    attrs[key] || attrs[key.to_sym]
+  end
+
+  def additional_attribute(candidate, key)
+    attrs = candidate.additional_attributes.to_h
+    attrs[key] || attrs[key.to_sym]
   end
 
   def latest_public_ai_message

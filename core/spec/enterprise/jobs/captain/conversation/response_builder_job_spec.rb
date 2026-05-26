@@ -134,6 +134,36 @@ RSpec.describe Captain::Conversation::ResponseBuilderJob, type: :job do
         expect(state.handoff_reason).to eq('Atendimento humano detectado; IA pausada automaticamente.')
       end
 
+      it 'does not send a queued response after a WhatsApp native app echo' do
+        create(:message, conversation: conversation, content: 'Resposta anterior da IA.', message_type: :outgoing,
+                         sender: assistant, account: account, inbox: inbox)
+
+        conversation.messages.create!(
+          message_type: :outgoing,
+          account: account,
+          inbox: inbox,
+          sender: nil,
+          content: 'Estou atendendo pelo celular.',
+          content_attributes: { 'external_echo' => true }
+        )
+
+        create(:message, conversation: conversation, content: 'Tá bom', message_type: :incoming,
+                         account: account, inbox: inbox)
+        CaptainConversationState.where(conversation: conversation).delete_all
+        conversation.pending!
+        conversation.association(:captain_conversation_state).reset
+
+        expect(mock_llm_chat_service).not_to receive(:generate_response)
+        expect do
+          described_class.perform_now(conversation, assistant)
+        end.not_to(change { conversation.messages.outgoing.where(sender_type: 'Captain::Assistant').count })
+
+        state = conversation.reload.captain_conversation_state
+        expect(conversation.status).to eq('open')
+        expect(state.ai_mode).to eq('human_only')
+        expect(state.handoff_reason).to eq('Atendimento humano detectado; IA pausada automaticamente.')
+      end
+
       it 'does not send AI responses to customer contacts' do
         conversation.contact.update!(contact_type: :customer)
 

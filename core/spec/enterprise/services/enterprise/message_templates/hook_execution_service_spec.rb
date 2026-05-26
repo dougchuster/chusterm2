@@ -193,6 +193,30 @@ RSpec.describe MessageTemplates::HookExecutionService do
       expect(state.ai_mode).to eq('human_only')
       expect(state.handoff_reason).to eq('Atendimento humano detectado; IA pausada automaticamente.')
     end
+
+    it 'treats WhatsApp native app echoes as human atendimento' do
+      create(:message, conversation: conversation, message_type: :incoming, account: account, inbox: inbox, content: 'Pode me chamar aqui?')
+      conversation.update!(status: :pending)
+      CaptainConversationState.where(conversation: conversation).delete_all
+      conversation.reload
+
+      expect(Captain::Conversation::ResponseBuilderJob).not_to receive(:set)
+      expect(Captain::Conversation::ResponseBuilderJob).not_to receive(:perform_later)
+
+      conversation.messages.create!(
+        message_type: :outgoing,
+        account: account,
+        inbox: inbox,
+        sender: nil,
+        content: 'Estou atendendo pelo celular.',
+        content_attributes: { 'external_echo' => true }
+      )
+
+      state = conversation.reload.captain_conversation_state
+      expect(conversation.status).to eq('open')
+      expect(state.ai_mode).to eq('human_only')
+      expect(state.handoff_reason).to eq('Atendimento humano detectado; IA pausada automaticamente.')
+    end
   end
 
   context 'when contact is already a CRM customer' do
