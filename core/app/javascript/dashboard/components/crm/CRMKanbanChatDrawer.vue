@@ -69,6 +69,11 @@ const sending = ref(false);
 const error = ref('');
 const localEvents = ref([]);
 const timelineRef = ref(null);
+const searchOpen = ref(false);
+const searchQuery = ref('');
+const activeSearchIndex = ref(0);
+const searchInputRef = ref(null);
+const timelineItemRefs = new Map();
 let loadToken = 0;
 let localEventSequence = 0;
 
@@ -89,6 +94,42 @@ const contactPhone = computed(
     localDeal.value?.contact?.phone_number ||
     localDeal.value?.contact_phone_number ||
     ''
+);
+
+const contactId = computed(
+  () =>
+    localDeal.value?.contact?.id ||
+    localDeal.value?.contact_id ||
+    props.deal?.contact?.id ||
+    props.deal?.contact_id ||
+    ''
+);
+
+const contactUrl = computed(() => {
+  if (!contactId.value) return '';
+  return `/app/accounts/${props.accountId}/contacts/${contactId.value}`;
+});
+
+const attendanceNumber = computed(() => {
+  const titleNumber = String(localDeal.value?.title || '').match(/#\s*(\d+)/);
+  return (
+    conversationLookupId.value ||
+    localDeal.value?.conversation_id ||
+    titleNumber?.[1] ||
+    localDeal.value?.id ||
+    props.deal?.id ||
+    ''
+  );
+});
+
+const attendanceLabel = computed(() =>
+  attendanceNumber.value
+    ? `Atendimento #${attendanceNumber.value}`
+    : 'Atendimento'
+);
+
+const headerContactName = computed(
+  () => contactName.value || displayTitle.value || 'Contato sem nome'
 );
 
 const ownerName = computed(() => {
@@ -141,6 +182,10 @@ const shouldShowSummary = computed(
   () => humanControlled.value || Boolean(summaryText.value)
 );
 
+const normalizedSearchQuery = computed(() =>
+  searchQuery.value.trim().toLocaleLowerCase('pt-BR')
+);
+
 const timelineItems = computed(() => {
   const messageItems = messages.value.map(message => ({
     id: `message-${message.id}`,
@@ -183,6 +228,25 @@ const timelineItems = computed(() => {
   ].sort((a, b) => timeToMs(a.createdAt) - timeToMs(b.createdAt));
 });
 
+const searchResults = computed(() => {
+  const query = normalizedSearchQuery.value;
+  if (!query) return [];
+
+  return timelineItems.value
+    .map((item, index) => ({ item, index, haystack: searchableText(item) }))
+    .filter(result => result.haystack.includes(query));
+});
+
+const activeSearchItemId = computed(
+  () => searchResults.value[activeSearchIndex.value]?.item.id || ''
+);
+
+const searchStatusLabel = computed(() => {
+  if (!normalizedSearchQuery.value) return 'Digite para buscar';
+  if (!searchResults.value.length) return 'Nenhum resultado';
+  return `${activeSearchIndex.value + 1} de ${searchResults.value.length}`;
+});
+
 function timeToMs(value) {
   if (!value) return 0;
   if (typeof value === 'number') {
@@ -202,6 +266,67 @@ function formatDateTime(value) {
     hour: '2-digit',
     minute: '2-digit',
   }).format(date);
+}
+
+function searchableText(item) {
+  if (item.type === 'event') {
+    return `${item.label || ''} ${item.meta || ''}`.toLocaleLowerCase('pt-BR');
+  }
+
+  const message = item.message || {};
+  return [
+    message.content,
+    message.senderName,
+    messageSender(message),
+    formatDateTime(message.createdAt),
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLocaleLowerCase('pt-BR');
+}
+
+function setTimelineItemRef(id, el) {
+  if (el) {
+    timelineItemRefs.set(id, el);
+  } else {
+    timelineItemRefs.delete(id);
+  }
+}
+
+function scrollToSearchResult() {
+  const id = activeSearchItemId.value;
+  if (!id) return;
+
+  nextTick(() => {
+    const el = timelineItemRefs.get(id);
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+}
+
+function openSearch() {
+  searchOpen.value = true;
+  nextTick(() => searchInputRef.value?.focus());
+}
+
+function closeSearch() {
+  searchOpen.value = false;
+  searchQuery.value = '';
+  activeSearchIndex.value = 0;
+}
+
+function moveSearchResult(direction) {
+  const total = searchResults.value.length;
+  if (!total) return;
+  activeSearchIndex.value =
+    (activeSearchIndex.value + direction + total) % total;
+  scrollToSearchResult();
+}
+
+function onSearchKeydown(event) {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    moveSearchResult(event.shiftKey ? -1 : 1);
+  }
 }
 
 function normalizeMessage(message) {
@@ -505,9 +630,24 @@ function closeDrawer() {
 }
 
 function onWindowKeydown(event) {
-  if (!show.value || event.key !== 'Escape') return;
-  event.preventDefault();
-  closeDrawer();
+  if (!show.value) return;
+
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'f') {
+    event.preventDefault();
+    openSearch();
+    return;
+  }
+
+  if (event.key === 'Escape' && searchOpen.value) {
+    event.preventDefault();
+    closeSearch();
+    return;
+  }
+
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    closeDrawer();
+  }
 }
 
 watch(
@@ -518,6 +658,15 @@ watch(
 
 watch(timelineItems, () => {
   nextTick(scrollTimelineToBottom);
+});
+
+watch(searchResults, results => {
+  if (activeSearchIndex.value >= results.length) {
+    activeSearchIndex.value = Math.max(results.length - 1, 0);
+  }
+  if (normalizedSearchQuery.value && results.length) {
+    scrollToSearchResult();
+  }
 });
 
 onMounted(() => {
@@ -533,23 +682,46 @@ onBeforeUnmount(() => {
   <div v-show="show" class="crm-attendance-layer">
     <section class="crm-attendance-panel" aria-label="Atendimento no Kanban">
       <header class="crm-attendance-header">
-        <div class="min-w-0">
-          <p class="m-0 text-xs font-semibold uppercase text-n-slate-10">
-            Atendimento
-          </p>
-          <h2 class="m-0 truncate text-lg font-semibold text-n-slate-12">
-            {{ displayTitle }}
-          </h2>
-          <p class="m-0 truncate text-xs text-n-slate-10">
-            {{ contactName || 'Contato sem nome' }}
-            <span v-if="contactPhone">- {{ contactPhone }}</span>
-          </p>
-          <p class="m-0 truncate text-xs text-n-slate-10">
-            Responsavel: {{ ownerName }}
-          </p>
+        <div class="crm-attendance-contact-head">
+          <div class="crm-attendance-avatar" aria-hidden="true">
+            {{ headerContactName.slice(0, 1).toUpperCase() }}
+          </div>
+          <div class="min-w-0">
+            <h2 class="m-0 truncate text-lg font-semibold text-n-slate-12">
+              {{ headerContactName }}
+            </h2>
+            <div class="crm-attendance-header-meta">
+              <span class="crm-attendance-chip crm-attendance-chip--strong">
+                {{ attendanceLabel }}
+              </span>
+              <span v-if="contactPhone" class="crm-attendance-chip">
+                <span class="i-lucide-phone size-3" />
+                {{ contactPhone }}
+              </span>
+            </div>
+            <p class="m-0 truncate text-xs text-n-slate-10">
+              Responsavel: {{ ownerName }}
+            </p>
+          </div>
         </div>
 
         <div class="flex shrink-0 items-center gap-1.5">
+          <button
+            type="button"
+            class="crm-attendance-icon-button"
+            title="Buscar neste atendimento"
+            @click="openSearch"
+          >
+            <span class="i-lucide-search size-4" />
+          </button>
+          <a
+            v-if="contactUrl"
+            :href="contactUrl"
+            class="crm-attendance-icon-button"
+            title="Editar contato"
+          >
+            <span class="i-lucide-user-pen size-4" />
+          </a>
           <a
             v-if="conversationUrl"
             :href="conversationUrl"
@@ -576,6 +748,46 @@ onBeforeUnmount(() => {
           </button>
         </div>
       </header>
+
+      <div v-if="searchOpen" class="crm-attendance-searchbar">
+        <span class="i-lucide-search size-4 text-n-slate-10" />
+        <input
+          ref="searchInputRef"
+          v-model="searchQuery"
+          type="search"
+          placeholder="Buscar mensagens"
+          @keydown="onSearchKeydown"
+        />
+        <span class="crm-attendance-searchbar__count">
+          {{ searchStatusLabel }}
+        </span>
+        <button
+          type="button"
+          class="crm-attendance-searchbar__button"
+          :disabled="!searchResults.length"
+          title="Resultado anterior"
+          @click="moveSearchResult(-1)"
+        >
+          <span class="i-lucide-chevron-up size-4" />
+        </button>
+        <button
+          type="button"
+          class="crm-attendance-searchbar__button"
+          :disabled="!searchResults.length"
+          title="Proximo resultado"
+          @click="moveSearchResult(1)"
+        >
+          <span class="i-lucide-chevron-down size-4" />
+        </button>
+        <button
+          type="button"
+          class="crm-attendance-searchbar__button"
+          title="Fechar busca"
+          @click="closeSearch"
+        >
+          <span class="i-lucide-x size-4" />
+        </button>
+      </div>
 
       <div class="crm-attendance-controls">
         <label class="crm-attendance-field">
@@ -690,7 +902,11 @@ onBeforeUnmount(() => {
           <article
             v-for="item in timelineItems"
             :key="item.id"
+            :ref="el => setTimelineItemRef(item.id, el)"
             class="crm-attendance-item"
+            :class="{
+              'crm-attendance-item--search-hit': activeSearchItemId === item.id,
+            }"
           >
             <div v-if="item.type === 'event'" class="crm-attendance-event">
               <span class="size-3.5" :class="item.icon" />
@@ -799,7 +1015,62 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   gap: 1rem;
   border-bottom-width: 1px;
-  padding: 1rem;
+  padding: 0.85rem 0.9rem;
+}
+
+.crm-attendance-contact-head {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.crm-attendance-avatar {
+  display: grid;
+  width: 2.6rem;
+  height: 2.6rem;
+  flex: 0 0 auto;
+  place-content: center;
+  border: 1px solid rgb(var(--teal-6));
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 28% 22%, rgb(var(--teal-5)), transparent 44%),
+    rgb(var(--slate-2));
+  color: rgb(var(--slate-12));
+  font-size: 1rem;
+  font-weight: 850;
+}
+
+.crm-attendance-header-meta {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.2rem 0 0.28rem;
+}
+
+.crm-attendance-chip {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  gap: 0.28rem;
+  overflow: hidden;
+  border: 1px solid rgb(var(--slate-5));
+  border-radius: 999px;
+  background: rgb(var(--slate-2) / 0.72);
+  padding: 0.2rem 0.5rem;
+  color: rgb(var(--slate-10));
+  font-size: 0.7rem;
+  font-weight: 750;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crm-attendance-chip--strong {
+  border-color: rgb(var(--blue-6));
+  background: rgb(var(--blue-2) / 0.82);
+  color: rgb(var(--blue-11));
 }
 
 .crm-attendance-icon-button {
@@ -821,6 +1092,57 @@ onBeforeUnmount(() => {
   border-color: rgb(var(--blue-6));
   background: rgb(var(--blue-2));
   color: rgb(var(--blue-11));
+}
+
+.crm-attendance-searchbar {
+  display: grid;
+  flex-shrink: 0;
+  grid-template-columns: auto minmax(0, 1fr) auto auto auto auto;
+  align-items: center;
+  gap: 0.4rem;
+  border-bottom: 1px solid rgb(var(--slate-5) / 0.82);
+  background: rgb(var(--slate-2) / 0.66);
+  padding: 0.55rem 0.75rem;
+}
+
+.crm-attendance-searchbar input {
+  min-width: 0;
+  height: 2rem;
+  border: 1px solid rgb(var(--slate-5));
+  border-radius: 999px;
+  background: rgb(var(--slate-1));
+  color: rgb(var(--slate-12));
+  font-size: 0.85rem;
+  outline: none;
+  padding: 0 0.75rem;
+}
+
+.crm-attendance-searchbar input:focus {
+  border-color: rgb(var(--teal-7));
+  box-shadow: 0 0 0 2px rgb(var(--teal-5) / 0.28);
+}
+
+.crm-attendance-searchbar__count {
+  color: rgb(var(--slate-10));
+  font-size: 0.72rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.crm-attendance-searchbar__button {
+  display: grid;
+  width: 1.9rem;
+  height: 1.9rem;
+  place-content: center;
+  border: 1px solid rgb(var(--slate-5));
+  border-radius: 999px;
+  background: rgb(var(--slate-1));
+  color: rgb(var(--slate-11));
+}
+
+.crm-attendance-searchbar__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 
 .crm-attendance-controls {
@@ -969,6 +1291,17 @@ onBeforeUnmount(() => {
   margin-top: 0.6rem;
 }
 
+.crm-attendance-item--search-hit {
+  scroll-margin-block: 7rem;
+}
+
+.crm-attendance-item--search-hit .crm-attendance-message,
+.crm-attendance-item--search-hit .crm-attendance-event {
+  outline: 2px solid rgb(var(--amber-8));
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px rgb(var(--amber-5) / 0.22);
+}
+
 .crm-attendance-event {
   display: flex;
   max-width: 92%;
@@ -1106,6 +1439,18 @@ onBeforeUnmount(() => {
 
   .crm-attendance-controls {
     grid-template-columns: 1fr;
+  }
+
+  .crm-attendance-header {
+    align-items: flex-start;
+  }
+
+  .crm-attendance-searchbar {
+    grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+  }
+
+  .crm-attendance-searchbar__count {
+    grid-column: 2 / -1;
   }
 }
 </style>
