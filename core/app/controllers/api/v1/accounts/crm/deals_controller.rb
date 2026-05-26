@@ -215,6 +215,8 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
   end
 
   def serialize_deal(deal, detailed: false)
+    avatar_url = contact_avatar_url(deal.contact)
+
     base = {
       id: deal.id,
       title: deal.title,
@@ -253,6 +255,8 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
       contact_name: deal.contact&.name,
       contact_phone_number: deal.contact&.phone_number,
       contact_email: deal.contact&.email,
+      contact_thumbnail: avatar_url,
+      contact_avatar_url: avatar_url,
       conversation_id: deal.conversation_id,
       conversation_display_id: deal.conversation&.display_id,
       owner_id: deal.owner_id,
@@ -296,13 +300,15 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
   def serialize_contact(contact)
     return nil unless contact
 
+    avatar_url = contact_avatar_url(contact)
+
     {
       id: contact.id,
       name: contact.name,
       email: contact.email,
       phone_number: contact.phone_number,
-      thumbnail: contact.try(:thumbnail) || contact.try(:avatar_url),
-      avatar_url: contact.try(:avatar_url),
+      thumbnail: avatar_url,
+      avatar_url: avatar_url,
       identifier: contact.identifier,
       relationship_status: contact.try(:relationship_status),
       lifecycle_stage: contact.try(:lifecycle_stage),
@@ -314,6 +320,28 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
       created_at: contact.created_at,
       last_activity_at: contact.last_activity_at
     }
+  end
+
+  def contact_avatar_url(contact)
+    return '' unless contact
+
+    [
+      contact.try(:thumbnail),
+      contact.try(:avatar_url),
+      avatar_attribute(contact.additional_attributes, 'avatar_url'),
+      avatar_attribute(contact.additional_attributes, 'thumbnail'),
+      avatar_attribute(contact.additional_attributes, 'profile_pic'),
+      avatar_attribute(contact.additional_attributes, 'profile_picture'),
+      avatar_attribute(contact.additional_attributes, 'profile_image'),
+      avatar_attribute(contact.custom_attributes, 'avatar_url'),
+      avatar_attribute(contact.custom_attributes, 'thumbnail')
+    ].find(&:present?) || ''
+  end
+
+  def avatar_attribute(attributes, key)
+    return nil unless attributes.respond_to?(:[])
+
+    attributes[key] || attributes[key.to_sym]
   end
 
   def serialize_conversation(conversation)

@@ -46,6 +46,31 @@ RSpec.describe 'CRM Deals API', type: :request do
     end
   end
 
+  describe 'GET /api/v1/accounts/:account_id/crm/deals' do
+    it 'returns contact avatar fields for Kanban cards' do
+      contact = create(
+        :contact,
+        account: account,
+        name: 'Ricardo Reichert',
+        additional_attributes: { 'avatar_url' => 'https://cdn.test/ricardo.jpg' }
+      )
+      create_deal!(title: 'Atendimento #62', contact: contact)
+
+      get "/api/v1/accounts/#{account.id}/crm/deals",
+          params: { pipeline_id: pipeline.id },
+          headers: headers,
+          as: :json
+
+      expect(response).to have_http_status(:success)
+      deal = response.parsed_body['data'].first
+      expect(deal).to include(
+        'contact_name' => 'Ricardo Reichert',
+        'contact_thumbnail' => 'https://cdn.test/ricardo.jpg',
+        'contact_avatar_url' => 'https://cdn.test/ricardo.jpg'
+      )
+    end
+  end
+
   describe 'POST /api/v1/accounts/:account_id/crm/deals/bulk_action' do
     it 'permanently deletes selected leads' do
       first_deal = create_deal!(title: 'Lead 1')

@@ -56,14 +56,17 @@ const dealDetailsUrl = computed(() =>
 );
 
 const displayName = computed(
-  () => props.deal.title || props.deal.contact_name || 'Lead sem nome'
+  () =>
+    props.deal.contact_name ||
+    props.deal.contact?.name ||
+    props.deal.title ||
+    'Lead sem nome'
 );
 
 const dealRef = computed(() => {
   const title = props.deal.title || '';
-  const name = props.deal.contact_name || '';
-  if (!name || title === name) return '';
-  return name;
+  if (!title || title === displayName.value) return '';
+  return title;
 });
 
 const contactPhone = computed(() => props.deal.contact_phone_number || '');
@@ -155,7 +158,7 @@ watch(
 );
 
 function startTitleEdit() {
-  titleDraft.value = props.deal.title || props.deal.contact_name || '';
+  titleDraft.value = props.deal.title || displayName.value || '';
   isEditingTitle.value = true;
 }
 
@@ -236,7 +239,7 @@ function openAttendance(event) {
         v-else
         type="button"
         class="flex-1 min-w-0 m-0 p-0 text-left text-xs font-semibold text-n-slate-12 leading-snug line-clamp-2 bg-transparent border-0 cursor-text"
-        title="Clique para renomear"
+        title="Editar titulo do atendimento"
         @click.stop="startTitleEdit"
       >
         {{ displayName }}

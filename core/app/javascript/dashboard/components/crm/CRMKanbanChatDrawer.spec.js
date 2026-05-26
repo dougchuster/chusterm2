@@ -185,7 +185,7 @@ describe('CRMKanbanChatDrawer', () => {
     expect(wrapper.text()).toContain('Mensagem enviada');
   });
 
-  it('renders contact avatar, compact summary, direction icons and media attachments', async () => {
+  it('renders contact avatar, optional summary, direction icons and media attachments', async () => {
     const wrapper = mountDrawer();
 
     await flushPromises();
@@ -193,6 +193,12 @@ describe('CRMKanbanChatDrawer', () => {
 
     const avatar = wrapper.get('img[alt="Maria Cliente"]');
     expect(avatar.attributes('src')).toBe('https://cdn.test/maria.jpg');
+    expect(wrapper.text()).toContain('Resumo');
+    expect(wrapper.text()).not.toContain('Resumo do atendimento');
+    expect(wrapper.text()).not.toContain(longSummary);
+
+    await wrapper.get('button[title="Abrir resumo"]').trigger('click');
+
     expect(wrapper.text()).toContain('Ver mais');
     expect(wrapper.text()).not.toContain(longSummary);
 

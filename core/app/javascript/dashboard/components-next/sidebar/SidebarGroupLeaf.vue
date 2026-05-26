@@ -49,11 +49,7 @@ const shouldRenderComponent = computed(() => {
       />
       <template v-else>
         <span v-if="icon" class="sidebar-group-leaf__icon">
-          <Icon
-            :icon="icon"
-            class="inline-block"
-            :class="isNested ? 'size-3.5' : 'size-4'"
-          />
+          <Icon :icon="icon" :class="isNested ? 'size-3.5' : 'size-4'" />
         </span>
         <div
           class="flex-1 truncate min-w-0"
@@ -76,7 +72,7 @@ const shouldRenderComponent = computed(() => {
 }
 
 .sidebar-group-leaf-container--nested {
-  padding-inline-start: 1rem;
+  padding-inline-start: 0.75rem;
 }
 
 .sidebar-group-leaf {
@@ -86,9 +82,9 @@ const shouldRenderComponent = computed(() => {
 }
 
 .sidebar-group-leaf--nested {
-  min-height: 1.75rem;
-  gap: 0.5rem;
-  padding-block: 0.1875rem;
+  min-height: 2rem;
+  gap: 0.55rem;
+  padding-block: 0.25rem;
   padding-inline: 0.5rem 0.625rem;
   border-radius: 0.5rem;
 }
@@ -119,11 +115,12 @@ const shouldRenderComponent = computed(() => {
   display: grid;
   place-content: center;
   flex-shrink: 0;
+  line-height: 1;
 }
 
 .sidebar-group-leaf--nested .sidebar-group-leaf__icon {
-  width: 1rem;
-  height: 1rem;
+  width: 1.15rem;
+  height: 1.15rem;
 }
 
 .sidebar-group-leaf.is-current .sidebar-group-leaf__icon {

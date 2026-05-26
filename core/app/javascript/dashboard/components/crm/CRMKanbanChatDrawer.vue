@@ -75,6 +75,7 @@ const searchQuery = ref('');
 const activeSearchIndex = ref(0);
 const summaryExpanded = ref(false);
 const summaryDismissed = ref(false);
+const summaryPanelOpen = ref(false);
 const searchInputRef = ref(null);
 const timelineItemRefs = new Map();
 let loadToken = 0;
@@ -121,14 +122,10 @@ const contactUrl = computed(() => {
 
 const contactAvatarUrl = computed(
   () =>
-    localDeal.value?.contact?.thumbnail ||
-    localDeal.value?.contact?.avatar_url ||
-    localDeal.value?.contact?.avatarUrl ||
+    avatarFromContact(localDeal.value?.contact) ||
     localDeal.value?.contact_thumbnail ||
     localDeal.value?.contact_avatar_url ||
-    props.deal?.contact?.thumbnail ||
-    props.deal?.contact?.avatar_url ||
-    props.deal?.contact?.avatarUrl ||
+    avatarFromContact(props.deal?.contact) ||
     props.deal?.contact_thumbnail ||
     props.deal?.contact_avatar_url ||
     ''
@@ -216,8 +213,12 @@ const summaryText = computed(
     ''
 );
 
+const hasSummary = computed(
+  () => humanControlled.value || Boolean(summaryText.value)
+);
+
 const shouldShowSummary = computed(
-  () => !summaryDismissed.value && (humanControlled.value || Boolean(summaryText.value))
+  () => summaryPanelOpen.value && !summaryDismissed.value && hasSummary.value
 );
 
 const summaryPreview = computed(() => {
@@ -307,6 +308,35 @@ function timeToMs(value) {
   }
   const parsed = new Date(value).getTime();
   return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function avatarFromContact(contact) {
+  if (!contact) return '';
+  const additional = contact.additional_attributes || {};
+  const custom = contact.custom_attributes || {};
+  return (
+    contact.thumbnail ||
+    contact.avatar_url ||
+    contact.avatarUrl ||
+    additional.avatar_url ||
+    additional.thumbnail ||
+    additional.profile_pic ||
+    additional.profile_picture ||
+    additional.profile_image ||
+    custom.avatar_url ||
+    custom.thumbnail ||
+    ''
+  );
+}
+
+function openSummaryPanel() {
+  summaryDismissed.value = false;
+  summaryPanelOpen.value = true;
+}
+
+function dismissSummaryPanel() {
+  summaryDismissed.value = true;
+  summaryPanelOpen.value = false;
 }
 
 function formatDateTime(value) {
@@ -609,6 +639,7 @@ async function loadContext() {
   localEvents.value = [];
   summaryExpanded.value = false;
   summaryDismissed.value = false;
+  summaryPanelOpen.value = false;
   localDeal.value = { ...props.deal };
   messages.value = (props.deal.messages || []).map(normalizeMessage);
   activities.value = props.deal.activities || [];
@@ -866,7 +897,7 @@ onBeforeUnmount(() => {
             </span>
           </div>
           <div class="min-w-0">
-            <h2 class="m-0 truncate text-lg font-semibold text-n-slate-12">
+            <h2 class="m-0 truncate text-base font-semibold text-n-slate-12">
               {{ headerContactName }}
             </h2>
             <div class="crm-attendance-header-meta">
@@ -940,7 +971,7 @@ onBeforeUnmount(() => {
         </div>
       </header>
 
-      <div class="crm-attendance-searchbar">
+      <div v-if="searchOpen || searchQuery" class="crm-attendance-searchbar">
         <span class="i-lucide-search size-4 text-n-slate-10" />
         <input
           ref="searchInputRef"
@@ -1037,6 +1068,16 @@ onBeforeUnmount(() => {
             </span>
             <div class="crm-attendance-ai__actions">
               <button
+                v-if="hasSummary"
+                type="button"
+                class="crm-attendance-mini-button crm-attendance-mini-button--summary"
+                title="Abrir resumo"
+                @click="openSummaryPanel"
+              >
+                <span class="i-lucide-sparkles size-3.5" />
+                Resumo
+              </button>
+              <button
                 type="button"
                 class="crm-attendance-mini-button crm-attendance-mini-button--danger"
                 :disabled="isAiModeButtonDisabled('human_only')"
@@ -1120,7 +1161,7 @@ onBeforeUnmount(() => {
               type="button"
               class="crm-attendance-summary__close"
               title="Ocultar resumo"
-              @click="summaryDismissed = true"
+              @click="dismissSummaryPanel"
             >
               <span class="i-lucide-x size-3.5" />
             </button>
@@ -1219,7 +1260,7 @@ onBeforeUnmount(() => {
         <p v-if="error" class="crm-attendance-error">{{ error }}</p>
         <textarea
           v-model="draft"
-          rows="3"
+          rows="2"
           class="crm-attendance-input"
           aria-label="Responder ao cliente"
           :disabled="sending || !canLoadMessages"
@@ -1258,8 +1299,8 @@ onBeforeUnmount(() => {
 
 .crm-attendance-panel {
   display: flex;
-  width: min(46rem, 58vw);
-  min-width: 34rem;
+  width: min(54rem, 68vw);
+  min-width: 40rem;
   max-width: calc(100vw - 1.5rem);
   height: calc(100vh - 1.5rem);
   flex-direction: column;
@@ -1290,22 +1331,22 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.7rem;
   border-bottom-width: 1px;
-  padding: 0.85rem 0.9rem;
+  padding: 0.55rem 0.72rem;
 }
 
 .crm-attendance-contact-head {
   display: flex;
   min-width: 0;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.58rem;
 }
 
 .crm-attendance-avatar {
   display: grid;
-  width: 2.6rem;
-  height: 2.6rem;
+  width: 2.25rem;
+  height: 2.25rem;
   flex: 0 0 auto;
   place-content: center;
   border: 1px solid rgb(var(--ds-shell-secondary) / 0.5);
@@ -1333,8 +1374,8 @@ onBeforeUnmount(() => {
   display: flex;
   min-width: 0;
   flex-wrap: wrap;
-  gap: 0.35rem;
-  margin: 0.2rem 0 0.28rem;
+  gap: 0.28rem;
+  margin: 0.15rem 0 0.2rem;
 }
 
 .crm-attendance-chip {
@@ -1346,7 +1387,7 @@ onBeforeUnmount(() => {
   border: 1px solid rgb(var(--ds-shell-border) / 0.56);
   border-radius: 999px;
   background: rgb(var(--ds-shell-panel-sunken) / 0.72);
-  padding: 0.22rem 0.55rem;
+  padding: 0.18rem 0.48rem;
   color: rgb(var(--ds-fg-muted));
   font-size: 0.7rem;
   font-weight: 750;
@@ -1365,13 +1406,13 @@ onBeforeUnmount(() => {
   display: flex;
   flex-shrink: 0;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.32rem;
 }
 
 .crm-attendance-action-button,
 .crm-attendance-icon-button {
   display: inline-flex;
-  height: 2rem;
+  height: 1.86rem;
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
@@ -1386,15 +1427,15 @@ onBeforeUnmount(() => {
 }
 
 .crm-attendance-action-button {
-  min-width: 4.8rem;
-  padding: 0 0.55rem;
+  min-width: 4.25rem;
+  padding: 0 0.48rem;
   color: rgb(var(--ds-fg-default));
   font-size: 0.75rem;
   font-weight: 800;
 }
 
 .crm-attendance-icon-button {
-  width: 2rem;
+  width: 1.86rem;
 }
 
 .crm-attendance-action-button:hover,
@@ -1420,12 +1461,12 @@ onBeforeUnmount(() => {
   gap: 0.4rem;
   border-bottom: 1px solid rgb(var(--ds-shell-divider) / 0.76);
   background: rgb(var(--ds-shell-panel-sunken) / 0.56);
-  padding: 0.55rem 0.75rem;
+  padding: 0.4rem 0.65rem;
 }
 
 .crm-attendance-searchbar input {
   min-width: 0;
-  height: 2rem;
+  height: 1.88rem;
   border: 1px solid rgb(var(--ds-shell-border) / 0.6);
   border-radius: 999px;
   background: rgb(var(--ds-shell-panel) / 0.92);
@@ -1466,19 +1507,19 @@ onBeforeUnmount(() => {
 .crm-attendance-controls {
   display: grid;
   flex-shrink: 0;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.5rem;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.88fr);
+  gap: 0.4rem;
   border-bottom: 1px solid rgb(var(--ds-shell-divider) / 0.76);
-  padding: 0.6rem 0.75rem;
+  padding: 0.45rem 0.65rem;
 }
 
 .crm-attendance-field {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.18rem;
   color: rgb(var(--ds-fg-subtle));
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
 }
@@ -1502,16 +1543,16 @@ onBeforeUnmount(() => {
 }
 
 .crm-attendance-field select {
-  height: 2.25rem;
-  padding: 0 0.625rem;
-  font-size: 0.875rem;
+  height: 2rem;
+  padding: 0 0.55rem;
+  font-size: 0.82rem;
   font-weight: 600;
 }
 
 .crm-attendance-ai {
   display: grid;
   grid-column: 1 / -1;
-  gap: 0.45rem;
+  gap: 0.34rem;
   border: 1px solid rgb(var(--ds-shell-border) / 0.62);
   border-radius: 0.65rem;
   background:
@@ -1520,14 +1561,14 @@ onBeforeUnmount(() => {
       rgb(var(--ds-shell-panel-sunken) / 0.62),
       rgb(var(--ds-shell-panel) / 0.4)
     );
-  padding: 0.5rem;
+  padding: 0.38rem;
 }
 
 .crm-attendance-ai__top {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.34rem;
 }
 
 .crm-attendance-ai__status {
@@ -1554,14 +1595,15 @@ onBeforeUnmount(() => {
 
 .crm-attendance-ai__actions {
   display: inline-grid;
-  grid-template-columns: repeat(3, auto);
-  gap: 0.3rem;
+  grid-auto-flow: column;
+  grid-auto-columns: max-content;
+  gap: 0.25rem;
 }
 
 .crm-attendance-reason,
 .crm-attendance-input {
   resize: none;
-  padding: 0.625rem;
+  padding: 0.55rem 0.62rem;
   font-size: 0.875rem;
 }
 
@@ -1587,9 +1629,15 @@ onBeforeUnmount(() => {
 }
 
 .crm-attendance-mini-button {
-  min-height: 1.8rem;
-  padding: 0 0.5rem;
+  min-height: 1.65rem;
+  padding: 0 0.45rem;
   font-size: 0.72rem;
+}
+
+.crm-attendance-mini-button--summary {
+  border-color: rgb(var(--ds-shell-warning) / 0.5);
+  background: rgb(var(--ds-shell-warning-soft) / 0.78);
+  color: rgb(var(--ds-shell-warning));
 }
 
 .crm-attendance-mini-button--danger {
@@ -1622,7 +1670,7 @@ onBeforeUnmount(() => {
       transparent 23rem
     ),
     rgb(var(--ds-shell-panel-sunken) / 0.32);
-  padding: 0.875rem 0.95rem;
+  padding: 0.78rem 0.9rem;
 }
 
 .crm-attendance-empty {
@@ -1755,7 +1803,7 @@ onBeforeUnmount(() => {
 
 .crm-attendance-message {
   width: fit-content;
-  max-width: min(82%, 34rem);
+  max-width: min(86%, 42rem);
   border: 1px solid rgb(var(--ds-shell-border) / 0.58);
   border-radius: 0.9rem;
   padding: 0.6rem 0.72rem;
@@ -1908,9 +1956,9 @@ onBeforeUnmount(() => {
 .crm-attendance-composer {
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 0.45rem;
   border-top-width: 1px;
-  padding: 0.75rem;
+  padding: 0.58rem 0.65rem;
 }
 
 .crm-attendance-error {
