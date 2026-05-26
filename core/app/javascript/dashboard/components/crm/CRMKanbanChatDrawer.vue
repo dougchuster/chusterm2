@@ -189,6 +189,7 @@ const aiModeLabel = computed(() => AI_MODE_LABELS[aiMode.value] || 'IA ativa');
 const humanControlled = computed(() =>
   ['paused', 'human_only'].includes(aiMode.value)
 );
+const isAiLoadingInitialState = computed(() => aiLoading.value && !aiState.value);
 
 const summaryText = computed(
   () =>
@@ -485,9 +486,13 @@ async function loadAiState(expectedToken = loadToken) {
     aiState.value = data;
     handoffReason.value = data.handoff_reason || '';
   } catch {
-    aiState.value = null;
+    if (expectedToken === loadToken) {
+      aiState.value = null;
+    }
   } finally {
-    aiLoading.value = false;
+    if (expectedToken === loadToken) {
+      aiLoading.value = false;
+    }
   }
 }
 
@@ -596,21 +601,24 @@ async function updateOperationalStatus(status) {
 
 async function setAiMode(mode) {
   if (!hasConversation.value) return;
+  if (mode === aiMode.value && !handoffReason.value.trim()) return;
 
   updatingAi.value = true;
   error.value = '';
 
   try {
-    const reason =
-      handoffReason.value ||
-      (mode === 'human_only'
+    const isHumanMode = ['paused', 'human_only'].includes(mode);
+    const reason = isHumanMode
+      ? handoffReason.value.trim() ||
+        (mode === 'human_only'
         ? 'Atendimento assumido pelo Kanban'
-        : 'Atualizado pelo Kanban');
+          : 'IA pausada pelo Kanban')
+      : 'IA retomada pelo Kanban';
     const { data } = await CaptainConversationStateAPI.update(
       conversationLookupId.value,
       {
         ai_mode: mode,
-        handoff_reason: reason,
+        handoff_reason: isHumanMode ? reason : '',
         crm_deal_id: localDeal.value?.id,
         context_summary: summaryText.value || undefined,
       }
@@ -626,6 +634,10 @@ async function setAiMode(mode) {
   } finally {
     updatingAi.value = false;
   }
+}
+
+function isAiModeButtonDisabled(mode) {
+  return updatingAi.value || !hasConversation.value || aiMode.value === mode;
 }
 
 async function sendDraft() {
@@ -696,8 +708,17 @@ function onWindowKeydown(event) {
 }
 
 watch(
-  () => [props.deal?.id, show.value],
-  () => loadContext(),
+  [() => props.deal?.id, show],
+  ([dealId, isOpen]) => {
+    if (!isOpen) {
+      loadToken += 1;
+      loading.value = false;
+      messagesLoading.value = false;
+      aiLoading.value = false;
+      return;
+    }
+    if (dealId) loadContext();
+  },
   { immediate: true }
 );
 
@@ -881,8 +902,15 @@ onBeforeUnmount(() => {
         <div class="crm-attendance-ai">
           <div class="crm-attendance-ai__top">
             <span class="crm-attendance-ai__status">
-              <span class="i-lucide-bot size-3.5" />
-              {{ aiLoading ? 'Carregando IA...' : aiModeLabel }}
+              <span
+                class="size-3.5"
+                :class="
+                  isAiLoadingInitialState
+                    ? 'i-lucide-loader-2 animate-spin'
+                    : 'i-lucide-bot'
+                "
+              />
+              {{ aiModeLabel }}
             </span>
             <span
               class="crm-attendance-ai__mode"
@@ -898,7 +926,7 @@ onBeforeUnmount(() => {
               <button
                 type="button"
                 class="crm-attendance-mini-button crm-attendance-mini-button--danger"
-                :disabled="updatingAi || !hasConversation"
+                :disabled="isAiModeButtonDisabled('human_only')"
                 @click="setAiMode('human_only')"
               >
                 Assumir
@@ -906,7 +934,7 @@ onBeforeUnmount(() => {
               <button
                 type="button"
                 class="crm-attendance-mini-button"
-                :disabled="updatingAi || !hasConversation"
+                :disabled="isAiModeButtonDisabled('paused')"
                 @click="setAiMode('paused')"
               >
                 Pausar
@@ -914,7 +942,7 @@ onBeforeUnmount(() => {
               <button
                 type="button"
                 class="crm-attendance-mini-button crm-attendance-mini-button--ok"
-                :disabled="updatingAi || !hasConversation"
+                :disabled="isAiModeButtonDisabled('auto')"
                 @click="setAiMode('auto')"
               >
                 Retomar
