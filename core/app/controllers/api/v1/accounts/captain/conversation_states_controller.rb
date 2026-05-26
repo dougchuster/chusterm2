@@ -49,6 +49,7 @@ class Api::V1::Accounts::Captain::ConversationStatesController < Api::V1::Accoun
     else
       @state.handoff_at = nil
       @state.handoff_by = nil
+      @state.handoff_reason = 'IA retomada manualmente'
     end
   end
 

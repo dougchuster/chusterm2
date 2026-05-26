@@ -217,6 +217,16 @@ RSpec.describe MessageTemplates::HookExecutionService do
       expect(state.ai_mode).to eq('human_only')
       expect(state.handoff_reason).to eq('Atendimento humano detectado; IA pausada automaticamente.')
     end
+
+    it 'allows Captain again after manual AI resume' do
+      state = CaptainConversationState.for_conversation!(conversation)
+      state.update!(ai_mode: 'auto', handoff_reason: 'IA retomada manualmente', handoff_at: nil, handoff_by: nil)
+      conversation.update!(status: :pending)
+
+      expect_captain_response_scheduled_for(conversation)
+
+      create(:message, conversation: conversation, message_type: :incoming, account: account, inbox: inbox, content: 'Pode seguir')
+    end
   end
 
   context 'when contact is already a CRM customer' do

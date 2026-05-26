@@ -19,7 +19,7 @@ class MessageTemplates::HookExecutionService
   def trigger_templates
     return perform_customer_handoff if customer_contact?
     return perform_human_attending_handoff if public_human_message?(message)
-    return perform_human_attending_handoff if message.incoming? && public_human_response_exists?
+    return perform_human_attending_handoff if message.incoming? && human_intervention_active?
     return perform_human_attending_handoff if message.incoming? && human_attending_conversation?
 
     ::MessageTemplates::Template::OutOfOffice.new(conversation: conversation).perform if should_send_out_of_office_message?
@@ -128,19 +128,34 @@ class MessageTemplates::HookExecutionService
   end
 
   def public_human_response_exists?
-    conversation.messages.outgoing
-                .where(private: false)
-                .any? { |candidate| public_human_message?(candidate) }
+    human_intervention_active?
+  end
+
+  def human_intervention_active?
+    latest_human = latest_public_human_message
+    return false if latest_human.blank?
+    return false if ai_manually_resumed_after?(latest_human)
+
+    true
   end
 
   def human_attending_conversation?
     latest_human = latest_public_human_message
     return false if latest_human.blank?
+    return false if ai_manually_resumed_after?(latest_human)
 
     latest_ai = latest_public_ai_message
     return true if latest_ai.blank?
 
     latest_human.id > latest_ai.id || latest_human.created_at >= latest_ai.created_at
+  end
+
+  def ai_manually_resumed_after?(latest_human)
+    state = conversation.captain_conversation_state
+    return false if state.blank? || state.human_controlled?
+    return false unless state.handoff_reason == 'IA retomada manualmente'
+
+    state.updated_at > latest_human.created_at
   end
 
   def latest_public_human_message

@@ -164,6 +164,24 @@ RSpec.describe Captain::Conversation::ResponseBuilderJob, type: :job do
         expect(state.handoff_reason).to eq('Atendimento humano detectado; IA pausada automaticamente.')
       end
 
+      it 'allows a response after a human manually resumes AI' do
+        agent = create(:user, account: account, role: :agent)
+        create(:message, conversation: conversation, content: 'Resposta anterior da IA.', message_type: :outgoing,
+                         sender: assistant, account: account, inbox: inbox)
+        create(:message, conversation: conversation, content: 'Vou assumir por aqui.', message_type: :outgoing,
+                         sender: agent, account: account, inbox: inbox)
+
+        state = CaptainConversationState.for_conversation!(conversation)
+        state.update!(ai_mode: 'auto', handoff_reason: 'IA retomada manualmente', handoff_at: nil, handoff_by: nil)
+        conversation.pending!
+        create(:message, conversation: conversation, content: 'Pode seguir', message_type: :incoming,
+                         account: account, inbox: inbox)
+
+        expect do
+          described_class.perform_now(conversation, assistant)
+        end.to change { conversation.messages.outgoing.where(sender_type: 'Captain::Assistant').count }.by(1)
+      end
+
       it 'does not send AI responses to customer contacts' do
         conversation.contact.update!(contact_type: :customer)
 

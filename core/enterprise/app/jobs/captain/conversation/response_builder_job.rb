@@ -393,22 +393,22 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
     latest_incoming = latest_public_incoming_message
     return false if latest_incoming.blank?
 
-    human_replied = @conversation.messages
-                                 .outgoing
-                                 .where(private: false)
-                                 .where('id > ? OR created_at >= ?', latest_incoming.id, latest_incoming.created_at)
-                                 .any? { |candidate| public_human_message?(candidate) }
-    return false unless human_replied
+    human_reply = @conversation.messages
+                               .outgoing
+                               .where(private: false)
+                               .where('id > ? OR created_at >= ?', latest_incoming.id, latest_incoming.created_at)
+                               .detect { |candidate| public_human_message?(candidate) }
+    return false if human_reply.blank?
+    return false if ai_manually_resumed_after?(human_reply)
 
     mark_conversation_human_only!('Atendimento humano detectado; IA pausada automaticamente.')
     true
   end
 
   def public_human_response_exists?
-    return false unless @conversation.messages
-                                      .outgoing
-                                      .where(private: false)
-                                      .any? { |candidate| public_human_message?(candidate) }
+    latest_human = latest_public_human_message
+    return false if latest_human.blank?
+    return false if ai_manually_resumed_after?(latest_human)
 
     mark_conversation_human_only!('Atendimento humano detectado; IA pausada automaticamente.')
     true
@@ -417,6 +417,7 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
   def public_human_response_after_last_ai?
     latest_human = latest_public_human_message
     return false if latest_human.blank?
+    return false if ai_manually_resumed_after?(latest_human)
 
     last_ai = latest_public_ai_message
     return mark_human_attending! if last_ai.blank?
@@ -457,6 +458,14 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
                  .where(sender_type: 'Captain::Assistant', private: false)
                  .reorder(id: :desc)
                  .first
+  end
+
+  def ai_manually_resumed_after?(latest_human)
+    state = @conversation.captain_conversation_state
+    return false if state.blank? || state.human_controlled?
+    return false unless state.handoff_reason == 'IA retomada manualmente'
+
+    state.updated_at > latest_human.created_at
   end
 
   def mark_human_attending!
