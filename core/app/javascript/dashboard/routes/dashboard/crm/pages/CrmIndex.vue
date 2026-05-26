@@ -1498,14 +1498,20 @@ onMounted(() => {
   backdrop-filter: blur(16px) saturate(1.08);
 }
 
-.crm-command-filters :is(input, select),
+.crm-command-filters
+  :is(input, select):not(.crm-kanban-filter-control__input):not(
+    .crm-kanban-filter-control__select
+  ),
 .crm-command-header select {
   border-color: rgb(var(--ds-shell-border) / 0.62);
   background: rgb(var(--ds-shell-panel-sunken) / 0.92);
   color: rgb(var(--ds-fg-default));
 }
 
-.crm-command-filters :is(input, select):focus,
+.crm-command-filters
+  :is(input, select):not(.crm-kanban-filter-control__input):not(
+    .crm-kanban-filter-control__select
+  ):focus,
 .crm-command-header select:focus {
   border-color: rgb(var(--ds-shell-focus));
   box-shadow: 0 0 0 3px rgb(var(--ds-shell-glow));
@@ -1546,7 +1552,7 @@ onMounted(() => {
 }
 
 .crm-kanban-filter-control__icon--search {
-  background: rgb(var(--ds-shell-accent-soft));
+  background: transparent;
   color: rgb(var(--ds-shell-accent));
 }
 
@@ -1560,19 +1566,40 @@ onMounted(() => {
 .crm-kanban-filter-control__input,
 .crm-kanban-filter-control__select {
   min-width: 0;
+  width: 100%;
   height: 100%;
   flex: 1 1 auto;
-  border: 0 !important;
+  margin: 0;
+  border: none !important;
+  border-radius: 0 !important;
   background: transparent !important;
+  background-color: transparent !important;
   color: rgb(var(--ds-fg-default));
   font-size: 0.875rem;
   font-weight: 600;
-  outline: none;
+  outline: none !important;
   box-shadow: none !important;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 .crm-kanban-filter-control__input {
   padding: 0;
+}
+
+.crm-kanban-filter-control__input:focus,
+.crm-kanban-filter-control__select:focus {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.crm-kanban-filter-control__input::-webkit-search-cancel-button,
+.crm-kanban-filter-control__input::-webkit-search-decoration,
+.crm-kanban-filter-control__input::-webkit-search-results-button,
+.crm-kanban-filter-control__input::-webkit-search-results-decoration {
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 .crm-kanban-filter-control__input::placeholder {
