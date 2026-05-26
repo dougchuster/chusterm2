@@ -61,6 +61,7 @@ const aiState = ref(null);
 const draft = ref('');
 const handoffReason = ref('');
 const loading = ref(false);
+const messagesLoading = ref(false);
 const aiLoading = ref(false);
 const updatingStage = ref(false);
 const updatingStatus = ref(false);
@@ -100,8 +101,14 @@ const contactId = computed(
   () =>
     localDeal.value?.contact?.id ||
     localDeal.value?.contact_id ||
+    localDeal.value?.contactId ||
+    localDeal.value?.chatwootContactId ||
+    localDeal.value?.chatwoot_contact_id ||
     props.deal?.contact?.id ||
     props.deal?.contact_id ||
+    props.deal?.contactId ||
+    props.deal?.chatwootContactId ||
+    props.deal?.chatwoot_contact_id ||
     ''
 );
 
@@ -139,21 +146,34 @@ const ownerName = computed(() => {
   return owner?.name || owner?.email || 'Sem responsavel';
 });
 
-const conversationLookupId = computed(
+const conversationDisplayId = computed(
   () =>
     localDeal.value?.conversation?.display_id ||
     localDeal.value?.conversation_display_id ||
-    localDeal.value?.conversation_id ||
     props.deal?.conversation?.display_id ||
+    props.deal?.conversation_display_id ||
+    ''
+);
+
+const conversationRecordId = computed(
+  () =>
+    localDeal.value?.conversation?.id ||
+    localDeal.value?.conversation_id ||
+    props.deal?.conversation?.id ||
     props.deal?.conversation_id ||
     ''
 );
 
+const conversationLookupId = computed(
+  () => conversationDisplayId.value || conversationRecordId.value
+);
+
 const hasConversation = computed(() => !!conversationLookupId.value);
+const canLoadMessages = computed(() => !!conversationDisplayId.value);
 
 const conversationUrl = computed(() => {
-  if (!hasConversation.value) return '';
-  return `/app/accounts/${props.accountId}/conversations/${conversationLookupId.value}`;
+  if (!conversationDisplayId.value) return '';
+  return `/app/accounts/${props.accountId}/conversations/${conversationDisplayId.value}`;
 });
 
 const currentStageId = computed(
@@ -421,26 +441,35 @@ function scrollTimelineToBottom() {
   el.scrollTop = el.scrollHeight;
 }
 
-async function refreshMessages() {
-  if (!hasConversation.value) return;
+async function refreshMessages(expectedToken = loadToken) {
+  if (!canLoadMessages.value) return false;
 
+  messagesLoading.value = true;
   try {
     const { data } = await MessageApi.getPreviousMessages({
-      conversationId: conversationLookupId.value,
+      conversationId: conversationDisplayId.value,
     });
+    if (expectedToken !== loadToken) return false;
+
     const payload = data?.payload || [];
-    if (payload.length) {
-      messages.value = payload.map(normalizeMessage);
-    }
-    ConversationApi.markMessageRead({ id: conversationLookupId.value }).catch(
+    messages.value = payload.map(normalizeMessage);
+    ConversationApi.markMessageRead({ id: conversationDisplayId.value }).catch(
       () => {}
     );
+    await nextTick();
+    scrollTimelineToBottom();
+    return true;
   } catch {
     // The CRM detail payload already contains the last messages.
+    return false;
+  } finally {
+    if (expectedToken === loadToken) {
+      messagesLoading.value = false;
+    }
   }
 }
 
-async function loadAiState() {
+async function loadAiState(expectedToken = loadToken) {
   if (!hasConversation.value) {
     aiState.value = null;
     return;
@@ -451,6 +480,8 @@ async function loadAiState() {
     const { data } = await CaptainConversationStateAPI.show(
       conversationLookupId.value
     );
+    if (expectedToken !== loadToken) return;
+
     aiState.value = data;
     handoffReason.value = data.handoff_reason || '';
   } catch {
@@ -469,17 +500,29 @@ async function loadContext() {
   error.value = '';
   localEvents.value = [];
   localDeal.value = { ...props.deal };
+  messages.value = (props.deal.messages || []).map(normalizeMessage);
+  activities.value = props.deal.activities || [];
+
+  const hadInitialMessageRoute = canLoadMessages.value;
+  refreshMessages(token);
+  loadAiState(token);
 
   try {
     const { data } = await CrmAPI.getDeal(props.deal.id);
     if (token !== loadToken) return;
 
     localDeal.value = { ...props.deal, ...data };
-    messages.value = (data.messages || []).map(normalizeMessage);
+    const detailMessages = (data.messages || []).map(normalizeMessage);
+    if (detailMessages.length && !messages.value.length) {
+      messages.value = detailMessages;
+    }
     activities.value = data.activities || [];
     emit('dealUpdated', localDeal.value);
 
-    await Promise.all([refreshMessages(), loadAiState()]);
+    if (!hadInitialMessageRoute && canLoadMessages.value) {
+      refreshMessages(token);
+      loadAiState(token);
+    }
     await nextTick();
     scrollTimelineToBottom();
   } catch (e) {
@@ -589,8 +632,10 @@ async function sendDraft() {
   const content = draft.value.trim();
   if (!content || sending.value) return;
 
-  if (!hasConversation.value) {
-    error.value = 'Este lead ainda nao tem conversa vinculada.';
+  if (!canLoadMessages.value) {
+    error.value = hasConversation.value
+      ? 'Carregando rota da conversa. Tente novamente em instantes.'
+      : 'Este lead ainda nao tem conversa vinculada.';
     return;
   }
 
@@ -600,7 +645,7 @@ async function sendDraft() {
 
   try {
     const { data } = await MessageApi.create({
-      conversationId: conversationLookupId.value,
+      conversationId: conversationDisplayId.value,
       message: content,
       private: false,
     });
@@ -705,23 +750,35 @@ onBeforeUnmount(() => {
           </div>
         </div>
 
-        <div class="flex shrink-0 items-center gap-1.5">
+        <div class="crm-attendance-header-actions">
           <button
             type="button"
-            class="crm-attendance-icon-button"
-            title="Buscar neste atendimento"
+            class="crm-attendance-action-button"
+            title="Buscar mensagens"
             @click="openSearch"
           >
             <span class="i-lucide-search size-4" />
+            Buscar
           </button>
           <a
             v-if="contactUrl"
             :href="contactUrl"
-            class="crm-attendance-icon-button"
+            class="crm-attendance-action-button"
             title="Editar contato"
           >
             <span class="i-lucide-user-pen size-4" />
+            Editar
           </a>
+          <button
+            v-else
+            type="button"
+            class="crm-attendance-action-button crm-attendance-action-button--disabled"
+            title="Contato ainda nao vinculado"
+            disabled
+          >
+            <span class="i-lucide-user-pen size-4" />
+            Editar
+          </button>
           <a
             v-if="conversationUrl"
             :href="conversationUrl"
@@ -749,13 +806,14 @@ onBeforeUnmount(() => {
         </div>
       </header>
 
-      <div v-if="searchOpen" class="crm-attendance-searchbar">
+      <div class="crm-attendance-searchbar">
         <span class="i-lucide-search size-4 text-n-slate-10" />
         <input
           ref="searchInputRef"
           v-model="searchQuery"
           type="search"
           placeholder="Buscar mensagens"
+          @focus="searchOpen = true"
           @keydown="onSearchKeydown"
         />
         <span class="crm-attendance-searchbar__count">
@@ -821,12 +879,13 @@ onBeforeUnmount(() => {
         </label>
 
         <div class="crm-attendance-ai">
-          <div class="flex min-w-0 items-center justify-between gap-2">
-            <span class="truncate text-xs font-semibold text-n-slate-11">
+          <div class="crm-attendance-ai__top">
+            <span class="crm-attendance-ai__status">
+              <span class="i-lucide-bot size-3.5" />
               {{ aiLoading ? 'Carregando IA...' : aiModeLabel }}
             </span>
             <span
-              class="rounded-full px-2 py-0.5 text-[0.68rem] font-semibold"
+              class="crm-attendance-ai__mode"
               :class="
                 humanControlled
                   ? 'bg-n-ruby-3 text-n-ruby-11'
@@ -835,46 +894,45 @@ onBeforeUnmount(() => {
             >
               {{ humanControlled ? 'Humano' : 'IA' }}
             </span>
+            <div class="crm-attendance-ai__actions">
+              <button
+                type="button"
+                class="crm-attendance-mini-button crm-attendance-mini-button--danger"
+                :disabled="updatingAi || !hasConversation"
+                @click="setAiMode('human_only')"
+              >
+                Assumir
+              </button>
+              <button
+                type="button"
+                class="crm-attendance-mini-button"
+                :disabled="updatingAi || !hasConversation"
+                @click="setAiMode('paused')"
+              >
+                Pausar
+              </button>
+              <button
+                type="button"
+                class="crm-attendance-mini-button crm-attendance-mini-button--ok"
+                :disabled="updatingAi || !hasConversation"
+                @click="setAiMode('auto')"
+              >
+                Retomar
+              </button>
+            </div>
           </div>
-          <textarea
+          <input
             v-model="handoffReason"
-            rows="2"
             class="crm-attendance-reason"
-            placeholder="Motivo do handoff"
+            placeholder="Motivo do handoff (opcional)"
           />
-          <div class="grid grid-cols-3 gap-1.5">
-            <button
-              type="button"
-              class="crm-attendance-mini-button crm-attendance-mini-button--danger"
-              :disabled="updatingAi || !hasConversation"
-              @click="setAiMode('human_only')"
-            >
-              Assumir
-            </button>
-            <button
-              type="button"
-              class="crm-attendance-mini-button"
-              :disabled="updatingAi || !hasConversation"
-              @click="setAiMode('paused')"
-            >
-              Pausar
-            </button>
-            <button
-              type="button"
-              class="crm-attendance-mini-button crm-attendance-mini-button--ok"
-              :disabled="updatingAi || !hasConversation"
-              @click="setAiMode('auto')"
-            >
-              Retomar
-            </button>
-          </div>
         </div>
       </div>
 
       <div ref="timelineRef" class="crm-attendance-timeline">
-        <div v-if="loading" class="crm-attendance-empty">
+        <div v-if="loading && !timelineItems.length" class="crm-attendance-empty">
           <span class="i-lucide-loader-2 size-5 animate-spin" />
-          Carregando atendimento...
+          Abrindo conversa...
         </div>
 
         <div v-else-if="!hasConversation" class="crm-attendance-empty">
@@ -882,7 +940,20 @@ onBeforeUnmount(() => {
           Lead sem conversa vinculada.
         </div>
 
+        <div v-else-if="!canLoadMessages && !timelineItems.length" class="crm-attendance-empty">
+          <span class="i-lucide-loader-2 size-5 animate-spin" />
+          Preparando mensagens...
+        </div>
+
         <template v-else>
+          <div
+            v-if="messagesLoading"
+            class="crm-attendance-loading-strip"
+          >
+            <span class="i-lucide-loader-2 size-3.5 animate-spin" />
+            Sincronizando mensagens...
+          </div>
+
           <article
             v-if="shouldShowSummary"
             class="crm-attendance-summary"
@@ -952,7 +1023,7 @@ onBeforeUnmount(() => {
           v-model="draft"
           rows="3"
           class="crm-attendance-input"
-          :disabled="sending || !hasConversation"
+          :disabled="sending || !canLoadMessages"
           placeholder="Responder ao cliente"
           @keydown="onComposerKeydown"
         />
@@ -963,7 +1034,7 @@ onBeforeUnmount(() => {
           <button
             type="button"
             class="crm-attendance-send"
-            :disabled="sending || !draft.trim() || !hasConversation"
+            :disabled="sending || !draft.trim() || !canLoadMessages"
             @click="sendDraft"
           >
             <span class="i-lucide-send-horizontal size-4" />
@@ -1073,11 +1144,20 @@ onBeforeUnmount(() => {
   color: rgb(var(--blue-11));
 }
 
+.crm-attendance-header-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.crm-attendance-action-button,
 .crm-attendance-icon-button {
-  display: grid;
-  width: 2rem;
+  display: inline-flex;
   height: 2rem;
-  place-content: center;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
   border: 1px solid rgb(var(--slate-5));
   border-radius: 0.5rem;
   background: rgb(var(--slate-1));
@@ -1088,10 +1168,31 @@ onBeforeUnmount(() => {
     border-color 0.16s ease;
 }
 
+.crm-attendance-action-button {
+  min-width: 4.8rem;
+  padding: 0 0.55rem;
+  color: rgb(var(--slate-12));
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.crm-attendance-icon-button {
+  width: 2rem;
+}
+
+.crm-attendance-action-button:hover,
 .crm-attendance-icon-button:hover {
   border-color: rgb(var(--blue-6));
   background: rgb(var(--blue-2));
   color: rgb(var(--blue-11));
+}
+
+.crm-attendance-action-button--disabled,
+.crm-attendance-action-button--disabled:hover {
+  cursor: not-allowed;
+  border-color: rgb(var(--slate-5));
+  background: rgb(var(--slate-2) / 0.52);
+  color: rgb(var(--slate-8));
 }
 
 .crm-attendance-searchbar {
@@ -1149,9 +1250,9 @@ onBeforeUnmount(() => {
   display: grid;
   flex-shrink: 0;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.625rem;
+  gap: 0.5rem;
   border-bottom: 1px solid rgb(var(--slate-5) / 0.82);
-  padding: 0.75rem;
+  padding: 0.6rem 0.75rem;
 }
 
 .crm-attendance-field {
@@ -1184,14 +1285,48 @@ onBeforeUnmount(() => {
 }
 
 .crm-attendance-ai {
-  display: flex;
+  display: grid;
   grid-column: 1 / -1;
-  flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.45rem;
   border: 1px solid rgb(var(--slate-5) / 0.78);
   border-radius: 0.65rem;
-  background: rgb(var(--slate-2) / 0.62);
-  padding: 0.65rem;
+  background: rgb(var(--slate-2) / 0.46);
+  padding: 0.5rem;
+}
+
+.crm-attendance-ai__top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.crm-attendance-ai__status {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.35rem;
+  overflow: hidden;
+  color: rgb(var(--slate-11));
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crm-attendance-ai__mode {
+  border-radius: 999px;
+  padding: 0.18rem 0.5rem;
+  font-size: 0.66rem;
+  font-weight: 850;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.crm-attendance-ai__actions {
+  display: inline-grid;
+  grid-template-columns: repeat(3, auto);
+  gap: 0.3rem;
 }
 
 .crm-attendance-reason,
@@ -1202,8 +1337,9 @@ onBeforeUnmount(() => {
 }
 
 .crm-attendance-reason {
-  min-height: 3.1rem;
-  font-size: 0.8125rem;
+  height: 1.9rem;
+  padding: 0 0.55rem;
+  font-size: 0.78rem;
 }
 
 .crm-attendance-mini-button,
@@ -1219,6 +1355,12 @@ onBeforeUnmount(() => {
   color: rgb(var(--slate-12));
   font-size: 0.78rem;
   font-weight: 800;
+}
+
+.crm-attendance-mini-button {
+  min-height: 1.8rem;
+  padding: 0 0.5rem;
+  font-size: 0.72rem;
 }
 
 .crm-attendance-mini-button--danger {
@@ -1244,7 +1386,16 @@ onBeforeUnmount(() => {
 .crm-attendance-timeline {
   flex: 1;
   overflow-y: auto;
-  padding: 0.875rem;
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0,
+      transparent calc(50% - 1px),
+      rgb(var(--slate-4) / 0.5) 50%,
+      transparent calc(50% + 1px)
+    ),
+    rgb(var(--slate-2) / 0.2);
+  padding: 0.875rem 0.95rem;
 }
 
 .crm-attendance-empty {
@@ -1287,8 +1438,26 @@ onBeforeUnmount(() => {
   line-height: 1.4;
 }
 
+.crm-attendance-loading-strip {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.65rem;
+  border: 1px solid rgb(var(--slate-5));
+  border-radius: 999px;
+  background: rgb(var(--slate-1) / 0.9);
+  padding: 0.32rem 0.6rem;
+  color: rgb(var(--slate-10));
+  font-size: 0.72rem;
+  font-weight: 750;
+  backdrop-filter: blur(10px);
+}
+
 .crm-attendance-item + .crm-attendance-item {
-  margin-top: 0.6rem;
+  margin-top: 0.75rem;
 }
 
 .crm-attendance-item--search-hit {
@@ -1330,20 +1499,22 @@ onBeforeUnmount(() => {
   width: fit-content;
   max-width: min(86%, 27rem);
   border: 1px solid rgb(var(--slate-5));
-  border-radius: 0.85rem;
-  padding: 0.65rem 0.75rem;
-  box-shadow: 0 8px 18px rgb(15 23 42 / 0.08);
+  border-radius: 0.78rem;
+  padding: 0.6rem 0.72rem;
+  box-shadow: 0 8px 18px rgb(15 23 42 / 0.07);
 }
 
 .crm-attendance-message--incoming {
   margin-right: auto;
-  background: rgb(var(--slate-1));
+  border-left: 3px solid rgb(var(--blue-7));
+  background: rgb(var(--slate-1) / 0.98);
 }
 
 .crm-attendance-message--outgoing {
   margin-left: auto;
   border-color: rgb(var(--teal-6));
-  background: rgb(var(--teal-2));
+  border-right: 3px solid rgb(var(--teal-8));
+  background: rgb(var(--teal-2) / 0.96);
 }
 
 .crm-attendance-message--private {
@@ -1357,10 +1528,17 @@ onBeforeUnmount(() => {
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 0.5rem;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.25rem;
   color: rgb(var(--slate-10));
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 800;
+}
+
+.crm-attendance-message__meta span {
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .crm-attendance-message p {
@@ -1442,7 +1620,17 @@ onBeforeUnmount(() => {
   }
 
   .crm-attendance-header {
+    flex-direction: column;
     align-items: flex-start;
+  }
+
+  .crm-attendance-header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .crm-attendance-action-button {
+    flex: 1 1 auto;
   }
 
   .crm-attendance-searchbar {
@@ -1451,6 +1639,14 @@ onBeforeUnmount(() => {
 
   .crm-attendance-searchbar__count {
     grid-column: 2 / -1;
+  }
+
+  .crm-attendance-ai__top {
+    grid-template-columns: 1fr auto;
+  }
+
+  .crm-attendance-ai__actions {
+    grid-column: 1 / -1;
   }
 }
 </style>

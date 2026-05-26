@@ -254,6 +254,7 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
       contact_phone_number: deal.contact&.phone_number,
       contact_email: deal.contact&.email,
       conversation_id: deal.conversation_id,
+      conversation_display_id: deal.conversation&.display_id,
       owner_id: deal.owner_id,
       assignee_id: deal.assignee_id,
       closed_at: deal.closed_at,
