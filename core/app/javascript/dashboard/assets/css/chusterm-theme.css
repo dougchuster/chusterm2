@@ -655,7 +655,7 @@
  * 15. CRM PAGE — Pipeline & Kanban dark mode
  * ═══════════════════════════════════════════════════════════ */
 
-.dark .crm-page {
+.dark .crm-page:not(.crm-command-center) {
   background: rgb(var(--slate-1));
 }
 
@@ -688,12 +688,12 @@
   color: rgb(var(--slate-12));
 }
 
-.dark .crm-column {
+.dark .crm-column:not(.crm-command-column) {
   background: rgb(var(--slate-2) / 0.6);
   border-color: rgb(var(--slate-4) / 0.4);
 }
 
-.dark .crm-column header {
+.dark .crm-column:not(.crm-command-column) header {
   border-bottom-color: rgb(var(--slate-4) / 0.35);
   background: rgb(var(--slate-2) / 0.5);
 }
@@ -726,7 +726,7 @@
   color: rgb(var(--iris-11));
 }
 
-.dark .crm-column__empty {
+.dark .crm-column:not(.crm-command-column) .crm-column__empty {
   border-color: rgb(var(--slate-4) / 0.3);
   color: rgb(var(--slate-9));
 }
@@ -2190,7 +2190,7 @@ html body .agenda-search.agenda-search.agenda-search:focus-within {
 }
 
 /* CRM enforced polish: explicit coverage for pages that use local/Tailwind classes. */
-html body .crm-page,
+html body .crm-page:not(.crm-command-center),
 html body .crm-leads-page,
 html body .crm-activities-page,
 html body .crm-agenda,
@@ -2204,7 +2204,7 @@ html body .deal-details {
   color: rgb(var(--slate-12)) !important;
 }
 
-html body .crm-page > header,
+html body .crm-page:not(.crm-command-center) > header,
 html body .crm-leads-header,
 html body .crm-page-header,
 html body .crm-pipeline-hero,
@@ -2224,8 +2224,8 @@ html body .deal-details > header {
 }
 
 html body .crm-metric,
-html body .crm-column,
-html body .crm-column__empty,
+html body .crm-column:not(.crm-command-column),
+html body .crm-column:not(.crm-command-column) .crm-column__empty,
 html body .crm-leads-filters,
 html body .crm-leads-bulk,
 html body .crm-leads-content,
@@ -2253,7 +2253,7 @@ html body .agenda-calendar-card,
 html body .agenda-panel-card,
 html body .agenda-event-card,
 html body .deal-details article.rounded-lg.border,
-html body .crm-column article.group {
+html body .crm-column:not(.crm-command-column) article.group {
   border: 1px solid rgb(var(--border-weak)) !important;
   border-radius: 8px !important;
   background: rgb(var(--bg-card)) !important;
@@ -2262,7 +2262,7 @@ html body .crm-column article.group {
 }
 
 html body .crm-metric:hover,
-html body .crm-column article.group:hover,
+html body .crm-column:not(.crm-command-column) article.group:hover,
 html body .crm-leads-kpi:hover,
 html body .crm-leads-stage:hover,
 html body .crm-leads-table tbody tr:hover,
@@ -2276,7 +2276,7 @@ html body .agenda-event-card:hover {
 
 html body .crm-leads-header__icon,
 html body .crm-leads-kpi__icon-box,
-html body .crm-page > header .grid.size-11,
+html body .crm-page:not(.crm-command-center) > header .grid.size-11,
 html body .crm-kpi-card__icon,
 html body .crm-stat__icon,
 html body .agenda-status__icon {
@@ -2367,7 +2367,7 @@ html body .crm-leads-table {
 html body .crm-leads-table th,
 html body .crm-leads-table td,
 html body .crm-leads-pagination,
-html body .crm-column > header,
+html body .crm-column:not(.crm-command-column) > header,
 html body .crm-leads-modal__header,
 html body .deal-details nav {
   border-color: rgb(var(--border-weak)) !important;
@@ -2375,14 +2375,14 @@ html body .deal-details nav {
 
 html body .crm-leads-pill,
 html body .crm-leads-table span.rounded-full,
-html body .crm-page span.rounded-full,
+html body .crm-page:not(.crm-command-center) span.rounded-full,
 html body .deal-details span.rounded-full {
   border: 1px solid rgb(var(--border-weak)) !important;
   background: rgb(var(--surface-2)) !important;
   color: rgb(var(--slate-11)) !important;
 }
 
-html body .dark .crm-page > header,
+html body .dark .crm-page:not(.crm-command-center) > header,
 html body .dark .crm-leads-header,
 html body .dark .crm-page-header,
 html body .dark .crm-pipeline-hero,
@@ -2391,7 +2391,7 @@ html body .dark .metrics-header,
 html body .dark .crm-loss-reasons__header,
 html body .dark .deal-details > header,
 html body .dark .crm-metric,
-html body .dark .crm-column,
+html body .dark .crm-column:not(.crm-command-column),
 html body .dark .crm-leads-filters,
 html body .dark .crm-leads-content,
 html body .dark .crm-leads-table-wrap,
