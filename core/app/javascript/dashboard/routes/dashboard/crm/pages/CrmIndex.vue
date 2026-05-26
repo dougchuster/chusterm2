@@ -1036,7 +1036,7 @@ onMounted(() => {
             v-model="filterSearch"
             type="search"
             placeholder="Buscar deal ou contato"
-            class="crm-kanban-filter-control__input"
+            class="crm-kanban-filter-control__input reset-base no-margin"
             @input="onApplyFilters"
           />
         </label>
@@ -1563,13 +1563,15 @@ onMounted(() => {
   flex: 0 0 auto;
 }
 
-.crm-kanban-filter-control__input,
+.crm-command-filters
+  .crm-kanban-filter-control
+  > .crm-kanban-filter-control__input,
 .crm-kanban-filter-control__select {
   min-width: 0;
   width: 100%;
   height: 100%;
   flex: 1 1 auto;
-  margin: 0;
+  margin: 0 !important;
   border: none !important;
   border-radius: 0 !important;
   background: transparent !important;
@@ -1577,32 +1579,49 @@ onMounted(() => {
   color: rgb(var(--ds-fg-default));
   font-size: 0.875rem;
   font-weight: 600;
-  outline: none !important;
+  outline: 0 !important;
   box-shadow: none !important;
   appearance: none;
   -webkit-appearance: none;
 }
 
-.crm-kanban-filter-control__input {
-  padding: 0;
+.crm-command-filters
+  .crm-kanban-filter-control
+  > .crm-kanban-filter-control__input {
+  display: block;
+  box-sizing: border-box;
+  padding: 0 !important;
+  line-height: 1.25rem;
 }
 
-.crm-kanban-filter-control__input:focus,
+.crm-command-filters
+  .crm-kanban-filter-control
+  > .crm-kanban-filter-control__input:focus,
 .crm-kanban-filter-control__select:focus {
   border: none !important;
-  outline: none !important;
+  outline: 0 !important;
   box-shadow: none !important;
 }
 
-.crm-kanban-filter-control__input::-webkit-search-cancel-button,
-.crm-kanban-filter-control__input::-webkit-search-decoration,
-.crm-kanban-filter-control__input::-webkit-search-results-button,
-.crm-kanban-filter-control__input::-webkit-search-results-decoration {
+.crm-command-filters
+  .crm-kanban-filter-control
+  > .crm-kanban-filter-control__input::-webkit-search-cancel-button,
+.crm-command-filters
+  .crm-kanban-filter-control
+  > .crm-kanban-filter-control__input::-webkit-search-decoration,
+.crm-command-filters
+  .crm-kanban-filter-control
+  > .crm-kanban-filter-control__input::-webkit-search-results-button,
+.crm-command-filters
+  .crm-kanban-filter-control
+  > .crm-kanban-filter-control__input::-webkit-search-results-decoration {
   appearance: none;
   -webkit-appearance: none;
 }
 
-.crm-kanban-filter-control__input::placeholder {
+.crm-command-filters
+  .crm-kanban-filter-control
+  > .crm-kanban-filter-control__input::placeholder {
   color: rgb(var(--slate-9));
 }
 
