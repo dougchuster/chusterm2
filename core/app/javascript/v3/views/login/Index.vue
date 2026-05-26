@@ -19,6 +19,9 @@ const ERROR_MESSAGES = {
 };
 
 const IMPERSONATION_URL_SEARCH_KEY = 'impersonation';
+const COLOR_SCHEME_STORAGE_KEY = 'color_scheme';
+const LEGACY_LOGIN_THEME_STORAGE_KEY = 'chusterm-login-theme';
+const THEME_MEDIA_QUERY = '(prefers-color-scheme: dark)';
 
 export default {
   components: {
@@ -88,6 +91,14 @@ export default {
     brandLogo() {
       return this.globalConfig?.logo || this.globalConfig?.logoDark || '';
     },
+    logoParts() {
+      const brand = this.installationName || 'ChusteRM';
+      return {
+        prefix: brand.slice(0, 1),
+        middle: brand.slice(1, -2),
+        suffix: brand.slice(-2),
+      };
+    },
   },
   created() {
     if (this.ssoAuthToken) {
@@ -105,18 +116,12 @@ export default {
     }
   },
   mounted() {
-    const savedTheme = localStorage.getItem('chusterm-login-theme');
-    if (savedTheme) {
-      this.localTheme = savedTheme;
-    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      this.localTheme = 'dark';
-    } else {
-      this.localTheme = 'light';
-    }
+    this.localTheme = this.getResolvedTheme();
     this.applyTheme();
 
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-      if (!localStorage.getItem('chusterm-login-theme')) {
+    window.matchMedia(THEME_MEDIA_QUERY).addEventListener('change', e => {
+      const preferredTheme = this.getPreferredTheme();
+      if (preferredTheme === 'auto' || preferredTheme === 'system') {
         this.localTheme = e.matches ? 'dark' : 'light';
         this.applyTheme();
       }
@@ -124,13 +129,52 @@ export default {
   },
 
   methods: {
-
     toggleTheme() {
       this.localTheme = this.localTheme === 'dark' ? 'light' : 'dark';
-      localStorage.setItem('chusterm-login-theme', this.localTheme);
+      localStorage.setItem(COLOR_SCHEME_STORAGE_KEY, this.localTheme);
+      localStorage.setItem(LEGACY_LOGIN_THEME_STORAGE_KEY, this.localTheme);
       this.applyTheme();
     },
+    getPreferredTheme() {
+      const storedTheme =
+        localStorage.getItem(COLOR_SCHEME_STORAGE_KEY) ||
+        localStorage.getItem(LEGACY_LOGIN_THEME_STORAGE_KEY);
+
+      if (['light', 'dark', 'auto', 'system'].includes(storedTheme)) {
+        return storedTheme;
+      }
+
+      return 'auto';
+    },
+    getResolvedTheme() {
+      const preferredTheme = this.getPreferredTheme();
+      const isOSOnDarkMode =
+        window.matchMedia && window.matchMedia(THEME_MEDIA_QUERY).matches;
+
+      if (preferredTheme === 'dark') {
+        return 'dark';
+      }
+
+      if (preferredTheme === 'auto' || preferredTheme === 'system') {
+        return isOSOnDarkMode ? 'dark' : 'light';
+      }
+
+      return 'light';
+    },
     applyTheme() {
+      document.documentElement.dataset.theme = this.localTheme;
+      document.body.dataset.theme = this.localTheme;
+      document.documentElement.classList.toggle(
+        'dark',
+        this.localTheme === 'dark'
+      );
+      document.body.classList.toggle('dark', this.localTheme === 'dark');
+      document.body.classList.toggle('theme-dark', this.localTheme === 'dark');
+      document.body.classList.toggle('theme-light', this.localTheme !== 'dark');
+      document.documentElement.style.setProperty(
+        'color-scheme',
+        this.localTheme
+      );
       // O tema é aplicado dinamicamente usando uma classe no container principal
     },
     getTranslatedMessage(key) {
@@ -251,17 +295,25 @@ export default {
 <template>
   <main class="auth-modern" :class="localTheme">
     <!-- Botão de Troca de Tema -->
-    <button class="theme-toggle-btn" @click="toggleTheme" :aria-label="localTheme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'">
+    <button
+      class="theme-toggle-btn"
+      :aria-label="
+        localTheme === 'dark'
+          ? 'Mudar para tema claro'
+          : 'Mudar para tema escuro'
+      "
+      @click="toggleTheme"
+    >
       <i v-if="localTheme === 'dark'" class="i-lucide-sun size-5" />
       <i v-else class="i-lucide-moon size-5" />
     </button>
 
     <!-- Animated Background Elements -->
     <div class="auth-bg-elements">
-      <div class="orb orb-1"></div>
-      <div class="orb orb-2"></div>
-      <div class="orb orb-3"></div>
-      <div class="glass-overlay"></div>
+      <div class="orb orb-1" />
+      <div class="orb orb-2" />
+      <div class="orb orb-3" />
+      <div class="glass-overlay" />
     </div>
 
     <div class="auth-wrapper">
@@ -270,51 +322,114 @@ export default {
         <aside class="auth-hero" :aria-label="$t('LOGIN.INTRO.BRAND_LABEL')">
           <div class="auth-hero-content">
             <div class="custom-logo">
-              <svg class="logo-icon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg
+                class="logo-icon"
+                viewBox="0 0 64 64"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <defs>
-                  <linearGradient id="node-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <linearGradient
+                    id="node-grad"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="100%"
+                  >
                     <stop offset="0%" stop-color="#06b6d4" />
                     <stop offset="100%" stop-color="#3b82f6" />
                   </linearGradient>
-                  <linearGradient id="ring-grad" x1="100%" y1="100%" x2="0%" y2="0%">
+                  <linearGradient
+                    id="ring-grad"
+                    x1="100%"
+                    y1="100%"
+                    x2="0%"
+                    y2="0%"
+                  >
                     <stop offset="0%" stop-color="#ec4899" />
                     <stop offset="100%" stop-color="#a855f7" />
                   </linearGradient>
                 </defs>
-                <circle cx="32" cy="32" r="24" stroke="url(#ring-grad)" stroke-width="6" stroke-linecap="round" stroke-dasharray="80 30" transform="rotate(45 32 32)" />
-                <circle cx="32" cy="32" r="16" stroke="url(#node-grad)" stroke-width="5" stroke-linecap="round" stroke-dasharray="40 20" transform="rotate(-30 32 32)" />
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="24"
+                  stroke="url(#ring-grad)"
+                  stroke-width="6"
+                  stroke-linecap="round"
+                  stroke-dasharray="80 30"
+                  transform="rotate(45 32 32)"
+                />
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="16"
+                  stroke="url(#node-grad)"
+                  stroke-width="5"
+                  stroke-linecap="round"
+                  stroke-dasharray="40 20"
+                  transform="rotate(-30 32 32)"
+                />
                 <circle cx="32" cy="32" r="8" fill="url(#node-grad)" />
                 <circle cx="56" cy="32" r="4" fill="#ec4899" />
                 <circle cx="8" cy="32" r="4" fill="#06b6d4" />
               </svg>
               <span class="logo-text">
-                <span class="logo-highlight" v-text="'C'" />
-                <span v-text="'huste'" />
-                <span class="logo-highlight" v-text="'RM'" />
+                <span class="logo-highlight">{{ logoParts.prefix }}</span>
+                <span>{{ logoParts.middle }}</span>
+                <span class="logo-highlight">{{ logoParts.suffix }}</span>
               </span>
             </div>
             <h2 class="auth-headline">{{ $t('LOGIN.INTRO.TAGLINE') }}</h2>
-            <p class="auth-description">{{ $t('LOGIN.INTRO.HERO_DESCRIPTION') }}</p>
+            <p class="auth-description">
+              {{ $t('LOGIN.INTRO.HERO_DESCRIPTION') }}
+            </p>
           </div>
         </aside>
 
         <!-- Form Side -->
-        <section class="auth-form-pane" :aria-label="$t('LOGIN.INTRO.FORM_LABEL')">
+        <section
+          class="auth-form-pane"
+          :aria-label="$t('LOGIN.INTRO.FORM_LABEL')"
+        >
           <div class="auth-form-content">
             <header class="auth-header">
               <div class="auth-brand-mobile">
                 <div class="custom-logo">
-                  <svg class="logo-icon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="32" cy="32" r="24" stroke="url(#ring-grad)" stroke-width="6" stroke-linecap="round" stroke-dasharray="80 30" transform="rotate(45 32 32)" />
-                    <circle cx="32" cy="32" r="16" stroke="url(#node-grad)" stroke-width="5" stroke-linecap="round" stroke-dasharray="40 20" transform="rotate(-30 32 32)" />
+                  <svg
+                    class="logo-icon"
+                    viewBox="0 0 64 64"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r="24"
+                      stroke="url(#ring-grad)"
+                      stroke-width="6"
+                      stroke-linecap="round"
+                      stroke-dasharray="80 30"
+                      transform="rotate(45 32 32)"
+                    />
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r="16"
+                      stroke="url(#node-grad)"
+                      stroke-width="5"
+                      stroke-linecap="round"
+                      stroke-dasharray="40 20"
+                      transform="rotate(-30 32 32)"
+                    />
                     <circle cx="32" cy="32" r="8" fill="url(#node-grad)" />
                     <circle cx="56" cy="32" r="4" fill="#ec4899" />
                     <circle cx="8" cy="32" r="4" fill="#06b6d4" />
                   </svg>
                   <span class="logo-text">
-                    <span class="logo-highlight" v-text="'C'" />
-                    <span v-text="'huste'" />
-                    <span class="logo-highlight" v-text="'RM'" />
+                    <span class="logo-highlight">{{ logoParts.prefix }}</span>
+                    <span>{{ logoParts.middle }}</span>
+                    <span class="logo-highlight">{{ logoParts.suffix }}</span>
                   </span>
                 </div>
               </div>
@@ -331,7 +446,11 @@ export default {
             </div>
 
             <div v-else :class="{ 'shake-animation': loginApi.hasErrored }">
-              <div v-if="loginApi.message && loginApi.hasErrored" class="auth-alert-box" role="alert">
+              <div
+                v-if="loginApi.message && loginApi.hasErrored"
+                class="auth-alert-box"
+                role="alert"
+              >
                 <i class="i-lucide-circle-alert size-4" />
                 <span>{{ loginApi.message }}</span>
               </div>
@@ -345,22 +464,41 @@ export default {
               </div>
 
               <div v-else class="auth-interactive-area">
-                <a v-if="showGoogleLogin" :href="getGoogleAuthUrl()" class="auth-social-btn">
+                <a
+                  v-if="showGoogleLogin"
+                  :href="getGoogleAuthUrl()"
+                  class="auth-social-btn"
+                >
                   <span class="i-logos-google-icon size-5" aria-hidden="true" />
                   <span>{{ $t('LOGIN.OAUTH.GOOGLE_LOGIN') }}</span>
                 </a>
 
-                <div v-if="showGoogleLogin && showEmailLogin" class="auth-divider">
+                <div
+                  v-if="showGoogleLogin && showEmailLogin"
+                  class="auth-divider"
+                >
                   <span class="line" aria-hidden="true" />
                   <small>{{ $t('LOGIN.INTRO.OR_WITH_EMAIL') }}</small>
                   <span class="line" aria-hidden="true" />
                 </div>
 
-                <form v-if="showEmailLogin" class="auth-form" @submit.prevent="submitFormLogin">
+                <form
+                  v-if="showEmailLogin"
+                  class="auth-form"
+                  @submit.prevent="submitFormLogin"
+                >
                   <div class="input-group">
-                    <label for="login-email">{{ $t('LOGIN.EMAIL.LABEL') }}</label>
-                    <div class="input-wrapper" :class="{ 'has-error': v$.credentials.email.$error }">
-                      <i class="input-icon i-lucide-mail size-4" aria-hidden="true" />
+                    <label for="login-email">{{
+                      $t('LOGIN.EMAIL.LABEL')
+                    }}</label>
+                    <div
+                      class="input-wrapper"
+                      :class="{ 'has-error': v$.credentials.email.$error }"
+                    >
+                      <i
+                        class="input-icon i-lucide-mail size-4"
+                        aria-hidden="true"
+                      />
                       <input
                         id="login-email"
                         v-model="credentials.email"
@@ -378,13 +516,24 @@ export default {
 
                   <div class="input-group">
                     <div class="input-group-header">
-                      <label for="login-password">{{ $t('LOGIN.PASSWORD.LABEL') }}</label>
-                      <router-link to="/app/auth/reset/password" class="forgot-link">
+                      <label for="login-password">{{
+                        $t('LOGIN.PASSWORD.LABEL')
+                      }}</label>
+                      <router-link
+                        to="/app/auth/reset/password"
+                        class="forgot-link"
+                      >
                         {{ $t('LOGIN.FORGOT_PASSWORD') }}
                       </router-link>
                     </div>
-                    <div class="input-wrapper" :class="{ 'has-error': v$.credentials.password.$error }">
-                      <i class="input-icon i-lucide-lock-keyhole size-4" aria-hidden="true" />
+                    <div
+                      class="input-wrapper"
+                      :class="{ 'has-error': v$.credentials.password.$error }"
+                    >
+                      <i
+                        class="input-icon i-lucide-lock-keyhole size-4"
+                        aria-hidden="true"
+                      />
                       <input
                         id="login-password"
                         v-model="credentials.password"
@@ -400,10 +549,20 @@ export default {
                       <button
                         type="button"
                         class="password-toggle"
-                        :aria-label="showPassword ? $t('LOGIN.HIDE_PASSWORD') : $t('LOGIN.SHOW_PASSWORD')"
+                        :aria-label="
+                          showPassword
+                            ? $t('LOGIN.HIDE_PASSWORD')
+                            : $t('LOGIN.SHOW_PASSWORD')
+                        "
                         @click="showPassword = !showPassword"
                       >
-                        <i :class="showPassword ? 'i-lucide-eye-off size-4' : 'i-lucide-eye size-4'" />
+                        <i
+                          :class="
+                            showPassword
+                              ? 'i-lucide-eye-off size-4'
+                              : 'i-lucide-eye size-4'
+                          "
+                        />
                       </button>
                     </div>
                   </div>
@@ -415,12 +574,22 @@ export default {
                     data-testid="submit_button"
                     :tabindex="3"
                   >
-                    <Spinner v-if="loginApi.showLoading" :color-scheme="localTheme === 'dark' ? 'primary' : 'white'" size="small" />
+                    <Spinner
+                      v-if="loginApi.showLoading"
+                      :color-scheme="
+                        localTheme === 'dark' ? 'primary' : 'white'
+                      "
+                      size="small"
+                    />
                     <span v-else>{{ $t('LOGIN.SUBMIT') }}</span>
                   </button>
                 </form>
 
-                <router-link v-if="showSsoLogin" to="/app/login/sso" class="auth-sso-btn">
+                <router-link
+                  v-if="showSsoLogin"
+                  to="/app/login/sso"
+                  class="auth-sso-btn"
+                >
                   <i class="i-lucide-shield-check size-4" aria-hidden="true" />
                   <span>{{ $t('LOGIN.SAML.LABEL') }}</span>
                 </router-link>
@@ -440,7 +609,6 @@ export default {
   </main>
 </template>
 
-
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;700;800&display=swap');
 
@@ -455,7 +623,9 @@ export default {
   z-index: 999999 !important;
   width: 100vw !important;
   height: 100vh !important;
-  transition: background-color 0.5s ease, color 0.5s ease;
+  transition:
+    background-color 0.5s ease,
+    color 0.5s ease;
 }
 
 /* THEME VARIABLES */
@@ -466,7 +636,11 @@ export default {
   --card-bg: rgba(255, 255, 255, 0.7);
   --card-border: rgba(255, 255, 255, 0.8);
   --form-bg: rgba(255, 255, 255, 0.9);
-  --hero-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(248, 250, 252, 0.4) 100%);
+  --hero-bg: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.8) 0%,
+    rgba(248, 250, 252, 0.4) 100%
+  );
   --input-bg: rgba(241, 245, 249, 0.8);
   --input-border: #e2e8f0;
   --input-text: #0f172a;
@@ -480,7 +654,7 @@ export default {
   --btn-shadow: 0 4px 14px 0 rgba(15, 23, 42, 0.39);
   --btn-border: rgba(15, 23, 42, 1);
   --divider: #e2e8f0;
-  
+
   background-color: var(--bg-base) !important;
   color: var(--text-main) !important;
 }
@@ -492,7 +666,11 @@ export default {
   --card-bg: rgba(15, 23, 42, 0.4);
   --card-border: rgba(255, 255, 255, 0.12);
   --form-bg: rgba(2, 6, 23, 0.5);
-  --hero-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 100%);
+  --hero-bg: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.01) 100%
+  );
   --input-bg: rgba(0, 0, 0, 0.2);
   --input-border: rgba(255, 255, 255, 0.1);
   --input-text: #ffffff;
@@ -592,9 +770,15 @@ export default {
   opacity: 0.6;
 }
 
-.auth-modern.light .orb-1 { background: #cbd5e1; }
-.auth-modern.light .orb-2 { background: #93c5fd; }
-.auth-modern.light .orb-3 { background: #bae6fd; }
+.auth-modern.light .orb-1 {
+  background: #cbd5e1;
+}
+.auth-modern.light .orb-2 {
+  background: #93c5fd;
+}
+.auth-modern.light .orb-3 {
+  background: #bae6fd;
+}
 
 .glass-overlay {
   position: absolute;
@@ -605,10 +789,18 @@ export default {
 }
 
 @keyframes float {
-  0% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(40px, -60px) scale(1.1); }
-  66% { transform: translate(-30px, 30px) scale(0.9); }
-  100% { transform: translate(0, 0) scale(1); }
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(40px, -60px) scale(1.1);
+  }
+  66% {
+    transform: translate(-30px, 30px) scale(0.9);
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
 }
 
 /* Main Layout */
@@ -632,16 +824,26 @@ export default {
   overflow: hidden;
   min-height: 640px;
   animation: cardEntrance 1s cubic-bezier(0.2, 0.8, 0.2, 1);
-  transition: background 0.5s ease, border-color 0.5s ease;
+  transition:
+    background 0.5s ease,
+    border-color 0.5s ease;
 }
 
 .auth-modern.dark .auth-glass-card {
-  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow:
+    0 30px 60px -12px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 @keyframes cardEntrance {
-  from { opacity: 0; transform: translateY(50px) scale(0.97); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(50px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* Hero Section */
@@ -665,13 +867,17 @@ export default {
 .logo-icon {
   width: 48px;
   height: 48px;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
   animation: logoSpin 30s linear infinite;
 }
 
 @keyframes logoSpin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .logo-text {
@@ -903,8 +1109,8 @@ main.auth-modern div.auth-wrapper input.modern-input:-webkit-autofill:active {
 
 /* Auto-fill fix that respects the theme */
 .modern-input:-webkit-autofill,
-.modern-input:-webkit-autofill:hover, 
-.modern-input:-webkit-autofill:focus, 
+.modern-input:-webkit-autofill:hover,
+.modern-input:-webkit-autofill:focus,
 .modern-input:-webkit-autofill:active {
   -webkit-text-fill-color: var(--input-text) !important;
   transition: background-color 5000s ease-in-out 0s !important;
@@ -1021,10 +1227,23 @@ main.auth-modern div.auth-wrapper button.auth-submit-btn:disabled {
 }
 
 @keyframes shake {
-  10%, 90% { transform: translate3d(-1px, 0, 0); }
-  20%, 80% { transform: translate3d(2px, 0, 0); }
-  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-  40%, 60% { transform: translate3d(4px, 0, 0); }
+  10%,
+  90% {
+    transform: translate3d(-1px, 0, 0);
+  }
+  20%,
+  80% {
+    transform: translate3d(2px, 0, 0);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translate3d(-4px, 0, 0);
+  }
+  40%,
+  60% {
+    transform: translate3d(4px, 0, 0);
+  }
 }
 
 .auth-loading-state {
@@ -1058,7 +1277,9 @@ main.auth-modern div.auth-wrapper button.auth-submit-btn:disabled {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Responsive */
@@ -1067,17 +1288,17 @@ main.auth-modern div.auth-wrapper button.auth-submit-btn:disabled {
     flex-direction: column;
     min-height: auto;
   }
-  
+
   .auth-hero {
     padding: 3rem 2rem;
     border-right: none;
     border-bottom: 1px solid var(--card-border);
   }
-  
+
   .auth-headline {
     font-size: 2.5rem;
   }
-  
+
   .auth-form-pane {
     flex: auto;
     padding: 3rem 2rem;
@@ -1112,5 +1333,4 @@ main.auth-modern div.auth-wrapper button.auth-submit-btn:disabled {
     font-size: 1.75rem;
   }
 }
-
 </style>

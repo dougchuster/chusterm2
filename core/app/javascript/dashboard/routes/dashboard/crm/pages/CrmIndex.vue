@@ -891,11 +891,11 @@ onMounted(() => {
 
 <template>
   <div
-    class="crm-page flex h-full w-full min-w-0 flex-col overflow-hidden bg-n-slate-2 text-n-slate-12 dark:bg-n-background"
+    class="crm-page crm-command-center flex h-full w-full min-w-0 flex-col overflow-hidden bg-n-slate-2 text-n-slate-12 dark:bg-n-background"
     :class="{ 'crm-page--attendance-open': showAttendanceDrawer }"
   >
     <header
-      class="border-b border-n-weak bg-n-background px-4 py-4 dark:bg-n-slate-1 sm:px-5"
+      class="crm-command-header border-b border-n-weak bg-n-background px-4 py-4 dark:bg-n-slate-1 sm:px-5"
     >
       <div
         class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between"
@@ -1039,7 +1039,7 @@ onMounted(() => {
     </header>
 
     <div
-      class="border-b border-n-weak bg-n-slate-1 px-3 py-2 dark:bg-n-slate-2 sm:px-4"
+      class="crm-command-filters border-b border-n-weak bg-n-slate-1 px-3 py-2 dark:bg-n-slate-2 sm:px-4"
     >
       <div
         class="grid min-w-0 items-center gap-2 rounded-xl border border-n-weak bg-n-background p-2 shadow-sm dark:bg-n-slate-1 md:grid-cols-[minmax(16rem,1.25fr)_minmax(11rem,0.7fr)_minmax(11rem,0.7fr)_auto_auto]"
@@ -1464,7 +1464,7 @@ onMounted(() => {
 
       <div v-else class="flex flex-col gap-2">
         <section
-          class="rounded-xl border border-n-weak bg-n-background p-2.5 shadow-sm dark:bg-n-slate-1"
+          class="crm-command-kpis rounded-xl border border-n-weak bg-n-background p-2.5 shadow-sm dark:bg-n-slate-1"
         >
           <div
             class="grid gap-2 [grid-template-columns:repeat(auto-fit,minmax(8.75rem,1fr))]"
@@ -1841,7 +1841,7 @@ onMounted(() => {
         </div>
 
         <section
-          class="flex min-h-[calc(100vh-12rem)] flex-col overflow-hidden rounded-xl border border-n-weak bg-n-background shadow-sm dark:bg-n-slate-1"
+          class="crm-command-board flex min-h-[calc(100vh-12rem)] flex-col overflow-hidden rounded-xl border border-n-weak bg-n-background shadow-sm dark:bg-n-slate-1"
         >
           <div
             class="flex flex-wrap items-center justify-between gap-2 border-b border-n-weak px-3.5 py-3"
@@ -1877,7 +1877,7 @@ onMounted(() => {
               <section
                 v-for="column in boardColumns"
                 :key="column.id"
-                class="crm-column flex w-80 flex-shrink-0 flex-col overflow-hidden rounded-xl border border-n-weak bg-n-slate-1 h-full dark:bg-n-slate-2"
+                class="crm-column crm-command-column flex w-80 flex-shrink-0 flex-col overflow-hidden rounded-xl border border-n-weak bg-n-slate-1 h-full dark:bg-n-slate-2"
               >
                 <header
                   class="flex items-center gap-2 border-b border-n-weak bg-n-background px-3 py-3 dark:bg-n-slate-1"
@@ -1971,6 +1971,104 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.crm-command-center {
+  background:
+    radial-gradient(
+      circle at 16% -10%,
+      rgb(var(--ds-shell-accent) / 0.12),
+      transparent 24rem
+    ),
+    radial-gradient(
+      circle at 88% 2%,
+      rgb(var(--ds-shell-secondary) / 0.1),
+      transparent 22rem
+    ),
+    rgb(var(--ds-shell-canvas));
+}
+
+.crm-command-header {
+  position: sticky;
+  top: 0;
+  z-index: 12;
+  border-color: rgb(var(--ds-shell-divider) / 0.72);
+  background:
+    linear-gradient(
+      135deg,
+      rgb(var(--ds-shell-panel-glass)),
+      rgb(var(--ds-shell-panel-strong) / 0.86)
+    );
+  box-shadow: 0 18px 48px rgb(var(--ds-shell-shadow-soft));
+  backdrop-filter: blur(18px) saturate(1.08);
+}
+
+.crm-command-filters {
+  position: sticky;
+  top: 6.25rem;
+  z-index: 11;
+  border-color: rgb(var(--ds-shell-divider) / 0.68);
+  background: rgb(var(--ds-shell-panel-glass));
+  backdrop-filter: blur(16px) saturate(1.08);
+}
+
+.crm-command-filters :is(input, select),
+.crm-command-header select {
+  border-color: rgb(var(--ds-shell-border) / 0.62);
+  background: rgb(var(--ds-shell-panel-sunken) / 0.92);
+  color: rgb(var(--ds-fg-default));
+}
+
+.crm-command-filters :is(input, select):focus,
+.crm-command-header select:focus {
+  border-color: rgb(var(--ds-shell-focus));
+  box-shadow: 0 0 0 3px rgb(var(--ds-shell-glow));
+}
+
+.crm-command-kpis,
+.crm-command-board,
+.crm-command-column {
+  border-color: rgb(var(--ds-shell-border) / 0.62);
+  background: rgb(var(--ds-shell-panel-glass));
+  box-shadow: 0 18px 48px rgb(var(--ds-shell-shadow-soft));
+  backdrop-filter: blur(14px) saturate(1.06);
+}
+
+.crm-command-kpis article {
+  border-color: rgb(var(--ds-shell-border) / 0.54);
+  background:
+    linear-gradient(
+      180deg,
+      rgb(var(--ds-shell-panel-strong) / 0.86),
+      rgb(var(--ds-shell-panel) / 0.74)
+    );
+}
+
+.crm-command-board > div:first-child,
+.crm-command-column > header {
+  border-color: rgb(var(--ds-shell-divider) / 0.7);
+  background: rgb(var(--ds-shell-panel-strong) / 0.78);
+}
+
+.crm-command-column {
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08);
+}
+
+.crm-command-column article[role='button'] {
+  border-color: rgb(var(--ds-shell-border) / 0.58);
+  background:
+    linear-gradient(
+      180deg,
+      rgb(var(--ds-shell-panel) / 0.92),
+      rgb(var(--ds-shell-panel-sunken) / 0.78)
+    );
+}
+
+.crm-command-column article[role='button']:hover {
+  border-color: rgb(var(--ds-shell-focus) / 0.72);
+  box-shadow:
+    0 16px 36px rgb(var(--ds-shell-shadow-soft)),
+    0 0 0 3px rgb(var(--ds-shell-glow));
+}
+
 .crm-kanban-board {
   transition: padding-right 180ms ease;
 }
@@ -1978,6 +2076,19 @@ onMounted(() => {
 @media (min-width: 1024px) {
   .crm-page--attendance-open .crm-kanban-board {
     padding-right: min(34rem, 42vw);
+  }
+}
+
+@media (max-width: 1279px) {
+  .crm-command-filters {
+    top: 8.5rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .crm-command-header,
+  .crm-command-filters {
+    position: static;
   }
 }
 </style>

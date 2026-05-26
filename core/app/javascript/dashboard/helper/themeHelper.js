@@ -4,14 +4,23 @@ import { LOCAL_STORAGE_KEYS } from 'dashboard/constants/localStorage';
 export const setColorTheme = isOSOnDarkMode => {
   const selectedColorScheme =
     LocalStorage.get(LOCAL_STORAGE_KEYS.COLOR_SCHEME) || 'auto';
-  if (
+  const shouldUseDarkTheme =
     (selectedColorScheme === 'auto' && isOSOnDarkMode) ||
-    selectedColorScheme === 'dark'
-  ) {
+    selectedColorScheme === 'dark';
+
+  const resolvedTheme = shouldUseDarkTheme ? 'dark' : 'light';
+  document.documentElement.dataset.theme = resolvedTheme;
+  document.body.dataset.theme = resolvedTheme;
+
+  if (shouldUseDarkTheme) {
     document.body.classList.add('dark');
+    document.body.classList.add('theme-dark');
+    document.body.classList.remove('theme-light');
     document.documentElement.style.setProperty('color-scheme', 'dark');
   } else {
     document.body.classList.remove('dark');
+    document.body.classList.remove('theme-dark');
+    document.body.classList.add('theme-light');
     document.documentElement.style.setProperty('color-scheme', 'light');
   }
 };

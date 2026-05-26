@@ -196,7 +196,7 @@ function openAttendance(event) {
 
 <template>
   <article
-    class="group flex min-w-0 cursor-grab flex-col gap-2 rounded-xl border border-n-weak bg-n-slate-2 p-3 shadow-sm transition-all duration-150 hover:border-n-slate-6 hover:shadow-md active:cursor-grabbing"
+    class="crm-deal-card group flex min-w-0 cursor-grab flex-col gap-2 rounded-xl border border-n-weak bg-n-slate-2 p-3 shadow-sm transition-all duration-150 hover:border-n-slate-6 hover:shadow-md active:cursor-grabbing"
     :class="selected ? 'ring-2 ring-n-brand/30' : ''"
     tabindex="0"
     role="button"
@@ -444,3 +444,41 @@ function openAttendance(event) {
     </div>
   </article>
 </template>
+
+<style scoped>
+.crm-deal-card {
+  position: relative;
+  background:
+    linear-gradient(
+      180deg,
+      rgb(var(--ds-shell-panel) / 0.94),
+      rgb(var(--ds-shell-panel-sunken) / 0.76)
+    );
+}
+
+.crm-deal-card::before {
+  position: absolute;
+  inset-block: 0.75rem;
+  left: 0;
+  width: 0.18rem;
+  border-radius: 999px;
+  background: rgb(var(--ds-shell-accent) / 0.68);
+  content: '';
+  opacity: 0.78;
+}
+
+.crm-deal-card:focus-visible {
+  outline: 2px solid rgb(var(--ds-shell-focus));
+  outline-offset: 2px;
+}
+
+.crm-deal-card:hover {
+  transform: translateY(-1px);
+}
+
+.crm-deal-card button,
+.crm-deal-card a {
+  min-width: 1.75rem;
+  min-height: 1.75rem;
+}
+</style>

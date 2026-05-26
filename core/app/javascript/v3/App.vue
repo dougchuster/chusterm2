@@ -1,5 +1,9 @@
-﻿<script>
+<script>
 import SnackbarContainer from './components/SnackBar/Container.vue';
+
+const COLOR_SCHEME_STORAGE_KEY = 'color_scheme';
+const LEGACY_LOGIN_THEME_STORAGE_KEY = 'chusterm-login-theme';
+const THEME_MEDIA_QUERY = '(prefers-color-scheme: dark)';
 
 export default {
   components: { SnackbarContainer },
@@ -13,26 +17,59 @@ export default {
   },
   methods: {
     setColorTheme() {
-      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        this.theme = 'dark';
-        document.documentElement.classList.add('dark');
-      } else {
-        this.theme = 'light';
-        document.documentElement.classList.remove('dark');
+      const isOSOnDarkMode = window.matchMedia(THEME_MEDIA_QUERY).matches;
+      const preferredTheme = this.getPreferredTheme();
+      const resolvedTheme =
+        preferredTheme === 'dark' ||
+        ((preferredTheme === 'auto' || preferredTheme === 'system') &&
+          isOSOnDarkMode)
+          ? 'dark'
+          : 'light';
+
+      this.applyDocumentTheme(resolvedTheme);
+    },
+    getPreferredTheme() {
+      const storedTheme =
+        localStorage.getItem(COLOR_SCHEME_STORAGE_KEY) ||
+        localStorage.getItem(LEGACY_LOGIN_THEME_STORAGE_KEY);
+
+      if (['light', 'dark', 'auto', 'system'].includes(storedTheme)) {
+        return storedTheme;
       }
+
+      return 'auto';
+    },
+    applyDocumentTheme(resolvedTheme) {
+      this.theme = resolvedTheme;
+      document.documentElement.dataset.theme = resolvedTheme;
+      document.body.dataset.theme = resolvedTheme;
+      document.documentElement.classList.toggle(
+        'dark',
+        resolvedTheme === 'dark'
+      );
+      document.body.classList.toggle('dark', resolvedTheme === 'dark');
+      document.body.classList.toggle('theme-dark', resolvedTheme === 'dark');
+      document.body.classList.toggle('theme-light', resolvedTheme !== 'dark');
+      document.documentElement.style.setProperty('color-scheme', resolvedTheme);
     },
     listenToThemeChanges() {
-      const mql = window.matchMedia('(prefers-color-scheme: dark)');
+      const mql = window.matchMedia(THEME_MEDIA_QUERY);
 
       mql.onchange = e => {
-        if (e.matches) {
-          this.theme = 'dark';
-          document.documentElement.classList.add('dark');
-        } else {
-          this.theme = 'light';
-          document.documentElement.classList.remove('dark');
+        const preferredTheme = this.getPreferredTheme();
+        if (preferredTheme === 'auto' || preferredTheme === 'system') {
+          this.applyDocumentTheme(e.matches ? 'dark' : 'light');
         }
       };
+
+      window.addEventListener('storage', e => {
+        if (
+          e.key === COLOR_SCHEME_STORAGE_KEY ||
+          e.key === LEGACY_LOGIN_THEME_STORAGE_KEY
+        ) {
+          this.setColorTheme();
+        }
+      });
     },
     setLocale(locale) {
       const isAuthRoute =

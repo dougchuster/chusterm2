@@ -44,17 +44,68 @@ const globalConfig = computed(() => store.getters['globalConfig/get']);
 const installationName = computed(
   () => globalConfig.value?.installationName || 'ChusteRM'
 );
-const brandLogo = computed(
-  () => globalConfig.value?.logoDark || globalConfig.value?.logo || ''
-);
+const logoParts = computed(() => {
+  const brand = installationName.value || 'ChusteRM';
+  return {
+    prefix: brand.slice(0, 1),
+    middle: brand.slice(1, -2),
+    suffix: brand.slice(-2),
+  };
+});
 const csrfToken = ref('');
+const COLOR_SCHEME_STORAGE_KEY = 'color_scheme';
+const LEGACY_LOGIN_THEME_STORAGE_KEY = 'chusterm-login-theme';
+const THEME_MEDIA_QUERY = '(prefers-color-scheme: dark)';
 
 // Theming logic
 const localTheme = ref('system');
 
+const getPreferredTheme = () => {
+  const storedTheme =
+    localStorage.getItem(COLOR_SCHEME_STORAGE_KEY) ||
+    localStorage.getItem(LEGACY_LOGIN_THEME_STORAGE_KEY);
+
+  if (['light', 'dark', 'auto', 'system'].includes(storedTheme)) {
+    return storedTheme;
+  }
+
+  return 'auto';
+};
+
+const getResolvedTheme = () => {
+  const preferredTheme = getPreferredTheme();
+  const isOSOnDarkMode =
+    window.matchMedia && window.matchMedia(THEME_MEDIA_QUERY).matches;
+
+  if (preferredTheme === 'dark') {
+    return 'dark';
+  }
+
+  if (preferredTheme === 'auto' || preferredTheme === 'system') {
+    return isOSOnDarkMode ? 'dark' : 'light';
+  }
+
+  return 'light';
+};
+
+function applyTheme() {
+  document.documentElement.dataset.theme = localTheme.value;
+  document.body.dataset.theme = localTheme.value;
+  document.documentElement.classList.toggle(
+    'dark',
+    localTheme.value === 'dark'
+  );
+  document.body.classList.toggle('dark', localTheme.value === 'dark');
+  document.body.classList.toggle('theme-dark', localTheme.value === 'dark');
+  document.body.classList.toggle('theme-light', localTheme.value !== 'dark');
+  document.documentElement.style.setProperty('color-scheme', localTheme.value);
+}
+
 const toggleTheme = () => {
   localTheme.value = localTheme.value === 'dark' ? 'light' : 'dark';
-  localStorage.setItem('chusterm-login-theme', localTheme.value);
+  localStorage.setItem(COLOR_SCHEME_STORAGE_KEY, localTheme.value);
+  localStorage.setItem(LEGACY_LOGIN_THEME_STORAGE_KEY, localTheme.value);
+  applyTheme();
 };
 
 const handleAuthError = () => {
@@ -86,18 +137,14 @@ onMounted(async () => {
       ?.getAttribute('content') || '';
 
   // Initialize theme
-  const savedTheme = localStorage.getItem('chusterm-login-theme');
-  if (savedTheme) {
-    localTheme.value = savedTheme;
-  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    localTheme.value = 'dark';
-  } else {
-    localTheme.value = 'light';
-  }
+  localTheme.value = getResolvedTheme();
+  applyTheme();
 
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-    if (!localStorage.getItem('chusterm-login-theme')) {
+  window.matchMedia(THEME_MEDIA_QUERY).addEventListener('change', e => {
+    const preferredTheme = getPreferredTheme();
+    if (preferredTheme === 'auto' || preferredTheme === 'system') {
       localTheme.value = e.matches ? 'dark' : 'light';
+      applyTheme();
     }
   });
 
@@ -107,16 +154,24 @@ onMounted(async () => {
 
 <template>
   <main class="auth-modern" :class="localTheme">
-    <button class="theme-toggle-btn" @click="toggleTheme" :aria-label="localTheme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'">
+    <button
+      class="theme-toggle-btn"
+      :aria-label="
+        localTheme === 'dark'
+          ? 'Mudar para tema claro'
+          : 'Mudar para tema escuro'
+      "
+      @click="toggleTheme"
+    >
       <i v-if="localTheme === 'dark'" class="i-lucide-sun size-5" />
       <i v-else class="i-lucide-moon size-5" />
     </button>
 
     <div class="auth-bg-elements">
-      <div class="orb orb-1"></div>
-      <div class="orb orb-2"></div>
-      <div class="orb orb-3"></div>
-      <div class="glass-overlay"></div>
+      <div class="orb orb-1" />
+      <div class="orb orb-2" />
+      <div class="orb orb-3" />
+      <div class="glass-overlay" />
     </div>
 
     <div class="auth-wrapper">
@@ -125,31 +180,73 @@ onMounted(async () => {
         <aside class="auth-hero" :aria-label="$t('LOGIN.SAML.INTRO.EYEBROW')">
           <div class="auth-hero-content">
             <div class="custom-logo">
-              <svg class="logo-icon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg
+                class="logo-icon"
+                viewBox="0 0 64 64"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <defs>
-                  <linearGradient id="node-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <linearGradient
+                    id="node-grad"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="100%"
+                  >
                     <stop offset="0%" stop-color="#06b6d4" />
                     <stop offset="100%" stop-color="#3b82f6" />
                   </linearGradient>
-                  <linearGradient id="ring-grad" x1="100%" y1="100%" x2="0%" y2="0%">
+                  <linearGradient
+                    id="ring-grad"
+                    x1="100%"
+                    y1="100%"
+                    x2="0%"
+                    y2="0%"
+                  >
                     <stop offset="0%" stop-color="#ec4899" />
                     <stop offset="100%" stop-color="#a855f7" />
                   </linearGradient>
                 </defs>
-                <circle cx="32" cy="32" r="24" stroke="url(#ring-grad)" stroke-width="6" stroke-linecap="round" stroke-dasharray="80 30" transform="rotate(45 32 32)" />
-                <circle cx="32" cy="32" r="16" stroke="url(#node-grad)" stroke-width="5" stroke-linecap="round" stroke-dasharray="40 20" transform="rotate(-30 32 32)" />
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="24"
+                  stroke="url(#ring-grad)"
+                  stroke-width="6"
+                  stroke-linecap="round"
+                  stroke-dasharray="80 30"
+                  transform="rotate(45 32 32)"
+                />
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="16"
+                  stroke="url(#node-grad)"
+                  stroke-width="5"
+                  stroke-linecap="round"
+                  stroke-dasharray="40 20"
+                  transform="rotate(-30 32 32)"
+                />
                 <circle cx="32" cy="32" r="8" fill="url(#node-grad)" />
                 <circle cx="56" cy="32" r="4" fill="#ec4899" />
                 <circle cx="8" cy="32" r="4" fill="#06b6d4" />
               </svg>
               <span class="logo-text">
-                <span class="logo-highlight" v-text="'C'" />
-                <span v-text="'huste'" />
-                <span class="logo-highlight" v-text="'RM'" />
+                <span class="logo-highlight">{{ logoParts.prefix }}</span>
+                <span>{{ logoParts.middle }}</span>
+                <span class="logo-highlight">{{ logoParts.suffix }}</span>
               </span>
             </div>
-            <h2 class="auth-headline">{{ $t('LOGIN.SAML.INTRO.HERO_TITLE_PREFIX') }} <span class="logo-highlight">{{ $t('LOGIN.SAML.INTRO.HERO_TITLE_EMPHASIS') }}</span></h2>
-            <p class="auth-description">{{ $t('LOGIN.SAML.INTRO.HERO_DESCRIPTION') }}</p>
+            <h2 class="auth-headline">
+              {{ $t('LOGIN.SAML.INTRO.HERO_TITLE_PREFIX') }}
+              <span class="logo-highlight">{{
+                $t('LOGIN.SAML.INTRO.HERO_TITLE_EMPHASIS')
+              }}</span>
+            </h2>
+            <p class="auth-description">
+              {{ $t('LOGIN.SAML.INTRO.HERO_DESCRIPTION') }}
+            </p>
           </div>
         </aside>
 
@@ -158,22 +255,47 @@ onMounted(async () => {
           <div class="auth-form-content">
             <header class="auth-header">
               <div class="auth-brand-mobile">
-                <div class="custom-logo" style="justify-content: center;">
-                  <svg class="logo-icon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="32" cy="32" r="24" stroke="url(#ring-grad)" stroke-width="6" stroke-linecap="round" stroke-dasharray="80 30" transform="rotate(45 32 32)" />
-                    <circle cx="32" cy="32" r="16" stroke="url(#node-grad)" stroke-width="5" stroke-linecap="round" stroke-dasharray="40 20" transform="rotate(-30 32 32)" />
+                <div class="custom-logo auth-brand-logo-centered">
+                  <svg
+                    class="logo-icon"
+                    viewBox="0 0 64 64"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r="24"
+                      stroke="url(#ring-grad)"
+                      stroke-width="6"
+                      stroke-linecap="round"
+                      stroke-dasharray="80 30"
+                      transform="rotate(45 32 32)"
+                    />
+                    <circle
+                      cx="32"
+                      cy="32"
+                      r="16"
+                      stroke="url(#node-grad)"
+                      stroke-width="5"
+                      stroke-linecap="round"
+                      stroke-dasharray="40 20"
+                      transform="rotate(-30 32 32)"
+                    />
                     <circle cx="32" cy="32" r="8" fill="url(#node-grad)" />
                     <circle cx="56" cy="32" r="4" fill="#ec4899" />
                     <circle cx="8" cy="32" r="4" fill="#06b6d4" />
                   </svg>
                   <span class="logo-text">
-                    <span class="logo-highlight" v-text="'C'" />
-                    <span v-text="'huste'" />
-                    <span class="logo-highlight" v-text="'RM'" />
+                    <span class="logo-highlight">{{ logoParts.prefix }}</span>
+                    <span>{{ logoParts.middle }}</span>
+                    <span class="logo-highlight">{{ logoParts.suffix }}</span>
                   </span>
                 </div>
               </div>
-              <span class="auth-eyebrow">{{ $t('LOGIN.SAML.INTRO.EYEBROW') }}</span>
+              <span class="auth-eyebrow">{{
+                $t('LOGIN.SAML.INTRO.EYEBROW')
+              }}</span>
               <h1 class="auth-title">{{ $t('LOGIN.SAML.TITLE') }}</h1>
               <p class="auth-subtitle">{{ $t('LOGIN.SAML.SUBTITLE') }}</p>
             </header>
@@ -185,11 +307,24 @@ onMounted(async () => {
               </div>
 
               <div class="auth-interactive-area">
-                <form class="auth-form" method="POST" action="/api/v1/auth/saml_login" @submit="handleSubmit">
+                <form
+                  class="auth-form"
+                  method="POST"
+                  action="/api/v1/auth/saml_login"
+                  @submit="handleSubmit"
+                >
                   <div class="input-group">
-                    <label for="sso-email">{{ $t('LOGIN.SAML.WORK_EMAIL.LABEL') }}</label>
-                    <div class="input-wrapper" :class="{ 'has-error': v$.credentials.email.$error }">
-                      <i class="input-icon i-lucide-mail size-4" aria-hidden="true" />
+                    <label for="sso-email">{{
+                      $t('LOGIN.SAML.WORK_EMAIL.LABEL')
+                    }}</label>
+                    <div
+                      class="input-wrapper"
+                      :class="{ 'has-error': v$.credentials.email.$error }"
+                    >
+                      <i
+                        class="input-icon i-lucide-mail size-4"
+                        aria-hidden="true"
+                      />
                       <input
                         id="sso-email"
                         v-model="credentials.email"
@@ -204,12 +339,19 @@ onMounted(async () => {
                         @input="v$.credentials.email.$touch"
                       />
                     </div>
-                    <span v-if="v$.credentials.email.$error" class="input-error-msg">
+                    <span
+                      v-if="v$.credentials.email.$error"
+                      class="input-error-msg"
+                    >
                       {{ $t('LOGIN.EMAIL.ERROR') }}
                     </span>
                   </div>
 
-                  <input type="hidden" name="authenticity_token" :value="csrfToken" />
+                  <input
+                    type="hidden"
+                    name="authenticity_token"
+                    :value="csrfToken"
+                  />
                   <input type="hidden" name="target" :value="target" />
 
                   <button
@@ -225,14 +367,26 @@ onMounted(async () => {
                       fill="none"
                       aria-hidden="true"
                     >
-                      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3" />
-                      <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="9"
+                        stroke="currentColor"
+                        stroke-opacity="0.25"
+                        stroke-width="3"
+                      />
+                      <path
+                        d="M21 12a9 9 0 0 0-9-9"
+                        stroke="currentColor"
+                        stroke-width="3"
+                        stroke-linecap="round"
+                      />
                     </svg>
                     <span v-else>{{ $t('LOGIN.SAML.SUBMIT') }}</span>
                   </button>
                 </form>
 
-                <p class="auth-signup-text" style="margin-top: 1.5rem;">
+                <p class="auth-signup-text auth-back-link-row">
                   <router-link to="/app/login" class="signup-link">
                     <i class="i-lucide-arrow-left size-3 inline-block mr-1" />
                     {{ $t('LOGIN.SAML.BACK_TO_LOGIN') }}
@@ -248,7 +402,6 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;700;800&display=swap');
 
 .auth-modern {
@@ -262,7 +415,9 @@ onMounted(async () => {
   z-index: 999999 !important;
   width: 100vw !important;
   height: 100vh !important;
-  transition: background-color 0.5s ease, color 0.5s ease;
+  transition:
+    background-color 0.5s ease,
+    color 0.5s ease;
 }
 
 /* THEME VARIABLES */
@@ -273,7 +428,11 @@ onMounted(async () => {
   --card-bg: rgba(255, 255, 255, 0.7);
   --card-border: rgba(255, 255, 255, 0.8);
   --form-bg: rgba(255, 255, 255, 0.9);
-  --hero-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(248, 250, 252, 0.4) 100%);
+  --hero-bg: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.8) 0%,
+    rgba(248, 250, 252, 0.4) 100%
+  );
   --input-bg: rgba(241, 245, 249, 0.8);
   --input-border: #e2e8f0;
   --input-text: #0f172a;
@@ -287,7 +446,7 @@ onMounted(async () => {
   --btn-shadow: 0 4px 14px 0 rgba(15, 23, 42, 0.39);
   --btn-border: rgba(15, 23, 42, 1);
   --divider: #e2e8f0;
-  
+
   background-color: var(--bg-base) !important;
   color: var(--text-main) !important;
 }
@@ -299,7 +458,11 @@ onMounted(async () => {
   --card-bg: rgba(15, 23, 42, 0.4);
   --card-border: rgba(255, 255, 255, 0.12);
   --form-bg: rgba(2, 6, 23, 0.5);
-  --hero-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 100%);
+  --hero-bg: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.01) 100%
+  );
   --input-bg: rgba(0, 0, 0, 0.2);
   --input-border: rgba(255, 255, 255, 0.1);
   --input-text: #ffffff;
@@ -399,9 +562,15 @@ onMounted(async () => {
   opacity: 0.6;
 }
 
-.auth-modern.light .orb-1 { background: #cbd5e1; }
-.auth-modern.light .orb-2 { background: #93c5fd; }
-.auth-modern.light .orb-3 { background: #bae6fd; }
+.auth-modern.light .orb-1 {
+  background: #cbd5e1;
+}
+.auth-modern.light .orb-2 {
+  background: #93c5fd;
+}
+.auth-modern.light .orb-3 {
+  background: #bae6fd;
+}
 
 .glass-overlay {
   position: absolute;
@@ -412,10 +581,18 @@ onMounted(async () => {
 }
 
 @keyframes float {
-  0% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(40px, -60px) scale(1.1); }
-  66% { transform: translate(-30px, 30px) scale(0.9); }
-  100% { transform: translate(0, 0) scale(1); }
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(40px, -60px) scale(1.1);
+  }
+  66% {
+    transform: translate(-30px, 30px) scale(0.9);
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
 }
 
 /* Main Layout */
@@ -439,16 +616,26 @@ onMounted(async () => {
   overflow: hidden;
   min-height: 640px;
   animation: cardEntrance 1s cubic-bezier(0.2, 0.8, 0.2, 1);
-  transition: background 0.5s ease, border-color 0.5s ease;
+  transition:
+    background 0.5s ease,
+    border-color 0.5s ease;
 }
 
 .auth-modern.dark .auth-glass-card {
-  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow:
+    0 30px 60px -12px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 @keyframes cardEntrance {
-  from { opacity: 0; transform: translateY(50px) scale(0.97); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(50px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* Hero Section */
@@ -469,16 +656,24 @@ onMounted(async () => {
   gap: 8px;
 }
 
+.auth-brand-logo-centered {
+  justify-content: center;
+}
+
 .logo-icon {
   width: 48px;
   height: 48px;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
   animation: logoSpin 30s linear infinite;
 }
 
 @keyframes logoSpin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .logo-text {
@@ -710,8 +905,8 @@ main.auth-modern div.auth-wrapper input.modern-input:-webkit-autofill:active {
 
 /* Auto-fill fix that respects the theme */
 .modern-input:-webkit-autofill,
-.modern-input:-webkit-autofill:hover, 
-.modern-input:-webkit-autofill:focus, 
+.modern-input:-webkit-autofill:hover,
+.modern-input:-webkit-autofill:focus,
 .modern-input:-webkit-autofill:active {
   -webkit-text-fill-color: var(--input-text) !important;
   transition: background-color 5000s ease-in-out 0s !important;
@@ -798,6 +993,10 @@ main.auth-modern div.auth-wrapper button.auth-submit-btn:disabled {
   margin-top: 1rem;
 }
 
+.auth-back-link-row {
+  margin-top: 1.5rem;
+}
+
 .signup-link {
   color: #3b82f6;
   font-weight: 600;
@@ -828,10 +1027,23 @@ main.auth-modern div.auth-wrapper button.auth-submit-btn:disabled {
 }
 
 @keyframes shake {
-  10%, 90% { transform: translate3d(-1px, 0, 0); }
-  20%, 80% { transform: translate3d(2px, 0, 0); }
-  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-  40%, 60% { transform: translate3d(4px, 0, 0); }
+  10%,
+  90% {
+    transform: translate3d(-1px, 0, 0);
+  }
+  20%,
+  80% {
+    transform: translate3d(2px, 0, 0);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translate3d(-4px, 0, 0);
+  }
+  40%,
+  60% {
+    transform: translate3d(4px, 0, 0);
+  }
 }
 
 .auth-loading-state {
@@ -865,7 +1077,9 @@ main.auth-modern div.auth-wrapper button.auth-submit-btn:disabled {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Responsive */
@@ -874,17 +1088,17 @@ main.auth-modern div.auth-wrapper button.auth-submit-btn:disabled {
     flex-direction: column;
     min-height: auto;
   }
-  
+
   .auth-hero {
     padding: 3rem 2rem;
     border-right: none;
     border-bottom: 1px solid var(--card-border);
   }
-  
+
   .auth-headline {
     font-size: 2.5rem;
   }
-  
+
   .auth-form-pane {
     flex: auto;
     padding: 3rem 2rem;
@@ -920,7 +1134,6 @@ main.auth-modern div.auth-wrapper button.auth-submit-btn:disabled {
   }
 }
 
-
 .auth-eyebrow {
   display: block;
   font-size: 0.75rem;
@@ -936,5 +1149,4 @@ main.auth-modern div.auth-wrapper button.auth-submit-btn:disabled {
   margin-top: 0.25rem;
   margin-left: 0.25rem;
 }
-
 </style>

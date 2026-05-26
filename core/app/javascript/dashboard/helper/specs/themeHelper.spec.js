@@ -8,6 +8,9 @@ describe('setColorTheme', () => {
     LocalStorage.get.mockReturnValue('dark');
     setColorTheme(true);
     expect(document.body.classList.contains('dark')).toBe(true);
+    expect(document.body.classList.contains('theme-dark')).toBe(true);
+    expect(document.body.dataset.theme).toBe('dark');
+    expect(document.documentElement.dataset.theme).toBe('dark');
   });
 
   it('should set body class to dark if selectedColorScheme is auto and isOSOnDarkMode is true', () => {
@@ -26,6 +29,9 @@ describe('setColorTheme', () => {
     LocalStorage.get.mockReturnValue('light');
     setColorTheme(true);
     expect(document.body.classList.contains('dark')).toBe(false);
+    expect(document.body.classList.contains('theme-light')).toBe(true);
+    expect(document.body.dataset.theme).toBe('light');
+    expect(document.documentElement.dataset.theme).toBe('light');
   });
 
   it('should not set body class to dark if selectedColorScheme is undefined', () => {

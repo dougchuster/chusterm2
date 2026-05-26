@@ -100,6 +100,29 @@
     --ds-shadow-lg: 0 10px 15px rgb(0 0 0 / 0.08), 0 4px 6px rgb(0 0 0 / 0.05);
     --ds-shadow-xl: 0 20px 25px rgb(0 0 0 / 0.10), 0 8px 10px rgb(0 0 0 / 0.06);
 
+    // Operational shell tokens shared by CRM, conversations and settings.
+    --ds-shell-canvas: 246 248 252;
+    --ds-shell-panel: 255 255 255;
+    --ds-shell-panel-glass: 255 255 255 / 0.84;
+    --ds-shell-panel-strong: 250 252 255;
+    --ds-shell-panel-sunken: 241 245 249;
+    --ds-shell-border: 210 218 232;
+    --ds-shell-divider: 226 232 240;
+    --ds-shell-muted: 100 116 139;
+    --ds-shell-accent: 99 102 241;
+    --ds-shell-accent-soft: 238 242 255;
+    --ds-shell-accent-contrast: 255 255 255;
+    --ds-shell-secondary: 15 118 110;
+    --ds-shell-secondary-soft: 204 251 241;
+    --ds-shell-warning: 180 83 9;
+    --ds-shell-warning-soft: 254 243 199;
+    --ds-shell-danger: 190 18 60;
+    --ds-shell-danger-soft: 255 228 230;
+    --ds-shell-focus: 99 102 241;
+    --ds-shell-glow: 99 102 241 / 0.16;
+    --ds-shell-shadow-soft: 15 23 42 / 0.08;
+    --ds-shell-shadow-strong: 15 23 42 / 0.16;
+
     // ── Motion ──────────────────────────────────────────────
     --ds-duration-fast: 120ms;
     --ds-duration-base: 200ms;
@@ -142,5 +165,27 @@
     --ds-shadow-md: 0 4px 6px rgb(0 0 0 / 0.55), 0 2px 4px rgb(0 0 0 / 0.35);
     --ds-shadow-lg: 0 10px 15px rgb(0 0 0 / 0.60), 0 4px 6px rgb(0 0 0 / 0.40);
     --ds-shadow-xl: 0 20px 25px rgb(0 0 0 / 0.65), 0 8px 10px rgb(0 0 0 / 0.45);
+
+    --ds-shell-canvas: 6 14 32;
+    --ds-shell-panel: 6 18 44;
+    --ds-shell-panel-glass: 6 18 44 / 0.82;
+    --ds-shell-panel-strong: 15 30 63;
+    --ds-shell-panel-sunken: 4 10 24;
+    --ds-shell-border: 42 59 96;
+    --ds-shell-divider: 29 44 78;
+    --ds-shell-muted: 185 200 222;
+    --ds-shell-accent: 189 194 255;
+    --ds-shell-accent-soft: 55 59 120;
+    --ds-shell-accent-contrast: 6 14 32;
+    --ds-shell-secondary: 94 234 212;
+    --ds-shell-secondary-soft: 19 78 74;
+    --ds-shell-warning: 251 191 36;
+    --ds-shell-warning-soft: 86 56 18;
+    --ds-shell-danger: 251 113 133;
+    --ds-shell-danger-soft: 88 28 44;
+    --ds-shell-focus: 189 194 255;
+    --ds-shell-glow: 99 102 241 / 0.26;
+    --ds-shell-shadow-soft: 0 0 0 / 0.28;
+    --ds-shell-shadow-strong: 0 0 0 / 0.46;
   }
 }

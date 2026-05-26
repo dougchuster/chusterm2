@@ -929,7 +929,11 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
-      <div ref="timelineRef" class="crm-attendance-timeline">
+      <div
+        ref="timelineRef"
+        class="crm-attendance-timeline"
+        :aria-busy="messagesLoading || loading"
+      >
         <div v-if="loading && !timelineItems.length" class="crm-attendance-empty">
           <span class="i-lucide-loader-2 size-5 animate-spin" />
           Abrindo conversa...
@@ -1023,6 +1027,7 @@ onBeforeUnmount(() => {
           v-model="draft"
           rows="3"
           class="crm-attendance-input"
+          aria-label="Responder ao cliente"
           :disabled="sending || !canLoadMessages"
           placeholder="Responder ao cliente"
           @keydown="onComposerKeydown"
@@ -1059,25 +1064,32 @@ onBeforeUnmount(() => {
 
 .crm-attendance-panel {
   display: flex;
-  width: min(33rem, 42vw);
-  min-width: 27rem;
+  width: min(37rem, 46vw);
+  min-width: 28rem;
   max-width: calc(100vw - 1.5rem);
   height: calc(100vh - 1.5rem);
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid rgb(var(--slate-5) / 0.84);
-  border-radius: 0.85rem;
-  background: rgb(var(--slate-1) / 0.88);
-  box-shadow: 0 24px 70px rgb(15 23 42 / 0.22);
-  backdrop-filter: blur(22px) saturate(1.18);
+  border: 1px solid rgb(var(--ds-shell-border) / 0.68);
+  border-radius: 1rem;
+  background:
+    linear-gradient(
+      180deg,
+      rgb(var(--ds-shell-panel-glass)),
+      rgb(var(--ds-shell-panel) / 0.92)
+    );
+  box-shadow:
+    -28px 0 72px rgb(var(--ds-shell-shadow-strong)),
+    inset 1px 0 0 rgb(255 255 255 / 0.1);
+  backdrop-filter: blur(24px) saturate(1.18);
   pointer-events: auto;
 }
 
 .crm-attendance-header,
 .crm-attendance-composer {
   flex-shrink: 0;
-  border-color: rgb(var(--slate-5) / 0.82);
-  background: rgb(var(--slate-1) / 0.72);
+  border-color: rgb(var(--ds-shell-divider) / 0.78);
+  background: rgb(var(--ds-shell-panel-strong) / 0.72);
 }
 
 .crm-attendance-header {
@@ -1102,12 +1114,16 @@ onBeforeUnmount(() => {
   height: 2.6rem;
   flex: 0 0 auto;
   place-content: center;
-  border: 1px solid rgb(var(--teal-6));
+  border: 1px solid rgb(var(--ds-shell-secondary) / 0.5);
   border-radius: 999px;
   background:
-    radial-gradient(circle at 28% 22%, rgb(var(--teal-5)), transparent 44%),
-    rgb(var(--slate-2));
-  color: rgb(var(--slate-12));
+    radial-gradient(
+      circle at 28% 22%,
+      rgb(var(--ds-shell-secondary) / 0.7),
+      transparent 44%
+    ),
+    rgb(var(--ds-shell-accent-soft));
+  color: rgb(var(--ds-fg-default));
   font-size: 1rem;
   font-weight: 850;
 }
@@ -1126,11 +1142,11 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 0.28rem;
   overflow: hidden;
-  border: 1px solid rgb(var(--slate-5));
+  border: 1px solid rgb(var(--ds-shell-border) / 0.56);
   border-radius: 999px;
-  background: rgb(var(--slate-2) / 0.72);
-  padding: 0.2rem 0.5rem;
-  color: rgb(var(--slate-10));
+  background: rgb(var(--ds-shell-panel-sunken) / 0.72);
+  padding: 0.22rem 0.55rem;
+  color: rgb(var(--ds-fg-muted));
   font-size: 0.7rem;
   font-weight: 750;
   line-height: 1;
@@ -1139,9 +1155,9 @@ onBeforeUnmount(() => {
 }
 
 .crm-attendance-chip--strong {
-  border-color: rgb(var(--blue-6));
-  background: rgb(var(--blue-2) / 0.82);
-  color: rgb(var(--blue-11));
+  border-color: rgb(var(--ds-shell-accent) / 0.54);
+  background: rgb(var(--ds-shell-accent-soft) / 0.82);
+  color: rgb(var(--ds-fg-default));
 }
 
 .crm-attendance-header-actions {
@@ -1158,10 +1174,10 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
-  border: 1px solid rgb(var(--slate-5));
+  border: 1px solid rgb(var(--ds-shell-border) / 0.62);
   border-radius: 0.5rem;
-  background: rgb(var(--slate-1));
-  color: rgb(var(--slate-11));
+  background: rgb(var(--ds-shell-panel-sunken) / 0.82);
+  color: rgb(var(--ds-fg-muted));
   transition:
     background 0.16s ease,
     color 0.16s ease,
@@ -1171,7 +1187,7 @@ onBeforeUnmount(() => {
 .crm-attendance-action-button {
   min-width: 4.8rem;
   padding: 0 0.55rem;
-  color: rgb(var(--slate-12));
+  color: rgb(var(--ds-fg-default));
   font-size: 0.75rem;
   font-weight: 800;
 }
@@ -1182,17 +1198,17 @@ onBeforeUnmount(() => {
 
 .crm-attendance-action-button:hover,
 .crm-attendance-icon-button:hover {
-  border-color: rgb(var(--blue-6));
-  background: rgb(var(--blue-2));
-  color: rgb(var(--blue-11));
+  border-color: rgb(var(--ds-shell-focus) / 0.72);
+  background: rgb(var(--ds-shell-accent-soft));
+  color: rgb(var(--ds-fg-default));
 }
 
 .crm-attendance-action-button--disabled,
 .crm-attendance-action-button--disabled:hover {
   cursor: not-allowed;
-  border-color: rgb(var(--slate-5));
-  background: rgb(var(--slate-2) / 0.52);
-  color: rgb(var(--slate-8));
+  border-color: rgb(var(--ds-shell-border) / 0.42);
+  background: rgb(var(--ds-shell-panel-sunken) / 0.48);
+  color: rgb(var(--ds-fg-disabled));
 }
 
 .crm-attendance-searchbar {
@@ -1201,30 +1217,30 @@ onBeforeUnmount(() => {
   grid-template-columns: auto minmax(0, 1fr) auto auto auto auto;
   align-items: center;
   gap: 0.4rem;
-  border-bottom: 1px solid rgb(var(--slate-5) / 0.82);
-  background: rgb(var(--slate-2) / 0.66);
+  border-bottom: 1px solid rgb(var(--ds-shell-divider) / 0.76);
+  background: rgb(var(--ds-shell-panel-sunken) / 0.56);
   padding: 0.55rem 0.75rem;
 }
 
 .crm-attendance-searchbar input {
   min-width: 0;
   height: 2rem;
-  border: 1px solid rgb(var(--slate-5));
+  border: 1px solid rgb(var(--ds-shell-border) / 0.6);
   border-radius: 999px;
-  background: rgb(var(--slate-1));
-  color: rgb(var(--slate-12));
+  background: rgb(var(--ds-shell-panel) / 0.92);
+  color: rgb(var(--ds-fg-default));
   font-size: 0.85rem;
   outline: none;
   padding: 0 0.75rem;
 }
 
 .crm-attendance-searchbar input:focus {
-  border-color: rgb(var(--teal-7));
-  box-shadow: 0 0 0 2px rgb(var(--teal-5) / 0.28);
+  border-color: rgb(var(--ds-shell-focus));
+  box-shadow: 0 0 0 3px rgb(var(--ds-shell-glow));
 }
 
 .crm-attendance-searchbar__count {
-  color: rgb(var(--slate-10));
+  color: rgb(var(--ds-fg-subtle));
   font-size: 0.72rem;
   font-weight: 750;
   white-space: nowrap;
@@ -1235,10 +1251,10 @@ onBeforeUnmount(() => {
   width: 1.9rem;
   height: 1.9rem;
   place-content: center;
-  border: 1px solid rgb(var(--slate-5));
+  border: 1px solid rgb(var(--ds-shell-border) / 0.58);
   border-radius: 999px;
-  background: rgb(var(--slate-1));
-  color: rgb(var(--slate-11));
+  background: rgb(var(--ds-shell-panel) / 0.86);
+  color: rgb(var(--ds-fg-muted));
 }
 
 .crm-attendance-searchbar__button:disabled {
@@ -1251,7 +1267,7 @@ onBeforeUnmount(() => {
   flex-shrink: 0;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.5rem;
-  border-bottom: 1px solid rgb(var(--slate-5) / 0.82);
+  border-bottom: 1px solid rgb(var(--ds-shell-divider) / 0.76);
   padding: 0.6rem 0.75rem;
 }
 
@@ -1260,7 +1276,7 @@ onBeforeUnmount(() => {
   min-width: 0;
   flex-direction: column;
   gap: 0.25rem;
-  color: rgb(var(--slate-10));
+  color: rgb(var(--ds-fg-subtle));
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -1270,11 +1286,18 @@ onBeforeUnmount(() => {
 .crm-attendance-reason,
 .crm-attendance-input {
   width: 100%;
-  border: 1px solid rgb(var(--slate-5));
+  border: 1px solid rgb(var(--ds-shell-border) / 0.62);
   border-radius: 0.55rem;
-  background: rgb(var(--slate-1));
-  color: rgb(var(--slate-12));
+  background: rgb(var(--ds-shell-panel-sunken) / 0.86);
+  color: rgb(var(--ds-fg-default));
   outline: none;
+}
+
+.crm-attendance-field select:focus,
+.crm-attendance-reason:focus,
+.crm-attendance-input:focus {
+  border-color: rgb(var(--ds-shell-focus));
+  box-shadow: 0 0 0 3px rgb(var(--ds-shell-glow));
 }
 
 .crm-attendance-field select {
@@ -1288,9 +1311,14 @@ onBeforeUnmount(() => {
   display: grid;
   grid-column: 1 / -1;
   gap: 0.45rem;
-  border: 1px solid rgb(var(--slate-5) / 0.78);
+  border: 1px solid rgb(var(--ds-shell-border) / 0.62);
   border-radius: 0.65rem;
-  background: rgb(var(--slate-2) / 0.46);
+  background:
+    linear-gradient(
+      135deg,
+      rgb(var(--ds-shell-panel-sunken) / 0.62),
+      rgb(var(--ds-shell-panel) / 0.4)
+    );
   padding: 0.5rem;
 }
 
@@ -1307,7 +1335,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 0.35rem;
   overflow: hidden;
-  color: rgb(var(--slate-11));
+  color: rgb(var(--ds-fg-muted));
   font-size: 0.76rem;
   font-weight: 800;
   text-overflow: ellipsis;
@@ -1349,10 +1377,10 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
-  border: 1px solid rgb(var(--slate-5));
+  border: 1px solid rgb(var(--ds-shell-border) / 0.62);
   border-radius: 0.5rem;
-  background: rgb(var(--slate-1));
-  color: rgb(var(--slate-12));
+  background: rgb(var(--ds-shell-panel) / 0.9);
+  color: rgb(var(--ds-fg-default));
   font-size: 0.78rem;
   font-weight: 800;
 }
@@ -1364,15 +1392,15 @@ onBeforeUnmount(() => {
 }
 
 .crm-attendance-mini-button--danger {
-  border-color: rgb(var(--ruby-6));
-  background: rgb(var(--ruby-2));
-  color: rgb(var(--ruby-10));
+  border-color: rgb(var(--ds-shell-danger) / 0.5);
+  background: rgb(var(--ds-shell-danger-soft) / 0.82);
+  color: rgb(var(--ds-shell-danger));
 }
 
 .crm-attendance-mini-button--ok {
-  border-color: rgb(var(--teal-6));
-  background: rgb(var(--teal-2));
-  color: rgb(var(--teal-10));
+  border-color: rgb(var(--ds-shell-secondary) / 0.5);
+  background: rgb(var(--ds-shell-secondary-soft) / 0.82);
+  color: rgb(var(--ds-shell-secondary));
 }
 
 .crm-attendance-mini-button:disabled,
@@ -1391,10 +1419,10 @@ onBeforeUnmount(() => {
       90deg,
       transparent 0,
       transparent calc(50% - 1px),
-      rgb(var(--slate-4) / 0.5) 50%,
+      rgb(var(--ds-shell-divider) / 0.7) 50%,
       transparent calc(50% + 1px)
     ),
-    rgb(var(--slate-2) / 0.2);
+    rgb(var(--ds-shell-panel-sunken) / 0.32);
   padding: 0.875rem 0.95rem;
 }
 
@@ -1403,7 +1431,7 @@ onBeforeUnmount(() => {
   min-height: 14rem;
   place-content: center;
   gap: 0.75rem;
-  color: rgb(var(--slate-10));
+  color: rgb(var(--ds-fg-subtle));
   font-size: 0.875rem;
   text-align: center;
 }
@@ -1415,16 +1443,16 @@ onBeforeUnmount(() => {
   display: flex;
   gap: 0.65rem;
   margin-bottom: 0.75rem;
-  border: 1px solid rgb(var(--amber-6));
+  border: 1px solid rgb(var(--ds-shell-warning) / 0.5);
   border-radius: 0.75rem;
-  background: rgb(var(--amber-2) / 0.92);
+  background: rgb(var(--ds-shell-warning-soft) / 0.92);
   padding: 0.7rem;
   box-shadow: 0 10px 24px rgb(15 23 42 / 0.1);
 }
 
 .crm-attendance-summary p {
   margin: 0 0 0.2rem;
-  color: rgb(var(--amber-11));
+  color: rgb(var(--ds-shell-warning));
   font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -1432,7 +1460,7 @@ onBeforeUnmount(() => {
 
 .crm-attendance-summary strong {
   display: block;
-  color: rgb(var(--slate-12));
+  color: rgb(var(--ds-fg-default));
   font-size: 0.84rem;
   font-weight: 650;
   line-height: 1.4;
@@ -1446,11 +1474,11 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 0.4rem;
   margin-bottom: 0.65rem;
-  border: 1px solid rgb(var(--slate-5));
+  border: 1px solid rgb(var(--ds-shell-border) / 0.62);
   border-radius: 999px;
-  background: rgb(var(--slate-1) / 0.9);
+  background: rgb(var(--ds-shell-panel) / 0.9);
   padding: 0.32rem 0.6rem;
-  color: rgb(var(--slate-10));
+  color: rgb(var(--ds-fg-subtle));
   font-size: 0.72rem;
   font-weight: 750;
   backdrop-filter: blur(10px);
@@ -1466,9 +1494,9 @@ onBeforeUnmount(() => {
 
 .crm-attendance-item--search-hit .crm-attendance-message,
 .crm-attendance-item--search-hit .crm-attendance-event {
-  outline: 2px solid rgb(var(--amber-8));
+  outline: 2px solid rgb(var(--ds-shell-warning));
   outline-offset: 2px;
-  box-shadow: 0 0 0 5px rgb(var(--amber-5) / 0.22);
+  box-shadow: 0 0 0 5px rgb(var(--ds-shell-warning) / 0.18);
 }
 
 .crm-attendance-event {
@@ -1477,11 +1505,11 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 0.45rem;
   margin: 0.25rem auto;
-  border: 1px solid rgb(var(--slate-5));
+  border: 1px solid rgb(var(--ds-shell-border) / 0.54);
   border-radius: 999px;
-  background: rgb(var(--slate-2) / 0.82);
+  background: rgb(var(--ds-shell-panel) / 0.82);
   padding: 0.35rem 0.65rem;
-  color: rgb(var(--slate-10));
+  color: rgb(var(--ds-fg-subtle));
   font-size: 0.72rem;
   font-weight: 700;
 }
@@ -1489,7 +1517,7 @@ onBeforeUnmount(() => {
 .crm-attendance-event em {
   min-width: 0;
   overflow: hidden;
-  color: rgb(var(--slate-9));
+  color: rgb(var(--ds-fg-disabled));
   font-style: normal;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1498,29 +1526,29 @@ onBeforeUnmount(() => {
 .crm-attendance-message {
   width: fit-content;
   max-width: min(86%, 27rem);
-  border: 1px solid rgb(var(--slate-5));
+  border: 1px solid rgb(var(--ds-shell-border) / 0.58);
   border-radius: 0.78rem;
   padding: 0.6rem 0.72rem;
-  box-shadow: 0 8px 18px rgb(15 23 42 / 0.07);
+  box-shadow: 0 10px 24px rgb(var(--ds-shell-shadow-soft));
 }
 
 .crm-attendance-message--incoming {
   margin-right: auto;
-  border-left: 3px solid rgb(var(--blue-7));
-  background: rgb(var(--slate-1) / 0.98);
+  border-left: 3px solid rgb(var(--ds-shell-accent));
+  background: rgb(var(--ds-shell-panel) / 0.98);
 }
 
 .crm-attendance-message--outgoing {
   margin-left: auto;
-  border-color: rgb(var(--teal-6));
-  border-right: 3px solid rgb(var(--teal-8));
-  background: rgb(var(--teal-2) / 0.96);
+  border-color: rgb(var(--ds-shell-secondary) / 0.5);
+  border-right: 3px solid rgb(var(--ds-shell-secondary));
+  background: rgb(var(--ds-shell-secondary-soft) / 0.78);
 }
 
 .crm-attendance-message--private {
   margin-inline: auto;
-  border-color: rgb(var(--amber-6));
-  background: rgb(var(--amber-2));
+  border-color: rgb(var(--ds-shell-warning) / 0.5);
+  background: rgb(var(--ds-shell-warning-soft));
 }
 
 .crm-attendance-message__meta {
@@ -1529,7 +1557,7 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   gap: 0.5rem;
   margin-bottom: 0.25rem;
-  color: rgb(var(--slate-10));
+  color: rgb(var(--ds-fg-subtle));
   font-size: 0.68rem;
   font-weight: 800;
 }
@@ -1543,7 +1571,7 @@ onBeforeUnmount(() => {
 
 .crm-attendance-message p {
   margin: 0;
-  color: rgb(var(--slate-12));
+  color: rgb(var(--ds-fg-default));
   font-size: 0.875rem;
   line-height: 1.42;
 }
@@ -1563,9 +1591,9 @@ onBeforeUnmount(() => {
   gap: 0.3rem;
   overflow: hidden;
   border-radius: 999px;
-  background: rgb(var(--slate-3));
+  background: rgb(var(--ds-shell-panel-strong));
   padding: 0.25rem 0.55rem;
-  color: rgb(var(--slate-11));
+  color: rgb(var(--ds-fg-muted));
   font-size: 0.72rem;
   font-weight: 700;
   text-overflow: ellipsis;
@@ -1583,19 +1611,19 @@ onBeforeUnmount(() => {
 .crm-attendance-error {
   margin: 0;
   border-radius: 0.55rem;
-  background: rgb(var(--ruby-2));
+  background: rgb(var(--ds-shell-danger-soft));
   padding: 0.45rem 0.6rem;
-  color: rgb(var(--ruby-10));
+  color: rgb(var(--ds-shell-danger));
   font-size: 0.78rem;
   font-weight: 700;
 }
 
 .crm-attendance-send {
   min-height: 2.25rem;
-  border-color: rgb(var(--blue-7));
-  background: rgb(var(--blue-9));
+  border-color: rgb(var(--ds-shell-accent) / 0.82);
+  background: rgb(var(--ds-shell-accent));
   padding: 0 0.9rem;
-  color: white;
+  color: rgb(var(--ds-shell-accent-contrast));
 }
 
 @media (max-width: 1023px) {
