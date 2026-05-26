@@ -171,6 +171,30 @@ RSpec.describe MessageTemplates::HookExecutionService do
     end
   end
 
+  context 'when a human has already joined the atendimento' do
+    let(:agent) { create(:user, account: account, role: :agent) }
+
+    before do
+      create(:message, conversation: conversation, message_type: :outgoing, sender: assistant, account: account, inbox: inbox)
+      create(:message, conversation: conversation, message_type: :outgoing, sender: agent, account: account, inbox: inbox, content: 'Vou seguir por aqui.')
+      inbox.update!(greeting_enabled: true, greeting_message: 'Hello! How can we help you?', enable_email_collect: false)
+    end
+
+    it 'does not schedule Captain or send automatic public templates on the next customer reply' do
+      expect(Captain::Conversation::ResponseBuilderJob).not_to receive(:set)
+      expect(Captain::Conversation::ResponseBuilderJob).not_to receive(:perform_later)
+
+      expect do
+        create(:message, conversation: conversation, message_type: :incoming, account: account, content: 'Me encaminha o que ele passou')
+      end.not_to(change { conversation.reload.messages.template.count })
+
+      state = conversation.reload.captain_conversation_state
+      expect(conversation.status).to eq('open')
+      expect(state.ai_mode).to eq('human_only')
+      expect(state.handoff_reason).to eq('Atendimento humano detectado; IA pausada automaticamente.')
+    end
+  end
+
   context 'when contact is already a CRM customer' do
     before do
       contact.update!(contact_type: :customer)

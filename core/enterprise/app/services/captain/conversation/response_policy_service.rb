@@ -20,6 +20,7 @@ class Captain::Conversation::ResponsePolicyService
     [/\babsurdo\b/i, 'ponto importante'],
     [/\bsitua[cç][aã]o frustrante\b/i, 'situação que precisa ser analisada'],
     [/\bfrustrante\b/i, 'que precisa ser analisado'],
+    [/\btudo bem(?: por aqui)?,?\s*(?:sim,?\s*)?obrigad[ao][!.]?/i, ''],
     [/\bimagino (?:o quanto|como)[^.?!\n]*(?:[.?!]|\n)?/i, ''],
     [/\bsinto muito(?: mesmo)?(?: por isso)?[.?!]?/i, ''],
     [/\bidade aproximada(?:\s+ou\s+ano\s+de\s+nascimento)?\b/i, 'idade'],
@@ -55,6 +56,7 @@ class Captain::Conversation::ResponsePolicyService
     text = collapse_repeated_name_mentions(text)
     text = fix_interrogative_case_after_comma(text)
     text = normalize_spacing(text)
+    text = remove_low_value_opening_sentence(text)
     text = enforce_brevity(text)
     text = capitalize_first_letter(text)
     text.presence || FALLBACK_RESPONSE
@@ -118,6 +120,19 @@ class Captain::Conversation::ResponsePolicyService
     text = limit_question_count(text)
     text = limit_sentence_count(text)
     limit_character_count(text)
+  end
+
+  def remove_low_value_opening_sentence(text)
+    sentences = text.scan(/[^.!?\n]+[.!?]?/).map(&:strip).compact_blank
+    return text if sentences.size < 2
+
+    first_sentence = sentences.first
+    return text if first_sentence.length > 48
+
+    normalized = I18n.transliterate(first_sentence).downcase
+    return text unless normalized.match?(/\A(?:ola|oi|claro|perfeito|otimo|certo|entendi|combinado|bom dia|boa tarde|boa noite)\b/)
+
+    text.sub(/\A#{Regexp.escape(first_sentence)}\s*/, '')
   end
 
   def limit_question_count(text)
@@ -197,6 +212,7 @@ class Captain::Conversation::ResponsePolicyService
       .gsub(/[ \t]+/, ' ')
       .gsub(/[ \t]+\n/, "\n")
       .gsub(/\n{3,}/, "\n\n")
+      .gsub(/\s*,\s*([.!?])/, '\1')
       .gsub(/\A[,\s.]+/, '')
       .strip
   end

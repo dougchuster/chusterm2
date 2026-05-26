@@ -38,4 +38,13 @@ RSpec.describe Captain::Conversation::ResponsePolicyService do
     expect(result).not_to match(/Aqui .*Dra/i)
     expect(result).to include('Para seguir')
   end
+
+  it 'removes low value openings instead of wasting the reply on generic repetition' do
+    content = 'Claro, Daniel! Tudo bem, sim, obrigada! Pode encaminhar o que ele ja te passou. Assim que receber, analiso.'
+
+    result = service.apply(content)
+
+    expect(result).not_to match(/Tudo bem|obrigada|Claro, Daniel/i)
+    expect(result).to include('Pode encaminhar')
+  end
 end

@@ -18,6 +18,7 @@ class MessageTemplates::HookExecutionService
 
   def trigger_templates
     return perform_customer_handoff if customer_contact?
+    return perform_human_attending_handoff if message.incoming? && human_attending_conversation?
 
     ::MessageTemplates::Template::OutOfOffice.new(conversation: conversation).perform if should_send_out_of_office_message?
     ::MessageTemplates::Template::Greeting.new(conversation: conversation).perform if should_send_greeting?
@@ -111,6 +112,7 @@ class MessageTemplates::HookExecutionService
       inbox.captain_responsible? &&
       !captain_human_controlled? &&
       !customer_contact? &&
+      !human_attending_conversation? &&
       captain_manageable_conversation?
   end
 
@@ -128,6 +130,31 @@ class MessageTemplates::HookExecutionService
                 .where(private: false)
                 .where.not(sender_type: ['AgentBot', 'Captain::Assistant'])
                 .exists?
+  end
+
+  def human_attending_conversation?
+    latest_human = latest_public_human_message
+    return false if latest_human.blank?
+
+    latest_ai = latest_public_ai_message
+    return true if latest_ai.blank?
+
+    latest_human.id > latest_ai.id || latest_human.created_at >= latest_ai.created_at
+  end
+
+  def latest_public_human_message
+    conversation.messages.outgoing
+                .where(private: false)
+                .where.not(sender_type: ['AgentBot', 'Captain::Assistant'])
+                .reorder(id: :desc)
+                .first
+  end
+
+  def latest_public_ai_message
+    conversation.messages
+                .where(sender_type: 'Captain::Assistant', private: false)
+                .reorder(id: :desc)
+                .first
   end
 
   def activate_captain_conversation
@@ -150,6 +177,17 @@ class MessageTemplates::HookExecutionService
     state.apply_ai_mode!(
       mode: 'human_only',
       reason: 'Contato classificado como cliente; atendimento por IA desativado.',
+      actor: nil
+    )
+    conversation.bot_handoff! if conversation.pending? || conversation.snoozed?
+  end
+
+  def perform_human_attending_handoff
+    Rails.logger.info("Human attending conversation, disabling Captain for conversation: #{conversation.id}")
+    state = conversation.captain_conversation_state || CaptainConversationState.for_conversation!(conversation)
+    state.apply_ai_mode!(
+      mode: 'human_only',
+      reason: 'Atendimento humano detectado; IA pausada automaticamente.',
       actor: nil
     )
     conversation.bot_handoff! if conversation.pending? || conversation.snoozed?
