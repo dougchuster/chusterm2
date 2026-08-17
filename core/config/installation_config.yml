@@ -183,63 +183,76 @@
 
 # MARK: Captain Config
 - name: CAPTAIN_OPEN_AI_API_KEY
-  display_title: 'OpenAI API Key'
-  description: 'The API key used to authenticate requests to OpenAI services for Captain AI.'
+  display_title: 'OpenRouter API Key'
+  description: 'Single OpenRouter API key used by Captain for chat, media, transcription and embeddings.'
   locked: false
   type: secret
 - name: CAPTAIN_ANTHROPIC_API_KEY
-  display_title: 'Anthropic API Key'
-  description: 'The API key used to authenticate requests to Anthropic Claude models for Captain AI.'
+  display_title: 'Legacy Anthropic API Key (unused)'
+  description: 'Legacy field retained for compatibility. ChusteRM routes Claude through OpenRouter.'
   locked: false
   type: secret
 - name: CAPTAIN_OPEN_AI_MODEL
-  display_title: 'OpenAI Model'
-  description: 'The OpenAI model configured for use in Captain AI. Default: gpt-4.1-mini'
+  display_title: 'OpenRouter Atendimento Model'
+  description: 'OpenRouter model slug used by Captain. Default: anthropic/claude-sonnet-5.'
+  value: 'anthropic/claude-sonnet-5'
   locked: false
 - name: CAPTAIN_OPEN_AI_ENDPOINT
-  display_title: 'OpenAI API Endpoint (optional)'
-  description: 'The OpenAI endpoint configured for use in Captain AI. Default: https://api.openai.com/'
+  display_title: 'OpenRouter API Endpoint'
+  description: 'Unified endpoint for every AI capability. Keep https://openrouter.ai/api/v1.'
+  value: 'https://openrouter.ai/api/v1'
   locked: false
 - name: CAPTAIN_MEDIA_AI_API_KEY
-  display_title: 'Media AI API Key (optional)'
-  description: 'API key used for Captain audio, image and document understanding. If blank, compatible legacy Captain settings may be used.'
+  display_title: 'Legacy Media API Key (unused)'
+  description: 'Legacy field retained for compatibility. Media now uses the single OpenRouter key.'
   locked: false
   type: secret
 - name: CAPTAIN_MEDIA_AI_MODEL
-  display_title: 'Media AI Model (optional)'
-  description: 'Model used for image/document understanding. Recommended for Gemini: gemini-2.5-flash'
-  value: 'gemini-2.5-flash'
+  display_title: 'OpenRouter Media Model'
+  description: 'OpenRouter model slug for images, PDFs, documents and video.'
+  value: 'google/gemini-3.7-flash'
+  locked: false
+- name: CAPTAIN_MEDIA_AI_FALLBACK_MODELS
+  display_title: 'OpenRouter Media Fallback Models'
+  description: 'Comma-separated OpenRouter model slugs tried when the primary media model is temporarily unavailable.'
+  value: 'anthropic/claude-sonnet-5,google/gemini-2.5-flash'
   locked: false
 - name: CAPTAIN_MEDIA_AI_ENDPOINT
-  display_title: 'Media AI Endpoint (optional)'
-  description: 'Endpoint used for image/document understanding. Recommended for Gemini: https://generativelanguage.googleapis.com/'
+  display_title: 'Legacy Media Endpoint (unused)'
+  description: 'Legacy field retained for compatibility. Media now uses the unified OpenRouter endpoint.'
   locked: false
 - name: CAPTAIN_AUDIO_TRANSCRIPTION_API_KEY
-  display_title: 'Audio Transcription API Key (optional)'
-  description: 'API key used only for audio transcription. If blank, Media AI settings may be used.'
+  display_title: 'Legacy Audio API Key (unused)'
+  description: 'Legacy field retained for compatibility. Transcription now uses the single OpenRouter key.'
   locked: false
   type: secret
 - name: CAPTAIN_AUDIO_TRANSCRIPTION_MODEL
-  display_title: 'Audio Transcription Model (optional)'
-  description: 'Model used for audio transcription. OpenAI default: whisper-1. Gemini can use gemini-2.5-flash.'
-  value: 'gemini-2.5-flash'
+  display_title: 'OpenRouter Audio Transcription Model'
+  description: 'OpenRouter transcription model slug used for incoming audio.'
+  value: 'openai/gpt-4o-transcribe'
+  locked: false
+- name: CAPTAIN_AUDIO_TRANSCRIPTION_FALLBACK_MODELS
+  display_title: 'OpenRouter Audio Fallback Models'
+  description: 'Comma-separated OpenRouter transcription models used as automatic fallbacks.'
+  value: 'openai/gpt-4o-mini-transcribe,openai/whisper-large-v3'
   locked: false
 - name: CAPTAIN_AUDIO_TRANSCRIPTION_ENDPOINT
-  display_title: 'Audio Transcription Endpoint (optional)'
-  description: 'Endpoint used only for audio transcription. OpenAI default: https://api.openai.com/. Gemini is also supported.'
+  display_title: 'Legacy Audio Endpoint (unused)'
+  description: 'Legacy field retained for compatibility. Transcription now uses the unified OpenRouter endpoint.'
   locked: false
 - name: CAPTAIN_EMBEDDING_MODEL
-  display_title: 'Embedding Model (optional)'
-  description: 'Model used for FAQ/document semantic search. OpenAI default: text-embedding-3-small. Gemini can use gemini-embedding-001.'
+  display_title: 'OpenRouter Embedding Model'
+  description: 'OpenRouter embedding model slug for FAQ and document semantic search. Keep 1536 dimensions.'
+  value: 'openai/text-embedding-3-small'
   locked: false
 - name: CAPTAIN_EMBEDDING_API_KEY
-  display_title: 'Embedding API Key (optional)'
-  description: 'API key used only for FAQ/document semantic search. If blank, compatible Media AI or Captain chat settings are used.'
+  display_title: 'Legacy Embedding API Key (unused)'
+  description: 'Legacy field retained for compatibility. Embeddings now use the single OpenRouter key.'
   locked: false
   type: secret
 - name: CAPTAIN_EMBEDDING_ENDPOINT
-  display_title: 'Embedding Endpoint (optional)'
-  description: 'Endpoint used only for FAQ/document semantic search. Gemini default: https://generativelanguage.googleapis.com/v1beta'
+  display_title: 'Legacy Embedding Endpoint (unused)'
+  description: 'Legacy field retained for compatibility. Embeddings now use the unified OpenRouter endpoint.'
   locked: false
 - name: CAPTAIN_FIRECRAWL_API_KEY
   display_title: 'FireCrawl API Key (optional)'
