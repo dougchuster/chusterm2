@@ -24,22 +24,22 @@ const emit = defineEmits(['remove', 'clear']);
   <div
     v-if="pills.length"
     data-testid="crm-filter-bar"
-    class="flex flex-wrap items-center gap-2 border-b border-ui-border-subtle px-3 py-2"
+    class="flex flex-wrap items-center gap-2 border-b border-ui-border-subtle/80 bg-ui-surface/30 px-3.5 py-2.5 backdrop-blur-sm"
   >
     <span
       v-for="pill in pills"
       :key="pill.key"
       data-testid="crm-filter-pill"
-      class="flex items-center gap-1 rounded-ui-control bg-ui-sunken py-0.5 pl-2 pr-0.5 text-ui-caption text-ui-text"
+      class="flex items-center gap-1.5 rounded-ui-control border border-ui-border-subtle/80 bg-ui-sunken/80 py-1 pl-2.5 pr-1 text-ui-caption text-ui-text shadow-sm transition-all hover:border-ui-border"
     >
-      <span class="text-ui-text-muted">{{ $t(pill.labelKey) }}</span>
-      <span v-if="pill.value" class="max-w-48 truncate font-medium">
+      <span class="font-medium text-ui-text-muted">{{ $t(pill.labelKey) }}</span>
+      <span v-if="pill.value" class="max-w-48 truncate font-semibold text-ui-text">
         {{ pill.value }}
       </span>
       <button
         data-testid="crm-filter-remove"
         type="button"
-        class="rounded-ui-control p-0.5 text-ui-text-muted hover:bg-ui-hover hover:text-ui-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus"
+        class="rounded-ui-control p-0.5 text-ui-text-muted transition-colors hover:bg-ui-hover hover:text-ui-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus"
         :aria-label="$t('CRM.FILTERS.REMOVE', { filter: $t(pill.labelKey) })"
         @click="emit('remove', pill.key)"
       >
@@ -50,7 +50,7 @@ const emit = defineEmits(['remove', 'clear']);
     <button
       data-testid="crm-filter-clear"
       type="button"
-      class="rounded-ui-control px-2 py-0.5 text-ui-caption text-ui-text-muted underline hover:text-ui-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus"
+      class="rounded-ui-control px-2.5 py-1 text-ui-caption font-medium text-ui-text-muted transition-colors hover:bg-ui-hover hover:text-ui-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus"
       @click="emit('clear')"
     >
       {{ $t('CRM.FILTERS.CLEAR_ALL') }}
@@ -59,7 +59,7 @@ const emit = defineEmits(['remove', 'clear']);
     <span
       v-if="resultCount !== null"
       data-testid="crm-filter-count"
-      class="ml-auto text-ui-caption text-ui-text-muted"
+      class="ml-auto text-ui-caption font-medium text-ui-text-muted"
       aria-live="polite"
     >
       <template v-if="resultCount === 0">

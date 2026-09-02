@@ -112,11 +112,12 @@ const label = computed(
     data-testid="crm-board-card"
     :data-rotting="rotting.level"
     :style="{ borderLeftColor: stage.color || 'transparent' }"
-    class="group cursor-grab rounded-ui-surface border border-l-4 bg-ui-surface p-3 shadow-ui-card transition-colors active:cursor-grabbing"
+    class="group relative cursor-grab rounded-ui-surface border border-l-4 bg-ui-surface p-3.5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:cursor-grabbing"
     :class="{
-      'border-ui-border hover:border-ui-border-strong': rotting.level !== 'late' && rotting.level !== 'warning',
-      'border-ui-warning': rotting.level === 'warning',
-      'border-ui-danger': rotting.level === 'late',
+      'border-ui-border hover:border-ui-border-strong hover:shadow-indigo-500/5': rotting.level !== 'late' && rotting.level !== 'warning',
+      'border-ui-warning shadow-amber-500/5': rotting.level === 'warning',
+      'border-ui-danger shadow-rose-500/10': rotting.level === 'late',
+      'ring-2 ring-ui-border-focus': selected,
     }"
   >
     <div class="flex items-start gap-2">
@@ -124,7 +125,7 @@ const label = computed(
         type="checkbox"
         :checked="selected"
         :aria-label="$t('CRM.CARD.SELECT', { name: label })"
-        class="mt-1 size-4 shrink-0 rounded border-ui-border accent-ui-brand"
+        class="mt-1 size-4 shrink-0 cursor-pointer rounded border-ui-border accent-ui-brand transition-transform hover:scale-110"
         @click.stop
         @change="emit('select', $event.target.checked)"
       />
@@ -136,7 +137,7 @@ const label = computed(
       >
         <span
           data-testid="crm-card-name"
-          class="block truncate text-ui-body-sm font-semibold text-ui-text"
+          class="block truncate text-ui-body-sm font-semibold text-ui-text transition-colors group-hover:text-primary-400"
         >
           {{ displayName || $t('CRM.CARD.NO_CONTACT') }}
         </span>
@@ -153,6 +154,7 @@ const label = computed(
         icon="i-lucide-message-circle"
         variant="ghost"
         size="sm"
+        class="text-ui-text-muted transition-colors hover:text-ui-brand"
         :aria-label="$t('CRM.CARD.ATTEND', { name: label })"
         @click.stop="emit('attend')"
       />
@@ -161,20 +163,20 @@ const label = computed(
           data-testid="crm-card-recompute"
           type="button"
           role="menuitem"
-          class="flex min-h-10 w-full items-center gap-2 rounded-ui-control px-3 text-left text-ui-body-sm text-ui-text hover:bg-ui-hover"
+          class="flex min-h-10 w-full items-center gap-2 rounded-ui-control px-3 text-left text-ui-body-sm text-ui-text transition-colors hover:bg-ui-hover"
           @click="emit('recompute')"
         >
-          <Icon icon="i-lucide-refresh-cw" class="size-4" />
+          <Icon icon="i-lucide-refresh-cw" class="size-4 text-ui-text-muted" />
           {{ $t('CRM.CARD.RECOMPUTE_SCORE') }}
         </button>
         <button
           data-testid="crm-card-base-client"
           type="button"
           role="menuitem"
-          class="flex min-h-10 w-full items-center gap-2 rounded-ui-control px-3 text-left text-ui-body-sm text-ui-text hover:bg-ui-hover"
+          class="flex min-h-10 w-full items-center gap-2 rounded-ui-control px-3 text-left text-ui-body-sm text-ui-text transition-colors hover:bg-ui-hover"
           @click="emit('markBaseClient')"
         >
-          <Icon icon="i-lucide-contact-round" class="size-4" />
+          <Icon icon="i-lucide-contact-round" class="size-4 text-ui-text-muted" />
           {{ $t('CRM.CARD.MARK_BASE_CLIENT') }}
         </button>
         <button
@@ -182,10 +184,10 @@ const label = computed(
           data-testid="crm-card-discard"
           type="button"
           role="menuitem"
-          class="flex min-h-10 w-full items-center gap-2 rounded-ui-control px-3 text-left text-ui-body-sm text-ui-danger hover:bg-ui-hover"
+          class="flex min-h-10 w-full items-center gap-2 rounded-ui-control px-3 text-left text-ui-body-sm text-ui-danger transition-colors hover:bg-ui-hover"
           @click="emit('discard')"
         >
-          <Icon icon="i-lucide-ban" class="size-4" />
+          <Icon icon="i-lucide-ban" class="size-4 text-ui-danger" />
           {{ $t('CRM.CARD.DISCARD') }}
         </button>
       </DsDropdown>
@@ -195,7 +197,7 @@ const label = computed(
     <div
       v-if="nextAction.tone === 'missing'"
       data-testid="crm-card-no-next-action"
-      class="mt-2 flex items-center gap-2 rounded-ui-control bg-ui-danger-subtle px-2 py-1.5 text-ui-caption font-medium text-ui-danger"
+      class="mt-2.5 flex items-center gap-2 rounded-ui-control border border-rose-500/20 bg-ui-danger-subtle px-2.5 py-1.5 text-ui-caption font-medium text-ui-danger"
     >
       <Icon icon="i-lucide-circle-alert" class="size-4 shrink-0" />
       <span class="min-w-0 flex-1 truncate">
@@ -204,7 +206,7 @@ const label = computed(
       <button
         data-testid="crm-card-schedule"
         type="button"
-        class="shrink-0 rounded-ui-control px-2 py-0.5 underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus"
+        class="shrink-0 rounded-ui-control px-2 py-0.5 underline transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus"
         :aria-label="$t('CRM.CARD.SCHEDULE_NEXT_ACTION', { name: label })"
         @click.stop="emit('scheduleNextAction')"
       >
@@ -216,7 +218,7 @@ const label = computed(
       v-else-if="nextAction.tone !== 'none'"
       data-testid="crm-card-next-action"
       :data-tone="nextAction.tone"
-      class="mt-2 flex items-center gap-2 text-ui-caption"
+      class="mt-2 flex items-center gap-2 text-ui-caption font-medium"
       :class="{
         'text-ui-danger': nextAction.tone === 'overdue',
         'text-ui-warning': nextAction.tone === 'today',
@@ -224,14 +226,14 @@ const label = computed(
           nextAction.tone === 'future' || nextAction.tone === 'undated',
       }"
     >
-      <Icon icon="i-lucide-calendar-clock" class="size-3.5 shrink-0" />
+      <Icon icon="i-lucide-calendar-clock" class="size-3.5 shrink-0 opacity-80" />
       <span class="min-w-0 flex-1 truncate">
         {{ dueLabel || $t('CRM.CARD.UNDATED') }}
       </span>
     </div>
 
     <div
-      class="mt-3 flex items-center justify-between gap-2 border-t border-ui-border-subtle pt-2"
+      class="mt-3 flex items-center justify-between gap-2 border-t border-ui-border-subtle pt-2.5"
     >
       <div class="flex min-w-0 items-center gap-1.5">
         <CRMScoreBadge
@@ -243,7 +245,7 @@ const label = computed(
           v-for="badge in badges.shown"
           :key="badge"
           data-testid="crm-card-badge"
-          class="truncate rounded-ui-control bg-ui-sunken px-1.5 text-ui-caption text-ui-text-muted"
+          class="truncate rounded-ui-control border border-ui-border-subtle bg-ui-sunken px-2 py-0.5 text-ui-caption font-medium text-ui-text-muted"
         >
           <template v-if="badge === 'ai'">{{
             $t('CRM.CARD.AI_ACTIVE')
@@ -253,7 +255,7 @@ const label = computed(
         <span
           v-if="badges.overflow"
           data-testid="crm-card-badge-overflow"
-          class="shrink-0 text-ui-caption text-ui-text-subtle"
+          class="shrink-0 text-ui-caption font-medium text-ui-text-subtle"
         >
           {{ $t('CRM.CARD.MORE_BADGES', { count: badges.overflow }) }}
         </span>
@@ -261,34 +263,34 @@ const label = computed(
       <span
         v-if="!isCompact && money"
         data-testid="crm-card-value"
-        class="shrink-0 text-ui-caption font-medium text-ui-text"
+        class="shrink-0 text-ui-caption font-semibold text-ui-text"
       >
         {{ money }}
       </span>
     </div>
 
-    <div class="mt-2 flex items-center gap-2 text-ui-caption text-ui-text-muted">
+    <div class="mt-2.5 flex items-center gap-2 text-ui-caption text-ui-text-muted">
       <span
         v-if="!isCompact && deal.legal_area"
         data-testid="crm-card-area"
-        class="truncate"
+        class="truncate rounded bg-ui-sunken/60 px-1.5 py-0.5"
       >
         {{ deal.legal_area }}
       </span>
       <span
         v-if="rotting.level === 'late'"
         data-testid="crm-card-stale"
-        class="shrink-0 text-ui-danger"
+        class="shrink-0 font-medium text-ui-danger"
       >
         {{ $t('CRM.CARD.STALE', { days: rotting.daysInStage }) }}
       </span>
-      <span class="ml-auto min-w-0 shrink-0 truncate">
+      <span class="ml-auto min-w-0 shrink-0 truncate font-medium">
         {{ ownerName || $t('CRM.CARD.NO_OWNER') }}
       </span>
       <a
         :href="href"
         :aria-label="$t('CRM.CARD.OPEN_RECORD', { name: label })"
-        class="shrink-0 rounded-ui-control p-1 hover:bg-ui-hover hover:text-ui-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus"
+        class="shrink-0 rounded-ui-control p-1 text-ui-text-muted transition-colors hover:bg-ui-hover hover:text-ui-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus"
         @click.stop
       >
         <Icon icon="i-lucide-arrow-up-right" class="size-4" />

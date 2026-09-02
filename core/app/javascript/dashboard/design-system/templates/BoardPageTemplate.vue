@@ -33,7 +33,7 @@ const DETAILS_ASIDE_LABEL = 'Detalhes do item';
     <div
       v-if="$slots.toolbar"
       data-template-region="toolbar"
-      class="flex shrink-0 flex-wrap items-end gap-2 border-b border-ui-border-subtle bg-ui-surface px-4 py-3 sm:px-6"
+      class="flex shrink-0 flex-wrap items-end gap-2.5 border-b border-ui-border-subtle/80 bg-ui-surface/60 px-4 py-3 backdrop-blur-md sm:px-6"
     >
       <slot name="toolbar" />
     </div>
@@ -45,13 +45,13 @@ const DETAILS_ASIDE_LABEL = 'Detalhes do item';
       >
         <div
           v-if="loading"
-          class="grid h-full min-w-[64rem] grid-cols-4 gap-3"
+          class="grid h-full min-w-[64rem] grid-cols-4 gap-3.5"
           :aria-label="LOADING_BOARD_LABEL"
         >
           <div
             v-for="column in 4"
             :key="column"
-            class="flex min-h-96 flex-col gap-3 rounded-ui-surface bg-ui-sunken p-3"
+            class="flex min-h-96 flex-col gap-3 rounded-ui-surface border border-ui-border-subtle/60 bg-ui-sunken/80 p-3.5"
           >
             <DsSkeleton class="w-2/3" />
             <DsSkeleton
@@ -68,7 +68,7 @@ const DETAILS_ASIDE_LABEL = 'Detalhes do item';
           :action-label="emptyActionLabel"
           @action="emit('empty-action')"
         />
-        <div v-else class="flex h-full min-w-max gap-3">
+        <div v-else class="flex h-full min-w-max gap-3.5 pb-2">
           <slot />
         </div>
       </div>
@@ -76,7 +76,7 @@ const DETAILS_ASIDE_LABEL = 'Detalhes do item';
       <aside
         v-if="$slots.aside"
         data-template-region="aside"
-        class="hidden w-80 shrink-0 overflow-y-auto border-l border-ui-border-subtle bg-ui-surface xl:block"
+        class="hidden w-80 shrink-0 overflow-y-auto border-l border-ui-border-subtle/80 bg-ui-surface/80 backdrop-blur-md xl:block"
         :aria-label="DETAILS_ASIDE_LABEL"
       >
         <slot name="aside" />

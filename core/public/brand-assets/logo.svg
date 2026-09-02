@@ -1,19 +1,38 @@
-<svg viewBox="0 0 200 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 220 64" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="ng" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#06b6d4"/>
-      <stop offset="100%" stop-color="#3b82f6"/>
+    <linearGradient id="chuster-grad-primary-light" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0891b2"/>
+      <stop offset="50%" stop-color="#4f46e5"/>
+      <stop offset="100%" stop-color="#9333ea"/>
     </linearGradient>
-    <linearGradient id="rg" x1="100%" y1="100%" x2="0%" y2="0%">
-      <stop offset="0%" stop-color="#ec4899"/>
-      <stop offset="100%" stop-color="#a855f7"/>
+    <linearGradient id="chuster-grad-accent-light" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#9333ea"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="chuster-grad-cyan-light" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="chuster-text-grad-light" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
     </linearGradient>
   </defs>
-  <circle cx="32" cy="32" r="24" stroke="url(#rg)" stroke-width="6" stroke-linecap="round" stroke-dasharray="80 30" transform="rotate(45 32 32)"/>
-  <circle cx="32" cy="32" r="16" stroke="url(#ng)" stroke-width="5" stroke-linecap="round" stroke-dasharray="40 20" transform="rotate(-30 32 32)"/>
-  <circle cx="32" cy="32" r="8" fill="url(#ng)"/>
-  <circle cx="56" cy="32" r="4" fill="#ec4899"/>
-  <circle cx="8" cy="32" r="4" fill="#06b6d4"/>
-  <text x="76" y="26" font-family="Inter, system-ui, sans-serif" font-size="17" font-weight="700" fill="#1e1b4b">Chuste</text>
-  <text x="76" y="44" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="500" fill="#6366f1">RM</text>
+
+  <!-- Outer Kinetic Hex Orbit -->
+  <path d="M32 8 L51 19.5 V42.5 L32 54 L13 42.5 V19.5 Z" stroke="url(#chuster-grad-primary-light)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="65 20"/>
+
+  <!-- Inner Dynamic Converging Curves -->
+  <path d="M42 21 C45.5 25.5 45.5 38.5 42 43 C37.5 47.5 26.5 47.5 22 43 C17.5 38.5 17.5 25.5 22 21 C26.5 16.5 35.5 16.5 40 19" stroke="url(#chuster-grad-cyan-light)" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M23 42 L32 32 L41 42 M32 22 V42 M32 22 C36.5 22 39 24 39 27.5 C39 31 36.5 33 32 33" stroke="url(#chuster-grad-accent-light)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Luminous Orbit Nodes -->
+  <circle cx="32" cy="8" r="2.5" fill="#0891b2"/>
+  <circle cx="51" cy="42.5" r="2" fill="#9333ea"/>
+  <circle cx="13" cy="42.5" r="2" fill="#4f46e5"/>
+  <circle cx="32" cy="32" r="1.5" fill="#0f172a"/>
+
+  <!-- Wordmark Text -->
+  <text x="68" y="38" font-family="'Plus Jakarta Sans', 'Manrope', 'Inter', system-ui, sans-serif" font-size="23" font-weight="700" letter-spacing="-0.5" fill="#0f172a">Chuste</text>
+  <text x="156" y="38" font-family="'Plus Jakarta Sans', 'Manrope', 'Inter', system-ui, sans-serif" font-size="23" font-weight="800" letter-spacing="0.5" fill="url(#chuster-text-grad-light)">RM</text>
 </svg>

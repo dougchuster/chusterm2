@@ -81,12 +81,17 @@ const onScroll = event => {
 
 <template>
   <article
-    class="flex h-full max-h-full w-[calc(100vw-3rem)] shrink-0 flex-col rounded-ui-surface border border-ui-border-subtle bg-ui-sunken sm:w-80"
+    class="flex h-full max-h-full w-[calc(100vw-3rem)] shrink-0 flex-col rounded-ui-surface border border-ui-border-subtle/80 bg-ui-sunken/90 shadow-sm backdrop-blur-md sm:w-80"
   >
     <header
-      class="flex min-h-12 shrink-0 flex-wrap items-center gap-x-2 gap-y-1 border-b border-ui-border-subtle px-3 py-2"
+      class="flex min-h-12 shrink-0 flex-wrap items-center gap-x-2 gap-y-1 border-b border-ui-border-subtle/80 bg-ui-surface/40 px-3.5 py-2.5"
     >
-      <h2 class="m-0 min-w-0 flex-1 truncate text-ui-body-sm font-semibold">
+      <div
+        v-if="column.color"
+        class="size-2 rounded-full shadow-sm"
+        :style="{ backgroundColor: column.color }"
+      />
+      <h2 class="m-0 min-w-0 flex-1 truncate text-ui-body-sm font-semibold text-ui-text">
         {{ column.name }}
       </h2>
       <DsBadge
@@ -102,24 +107,26 @@ const onScroll = event => {
         icon="i-lucide-plus"
         variant="ghost"
         size="sm"
+        class="text-ui-text-muted hover:text-ui-brand"
         :aria-label="$t('CRM.COLUMN.CREATE_IN_STAGE', { stage: column.name })"
         @click="emit('create')"
       />
       <div
-        class="flex w-full items-center gap-2 text-ui-caption text-ui-text-muted"
+        class="flex w-full items-center gap-2 pt-0.5 text-ui-caption text-ui-text-muted"
       >
-        <span v-if="money">{{ money }}</span>
-        <span v-if="averageAge" :title="$t('CRM.COLUMN.AVERAGE_AGE')">
-          ⏱ {{ averageAge }}
+        <span v-if="money" class="font-medium text-ui-text/80">{{ money }}</span>
+        <span v-if="averageAge" class="flex items-center gap-1 font-medium" :title="$t('CRM.COLUMN.AVERAGE_AGE')">
+          <Icon icon="i-lucide-clock" class="size-3 opacity-70" />
+          {{ averageAge }}
         </span>
         <span
           v-if="column.wip_limit"
           data-testid="crm-column-wip"
-          class="ml-auto rounded-ui-control px-1.5"
+          class="ml-auto rounded-ui-control px-2 py-0.5 font-medium"
           :class="
             column.over_wip
-              ? 'bg-ui-danger-subtle text-ui-danger'
-              : 'text-ui-text-muted'
+              ? 'border border-rose-500/20 bg-ui-danger-subtle text-ui-danger'
+              : 'bg-ui-surface/50 text-ui-text-muted'
           "
           :title="$t('CRM.COLUMN.WIP_TITLE')"
         >
@@ -145,9 +152,9 @@ const onScroll = event => {
         group="crm-pipeline"
         :sort="false"
         :disabled="!movable"
-        class="space-y-2 p-2"
-        ghost-class="opacity-40"
-        drag-class="shadow-ui-overlay"
+        class="space-y-2.5 p-2.5"
+        ghost-class="opacity-30 scale-95"
+        drag-class="shadow-xl rotate-1 scale-105 ring-2 ring-ui-border-focus"
         :delay="120"
         delay-on-touch-only
         @update:model-value="emit('change', { deals: $event })"
@@ -164,7 +171,7 @@ const onScroll = event => {
         v-if="loading"
         class="flex items-center justify-center gap-2 py-3 text-ui-caption text-ui-text-muted"
       >
-        <Icon icon="i-lucide-loader-circle" class="size-4 animate-spin" />
+        <Icon icon="i-lucide-loader-circle" class="size-4 animate-spin text-ui-brand" />
         {{ $t('CRM.COLUMN.LOADING_MORE') }}
       </p>
     </div>

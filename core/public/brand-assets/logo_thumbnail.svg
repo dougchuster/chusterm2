@@ -1,17 +1,42 @@
 <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="node-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#06b6d4"/>
-      <stop offset="100%" stop-color="#3b82f6"/>
+    <linearGradient id="chuster-grad-primary" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00eefc"/>
+      <stop offset="50%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#df8eff"/>
     </linearGradient>
-    <linearGradient id="ring-grad" x1="100%" y1="100%" x2="0%" y2="0%">
-      <stop offset="0%" stop-color="#ec4899"/>
+    <linearGradient id="chuster-grad-accent" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#df8eff"/>
       <stop offset="100%" stop-color="#a855f7"/>
     </linearGradient>
+    <linearGradient id="chuster-grad-cyan" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#00eefc"/>
+    </linearGradient>
+    <radialGradient id="chuster-glow-center" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#6366f1" stop-opacity="0.8"/>
+      <stop offset="60%" stop-color="#3b82f6" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#060e20" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="chuster-glow-filter" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
   </defs>
-  <circle cx="32" cy="32" r="24" stroke="url(#ring-grad)" stroke-width="6" stroke-linecap="round" stroke-dasharray="80 30" transform="rotate(45 32 32)"/>
-  <circle cx="32" cy="32" r="16" stroke="url(#node-grad)" stroke-width="5" stroke-linecap="round" stroke-dasharray="40 20" transform="rotate(-30 32 32)"/>
-  <circle cx="32" cy="32" r="8" fill="url(#node-grad)"/>
-  <circle cx="56" cy="32" r="4" fill="#ec4899"/>
-  <circle cx="8" cy="32" r="4" fill="#06b6d4"/>
+
+  <!-- Background Ambient Glow -->
+  <circle cx="32" cy="32" r="28" fill="url(#chuster-glow-center)"/>
+
+  <!-- Outer Kinetic Hex Orbit -->
+  <path d="M32 6 L53 18.5 V43.5 L32 56 L11 43.5 V18.5 Z" stroke="url(#chuster-grad-primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="75 25" filter="url(#chuster-glow-filter)"/>
+
+  <!-- Inner Dynamic Intertwining Arcs (C & R Kinetic Convergence) -->
+  <path d="M43 20 C47 25 47 39 43 44 C38 49 26 49 21 44 C16 39 16 25 21 20 C26 15 36 15 41 18" stroke="url(#chuster-grad-cyan)" stroke-width="3" stroke-linecap="round"/>
+  <path d="M22 43 L32 32 L42 43 M32 21 V43 M32 21 C37 21 40 23.5 40 27 C40 30.5 37 33 32 33" stroke="url(#chuster-grad-accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Glowing Luminous Nodes -->
+  <circle cx="32" cy="6" r="3" fill="#00eefc"/>
+  <circle cx="53" cy="43.5" r="2.5" fill="#df8eff"/>
+  <circle cx="11" cy="43.5" r="2.5" fill="#6366f1"/>
+  <circle cx="32" cy="32" r="2" fill="#ffffff"/>
 </svg>
