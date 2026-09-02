@@ -1,6 +1,6 @@
-﻿class AddFeatureCitationToAssistantConfig < ActiveRecord::Migration[7.1]
+class AddFeatureCitationToAssistantConfig < ActiveRecord::Migration[7.1]
   def up
-    return unless ChusteRMApp.enterprise?
+    return unless ChusteRMApp.enterprise? && defined?(Captain::Assistant)
 
     Captain::Assistant.find_each do |assistant|
       assistant.update!(
@@ -10,7 +10,7 @@
   end
 
   def down
-    return unless ChusteRMApp.enterprise?
+    return unless ChusteRMApp.enterprise? && defined?(Captain::Assistant)
 
     Captain::Assistant.find_each do |assistant|
       config = assistant.config.dup
