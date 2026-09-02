@@ -1,4 +1,4 @@
-﻿# == Schema Information
+# == Schema Information
 #
 # Table name: accounts
 #
@@ -171,7 +171,14 @@ class Account < ApplicationRecord
 
   before_validation :validate_limit_keys
   after_create_commit :notify_creation
+  after_create :provision_default_crm_setup
   after_destroy :remove_account_sequences
+
+  def provision_default_crm_setup
+    Crm::AccountInitializer.new(self).perform
+  rescue StandardError => e
+    Rails.logger.warn("[CRM] Account #{id} default CRM provisioning failed: #{e.message}")
+  end
 
   def agents
     users.where(account_users: { role: :agent })

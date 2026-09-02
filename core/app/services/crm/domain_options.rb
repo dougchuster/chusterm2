@@ -1,32 +1,40 @@
+# frozen_string_literal: true
+
 # UX-05: listas de domínio do CRM — fonte única (antes duplicadas/hardcoded no
 # front em 6 arquivos). Servidas por GET /crm/options; labels em pt-BR sem
 # emojis (UX-08 — urgência é indicada por cor/badge no front, não por emoji).
 module Crm
   module DomainOptions
     LEGAL_AREAS = [
+      { value: 'comercial', label: 'Comercial / Vendas' },
+      { value: 'servicos', label: 'Prestação de Serviços' },
+      { value: 'consultoria', label: 'Consultoria' },
+      { value: 'tecnologia', label: 'Tecnologia / SaaS' },
+      { value: 'saude', label: 'Saúde / Clínicas' },
+      { value: 'imobiliario', label: 'Imobiliário' },
+      { value: 'financeiro', label: 'Financeiro / Contábil' },
+      { value: 'educacao', label: 'Educação / Treinamento' },
+      { value: 'varejo', label: 'Varejo / E-commerce' },
+      { value: 'juridico', label: 'Jurídico' },
       { value: 'previdenciario', label: 'Previdenciário' },
       { value: 'civel', label: 'Cível' },
       { value: 'trabalhista', label: 'Trabalhista' },
-      { value: 'consumidor', label: 'Consumidor' },
-      { value: 'familia', label: 'Família' },
-      { value: 'criminal', label: 'Penal' },
-      { value: 'tributario', label: 'Tributário' },
-      { value: 'empresarial', label: 'Empresarial' },
-      { value: 'imobiliario', label: 'Imobiliário' },
       { value: 'outro', label: 'Outro' }
     ].freeze
 
     LEAD_SOURCES = [
       { value: 'whatsapp', label: 'WhatsApp' },
-      { value: 'jusbrasil', label: 'JusBrasil' },
       { value: 'instagram', label: 'Instagram' },
       { value: 'facebook', label: 'Facebook' },
       { value: 'google_ads', label: 'Google Ads' },
       { value: 'meta_ads', label: 'Meta Ads' },
+      { value: 'site', label: 'Site / Landing Page' },
       { value: 'indicacao', label: 'Indicação' },
-      { value: 'site', label: 'Site' },
+      { value: 'prospeccao_ativa', label: 'Prospecção Ativa' },
+      { value: 'evento', label: 'Evento / Feira' },
       { value: 'lista_importada', label: 'Lista importada' },
       { value: 'cliente_base', label: 'Cliente Base' },
+      { value: 'jusbrasil', label: 'JusBrasil' },
       { value: 'outros', label: 'Outros' }
     ].freeze
 
@@ -49,7 +57,9 @@ module Crm
     LEGAL_AREA_ALIASES = {
       'civil' => 'civel',
       'penal' => 'criminal',
-      'outros' => 'outro'
+      'outros' => 'outro',
+      'vendas' => 'comercial',
+      'software' => 'tecnologia'
     }.freeze
 
     def self.canonical_legal_area(value)

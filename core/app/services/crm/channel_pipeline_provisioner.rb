@@ -1,14 +1,11 @@
 class Crm::ChannelPipelineProvisioner
   STAGE_TEMPLATES = [
-    { name: 'Novo atendimento', slug: 'novo-atendimento', position: 0, probability_pct: 5, color: '#64748b' },
-    { name: 'Triagem IA', slug: 'triagem-ia', position: 1, probability_pct: 10, color: '#8b5cf6' },
-    { name: 'Qualificado', slug: 'qualificado', position: 2, probability_pct: 30, color: '#3b82f6' },
-    { name: 'Consulta/Reunião', slug: 'consulta-reuniao', position: 3, probability_pct: 45, color: '#06b6d4' },
-    { name: 'Documentos solicitados', slug: 'documentos-solicitados', position: 4, probability_pct: 55, color: '#f59e0b' },
-    { name: 'Em análise jurídica', slug: 'em-analise-juridica', position: 5, probability_pct: 65, color: '#f97316' },
-    { name: 'Proposta enviada', slug: 'proposta-enviada', position: 6, probability_pct: 75, color: '#ec4899' },
-    { name: 'Contrato fechado', slug: 'contrato-fechado', position: 7, probability_pct: 100, color: '#10b981' },
-    { name: 'Perdido/Arquivado', slug: 'perdido-arquivado', position: 8, probability_pct: 0, color: '#ef4444' }
+    { name: 'Novo Lead', slug: 'novo-lead', position: 0, probability_pct: 10, color: '#3b82f6' },
+    { name: 'Qualificação', slug: 'qualificacao', position: 1, probability_pct: 30, color: '#6366f1' },
+    { name: 'Apresentação / Proposta', slug: 'apresentacao-proposta', position: 2, probability_pct: 60, color: '#a855f7' },
+    { name: 'Negociação', slug: 'negociacao', position: 3, probability_pct: 80, color: '#ec4899' },
+    { name: 'Fechamento', slug: 'fechamento', position: 4, probability_pct: 100, color: '#10b981' },
+    { name: 'Perdido / Arquivado', slug: 'perdido-arquivado', position: 5, probability_pct: 0, color: '#ef4444' }
   ].freeze
 
   def self.perform_for_account(account, actor: nil, move_existing_deals: false)
@@ -59,7 +56,7 @@ class Crm::ChannelPipelineProvisioner
       inbox: @inbox,
       name: "Kanban - #{@inbox.name}",
       slug: "canal-#{@inbox.id}",
-      kind: source_pipeline&.kind.presence || 'legal_intake',
+      kind: source_pipeline&.kind.presence || 'sales',
       is_default: false,
       position: next_position,
       scoring_config: source_pipeline&.scoring_config || {}
