@@ -172,7 +172,7 @@ COPY lib/devise/models/password_has_required_content.rb ./lib/devise/models/pass
   RUN node /usr/local/lib/node_modules/npm/bin/npm-cli.js install -g pnpm@10.2.0 && \
       pnpm install --frozen-lockfile && \
       rm -rf public/vite tmp/cache/vite /app/public/vite-image && \
-      SECRET_KEY_BASE=dummy bundle exec rake vite:build RAILS_ENV=production && \
+      SECRET_KEY_BASE=dummy NODE_OPTIONS="--max-old-space-size=4096" bundle exec rake vite:build RAILS_ENV=production && \
       cp -a public/vite /app/public/vite-image && \
       if [ "$INSTALL_JS_DEPS" != "true" ]; then rm -rf node_modules; fi
 
