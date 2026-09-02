@@ -282,33 +282,8 @@ COPY app/dispatchers/async_dispatcher.rb ./app/dispatchers/async_dispatcher.rb
 COPY app/policies/label_policy.rb ./app/policies/label_policy.rb
 COPY app/policies/contact_policy.rb ./app/policies/contact_policy.rb
 COPY app/policies/crm_*.rb ./app/policies/
-# Patches de migrations da imagem base do Chatwoot com incompatibilidades de versao
-COPY db/migrate/20231211010807_add_cached_labels_list.rb ./db/migrate/
-COPY db/migrate/20260324102005_repurpose_response_bot_flag_for_custom_tools.rb ./db/migrate/
-# Stubs no-op para 22 migrations órfãs herdadas de versão anterior do Chatwoot
-# (vide docs/system-audit-report.md NEW-01). Copiar para satisfazer schema_migrations.
-COPY db/migrate/20260404*.rb ./db/migrate/
-COPY db/migrate/20260405*.rb ./db/migrate/
-COPY db/migrate/20260406*.rb ./db/migrate/
-COPY db/migrate/20260407*.rb ./db/migrate/
-# Wildcard amplo cobre todas as migrations 2026 customizadas — evita órfãs por COPY
-# específico esquecido (ex.: 20260502*, 20260507* que ficaram fora antes).
-COPY db/migrate/20260403*.rb ./db/migrate/
-COPY db/migrate/20260429*.rb ./db/migrate/
-COPY db/migrate/20260430*.rb ./db/migrate/
-COPY db/migrate/20260501*.rb ./db/migrate/
-COPY db/migrate/20260502*.rb ./db/migrate/
-COPY db/migrate/20260504*.rb ./db/migrate/
-COPY db/migrate/20260505*.rb ./db/migrate/
-COPY db/migrate/20260506*.rb ./db/migrate/
-COPY db/migrate/20260507*.rb ./db/migrate/
-COPY db/migrate/20260519*.rb ./db/migrate/
-COPY db/migrate/20260521*.rb ./db/migrate/
-COPY db/migrate/20260522*.rb ./db/migrate/
-COPY db/migrate/20260703*.rb ./db/migrate/
-COPY db/migrate/20260710*.rb ./db/migrate/
-COPY db/migrate/20260722000001_make_captain_handoff_request_driven.rb ./db/migrate/
-COPY db/migrate/20260820*.rb ./db/migrate/
+# Migrations do ChusteRM e patches sobre a imagem base
+COPY db/migrate/ ./db/migrate/
 COPY lib/tasks/crm_labels.rake ./lib/tasks/crm_labels.rake
 COPY lib/tasks/crm_contacts.rake ./lib/tasks/crm_contacts.rake
 COPY lib/tasks/crm_channel_pipelines.rake ./lib/tasks/crm_channel_pipelines.rake
