@@ -42,6 +42,8 @@ class Captain::Document < ApplicationRecord
   before_validation :set_external_link_for_pdf
   before_validation :normalize_external_link
 
+  attribute :sync_status, :integer, default: 0
+
   enum status: {
     in_progress: 0,
     available: 1
