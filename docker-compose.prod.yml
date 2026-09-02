@@ -145,9 +145,7 @@ services:
   # Roda db:migrate antes do core subir. Ativado só no deploy:
   #   docker compose -f docker-compose.prod.yml run --rm migrate
   migrate:
-    build:
-      context: ./core
-      dockerfile: Dockerfile
+    image: chusterm-core:latest
     profiles: ["deploy"]
     restart: "no"
     logging: *default-logging
@@ -170,6 +168,7 @@ services:
     build:
       context: ./core
       dockerfile: Dockerfile
+    image: chusterm-core:latest
     restart: unless-stopped
     logging: *default-logging
     depends_on:
@@ -202,9 +201,7 @@ services:
 
   # ─── Sidekiq Worker ──────────────────────────────────────────────────────────
   sidekiq:
-    build:
-      context: ./core
-      dockerfile: Dockerfile
+    image: chusterm-core:latest
     restart: unless-stopped
     logging: *default-logging
     depends_on:
