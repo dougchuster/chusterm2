@@ -92,7 +92,7 @@ RSpec.describe V2::Reports::LabelSummaryBuilder do
 
           stub_avatar_requests
 
-          perform_enqueued_jobs do
+          perform_enqueued_jobs(only: EventDispatcherJob) do
             # Create conversations with label_1
             3.times do
               conversation = create(:conversation, account: account,
@@ -229,7 +229,7 @@ RSpec.describe V2::Reports::LabelSummaryBuilder do
 
           stub_avatar_requests
 
-          perform_enqueued_jobs do
+          perform_enqueued_jobs(only: EventDispatcherJob) do
             # Conversation within range
             conversation_in_range = create(:conversation, account: account,
                                                           inbox: inbox, assignee: user,
@@ -286,7 +286,7 @@ RSpec.describe V2::Reports::LabelSummaryBuilder do
 
           stub_avatar_requests
 
-          perform_enqueued_jobs do
+          perform_enqueued_jobs(only: EventDispatcherJob) do
             conversation = create(:conversation, account: account,
                                                  inbox: inbox, assignee: user,
                                                  created_at: Time.zone.today)
@@ -325,8 +325,8 @@ RSpec.describe V2::Reports::LabelSummaryBuilder do
       let(:account2_builder) do
         described_class.new(account: account2, params: {
                               business_hours: false,
-                              since: test_date.to_time.to_i.to_s,
-                              until: test_date.end_of_day.to_time.to_i.to_s,
+                              since: test_date.in_time_zone.to_i.to_s,
+                              until: test_date.in_time_zone.end_of_day.to_i.to_s,
                               timezone_offset: 0
                             })
       end
@@ -342,18 +342,14 @@ RSpec.describe V2::Reports::LabelSummaryBuilder do
 
           stub_avatar_requests
 
-          perform_enqueued_jobs do
-            conversation = create(:conversation, account: account2,
-                                                 inbox: inbox, assignee: user,
-                                                 created_at: test_date)
-            conversation.update_labels(unique_label_name)
-            conversation.label_list
-            conversation.save!
-
-            conversation.resolved!
-            conversation.open!
-            conversation.resolved!
-          end
+          conversation = create(:conversation, account: account2,
+                                               inbox: inbox, assignee: user,
+                                               created_at: test_date)
+          conversation.update_labels(unique_label_name)
+          create_list(:reporting_event, 2, name: 'conversation_resolved', value: 0,
+                                           account: account2, inbox: inbox, user: user,
+                                           conversation: conversation, created_at: test_date)
+          clear_enqueued_jobs
         end
       end
 

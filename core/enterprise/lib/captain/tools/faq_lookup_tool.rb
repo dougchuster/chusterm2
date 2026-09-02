@@ -1,8 +1,14 @@
 class Captain::Tools::FaqLookupTool < Captain::Tools::BasePublicTool
+  LOOKUP_PERFORMED_STATE_KEY = :captain_faq_lookup_performed
+  REPEATED_LOOKUP_MESSAGE = 'FAQ lookup already performed in this run. Use the previous result and answer the user now.'.freeze
+
   description 'Search FAQ responses using semantic similarity to find relevant answers'
   param :query, type: 'string', desc: 'The question or topic to search for in the FAQ database'
 
-  def perform(_tool_context, query:)
+  def perform(tool_context, query:)
+    return REPEATED_LOOKUP_MESSAGE if tool_context.state[LOOKUP_PERFORMED_STATE_KEY]
+
+    tool_context.state[LOOKUP_PERFORMED_STATE_KEY] = true
     log_tool_usage('searching', { query: query })
 
     # Use existing vector search on approved responses

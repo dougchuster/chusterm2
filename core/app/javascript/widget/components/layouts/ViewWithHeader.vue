@@ -1,4 +1,4 @@
-﻿<script>
+<script>
 import Banner from '../Banner.vue';
 import Branding from 'shared/components/Branding.vue';
 import ChatHeader from '../ChatHeader.vue';

@@ -3,13 +3,8 @@
 describe Enterprise::Billing::TopupCheckoutService do
   subject(:service) { described_class.new(account: account) }
 
-  let(:account) { create(:account) }
-  let(:stripe_customer_id) { 'cus_test123' }
-  let(:invoice_settings) { Struct.new(:default_payment_method).new('pm_test') }
-  let(:stripe_customer) { Struct.new(:invoice_settings, :default_source).new(invoice_settings, nil) }
-  let(:stripe_invoice) { Struct.new(:id).new('inv_test123') }
-
   before do
+    InstallationConfig.where(name: 'ChusteRM_CLOUD_PLANS').delete_all
     create(:installation_config, name: 'ChusteRM_CLOUD_PLANS', value: [
              { 'name' => 'Hacker', 'product_id' => ['prod_hacker'], 'price_ids' => ['price_hacker'] },
              { 'name' => 'Business', 'product_id' => ['prod_business'], 'price_ids' => ['price_business'] }
@@ -27,6 +22,14 @@ describe Enterprise::Billing::TopupCheckoutService do
     allow(Stripe::Invoice).to receive(:pay)
     allow(Stripe::Billing::CreditGrant).to receive(:create)
   end
+
+
+  let(:account) { create(:account) }
+  let(:stripe_customer_id) { 'cus_test123' }
+  let(:invoice_settings) { Struct.new(:default_payment_method).new('pm_test') }
+  let(:stripe_customer) { Struct.new(:invoice_settings, :default_source).new(invoice_settings, nil) }
+  let(:stripe_invoice) { Struct.new(:id).new('inv_test123') }
+
 
   describe '#create_checkout_session' do
     it 'successfully processes topup and returns correct response' do

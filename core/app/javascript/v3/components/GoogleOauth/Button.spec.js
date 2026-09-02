@@ -1,4 +1,4 @@
-﻿import { shallowMount } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 import GoogleOAuthButton from './Button.vue';
 
 function getWrapper() {

@@ -121,6 +121,19 @@ const menuItems = computed(() => {
 const allowedMenuItems = computed(() => {
   return menuItems.value.filter(item => item.show);
 });
+
+const availabilityLabel = computed(() => {
+  const labelByAvailability = {
+    online: t('PROFILE_SETTINGS.FORM.AVAILABILITY.STATUS.ONLINE'),
+    busy: t('PROFILE_SETTINGS.FORM.AVAILABILITY.STATUS.BUSY'),
+    offline: t('PROFILE_SETTINGS.FORM.AVAILABILITY.STATUS.OFFLINE'),
+  };
+
+  return (
+    labelByAvailability[currentUserAvailability.value] ??
+    labelByAvailability.offline
+  );
+});
 </script>
 
 <template>
@@ -131,12 +144,15 @@ const allowedMenuItems = computed(() => {
   >
     <template #trigger="{ toggle, isOpen }">
       <button
-        class="sidebar-profile-trigger flex gap-3 items-center p-3 text-left rounded-2xl cursor-pointer border transition-all duration-200"
+        type="button"
+        class="flex min-h-14 items-center gap-3 rounded-2xl border-0 bg-transparent p-2 text-left text-ds-shell-fg transition duration-150 hover:bg-ds-shell-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-shell-focus"
         :class="[
-          { 'is-open': isOpen },
+          isOpen ? 'bg-ds-shell-hover' : '',
           isCollapsed ? 'justify-center' : 'w-full',
         ]"
         :title="isCollapsed ? currentUser.available_name : undefined"
+        aria-haspopup="menu"
+        :aria-expanded="isOpen"
         @click="toggle"
       >
         <Avatar
@@ -144,23 +160,25 @@ const allowedMenuItems = computed(() => {
           :name="currentUser.available_name"
           :src="currentUser.avatar_url"
           :status="currentUserAvailability"
-          class="flex-shrink-0"
+          class="flex-shrink-0 ring-2 ring-ds-shell-accent/20"
           rounded-full
         />
         <div v-if="!isCollapsed" class="min-w-0">
           <div
-            class="text-[0.95rem] font-semibold leading-5 truncate text-n-slate-12"
+            class="truncate font-inter text-[0.86rem] font-semibold leading-5 text-ds-shell-fg"
           >
             {{ currentUser.available_name }}
           </div>
-          <div class="text-sm truncate text-n-slate-11">
-            {{ currentUser.email }}
+          <div
+            class="truncate font-inter text-[0.7rem] leading-4 text-ds-shell-muted"
+          >
+            {{ availabilityLabel }}
           </div>
         </div>
       </button>
     </template>
     <DropdownBody
-      class="sidebar-profile-dropdown bottom-14 z-50 mb-2 w-80 ltr:left-0 rtl:right-0"
+      class="bottom-16 z-50 mb-2 w-80 overflow-hidden rounded-2xl bg-ds-shell-panel-strong shadow-2xl shadow-black/25 ring-1 ring-inset ring-ds-shell-border ltr:left-0 rtl:right-0"
     >
       <SidebarProfileMenuStatus />
       <DropdownSeparator />
@@ -174,23 +192,3 @@ const allowedMenuItems = computed(() => {
     </DropdownBody>
   </DropdownContainer>
 </template>
-
-<style scoped>
-.sidebar-profile-trigger {
-  border-color: transparent;
-  background: transparent;
-}
-
-.sidebar-profile-trigger:hover,
-.sidebar-profile-trigger.is-open {
-  background: rgb(var(--slate-3) / 0.5);
-}
-
-.sidebar-profile-dropdown {
-  overflow: hidden;
-  border-radius: 1rem;
-  border: 1px solid rgb(var(--slate-4) / 0.6);
-  background: rgb(var(--slate-2));
-  box-shadow: 0 16px 40px rgb(0 0 0 / 0.25);
-}
-</style>

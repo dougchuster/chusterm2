@@ -302,6 +302,8 @@
         "CONTACTS": "Contacts"
       },
       "ACTIONS": {
+        "FILTER_CONTACTS": "Filter contacts",
+        "MORE_ACTIONS": "More actions",
         "CONTACT_CREATION": {
           "ADD_CONTACT": "Add contact",
           "EXPORT_CONTACT": "Export contacts",
@@ -416,6 +418,8 @@
     "CARD": {
       "OF": "of",
       "VIEW_DETAILS": "View details",
+      "EXPAND": "Expand details",
+      "COLLAPSE": "Collapse details",
       "EDIT_DETAILS_FORM": {
         "TITLE": "Edit contact details",
         "FORM": {

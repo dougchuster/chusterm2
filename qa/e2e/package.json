@@ -1,0 +1,24 @@
+{
+  "name": "@chusterm/qa-e2e",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.28.2",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "manifest": "node scripts/generate-route-manifest.mjs",
+    "test": "pnpm manifest && playwright test",
+    "test:smoke": "pnpm manifest && playwright test tests/health.spec.ts tests/authenticated-smoke.spec.ts --project=chromium-desktop",
+    "test:a11y": "pnpm manifest && playwright test tests/accessibility.spec.ts --project=chromium-desktop",
+    "test:ui": "playwright test --ui",
+    "install:browsers": "playwright install --with-deps chromium firefox webkit"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.12.1",
+    "@playwright/test": "1.61.1",
+    "@types/node": "26.1.1",
+    "typescript": "7.0.2"
+  }
+}

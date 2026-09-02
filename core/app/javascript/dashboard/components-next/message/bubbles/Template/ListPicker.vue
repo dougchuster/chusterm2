@@ -10,7 +10,7 @@ defineProps({
 
 <template>
   <div
-    class="bg-n-alpha-2 divide-y divide-n-strong text-n-slate-12 rounded-xl max-w-80"
+    class="max-w-80 divide-y divide-ds-border-subtle rounded-xl bg-ds-bg-sunken text-ds-fg-default ring-1 ring-inset ring-ds-border-subtle"
   >
     <div class="p-3">
       <span
@@ -19,7 +19,12 @@ defineProps({
       />
     </div>
     <div class="p-3 flex items-center justify-center">
-      <Button label="See options" link class="hover:!no-underline" />
+      <Button
+        type="button"
+        label="See options"
+        link
+        class="hover:!no-underline"
+      />
     </div>
   </div>
 </template>

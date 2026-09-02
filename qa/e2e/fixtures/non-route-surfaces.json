@@ -1,0 +1,10 @@
+[
+  { "family": "conversations", "type": "drawer", "name": "detalhes da conversa" },
+  { "family": "contacts", "type": "drawer", "name": "detalhes do contato" },
+  { "family": "crm", "type": "drawer", "name": "detalhes do negócio" },
+  { "family": "crm", "type": "modal", "name": "criar ou editar negócio" },
+  { "family": "crm", "type": "modal", "name": "marcar ganho ou perdido" },
+  { "family": "captain", "type": "tabs", "name": "FAQ, documentos, ferramentas, cenários e configurações" },
+  { "family": "settings", "type": "factory", "name": "ChannelFactory por tipo de canal" },
+  { "family": "global", "type": "state", "name": "loading, vazio, erro, offline, permissão e confirmação" }
+]

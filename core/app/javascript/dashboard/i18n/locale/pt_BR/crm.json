@@ -1,0 +1,228 @@
+{
+  "CRM": {
+    "LOSS_REASONS": {
+      "BREADCRUMB": "Configuração CRM",
+      "TITLE": "Motivos de Perda",
+      "SUBTITLE": "Padronize os motivos usados para fechar leads perdidos.",
+      "PLACEHOLDER": "Novo motivo de perda...",
+      "ADD": "Adicionar",
+      "LOADING": "Carregando..."
+    },
+    "CARD": {
+      "NO_CONTACT": "Sem contato",
+      "FALLBACK_TITLE": "Negócio #{id}",
+      "NO_OWNER": "Sem responsável",
+      "NO_NEXT_ACTION": "Sem próxima ação",
+      "SCHEDULE": "Agendar",
+      "UNDATED": "Agendado sem data",
+      "OVERDUE": "Vencida",
+      "STALE": "Parado há {days}d",
+      "AI_ACTIVE": "IA conduzindo",
+      "MORE_BADGES": "+{count}",
+      "SELECT": "Selecionar {name}",
+      "ATTEND": "Atender {name} no WhatsApp",
+      "MORE_ACTIONS": "Mais ações para {name}",
+      "OPEN_RECORD": "Abrir ficha de {name}",
+      "RECOMPUTE_SCORE": "Recalcular score",
+      "MARK_BASE_CLIENT": "Marcar como cliente da base",
+      "DISCARD": "Descartar negócio",
+      "SCHEDULE_NEXT_ACTION": "Agendar próxima ação para {name}"
+    },
+    "COLUMN": {
+      "AVERAGE_AGE": "Tempo médio nesta etapa",
+      "WIP_TITLE": "Trabalho em andamento nesta etapa",
+      "WIP": "WIP {current}/{limit}",
+      "LOADING_MORE": "Carregando mais…",
+      "CREATE_IN_STAGE": "Criar negócio em {stage}"
+    },
+    "DENSITY": {
+      "LABEL": "Densidade dos cards",
+      "COMPACT": "Compacta",
+      "NORMAL": "Normal",
+      "DETAILED": "Detalhada"
+    },
+    "FILTERS": {
+      "SEARCH": "Busca",
+      "STAGE": "Etapa",
+      "OWNER": "Responsável",
+      "LABEL": "Etiqueta",
+      "OPERATIONAL_STATUS": "Situação",
+      "AI_MODE": "Modo da IA",
+      "SCORE": "Score",
+      "VALUE": "Valor",
+      "CREATED": "Criado em",
+      "UNASSIGNED": "sem responsável",
+      "HAS_NEXT_ACTION": "Com próxima ação",
+      "NO_NEXT_ACTION": "Sem próxima ação",
+      "STALE": "Parados",
+      "NOT_STALE": "Em dia",
+      "REMOVE": "Remover filtro {filter}",
+      "CLEAR_ALL": "Limpar filtros",
+      "RESULT_COUNT": "{count} negócios",
+      "NO_RESULTS": "Nenhum negócio com esses filtros"
+    },
+    "VIEWS": {
+      "MENU": "Visões",
+      "MINE": "Minhas",
+      "TEAM": "Da equipe",
+      "EMPTY": "Nenhuma visão salva ainda",
+      "SAVE_CURRENT": "Salvar visão atual",
+      "SAVE_PROMPT": "Nome da visão",
+      "SHARE": "Compartilhar {name} com a equipe",
+      "UNSHARE": "Deixar {name} privada",
+      "DELETE": "Excluir a visão {name}",
+      "DELETE_CONFIRM": "Excluir a visão \"{name}\"?",
+      "SAVE_FAILED": "Não foi possível salvar a visão.",
+      "LOAD_FAILED": "Não foi possível carregar as visões salvas."
+    },
+    "CREATE_DEAL": {
+      "TITLE": "Novo negócio",
+      "DESCRIPTION": "Adicione o assunto e o contato ao pipeline.",
+      "SUBJECT": "Assunto",
+      "SUBJECT_PLACEHOLDER": "Ex.: Consulta inicial",
+      "CONTACT_NAME": "Nome do contato",
+      "PHONE": "Telefone",
+      "INITIAL_STAGE": "Etapa inicial",
+      "CANCEL": "Cancelar",
+      "SUBMIT": "Criar negócio"
+    },
+    "DISPOSITION": {
+      "INVALID": "Inválido",
+      "SPAM": "Spam",
+      "DUPLICATED": "Duplicado",
+      "NO_LEAD": "Não é lead"
+    },
+    "ERRORS": {
+      "DISCARD": "Não foi possível descartar o negócio.",
+      "MARK_BASE_CLIENT": "Não foi possível marcar como cliente da base.",
+      "RECOMPUTE_SCORE": "Não foi possível recalcular o score."
+    },
+    "TOOLBAR": {
+      "SEARCH": "Buscar no pipeline",
+      "SEARCH_PLACEHOLDER": "Buscar por nome, telefone ou assunto",
+      "PIPELINE": "Pipeline",
+      "OWNER": "Responsável",
+      "PRIORITY": "Prioridade",
+      "CLEAR": "Limpar",
+      "TOTAL": "{count} negócio(s)"
+    },
+    "BOARD": {
+      "EMPTY_STAGES": "Este pipeline ainda não possui etapas.",
+      "EMPTY_GROUPED": "Nenhum negócio para agrupar com os filtros atuais."
+    },
+    "GROUP_BY": {
+      "LABEL": "Agrupar por",
+      "STAGE": "Etapa",
+      "OWNER": "Responsável",
+      "SCORE_BAND": "Faixa de score",
+      "LEGAL_AREA": "Área",
+      "SOURCE": "Origem",
+      "OPERATIONAL_STATUS": "Situação"
+    },
+    "METRICS": {
+      "TITLE": "Métricas do CRM",
+      "BREADCRUMB": "CRM",
+      "BACK": "Voltar para o CRM",
+      "PERIOD_LABEL": "Período",
+      "LOADING": "Carregando métricas…",
+      "PERIODS": {
+        "DAYS_7": "7 dias",
+        "DAYS_30": "30 dias",
+        "DAYS_90": "90 dias",
+        "MONTHS_6": "6 meses",
+        "YEAR_1": "1 ano"
+      },
+      "EMPTY_TITLE": "Nenhum dado ainda",
+      "EMPTY_DESCRIPTION": "As métricas aparecerão aqui conforme você criar e movimentar deals no pipeline.",
+      "ANALYST": {
+        "TITLE": "Analista CRM",
+        "SUBTITLE": "Consulte contatos, listas, campanhas e funil usando dados do Core.",
+        "QUESTION_LABEL": "Pergunta para o analista",
+        "PLACEHOLDER": "Ex.: Quais leads quentes estão sem responsável?",
+        "ASK": "Perguntar",
+        "ASKING": "Consultando…",
+        "ERROR": "Não foi possível consultar o analista CRM agora.",
+        "EXAMPLES": {
+          "INSS": "Quantos leads INSS entraram essa semana?",
+          "UNASSIGNED_HOT": "Quais leads quentes estão sem responsável?",
+          "TOP_LIST": "Qual lista importada tem mais contatos?",
+          "WAITING_DOCS": "Quais contatos estão aguardando documento há mais de 3 dias?",
+          "BEST_OWNER": "Qual responsável converte mais?",
+          "CAMPAIGNS": "Como foram as campanhas recentes?"
+        }
+      },
+      "KPI": {
+        "TITLE": "Indicadores-chave",
+        "TOTAL": "Total",
+        "OPEN": "Abertos",
+        "WON": "Ganhos",
+        "LOST": "Perdidos",
+        "WIN_RATE": "Taxa de ganho",
+        "AVG_SCORE": "Score médio",
+        "SCORE_UNIT": "/100",
+        "PIPELINE": "Pipeline",
+        "WON_VALUE": "Valor ganho",
+        "AVG_TIME": "Tempo médio",
+        "DAY_UNIT": "d"
+      },
+      "FUNNEL": {
+        "TITLE": "Funil de Conversão",
+        "EMPTY": "Crie etapas no pipeline para ver o funil"
+      },
+      "WIN_LOSS": {
+        "TITLE": "Ganhos vs Perdidos (mensal)",
+        "EMPTY": "Nenhum deal ganho ou perdido no período",
+        "SUMMARY": "{won} ganhos, {lost} perdidos"
+      },
+      "LOSS_REASONS": {
+        "TITLE": "Top Motivos de Perda",
+        "EMPTY": "Nenhum motivo de perda registrado",
+        "RANK": "#",
+        "REASON": "Motivo",
+        "COUNT": "Total"
+      },
+      "AREA": {
+        "TITLE": "Distribuição por Área Jurídica",
+        "EMPTY": "Nenhum deal com área jurídica definida"
+      },
+      "SCORE_BY_STAGE": {
+        "TITLE": "Score Médio por Estágio",
+        "EMPTY": "Sem dados"
+      },
+      "TIME_IN_STAGE": {
+        "TITLE": "Tempo Médio por Estágio",
+        "EMPTY": "Sem dados de transição",
+        "STAGE": "Etapa",
+        "AVG": "Tempo médio",
+        "DETAIL": "Detalhe",
+        "NO_DATA": "Sem dados",
+        "SAMPLES": "{count} amostras, min {min}, max {max}"
+      },
+      "TOP_DEALS": {
+        "TITLE": "Top Deals por Score",
+        "EMPTY": "Nenhum deal aberto",
+        "DEAL": "Título",
+        "CONTACT": "Contato",
+        "STAGE": "Etapa",
+        "SCORE": "Score",
+        "URGENCY": "Urgência",
+        "OPEN": "Abrir deal {title}"
+      },
+      "STALE_DEALS": {
+        "TITLE": "Deals Stale (sem atividade há 7+ dias)",
+        "EMPTY": "Nenhum deal stale",
+        "NEVER": "Nunca",
+        "DAYS": "{days}d",
+        "STALE_FOR": "Parado há",
+        "OPEN": "Abrir deal {title}"
+      },
+      "URGENCY": {
+        "CRITICA": "crítica",
+        "ALTA": "alta",
+        "MEDIA": "média",
+        "NORMAL": "normal",
+        "BAIXA": "baixa"
+      }
+    }
+  }
+}

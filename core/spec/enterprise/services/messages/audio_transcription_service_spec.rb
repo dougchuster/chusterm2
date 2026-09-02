@@ -13,6 +13,7 @@ RSpec.describe Messages::AudioTranscriptionService, type: :service do
 
     # Mock usage limits for transcription to be available
     allow(account).to receive(:usage_limits).and_return({ captain: { responses: { current_available: 100 } } })
+    allow(Llm::MediaConfig).to receive(:transcription_configured?).and_return(true)
   end
 
   describe '#perform' do
@@ -21,17 +22,17 @@ RSpec.describe Messages::AudioTranscriptionService, type: :service do
     context 'when captain_integration feature is not enabled' do
       before do
         account.disable_features!('captain_integration')
+        allow_any_instance_of(Account).to receive(:feature_enabled?).and_call_original
+        allow_any_instance_of(Account).to receive(:feature_enabled?).with('captain_integration').and_return(false)
       end
 
-      it 'returns transcription limit exceeded' do
-        expect(service.perform).to eq({ error: 'Transcription limit exceeded' })
+      it 'returns captain integration disabled' do
+        expect(service.perform).to eq({ error: 'captain_integration_disabled' })
       end
     end
 
     context 'when transcription is successful' do
       before do
-        # Mock can_transcribe? to return true and transcribe_audio method
-        allow(service).to receive(:can_transcribe?).and_return(true)
         allow(service).to receive(:transcribe_audio).and_return('Hello world transcription')
       end
 
@@ -43,12 +44,12 @@ RSpec.describe Messages::AudioTranscriptionService, type: :service do
 
     context 'when audio transcriptions are disabled' do
       before do
-        account.update!(audio_transcriptions: false)
+        allow(service).to receive(:audio_transcription_enabled?).and_return(false)
       end
 
-      it 'returns error for transcription limit exceeded' do
+      it 'returns audio transcription disabled' do
         result = service.perform
-        expect(result).to eq({ error: 'Transcription limit exceeded' })
+        expect(result).to eq({ error: 'audio_transcription_disabled' })
       end
     end
 
@@ -67,7 +68,6 @@ RSpec.describe Messages::AudioTranscriptionService, type: :service do
     context 'when attachment already has transcribed text' do
       before do
         attachment.update!(meta: { transcribed_text: 'Existing transcription' })
-        allow(service).to receive(:can_transcribe?).and_return(true)
       end
 
       it 'returns existing transcription without calling API' do
@@ -75,25 +75,45 @@ RSpec.describe Messages::AudioTranscriptionService, type: :service do
         expect(result).to eq({ success: true, transcriptions: 'Existing transcription' })
       end
     end
+
+    context 'when the provider has a temporary failure' do
+      before do
+        allow(service).to receive(:transcribe_audio).and_raise(Llm::TransientProviderError, 'timeout')
+      end
+
+      it 'keeps the attachment processing and re-raises for job retry' do
+        expect { service.perform }.to raise_error(Llm::TransientProviderError)
+
+        expect(attachment.reload.meta).to include(
+          'media_understanding_status' => 'processing',
+          'media_understanding_error' => a_string_matching(/transient_provider_retry/)
+        )
+      end
+    end
   end
 
-  describe '#fetch_audio_file' do
+  describe '#transcribe_audio' do
     let(:service) { described_class.new(attachment) }
+    let(:openrouter_service) { instance_double(Llm::OpenRouterMultimodalService) }
 
     before do
       attachment.file.attach(
         io: File.open(Rails.public_path.join('audio/widget/ding.mp3')),
-        filename: 'speech',
+        filename: 'speech.mp3',
         content_type: 'audio/mpeg'
       )
+      allow(Llm::OpenRouterMultimodalService).to receive(:new)
+        .with(purpose: :transcription)
+        .and_return(openrouter_service)
+      allow(openrouter_service).to receive(:transcribe_audio).with(attachment).and_return('Teste de áudio')
+      allow(service).to receive(:update_transcription)
     end
 
-    it 'adds extension from content type when filename has no extension' do
-      temp_file_path = service.send(:fetch_audio_file)
+    it 'routes transcription through OpenRouter' do
+      result = service.send(:transcribe_audio)
 
-      expect(File.extname(temp_file_path)).to eq('.mpeg')
-    ensure
-      FileUtils.rm_f(temp_file_path) if temp_file_path.present?
+      expect(result).to eq('Teste de áudio')
+      expect(openrouter_service).to have_received(:transcribe_audio).with(attachment)
     end
   end
 end

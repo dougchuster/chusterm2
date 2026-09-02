@@ -77,7 +77,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="stats-live-reports-shell flex flex-col items-center md:flex-row gap-4">
+  <div
+    class="stats-live-reports-shell flex flex-col items-center md:flex-row gap-4"
+  >
     <div
       class="flex-1 w-full max-w-full md:w-[65%] md:max-w-[65%] conversation-metric"
     >

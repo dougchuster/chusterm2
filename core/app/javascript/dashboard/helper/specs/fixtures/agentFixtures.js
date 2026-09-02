@@ -1,4 +1,4 @@
-﻿export const allAgentsData = [
+export const allAgentsData = [
   {
     account_id: 1,
     availability_status: 'online',

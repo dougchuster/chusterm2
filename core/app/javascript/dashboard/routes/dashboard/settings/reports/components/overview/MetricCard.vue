@@ -35,7 +35,7 @@ defineProps({
             <span
               class="bg-n-teal-9 h-1 w-1 rounded-full mr-1 rtl:mr-0 rtl:ml-0"
             />
-            <span class="text-xs text-n-teal-11">
+            <span class="text-xs text-n-teal-12">
               {{ $t('OVERVIEW_REPORTS.LIVE') }}
             </span>
           </span>

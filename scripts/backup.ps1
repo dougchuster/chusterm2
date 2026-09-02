@@ -23,13 +23,23 @@ Write-Host "[1/4] PostgreSQL..." -ForegroundColor Yellow
 $pgDir = Join-Path $backupRoot "postgres"
 New-Item -ItemType Directory -Path $pgDir -Force | Out-Null
 
-$dbs = @("chusterm_core", "evolution_api")
+$dbs = @(
+    docker compose exec -T postgres psql -U chusterm -Atc `
+        "SELECT datname FROM pg_database WHERE datistemplate = false AND datname <> 'postgres' ORDER BY datname"
+) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+
+if ($LASTEXITCODE -ne 0 -or $dbs.Count -eq 0) {
+    throw "Nao foi possivel descobrir os bancos PostgreSQL para backup."
+}
+
 foreach ($db in $dbs) {
     Write-Host "      -> $db"
     # Dump dentro do container
     docker compose exec -T postgres sh -c "pg_dump -U chusterm $db | gzip > /tmp/$db.sql.gz"
+    if ($LASTEXITCODE -ne 0) { throw "Falha no dump PostgreSQL de $db." }
     # Copia para o host
     docker compose cp "postgres:/tmp/$db.sql.gz" "$pgDir\$db.sql.gz"
+    if ($LASTEXITCODE -ne 0) { throw "Falha ao copiar o dump PostgreSQL de $db." }
     # Remove temporário
     docker compose exec -T postgres rm -f "/tmp/$db.sql.gz"
 }
@@ -45,8 +55,10 @@ $redisDir = Join-Path $backupRoot "redis"
 New-Item -ItemType Directory -Path $redisDir -Force | Out-Null
 
 docker compose exec -T redis redis-cli -a chusterm_redis_pass BGSAVE | Out-Null
+if ($LASTEXITCODE -ne 0) { throw "Falha ao solicitar snapshot do Redis." }
 Start-Sleep -Seconds 3
 docker compose cp "redis:/data/dump.rdb" "$redisDir\dump.rdb"
+if ($LASTEXITCODE -ne 0) { throw "Falha ao copiar o snapshot do Redis." }
 
 Write-Host "    OK" -ForegroundColor Green
 
@@ -63,7 +75,7 @@ $volumesDirAbs = (Resolve-Path $volumesDir).Path.Replace('\', '/')
 $volumes = @{
     "chusterm_evolution-instances" = "evolution-instances.tar.gz"
     "chusterm_evolution-store"     = "evolution-store.tar.gz"
-    "chusterm_core-vite-output"    = "core-vite-output.tar.gz"
+    "chusterm_core-storage"        = "core-storage.tar.gz"
 }
 
 foreach ($vol in $volumes.GetEnumerator()) {
@@ -72,6 +84,7 @@ foreach ($vol in $volumes.GetEnumerator()) {
         -v "$($vol.Key):/data:ro" `
         -v "${volumesDirAbs}:/out" `
         alpine sh -c "tar czf /out/$($vol.Value) -C /data ."
+    if ($LASTEXITCODE -ne 0) { throw "Falha no backup do volume $($vol.Key)." }
 }
 
 Write-Host "    OK" -ForegroundColor Green
@@ -88,6 +101,7 @@ docker run --rm `
     -v "${sourceDir}:/src:ro" `
     -v "${backupRootAbs}:/out" `
     alpine sh -c "tar czf /out/source.tar.gz -C /src --exclude=./core/node_modules --exclude=./core/tmp --exclude=./core/log --exclude=./core/public/vite --exclude=./.git --exclude=./backups --exclude=./services/orchestrator/node_modules ."
+if ($LASTEXITCODE -ne 0) { throw "Falha no backup do codigo-fonte." }
 
 Write-Host "    OK" -ForegroundColor Green
 

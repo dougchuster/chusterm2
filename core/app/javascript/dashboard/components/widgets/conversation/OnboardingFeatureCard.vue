@@ -29,27 +29,27 @@ defineProps({
 
 <template>
   <div
-    class="h-full w-full bg-n-surface-2 border border-n-weak rounded-lg p-4 flex flex-col"
+    class="flex h-full w-full flex-col rounded-2xl border border-ds-border-subtle bg-ds-bg-elevated p-4 shadow-[var(--ds-shadow-sm)]"
   >
     <div class="flex-1 flex items-center justify-center">
       <img :src="imageSrc" :alt="imageAlt" class="h-36 w-auto mx-auto" />
     </div>
     <div class="mt-auto">
       <p
-        class="text-base text-n-slate-12 font-interDisplay font-semibold tracking-[0.3px]"
+        class="font-manrope text-base font-semibold tracking-[0.3px] text-ds-fg-default"
       >
         {{ title }}
       </p>
-      <p class="text-n-slate-11 text-sm">
+      <p class="text-sm text-ds-fg-muted">
         {{ description }}
       </p>
       <router-link
         v-if="to"
         :to="{ name: to }"
-        class="no-underline text-n-brand text-sm font-medium"
+        class="inline-flex items-center gap-2 rounded text-sm font-medium text-ds-accent no-underline hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
       >
         <span>{{ linkText }}</span>
-        <span class="ml-2">{{ `→` }}</span>
+        <span class="i-lucide-arrow-right size-4" aria-hidden="true" />
       </router-link>
     </div>
   </div>

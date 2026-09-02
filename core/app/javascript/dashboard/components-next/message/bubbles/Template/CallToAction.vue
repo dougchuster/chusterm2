@@ -10,16 +10,30 @@ defineProps({
 </script>
 
 <template>
-  <div class="text-n-slate-12 max-w-80 flex flex-col gap-2.5">
-    <div class="p-3 bg-n-alpha-2 rounded-xl">
+  <div class="flex max-w-80 flex-col gap-2.5 text-ds-fg-default">
+    <div
+      class="rounded-xl bg-ds-bg-sunken p-3 ring-1 ring-inset ring-ds-border-subtle"
+    >
       <span
         v-dompurify-html="message.content"
         class="prose prose-bubble font-medium text-sm"
       />
     </div>
     <div class="flex gap-2">
-      <Button label="Call us" slate class="!text-n-blue-11 w-full" />
-      <Button label="Visit our website" slate class="!text-n-blue-11 w-full" />
+      <Button
+        type="button"
+        label="Call us"
+        color="primary"
+        variant="faded"
+        class="w-full"
+      />
+      <Button
+        type="button"
+        label="Visit our website"
+        color="primary"
+        variant="faded"
+        class="w-full"
+      />
     </div>
   </div>
 </template>

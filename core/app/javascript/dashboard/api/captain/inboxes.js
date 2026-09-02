@@ -17,7 +17,7 @@ class CaptainInboxes extends ApiClient {
       enabled = true,
       autoReplyEnabled = true,
       aiMode = 'auto',
-      handoffStrategy = 'human_request_or_score',
+      handoffStrategy = 'human_request',
       routingConfig = {},
     } = params;
     return axios.post(`${this.url}/${assistantId}/inboxes`, {

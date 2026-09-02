@@ -38,13 +38,11 @@ const slots = useSlots();
 const searchQuery = defineModel('searchQuery', { type: String, default: '' });
 
 const helpURL = getHelpUrlForFeature(props.featureName);
-const eyebrowLabel = 'Configura\u00e7\u00e3o do espa\u00e7o';
-const statusLabel = 'Painel unificado';
 </script>
 
 <template>
-  <div class="base-settings-header w-full">
-    <div class="base-settings-header__hero">
+  <div class="flex w-full flex-col gap-3">
+    <div class="border-b border-n-weak pb-4">
       <BackButton
         v-if="backButtonLabel"
         compact
@@ -56,14 +54,13 @@ const statusLabel = 'Painel unificado';
         class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between"
       >
         <div class="min-w-0 flex-1">
-          <span class="base-settings-header__eyebrow">
-            {{ eyebrowLabel }}
-          </span>
-          <div v-if="title" class="mt-2 flex min-w-0 items-center gap-3">
-            <div class="base-settings-header__title-icon">
+          <div v-if="title" class="flex min-w-0 items-center gap-3">
+            <div
+              class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-n-alpha-2 text-n-slate-11"
+            >
               <Icon icon="i-lucide-settings-2" class="size-4" />
             </div>
-            <h1 class="base-settings-header__title text-n-slate-12">
+            <h1 class="m-0 min-w-0 text-xl font-semibold text-n-slate-12">
               {{ title }}
             </h1>
           </div>
@@ -95,18 +92,15 @@ const statusLabel = 'Painel unificado';
             </CustomBrandPolicyWrapper>
           </div>
         </div>
-
-        <div class="hidden shrink-0 lg:block">
-          <div class="base-settings-header__status-chip">
-            {{ statusLabel }}
-          </div>
-        </div>
       </div>
     </div>
 
     <div
       v-if="searchPlaceholder || slots.actions || slots.tabs"
-      class="base-settings-header__toolbar"
+      class="flex flex-col justify-between gap-3 rounded-lg border border-n-weak bg-n-solid-2 p-3 sm:flex-row sm:items-center"
+      :class="{
+        'hidden sm:flex': searchPlaceholder && !slots.actions && !slots.tabs,
+      }"
     >
       <div
         v-if="slots.tabs || searchPlaceholder"
@@ -120,7 +114,7 @@ const statusLabel = 'Painel unificado';
           v-if="searchPlaceholder"
           v-model="searchQuery"
           :placeholder="searchPlaceholder"
-          class="group hidden w-64 min-w-0 sm:flex [&>input]:!rounded-[1rem] [&>input]:!border-0 [&>input]:!bg-n-alpha-3 [&>input]:!py-3 [&>input]:ltr:!pl-9 [&>input]:rtl:!pr-9"
+          class="group hidden w-64 min-w-0 sm:flex [&>input]:!rounded-lg [&>input]:!border-n-weak [&>input]:!bg-n-surface-1 [&>input]:!py-2 [&>input]:ltr:!pl-9 [&>input]:rtl:!pr-9"
           size="sm"
           type="search"
         >
@@ -154,7 +148,7 @@ const statusLabel = 'Painel unificado';
       v-if="searchPlaceholder"
       v-model="searchQuery"
       :placeholder="searchPlaceholder"
-      class="group w-full [&>input]:!rounded-[1rem] [&>input]:!border-0 [&>input]:!bg-n-alpha-3 [&>input]:!py-3 [&>input]:ltr:!pl-9 [&>input]:rtl:!pr-9"
+      class="group w-full [&>input]:!rounded-lg [&>input]:!border-n-weak [&>input]:!bg-n-surface-1 [&>input]:!py-2 [&>input]:ltr:!pl-9 [&>input]:rtl:!pr-9"
       size="sm"
       type="search"
     >
@@ -167,102 +161,3 @@ const statusLabel = 'Painel unificado';
     </Input>
   </div>
 </template>
-
-<style scoped>
-.base-settings-header {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.base-settings-header__hero,
-.base-settings-header__toolbar {
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgb(var(--border-weak));
-  border-radius: 12px;
-  background: rgb(var(--bg-card));
-  box-shadow: 0 12px 34px rgba(var(--shell-shadow));
-}
-
-.base-settings-header__hero {
-  padding: 1rem;
-}
-
-.base-settings-header__toolbar {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 1rem 1.1rem;
-}
-
-.base-settings-header__hero::before,
-.base-settings-header__toolbar::before {
-  display: none;
-}
-
-.base-settings-header__eyebrow {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.35rem 0.8rem;
-  border-radius: 9999px;
-  border: 1px solid rgb(var(--border-weak));
-  background: rgb(var(--surface-2));
-  font-family: Manrope, sans-serif;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0;
-  text-transform: uppercase;
-  color: rgb(var(--slate-11));
-}
-
-.base-settings-header__title {
-  margin: 0;
-  min-width: 0;
-  font-family: Manrope, sans-serif;
-  font-size: clamp(1.5rem, 2vw, 2.15rem);
-  font-weight: 700;
-  line-height: 1.05;
-  overflow-wrap: anywhere;
-}
-
-.base-settings-header__title-icon {
-  display: inline-flex;
-  width: 2.5rem;
-  height: 2.5rem;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgb(var(--border-weak));
-  border-radius: 10px;
-  background: rgb(var(--surface-2));
-  color: rgb(var(--slate-12));
-}
-
-.base-settings-header__status-chip {
-  padding: 0.65rem 0.9rem;
-  border-radius: 9999px;
-  border: 1px solid rgb(var(--border-weak));
-  background: rgb(var(--surface-2));
-  color: rgb(var(--slate-11));
-  font-size: 0.82rem;
-  white-space: nowrap;
-}
-
-@media (max-width: 640px) {
-  .base-settings-header__hero {
-    padding: 0.9rem;
-  }
-
-  .base-settings-header__toolbar {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 0.9rem;
-  }
-
-  .base-settings-header__title-icon {
-    width: 2.25rem;
-    height: 2.25rem;
-  }
-}
-</style>

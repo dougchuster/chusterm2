@@ -1,4 +1,4 @@
-﻿export const isEnter = e => {
+export const isEnter = e => {
   return e.key === 'Enter';
 };
 

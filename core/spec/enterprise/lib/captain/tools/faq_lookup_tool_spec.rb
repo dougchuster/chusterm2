@@ -4,11 +4,12 @@ RSpec.describe Captain::Tools::FaqLookupTool, type: :model do
   let(:account) { create(:account) }
   let(:assistant) { create(:captain_assistant, account: account) }
   let(:tool) { described_class.new(assistant) }
-  let(:tool_context) { Struct.new(:state).new({}) }
+  let(:run_context) { Agents::RunContext.new({}) }
+  let(:tool_context) { Agents::ToolContext.new(run_context: run_context) }
 
   before do
     # Create installation config for OpenAI API key to avoid errors
-    create(:installation_config, name: 'CAPTAIN_OPEN_AI_API_KEY', value: 'test-key')
+    InstallationConfig.find_or_initialize_by(name: 'CAPTAIN_OPEN_AI_API_KEY').update!(value: 'test-key')
 
     # Mock embedding service to avoid actual API calls
     embedding_service = instance_double(Captain::Llm::EmbeddingService)
@@ -64,6 +65,37 @@ RSpec.describe Captain::Tools::FaqLookupTool, type: :model do
         expect(result).to include('Answer: Click on forgot password link')
         expect(result).to include('Question: How to change email?')
         expect(result).to include('Answer: Go to settings and update email')
+      end
+
+      it 'performs only one search in the same run context' do
+        embedding_service = Captain::Llm::EmbeddingService.new
+        second_tool_context = Agents::ToolContext.new(run_context: run_context)
+
+        expect(embedding_service).to receive(:get_embedding).once.and_return(Array.new(1536, 0.1))
+        expect(Captain::Llm::EmbeddingService).to receive(:new).once.and_return(embedding_service)
+        expect(Captain::AssistantResponse).to receive(:nearest_neighbors).once.and_return(
+          Captain::AssistantResponse.where(id: [response1.id, response2.id])
+        )
+
+        first_result = tool.perform(tool_context, query: 'password reset')
+        second_result = tool.perform(second_tool_context, query: 'email update')
+
+        expect(first_result).to include('Question: How to reset password?')
+        expect(second_result).to eq(described_class::REPEATED_LOOKUP_MESSAGE)
+      end
+
+      it 'allows a search in a new run context' do
+        second_context = Agents::ToolContext.new(run_context: Agents::RunContext.new({}))
+
+        expect(Captain::AssistantResponse).to receive(:nearest_neighbors).twice.and_return(
+          Captain::AssistantResponse.where(id: [response1.id, response2.id])
+        )
+
+        first_result = tool.perform(tool_context, query: 'password reset')
+        second_result = tool.perform(second_context, query: 'email update')
+
+        expect(first_result).to include('Question: How to reset password?')
+        expect(second_result).to include('Question: How to change email?')
       end
 
       it 'includes source link when document has external_link' do

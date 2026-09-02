@@ -83,18 +83,6 @@ export default {
 
       return this.settingsInboxURL;
     },
-    editorialStats() {
-      return [
-        {
-          label: this.$t('CONVERSATION.EDITORIAL_EMPTY.STATS.INBOXES'),
-          value: this.inboxesList.length,
-        },
-        {
-          label: this.$t('CONVERSATION.EDITORIAL_EMPTY.STATS.CONVERSATIONS'),
-          value: this.allConversations.length,
-        },
-      ];
-    },
     emptyClassName() {
       if (
         !this.inboxesList.length &&
@@ -104,7 +92,7 @@ export default {
       ) {
         return 'h-full overflow-auto w-full';
       }
-      return 'flex-1 min-w-0 px-0 flex flex-col items-center justify-center h-full bg-n-surface-1';
+      return 'flex-1 min-w-0 px-0 flex flex-col items-center justify-center h-full bg-ds-bg-surface';
     },
   },
 };
@@ -132,48 +120,34 @@ export default {
     >
       <section
         v-if="!currentChat.id"
-        class="conversation-empty-state relative w-full max-w-5xl overflow-hidden rounded-lg border border-n-weak bg-n-surface-2 px-5 py-6 shadow-sm sm:px-7 sm:py-8 lg:px-8"
+        class="conversation-empty-state flex w-full max-w-md flex-col items-center rounded-xl border border-ds-border-subtle bg-ds-bg-elevated px-5 py-8 text-center shadow-[var(--ds-shadow-sm)] sm:px-7"
       >
-        <div class="relative z-10 grid gap-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(14rem,0.75fr)] lg:items-end">
-          <div class="min-w-0">
-            <span class="inline-flex rounded-md bg-n-solid-3 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-n-slate-10">
-              {{ $t('CONVERSATION.EDITORIAL_EMPTY.EYEBROW') }}
-            </span>
-            <h2 class="mt-4 max-w-[18ch] text-2xl font-bold leading-tight text-n-slate-12 sm:text-3xl lg:text-4xl">
-              {{ editorialTitle }}
-            </h2>
-            <p class="mt-3 max-w-2xl text-sm leading-6 text-n-slate-10 sm:text-base">
-              {{ editorialDescription }}
-            </p>
-
-            <div class="mt-6 flex flex-wrap gap-2">
-              <a
-                :href="editorialActionUrl"
-                class="inline-flex h-10 items-center justify-center rounded-lg bg-n-brand px-4 text-sm font-semibold text-white transition hover:bg-n-brand/90"
-              >
-                {{ editorialActionLabel }}
-              </a>
-              <span class="inline-flex min-h-10 items-center rounded-lg bg-n-solid-3 px-3 text-xs font-semibold uppercase tracking-[0.12em] text-n-slate-10">
-                {{ conversationMissingMessage }}
-              </span>
-            </div>
-          </div>
-
-          <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
-            <article
-              v-for="stat in editorialStats"
-              :key="stat.label"
-              class="rounded-lg bg-n-surface-1 p-4"
-            >
-              <span class="text-[10px] font-bold uppercase tracking-[0.16em] text-n-slate-10">
-                {{ stat.label }}
-              </span>
-              <p class="mt-2 text-3xl font-bold text-n-slate-12">
-                {{ stat.value }}
-              </p>
-            </article>
-          </div>
+        <div
+          class="grid size-12 place-items-center rounded-full bg-ds-accent-soft text-ds-accent"
+          aria-hidden="true"
+        >
+          <span class="i-lucide-messages-square size-5" />
         </div>
+        <h2
+          class="mb-0 mt-4 text-xl font-semibold leading-7 text-ds-fg-default"
+        >
+          {{ editorialTitle }}
+        </h2>
+        <p class="mb-0 mt-2 max-w-sm text-sm leading-6 text-ds-fg-muted">
+          {{ editorialDescription }}
+        </p>
+        <span
+          class="mt-4 inline-flex min-h-9 items-center rounded-lg bg-ds-bg-active px-3 text-xs font-medium text-ds-fg-muted"
+        >
+          {{ conversationMissingMessage }}
+        </span>
+        <a
+          v-if="!hasConversations"
+          :href="editorialActionUrl"
+          class="mt-5 inline-flex h-10 items-center justify-center rounded-lg bg-ds-accent px-4 text-sm font-semibold text-ds-fg-on-accent transition-colors hover:bg-ds-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus focus-visible:ring-offset-2 focus-visible:ring-offset-ds-bg-elevated"
+        >
+          {{ editorialActionLabel }}
+        </a>
       </section>
     </div>
   </div>

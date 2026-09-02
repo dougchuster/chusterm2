@@ -1,6 +1,16 @@
 # frozen_string_literal: true
 
 class Webhooks::EvolutionController < ActionController::API
+  SENSITIVE_JOB_PARAMETERS = [
+    :apikey,
+    :api_key,
+    :webhook_token,
+    :message_secret,
+    :messageSecret,
+    /token/i,
+    /secret/i
+  ].freeze
+
   before_action :load_target
   before_action :verify_api_key
   before_action :verify_instance, only: :process_payload
@@ -14,7 +24,7 @@ class Webhooks::EvolutionController < ActionController::API
     end
 
     Webhooks::EvolutionEventsJob.perform_later(
-      params.to_unsafe_hash.merge(
+      sanitized_job_payload.merge(
         phone_number: phone_number,
         evolution_instance_id: @evolution_instance&.id
       )
@@ -28,6 +38,12 @@ class Webhooks::EvolutionController < ActionController::API
   end
 
   private
+
+  def sanitized_job_payload
+    ActiveSupport::ParameterFilter
+      .new(SENSITIVE_JOB_PARAMETERS)
+      .filter(params.to_unsafe_hash)
+  end
 
   def load_target
     load_instance_from_token

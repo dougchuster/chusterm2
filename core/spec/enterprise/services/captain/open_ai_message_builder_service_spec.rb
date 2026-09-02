@@ -83,7 +83,7 @@ RSpec.describe Captain::OpenAiMessageBuilderService do
       it 'includes transcription text part' do
         audio_attachment # trigger creation
         result = service.send(:attachment_parts, attachments)
-        expect(result).to include({ type: 'text', text: 'Audio transcription text' })
+        expect(result).to include({ type: 'text', text: 'Transcrição do áudio: Audio transcription text' })
       end
     end
 
@@ -131,7 +131,7 @@ RSpec.describe Captain::OpenAiMessageBuilderService do
 
         result = service.send(:attachment_parts, attachments)
         expect(result).to include({ type: 'image_url', image_url: { url: 'https://example.com/image.jpg' } })
-        expect(result).to include({ type: 'text', text: 'Audio text' })
+        expect(result).to include({ type: 'text', text: 'Transcrição do áudio: Audio text' })
         expect(result).to include({ type: 'text', text: 'User has shared an attachment' })
       end
     end
@@ -227,12 +227,12 @@ RSpec.describe Captain::OpenAiMessageBuilderService do
     end
   end
 
-  describe '#extract_audio_transcriptions' do
+  describe '#process_audio' do
     let(:message) { create(:message, content: nil) }
 
     context 'with no audio attachments' do
       it 'returns empty string' do
-        result = service.send(:extract_audio_transcriptions, message.attachments)
+        result = service.send(:process_audio, message.attachments)
         expect(result).to eq('')
       end
     end
@@ -264,7 +264,7 @@ RSpec.describe Captain::OpenAiMessageBuilderService do
         audio2 # trigger creation
 
         attachments = message.attachments
-        result = service.send(:extract_audio_transcriptions, attachments)
+        result = service.send(:process_audio, attachments)
         expect(result).to eq('First audio text. Second audio text.')
       end
     end
@@ -286,7 +286,7 @@ RSpec.describe Captain::OpenAiMessageBuilderService do
         audio_attachment # trigger creation
 
         attachments = message.attachments
-        result = service.send(:extract_audio_transcriptions, attachments)
+        result = service.send(:process_audio, attachments)
         expect(result).to eq('')
       end
     end

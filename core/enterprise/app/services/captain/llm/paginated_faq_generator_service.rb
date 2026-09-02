@@ -1,3 +1,7 @@
+require 'base64'
+
+# This workflow intentionally keeps pagination state and response parsing together.
+# rubocop:disable Metrics/ClassLength
 class Captain::Llm::PaginatedFaqGeneratorService < Llm::LegacyBaseOpenAiService
   include Integrations::LlmInstrumentation
 
@@ -19,7 +23,10 @@ class Captain::Llm::PaginatedFaqGeneratorService < Llm::LegacyBaseOpenAiService
   end
 
   def generate
-    raise CustomExceptions::Pdf::FaqGenerationError, I18n.t('captain.documents.missing_openai_file_id') if @document&.openai_file_id.blank?
+    marker = @document&.openai_file_id.to_s
+    unless marker.start_with?("#{Captain::Llm::PdfProcessingService::INLINE_MARKER_PREFIX}:")
+      raise CustomExceptions::Pdf::FaqGenerationError, I18n.t('captain.documents.missing_openai_file_id')
+    end
 
     generate_paginated_faqs
   end
@@ -116,6 +123,7 @@ class Captain::Llm::PaginatedFaqGeneratorService < Llm::LegacyBaseOpenAiService
     {
       model: @model,
       response_format: { type: 'json_object' },
+      plugins: [{ id: 'file-parser', pdf: { engine: 'mistral-ocr' } }],
       messages: [
         {
           role: 'user',
@@ -129,13 +137,29 @@ class Captain::Llm::PaginatedFaqGeneratorService < Llm::LegacyBaseOpenAiService
     [
       {
         type: 'file',
-        file: { file_id: @document.openai_file_id }
+        file: {
+          filename: pdf_blob.filename.to_s,
+          file_data: "data:application/pdf;base64,#{encoded_pdf}"
+        }
       },
       {
         type: 'text',
         text: page_chunk_prompt(start_page, end_page)
       }
     ]
+  end
+
+  def encoded_pdf
+    @encoded_pdf ||= begin
+      raise CustomExceptions::Pdf::FaqGenerationError, I18n.t('captain.documents.pdf_upload_failed') if
+        pdf_blob.byte_size > Llm::OpenRouterMultimodalService::MAX_INLINE_BYTES
+
+      Base64.strict_encode64(pdf_blob.download)
+    end
+  end
+
+  def pdf_blob
+    @pdf_blob ||= @document.pdf_file.blob
   end
 
   def page_chunk_prompt(start_page, end_page)
@@ -223,3 +247,4 @@ class Captain::Llm::PaginatedFaqGeneratorService < Llm::LegacyBaseOpenAiService
     }
   end
 end
+# rubocop:enable Metrics/ClassLength

@@ -3,7 +3,6 @@ import { computed } from 'vue';
 import { useAccount } from 'dashboard/composables/useAccount';
 import { useMapGetter } from 'dashboard/composables/store';
 import { useI18n } from 'vue-i18n';
-import ButtonNext from 'next/button/Button.vue';
 import Icon from 'next/icon/Icon.vue';
 import Logo from 'next/icon/Logo.vue';
 
@@ -56,9 +55,14 @@ const emitNewAccount = () => {
       <!-- Collapsed view: Logo trigger -->
       <button
         v-if="isCollapsed"
-        class="sidebar-account-trigger grid flex-shrink-0 place-content-center size-10 rounded-2xl cursor-pointer border transition-all duration-200"
-        :class="{ 'bg-n-alpha-1': isOpen }"
+        type="button"
+        class="grid size-11 flex-shrink-0 cursor-pointer place-content-center rounded-2xl border-0 bg-ds-shell-panel text-ds-shell-fg ring-1 ring-inset ring-ds-shell-border transition duration-150 hover:bg-ds-shell-hover hover:ring-ds-shell-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-shell-focus"
+        :class="{ 'bg-ds-shell-hover ring-ds-shell-accent/40': isOpen }"
         :title="currentAccount.name"
+        :aria-label="currentAccount.name"
+        aria-haspopup="menu"
+        aria-controls="account-options"
+        :aria-expanded="isOpen"
         @click="toggle"
       >
         <Logo class="size-8" />
@@ -67,35 +71,47 @@ const emitNewAccount = () => {
       <button
         v-else
         id="sidebar-account-switcher"
+        type="button"
         :data-account-id="accountId"
-        aria-haspopup="listbox"
+        aria-haspopup="menu"
         aria-controls="account-options"
-        class="sidebar-account-trigger flex items-center gap-3 justify-between w-full rounded-2xl px-3 py-2.5 border transition-all duration-200"
+        :aria-expanded="isOpen"
+        :aria-disabled="!showAccountSwitcher"
+        :disabled="!showAccountSwitcher"
+        class="flex min-h-14 w-full items-center justify-between gap-3 rounded-2xl border-0 bg-ds-shell-panel px-3 py-2.5 text-ds-shell-fg ring-1 ring-inset ring-ds-shell-border transition duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-shell-focus disabled:cursor-default"
         :class="[
-          isOpen && 'bg-n-alpha-1',
+          isOpen && 'bg-ds-shell-hover ring-ds-shell-accent/40',
           showAccountSwitcher
-            ? 'hover:bg-n-alpha-1 cursor-pointer'
+            ? 'cursor-pointer hover:bg-ds-shell-hover hover:ring-ds-shell-accent/40'
             : 'cursor-default',
         ]"
         @click="() => showAccountSwitcher && toggle()"
       >
-        <span
-          class="text-[1rem] font-semibold leading-6 text-n-slate-12 truncate"
-          aria-live="polite"
-        >
-          {{ currentAccount.name }}
+        <span class="flex min-w-0 flex-col text-start">
+          <span
+            class="font-inter text-[0.6rem] font-semibold uppercase leading-4 tracking-[0.14em] text-ds-shell-muted"
+          >
+            {{ t('SIDEBAR.WORKSPACE') }}
+          </span>
+          <span
+            class="truncate font-inter text-[0.86rem] font-semibold leading-5 text-ds-shell-fg"
+            aria-live="polite"
+          >
+            {{ currentAccount.name }}
+          </span>
         </span>
 
         <span
           v-if="showAccountSwitcher"
           aria-hidden="true"
-          class="i-lucide-chevron-down size-4 text-n-slate-10 flex-shrink-0"
+          class="i-lucide-chevrons-up-down size-4 flex-shrink-0 text-ds-shell-muted"
         />
       </button>
     </template>
     <DropdownBody
       v-if="showAccountSwitcher || isCollapsed"
-      class="sidebar-account-dropdown min-w-80 z-50"
+      id="account-options"
+      class="z-50 min-w-80 overflow-hidden rounded-2xl bg-ds-shell-panel-strong shadow-2xl shadow-black/25 ring-1 ring-inset ring-ds-shell-border"
     >
       <DropdownSection :title="t('SIDEBAR_ITEMS.SWITCH_ACCOUNT')">
         <DropdownItem
@@ -103,22 +119,24 @@ const emitNewAccount = () => {
           :id="`account-${account.id}`"
           :key="account.id"
           class="cursor-pointer"
-          @click="onChangeAccount(account.id)"
+          :aria-current="account.id === accountId ? 'true' : undefined"
+          role="menuitem"
+          :click="() => onChangeAccount(account.id)"
         >
           <template #label>
-            <div
-              :for="account.name"
-              class="text-left rtl:text-right flex gap-2 items-center"
-            >
+            <div class="flex items-center gap-2 text-left rtl:text-right">
               <span
-                class="text-n-slate-12 max-w-36 truncate min-w-0"
+                class="min-w-0 max-w-36 truncate text-ds-shell-fg"
                 :title="account.name"
               >
                 {{ account.name }}
               </span>
-              <div class="flex-shrink-0 w-px h-3 bg-n-strong" />
+              <div
+                class="h-3 w-px flex-shrink-0 bg-ds-shell-divider"
+                aria-hidden="true"
+              />
               <span
-                class="text-n-slate-11 max-w-24 truncate capitalize"
+                class="max-w-24 truncate capitalize text-ds-shell-muted"
                 :title="account.name"
               >
                 {{
@@ -131,42 +149,19 @@ const emitNewAccount = () => {
             <Icon
               v-show="account.id === accountId"
               icon="i-lucide-check"
-              class="text-n-teal-11 size-5"
+              class="size-5 text-ds-shell-secondary"
+              aria-hidden="true"
             />
           </template>
         </DropdownItem>
       </DropdownSection>
-      <DropdownItem v-if="globalConfig.createNewAccountFromDashboard">
-        <ButtonNext
-          color="slate"
-          variant="faded"
-          class="w-full"
-          size="sm"
-          @click="emitNewAccount"
-        >
-          {{ t('CREATE_ACCOUNT.NEW_ACCOUNT') }}
-        </ButtonNext>
-      </DropdownItem>
+      <DropdownItem
+        v-if="globalConfig.createNewAccountFromDashboard"
+        :label="t('CREATE_ACCOUNT.NEW_ACCOUNT')"
+        icon="i-lucide-plus"
+        role="menuitem"
+        :click="emitNewAccount"
+      />
     </DropdownBody>
   </DropdownContainer>
 </template>
-
-<style scoped>
-.sidebar-account-trigger {
-  border-color: transparent;
-  background: transparent;
-}
-
-.sidebar-account-trigger:hover,
-.sidebar-account-trigger.bg-n-alpha-1 {
-  background: rgb(var(--slate-3) / 0.5);
-}
-
-.sidebar-account-dropdown {
-  overflow: hidden;
-  border-radius: 1rem;
-  border: 1px solid rgb(var(--slate-4) / 0.6);
-  background: rgb(var(--slate-2));
-  box-shadow: 0 16px 40px rgb(0 0 0 / 0.25);
-}
-</style>

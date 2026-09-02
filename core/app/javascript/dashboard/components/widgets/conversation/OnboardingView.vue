@@ -28,15 +28,15 @@ const greetingMessage = computed(() => {
 
 <template>
   <div
-    class="min-h-screen lg:max-w-5xl max-w-4xl mx-auto grid grid-cols-2 grid-rows-[auto_1fr_1fr] auto-rows-min gap-4 p-8 w-full font-inter overflow-auto"
+    class="mx-auto grid min-h-full w-full max-w-5xl auto-rows-min grid-cols-1 gap-4 overflow-auto p-5 font-inter sm:grid-cols-2 sm:p-8"
   >
     <div class="col-span-full self-start">
       <p
-        class="text-xl font-semibold text-n-slate-12 font-interDisplay tracking-[0.3px]"
+        class="font-manrope text-xl font-semibold tracking-[0.3px] text-ds-fg-default"
       >
         {{ greetingMessage }}
       </p>
-      <p class="text-n-slate-11 max-w-2xl text-base">
+      <p class="max-w-2xl text-base text-ds-fg-muted">
         {{
           $t('ONBOARDING.DESCRIPTION', {
             installationName: globalConfig.installationName,

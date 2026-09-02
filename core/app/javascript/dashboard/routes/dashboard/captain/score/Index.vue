@@ -7,9 +7,9 @@ import Button from 'dashboard/components-next/button/Button.vue';
 import CaptainScoreSettingsAPI from 'dashboard/api/captain/scoreSettings';
 
 const SCORE_COMPONENTS = [
-  { key: 'fit', label: 'Aderencia' },
-  { key: 'urgency', label: 'Urgencia' },
-  { key: 'economic', label: 'Potencial economico' },
+  { key: 'fit', label: 'Aderência' },
+  { key: 'urgency', label: 'Urgência' },
+  { key: 'economic', label: 'Potencial econômico' },
   { key: 'documents', label: 'Documentos' },
   { key: 'clarity', label: 'Clareza do caso' },
   { key: 'engagement', label: 'Engajamento' },
@@ -25,7 +25,7 @@ const CLASSIFICATIONS = [
 ];
 
 const AI_MODES = [
-  { key: 'auto', label: 'Automatico' },
+  { key: 'auto', label: 'Automático' },
   { key: 'supervised', label: 'Supervisionado' },
   { key: 'paused', label: 'Pausado' },
   { key: 'human_only', label: 'Somente humano' },
@@ -45,7 +45,7 @@ const emptyConfig = () => ({
   memory_enabled: true,
   triage_enabled: true,
   classification_enabled: true,
-  auto_move_on_score: true,
+  auto_move_on_score: false,
   weights: {},
   classification_thresholds: {},
   classification_labels: {},
@@ -205,7 +205,7 @@ const saveState = async () => {
     );
     stateForm.value = null;
     await fetchSettings();
-    useAlert('Memoria e score da conversa atualizados.');
+    useAlert('Memória e score da conversa atualizados.');
   } catch (error) {
     useAlert('Nao foi possivel atualizar a conversa.');
   } finally {
@@ -225,7 +225,7 @@ const formatDate = value => {
 
 const classificationLabel = classification => {
   const item = CLASSIFICATIONS.find(entry => entry.key === classification);
-  return item?.label || 'Sem classificacao';
+  return item?.label || 'Sem classificação';
 };
 
 const bucketClass = bucket => {
@@ -263,11 +263,11 @@ onMounted(fetchSettings);
           class="flex flex-col gap-2 border-b border-n-weak pb-5 text-n-slate-11"
         >
           <h1 class="text-xl font-medium text-n-slate-12">
-            Score, memoria e triagem por campanha
+            Score, memória e triagem por campanha
           </h1>
           <p class="max-w-3xl text-sm">
-            Ajuste manualmente os pesos, cortes de classificacao e campos que a
-            IA deve guardar na memoria persistente de cada conversa.
+            Ajuste manualmente os pesos, cortes de classificação e campos que a
+            IA deve guardar na memória persistente de cada conversa.
           </p>
         </section>
 
@@ -296,7 +296,7 @@ onMounted(fetchSettings);
               <span class="text-sm font-medium text-n-slate-12">
                 {{ campaign.title }}
               </span>
-              <span class="text-xs text-n-slate-10">
+              <span class="text-xs text-n-slate-11">
                 {{ campaign.captain_assistant_name || 'Sem agente vinculado' }}
               </span>
               <span class="grid grid-cols-3 gap-1 text-center text-[11px]">
@@ -318,7 +318,7 @@ onMounted(fetchSettings);
               class="grid gap-3 rounded-lg border border-n-weak bg-n-solid-2 p-4 sm:grid-cols-5"
             >
               <div class="sm:col-span-2">
-                <p class="text-xs uppercase text-n-slate-10">Campanha</p>
+                <p class="text-xs uppercase text-n-slate-11">Campanha</p>
                 <h2 class="mt-1 text-lg font-medium text-n-slate-12">
                   {{ selectedCampaign.title }}
                 </h2>
@@ -327,19 +327,19 @@ onMounted(fetchSettings);
                 </p>
               </div>
               <div class="rounded-md bg-n-slate-2 p-3">
-                <p class="text-xs text-n-slate-10">Frio</p>
+                <p class="text-xs text-n-slate-11">Frio</p>
                 <p class="text-2xl font-semibold text-n-slate-12">
                   {{ currentSummary.frio }}
                 </p>
               </div>
               <div class="rounded-md bg-n-amber-3 p-3">
-                <p class="text-xs text-n-amber-11">Morno</p>
+                <p class="text-xs text-n-amber-12">Morno</p>
                 <p class="text-2xl font-semibold text-n-slate-12">
                   {{ currentSummary.morno }}
                 </p>
               </div>
               <div class="rounded-md bg-n-teal-3 p-3">
-                <p class="text-xs text-n-teal-11">Quente</p>
+                <p class="text-xs text-n-teal-12">Quente</p>
                 <p class="text-2xl font-semibold text-n-slate-12">
                   {{ currentSummary.quente }}
                 </p>
@@ -371,7 +371,7 @@ onMounted(fetchSettings);
               <div class="grid gap-3 md:grid-cols-4">
                 <label class="flex items-center gap-2 text-sm text-n-slate-12">
                   <input v-model="form.memory_enabled" type="checkbox" />
-                  Memoria persistente
+                  Memória persistente
                 </label>
                 <label class="flex items-center gap-2 text-sm text-n-slate-12">
                   <input v-model="form.triage_enabled" type="checkbox" />
@@ -382,11 +382,11 @@ onMounted(fetchSettings);
                     v-model="form.classification_enabled"
                     type="checkbox"
                   />
-                  Classificacao ativa
+                  Classificação ativa
                 </label>
                 <label class="flex items-center gap-2 text-sm text-n-slate-12">
                   <input v-model="form.auto_move_on_score" type="checkbox" />
-                  Mover etapa pelo score
+                  Sugerir etapa pelo score
                 </label>
               </div>
 
@@ -452,7 +452,7 @@ onMounted(fetchSettings);
               <div class="grid gap-5 lg:grid-cols-2">
                 <label class="flex flex-col gap-2 text-sm">
                   <span class="font-medium text-n-slate-12">
-                    Memoria persistente da conversa
+                    Memória persistente da conversa
                   </span>
                   <textarea
                     v-model="memoryFieldsText"
@@ -477,7 +477,7 @@ onMounted(fetchSettings);
               <div class="min-w-0">
                 <div class="mb-3">
                   <h2 class="text-base font-medium text-n-slate-12">
-                    Memorias recentes de conversa
+                    Memórias recentes de conversa
                   </h2>
                   <p class="text-sm text-n-slate-11">
                     Edite manualmente o resumo persistente, score e modo de IA
@@ -502,9 +502,10 @@ onMounted(fetchSettings);
                     <tbody class="divide-y divide-n-weak">
                       <tr v-for="state in recentStates" :key="state.id">
                         <td class="py-2 pr-3 text-n-slate-12">
-                          #{{
-                            state.conversation_display_id ||
-                            state.conversation_id
+                          {{
+                            state.conversation_display_id
+                              ? `#${state.conversation_display_id}`
+                              : 'Sem ID público'
                           }}
                         </td>
                         <td class="py-2 pr-3 text-n-slate-11">
@@ -568,7 +569,7 @@ onMounted(fetchSettings);
                   />
                 </label>
                 <label class="flex flex-col gap-1 text-sm">
-                  <span class="text-n-slate-11">Classificacao</span>
+                  <span class="text-n-slate-11">Classificação</span>
                   <select
                     v-model="stateForm.score_classification"
                     class="h-10 rounded-md border border-n-weak bg-n-solid-1 px-3"
@@ -632,8 +633,8 @@ onMounted(fetchSettings);
                 v-else
                 class="flex min-h-60 items-center justify-center rounded-md bg-n-alpha-1 p-4 text-center text-sm text-n-slate-10"
               >
-                Selecione uma conversa para editar manualmente a memoria,
-                triagem e classificacao.
+                Selecione uma conversa para editar manualmente a memória,
+                triagem e classificação.
               </div>
             </section>
           </div>

@@ -1,4 +1,4 @@
-﻿import { useFileUpload } from '../useFileUpload';
+import { useFileUpload } from '../useFileUpload';
 import { useMapGetter } from 'dashboard/composables/store';
 import { useAlert } from 'dashboard/composables';
 import { useI18n } from 'vue-i18n';

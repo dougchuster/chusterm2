@@ -85,9 +85,7 @@
       IS_ENTERPRISE: (defined?(ChusteRMApp) ? ChusteRMApp : ChatwootApp).enterprise?,
       AZURE_APP_ID: GlobalConfigService.load('AZURE_APP_ID', ''),
       GIT_SHA: GIT_HASH,
-      ALLOWED_LOGIN_METHODS: allowed_login_methods,
-      EVOLUTION_API_URL: ENV.fetch('EVOLUTION_API_URL', 'http://evolution-api:8080'),
-      EVOLUTION_API_KEY: ENV.fetch('EVOLUTION_API_KEY', 'evo_chusterm_secret_key')
+      ALLOWED_LOGIN_METHODS: allowed_login_methods
     }
   end
 

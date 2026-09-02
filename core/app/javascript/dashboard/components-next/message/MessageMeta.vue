@@ -140,4 +140,3 @@ const statusToShow = computed(() => {
     <MessageStatus v-if="showStatusIndicator" :status="statusToShow" />
   </div>
 </template>
-`

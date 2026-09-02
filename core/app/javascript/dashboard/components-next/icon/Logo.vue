@@ -10,11 +10,14 @@ const globalConfig = useMapGetter('globalConfig/get');
   <img
     v-if="globalConfig.logoThumbnail"
     v-bind="attrs"
+    alt=""
+    aria-hidden="true"
     :src="globalConfig.logoThumbnail"
   />
   <svg
     v-else
     v-once
+    aria-hidden="true"
     v-bind="attrs"
     width="16"
     height="16"

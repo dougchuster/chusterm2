@@ -116,7 +116,9 @@ const headers = computed(() => [
                 rounded-full
                 class="flex-shrink-0"
               />
-              <h4 class="mb-0 truncate text-[0.96rem] font-semibold tracking-[0.01em] text-n-slate-12">
+              <h4
+                class="mb-0 truncate text-[0.96rem] font-semibold tracking-[0.01em] text-n-slate-12"
+              >
                 {{ agent.name }}
               </h4>
             </div>
@@ -132,7 +134,9 @@ const headers = computed(() => [
     </template>
   </BaseTable>
 
-  <div class="agent-selector-footer mt-4 flex items-center justify-between gap-4">
+  <div
+    class="agent-selector-footer mt-4 flex items-center justify-between gap-4"
+  >
     <p class="agent-selector-footer__count text-body-main text-n-slate-11">
       <span class="agent-selector-footer__count-pill">
         {{ selectedAgentCount }}

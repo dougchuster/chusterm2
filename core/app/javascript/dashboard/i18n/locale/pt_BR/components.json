@@ -1,7 +1,12 @@
 {
   "PAGINATION_FOOTER": {
     "SHOWING": "Exibindo {startItem} - {endItem} de {totalItems} itens",
-    "CURRENT_PAGE_INFO": "{currentPage} de {totalPages} páginas"
+    "CURRENT_PAGE_INFO": "{currentPage} de {totalPages} páginas",
+    "FIRST_PAGE": "Primeira página",
+    "PREVIOUS_PAGE": "Página anterior",
+    "NEXT_PAGE": "Próxima página",
+    "LAST_PAGE": "Última página",
+    "NAVIGATION": "Navegação de páginas"
   },
   "COMBOBOX": {
     "PLACEHOLDER": "Selecione uma opção...",

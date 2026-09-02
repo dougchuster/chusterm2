@@ -49,7 +49,9 @@ const onClickTabChange = index => {
 </script>
 
 <template>
-  <div class="flex flex-col h-auto overflow-auto">
+  <div
+    class="flex h-auto flex-col overflow-auto bg-ds-bg-elevated text-ds-fg-default"
+  >
     <woot-modal-header
       :header-title="$t('INTEGRATION_SETTINGS.LINEAR.ADD_OR_LINK.TITLE')"
       :header-content="
@@ -57,8 +59,8 @@ const onClickTabChange = index => {
       "
     />
 
-    <div class="flex flex-col h-auto overflow-auto">
-      <div class="flex flex-col px-8 pb-4 mt-1">
+    <div class="flex h-auto flex-col overflow-auto">
+      <div class="mt-1 flex flex-col px-5 pb-4 sm:px-8">
         <woot-tabs
           class="ltr:[&>ul]:pl-0 rtl:[&>ul]:pr-0 h-10"
           :index="selectedTabIndex"
@@ -74,7 +76,10 @@ const onClickTabChange = index => {
           />
         </woot-tabs>
       </div>
-      <div v-if="selectedTabIndex === 0" class="flex flex-col px-8 pb-4">
+      <div
+        v-if="selectedTabIndex === 0"
+        class="flex flex-col px-5 pb-4 sm:px-8"
+      >
         <CreateIssue
           :account-id="accountId"
           :conversation-id="conversation.id"
@@ -83,7 +88,7 @@ const onClickTabChange = index => {
         />
       </div>
 
-      <div v-else class="flex flex-col px-8 pb-4">
+      <div v-else class="flex flex-col px-5 pb-4 sm:px-8">
         <LinkIssue
           :conversation-id="conversation.id"
           :title="title"

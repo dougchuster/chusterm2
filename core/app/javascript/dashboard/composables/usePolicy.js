@@ -1,4 +1,4 @@
-﻿import { computed, unref } from 'vue';
+import { computed, unref } from 'vue';
 import { useMapGetter } from 'dashboard/composables/store';
 import { useAccount } from 'dashboard/composables/useAccount';
 import { useConfig } from 'dashboard/composables/useConfig';
@@ -18,7 +18,7 @@ export function usePolicy() {
     'globalConfig/isACustomBrandedInstance'
   );
 
-  const { isEnterprise, enterprisePlanName } = useConfig();
+  const { isEnterprise } = useConfig();
   const { accountId } = useAccount();
 
   const getUserPermissionsForAccount = () => {

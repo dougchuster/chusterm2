@@ -25,7 +25,9 @@ const reauthorizationRequired = computed(() => {
 </script>
 
 <template>
-  <span class="size-5 grid place-content-center rounded-full bg-n-alpha-1/60">
+  <span
+    class="grid size-5 place-content-center rounded-full bg-ds-shell-panel-strong text-ds-shell-fg"
+  >
     <ChannelIcon :inbox="inbox" class="size-4" />
   </span>
   <div class="flex-1 truncate min-w-0 text-[0.92rem] leading-5">
@@ -34,8 +36,11 @@ const reauthorizationRequired = computed(() => {
   <div
     v-if="reauthorizationRequired"
     v-tooltip.top-end="$t('SIDEBAR.REAUTHORIZE')"
-    class="grid place-content-center size-6 bg-n-ruby-5/60 rounded-full"
+    class="grid size-6 place-content-center rounded-full bg-ds-shell-danger-soft"
   >
-    <Icon icon="i-woot-alert" class="size-3.5 text-n-ruby-9" />
+    <Icon
+      icon="i-lucide-triangle-alert"
+      class="size-3.5 text-ds-shell-danger"
+    />
   </div>
 </template>

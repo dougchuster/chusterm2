@@ -12,15 +12,15 @@ class Crm::DealCreator
       attributes[:contact_id] ||= contact.id if contact
       @last_deal_attributes = attributes
 
-      existing_deal = find_existing_open_deal(attributes)
-      return reuse_existing_deal(existing_deal, attributes) if existing_deal
-
-      deal = @account.crm_deals.create!(attributes)
-      Crm::AuditLogger.log(account: @account, actor: @actor, action: 'deal_created', target: deal)
-      Crm::ApplyChecklistTemplate.new(deal: deal, actor: @actor).perform if deal.case_type.present?
-      deal
+      if contact&.persisted?
+        contact.with_lock { create_or_reuse_deal(attributes) }
+      else
+        create_or_reuse_deal(attributes)
+      end
     end
-  rescue ActiveRecord::RecordNotUnique
+  rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid => e
+    raise if e.is_a?(ActiveRecord::RecordInvalid) && !open_deal_conflict?(e.record)
+
     attributes = @last_deal_attributes || deal_attributes
     existing_deal = find_existing_open_deal(attributes)
     return reuse_existing_deal(existing_deal, attributes) if existing_deal
@@ -30,16 +30,50 @@ class Crm::DealCreator
 
   private
 
+  def create_or_reuse_deal(attributes)
+    existing_deal = find_existing_open_deal(attributes)
+    return reuse_existing_deal(existing_deal, attributes) if existing_deal
+
+    deal = @account.crm_deals.create!(attributes)
+    Crm::AuditLogger.log(account: @account, actor: @actor, action: 'deal_created', target: deal)
+    Crm::ApplyChecklistTemplate.new(deal: deal, actor: @actor).perform if deal.case_type.present?
+    deal
+  end
+
+  def open_deal_conflict?(record)
+    record.is_a?(CrmDeal) && record.errors.of_kind?(:contact_id, :taken)
+  end
+
   def deal_attributes
-    @params.slice(:title, :contact_id, :conversation_id, :inbox_id,
-                  :team_id, :owner_id, :assignee_id,
-                  :crm_pipeline_id, :crm_pipeline_stage_id,
-                  :legal_area, :case_type, :urgency_level,
-                  :source, :source_detail, :operational_status,
-                  :value_estimate_cents, :lgpd_basis,
-                  :consent_status, :consent_channel,
-                  :consent_collected_at, :data_retention_until,
-                  :custom_fields, :attribution)
+    attributes = @params.slice(:title, :contact_id, :conversation_id, :inbox_id,
+                               :team_id, :owner_id, :assignee_id,
+                               :crm_pipeline_id, :crm_pipeline_stage_id,
+                               :legal_area, :case_type, :urgency_level,
+                               :source, :source_detail, :operational_status,
+                               :value_estimate_cents, :lgpd_basis,
+                               :consent_status, :consent_channel,
+                               :consent_collected_at, :data_retention_until,
+                               :custom_fields, :attribution)
+    resolve_account_scoped_ids!(attributes)
+    attributes
+  end
+
+  def resolve_account_scoped_ids!(attributes)
+    {
+      contact_id: :contacts,
+      conversation_id: :conversations,
+      inbox_id: :inboxes,
+      team_id: :teams,
+      owner_id: :users,
+      assignee_id: :users,
+      crm_pipeline_id: :crm_pipelines,
+      crm_pipeline_stage_id: :crm_pipeline_stages
+    }.each do |attribute, association|
+      next unless attributes.key?(attribute)
+
+      value = attributes[attribute]
+      attributes[attribute] = value.present? ? @account.public_send(association).find(value).id : nil
+    end
   end
 
   def resolve_contact
@@ -84,6 +118,7 @@ class Crm::DealCreator
     %i[conversation_id inbox_id team_id owner_id assignee_id].each do |key|
       updates[key] = attributes[key] if attributes[key].present? && deal.public_send(key) != attributes[key]
     end
+    clear_stale_captain_state_links(deal, updates[:conversation_id])
     deal.update!(updates) if updates.present?
     Crm::AuditLogger.log(
       account: @account,
@@ -98,6 +133,18 @@ class Crm::DealCreator
       }
     )
     deal
+  end
+
+  def clear_stale_captain_state_links(deal, new_conversation_id)
+    return if new_conversation_id.blank?
+    return if deal.conversation_id == new_conversation_id
+
+    # rubocop:disable Rails/SkipsModelValidations
+    @account.captain_conversation_states
+            .where(crm_deal_id: deal.id)
+            .where.not(conversation_id: new_conversation_id)
+            .update_all(crm_deal_id: nil, updated_at: Time.current)
+    # rubocop:enable Rails/SkipsModelValidations
   end
 
   def normalize_phone_number(value)

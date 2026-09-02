@@ -11,13 +11,7 @@ class Crm::StageAutomation
     rules.each do |rule|
       config = rule.action_config&.with_indifferent_access || {}
       unless conditions_match?(config)
-        Crm::AuditLogger.log(
-          account: @deal.account,
-          actor: @actor,
-          action: 'automation_skipped_by_condition',
-          target: @deal,
-          payload: { automation: 'stage', rule_id: rule.id, conditions: config[:conditions] }
-        )
+        log_skip(rule, 'automation_skipped_by_condition', config)
         next
       end
 
@@ -29,7 +23,10 @@ class Crm::StageAutomation
       when 'move_to_stage'
         execute_move_to_stage(rule, config)
       when 'assign_owner'
-        execute_assign_owner(rule, config)
+        unless execute_assign_owner(rule, config)
+          log_skip(rule, 'automation_skipped_invalid_owner', config)
+          next
+        end
       end
 
       Crm::AuditLogger.log(
@@ -43,6 +40,16 @@ class Crm::StageAutomation
   end
 
   private
+
+  def log_skip(rule, action, config)
+    Crm::AuditLogger.log(
+      account: @deal.account,
+      actor: @actor,
+      action: action,
+      target: @deal,
+      payload: { automation: 'stage', rule_id: rule.id, conditions: config[:conditions] }
+    )
+  end
 
   def pending_activity_exists?(config)
     @deal.crm_activities.pending.where(kind: config[:kind], title: config[:title]).exists?
@@ -92,7 +99,7 @@ class Crm::StageAutomation
     conversation = @deal.conversation
     return unless conversation
 
-    captain_state = CaptainConversationState.find_by(conversation: conversation)
+    captain_state = @deal.account.captain_conversation_states.find_by(conversation: conversation)
     return unless captain_state
 
     mode = config[:ai_mode].to_s
@@ -115,13 +122,47 @@ class Crm::StageAutomation
     Crm::DealMover.new(deal: @deal, stage_id: target_stage.id, actor: @actor).perform
   end
 
+  # A coluna `assigned_to_id` nunca existiu em `crm_deals` (o schema tem
+  # `owner_id` e `assignee_id`), entao a guarda antiga era sempre falsa e a regra
+  # virava um no-op auditado como sucesso.
+  #
+  # O dono passa a ser gravado sempre. O responsavel acompanha o dono, como na
+  # acao manual em massa (Api::V1::Accounts::Crm::DealsController#assign_owner),
+  # exceto quando alguem o escolheu a dedo — ver `hand_picked_assignee?`.
+  # Diferente da acao manual, nao mexemos em `contact.crm_owner_id`: isso
+  # rerotearia todos os negocios futuros do contato.
   def execute_assign_owner(_rule, config)
-    user_id = config[:user_id]
-    return unless user_id
+    user = resolve_owner(config[:user_id])
+    return false if user.nil?
 
-    user = @deal.account.users.find_by(id: user_id)
-    return unless user
+    current_assignee_id = @deal.assignee_id
+    keep_assignee = hand_picked_assignee?
 
-    @deal.update!(assigned_to_id: user.id) if @deal.respond_to?(:assigned_to_id)
+    @deal.update!(owner_id: user.id, assignee_id: keep_assignee ? current_assignee_id : user.id)
+    log_preserved_assignee(current_assignee_id) if keep_assignee
+    true
+  end
+
+  # Um responsavel diferente do dono significa que alguem escolheu a dedo quem
+  # esta tocando o caso agora. Automacao nunca tira esse trabalho da pessoa: so
+  # sincroniza o responsavel quando ele esta vazio ou ja seguia o dono anterior.
+  def hand_picked_assignee?
+    @deal.assignee_id.present? && @deal.assignee_id != @deal.owner_id
+  end
+
+  def log_preserved_assignee(assignee_id)
+    Crm::AuditLogger.log(
+      account: @deal.account,
+      actor: @actor,
+      action: 'automation_preserved_assignee',
+      target: @deal,
+      payload: { automation: 'stage', assignee_id: assignee_id }
+    )
+  end
+
+  def resolve_owner(user_id)
+    return if user_id.blank?
+
+    @deal.account.users.find_by(id: user_id)
   end
 end

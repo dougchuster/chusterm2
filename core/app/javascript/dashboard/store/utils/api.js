@@ -1,4 +1,4 @@
-﻿import fromUnixTime from 'date-fns/fromUnixTime';
+import fromUnixTime from 'date-fns/fromUnixTime';
 import differenceInDays from 'date-fns/differenceInDays';
 import Cookies from 'js-cookie';
 import { LOCAL_STORAGE_KEYS } from 'dashboard/constants/localStorage';

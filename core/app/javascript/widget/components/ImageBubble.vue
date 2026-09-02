@@ -38,10 +38,10 @@ export default {
     max-width: 100%;
 
     &::before {
-      background-image: linear-gradient(-180deg, transparent 3%, #1f2d3d 130%);
+      background-color: rgb(15 23 42 / 70%);
       bottom: 0;
       content: '';
-      height: 20%;
+      height: 1.5rem;
       left: 0;
       opacity: 0.8;
       position: absolute;

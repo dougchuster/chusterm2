@@ -14,7 +14,7 @@ RSpec.describe Captain::Documents::CrawlJob, type: :job do
       before do
         allow(Captain::Tools::FirecrawlService).to receive(:new).and_return(firecrawl_service)
         allow(firecrawl_service).to receive(:perform)
-        create(:installation_config, name: 'CAPTAIN_FIRECRAWL_API_KEY', value: 'test-key')
+        InstallationConfig.find_or_initialize_by(name: 'CAPTAIN_FIRECRAWL_API_KEY').update!(value: 'test-key')
       end
 
       context 'with account usage limits' do

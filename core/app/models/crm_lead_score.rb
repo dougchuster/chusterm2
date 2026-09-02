@@ -1,8 +1,11 @@
 class CrmLeadScore < ApplicationRecord
+  include AccountAssociationScoped
+
   belongs_to :account
   belongs_to :crm_deal
 
   validates :account, :crm_deal, :calculated_at, presence: true
+  validates_same_account_for :crm_deal
 
   before_validation :compute_total, on: :create
 

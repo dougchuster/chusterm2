@@ -178,8 +178,10 @@ export default {
 </script>
 
 <template>
-  <div class="relative items-center w-full p-4">
-    <div class="flex flex-col w-full gap-2 text-left rtl:text-right">
+  <div
+    class="relative w-full items-center bg-ds-bg-surface px-4 pb-4 pt-3 text-ds-fg-default"
+  >
+    <div class="flex w-full flex-col gap-3 text-left rtl:text-right">
       <div class="flex flex-row justify-between">
         <Avatar
           v-if="showAvatar"
@@ -192,14 +194,14 @@ export default {
         />
       </div>
 
-      <div class="flex flex-col items-start gap-1.5 min-w-0 w-full">
-        <div v-if="showAvatar" class="flex items-center w-full min-w-0 gap-3">
+      <div class="flex w-full min-w-0 flex-col items-start gap-2">
+        <div v-if="showAvatar" class="flex w-full min-w-0 items-center gap-2">
           <h3
-            class="flex-shrink max-w-full min-w-0 my-0 text-base capitalize break-words text-n-slate-12"
+            class="my-0 min-w-0 max-w-full flex-shrink break-words font-manrope text-base font-semibold capitalize text-ds-fg-default"
           >
             {{ contact.name }}
           </h3>
-          <div class="flex flex-row items-center gap-2">
+          <div class="flex flex-row items-center gap-1">
             <span
               v-if="contact.created_at"
               v-tooltip.left="
@@ -207,39 +209,50 @@ export default {
                   contact.created_at
                 )}`
               "
-              class="i-lucide-info text-sm text-n-slate-10"
+              class="i-lucide-info size-4 text-ds-fg-subtle"
+              aria-hidden="true"
             />
             <a
               :href="contactProfileLink"
               target="_blank"
               rel="noopener nofollow noreferrer"
-              class="leading-3"
-              title="Abrir contato em nova aba"
+              class="inline-flex size-9 items-center justify-center rounded-lg text-ds-fg-subtle transition-colors hover:bg-ds-bg-hover hover:text-ds-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
+              :title="`${$t('CONTACT_PANEL.VIEW_PROFILE')} — ${$t('CONVERSATION.HEADER.OPEN_IN_NEW_TAB')}`"
+              :aria-label="`${$t('CONTACT_PANEL.VIEW_PROFILE')} — ${$t('CONVERSATION.HEADER.OPEN_IN_NEW_TAB')}`"
             >
-              <span class="i-lucide-external-link text-sm text-n-slate-10" />
+              <span class="i-lucide-external-link size-4" aria-hidden="true" />
             </a>
           </div>
         </div>
 
-        <div v-if="contact.id" class="contact-panel-quick-actions">
-          <a :href="contactProfileLink" class="contact-panel-quick-link">
-            <span class="i-lucide-user-round-search size-4" />
-            Abrir contato
-          </a>
+        <div v-if="contact.id" class="grid w-full grid-cols-2 gap-2">
+          <router-link
+            :to="contactProfileLink"
+            class="inline-flex min-h-10 min-w-0 items-center justify-center gap-1.5 rounded-xl bg-ds-bg-sunken px-2.5 text-xs font-semibold text-ds-fg-default no-underline transition-colors hover:bg-ds-bg-hover hover:text-ds-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
+          >
+            <span
+              class="i-lucide-user-round-search size-4"
+              aria-hidden="true"
+            />
+            {{ $t('CONTACT_PANEL.VIEW_PROFILE') }}
+          </router-link>
           <button
             type="button"
-            class="contact-panel-quick-link"
+            class="inline-flex min-h-10 min-w-0 items-center justify-center gap-1.5 rounded-xl bg-ds-bg-sunken px-2.5 text-xs font-semibold text-ds-fg-default transition-colors hover:bg-ds-bg-hover hover:text-ds-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
             @click="toggleEditModal"
           >
-            <span class="i-lucide-pencil size-4" />
-            Editar dados
+            <span class="i-lucide-pencil size-4" aria-hidden="true" />
+            {{ $t('EDIT_CONTACT.BUTTON_LABEL') }}
           </button>
         </div>
 
-        <p v-if="additionalAttributes.description" class="break-words mb-0.5">
+        <p
+          v-if="additionalAttributes.description"
+          class="mb-0.5 break-words text-sm leading-5 text-ds-fg-muted"
+        >
           {{ additionalAttributes.description }}
         </p>
-        <div class="flex flex-col items-start w-full gap-2">
+        <div class="flex w-full flex-col items-start gap-2">
           <ContactInfoRow
             :href="contact.email ? `mailto:${contact.email}` : ''"
             :value="contact.email"
@@ -279,7 +292,12 @@ export default {
           <SocialIcons :social-profiles="socialProfiles" />
         </div>
       </div>
-      <div class="flex items-center w-full mt-0.5 gap-2">
+      <div
+        v-if="contact.id"
+        class="mt-0.5 flex w-full items-center gap-1.5 rounded-xl bg-ds-bg-sunken p-1.5"
+        role="group"
+        :aria-label="$t('CONTACT_PANEL.CONTACT_ACTIONS')"
+      >
         <ComposeConversation
           :contact-id="String(contact.id)"
           is-modal
@@ -288,10 +306,11 @@ export default {
           <template #trigger="{ toggle }">
             <NextButton
               v-tooltip.top-end="$t('CONTACT_PANEL.NEW_MESSAGE')"
-              icon="i-ph-chat-circle-dots"
-              slate
-              faded
-              sm
+              :aria-label="$t('CONTACT_PANEL.NEW_MESSAGE')"
+              icon="i-lucide-message-circle"
+              color="primary"
+              variant="ghost"
+              size="md"
               @click="openComposeConversationModal(toggle)"
             />
           </template>
@@ -299,37 +318,31 @@ export default {
         <VoiceCallButton
           :phone="contact.phone_number"
           :contact-id="contact.id"
-          icon="i-ri-phone-fill"
-          size="sm"
+          :aria-label="$t('CONTACT_PANEL.CALL')"
+          icon="i-lucide-phone"
+          size="md"
           :tooltip-label="$t('CONTACT_PANEL.CALL')"
-          slate
-          faded
-        />
-        <NextButton
-          v-tooltip.top-end="$t('EDIT_CONTACT.BUTTON_LABEL')"
-          icon="i-ph-pencil-simple"
-          slate
-          faded
-          sm
-          @click="toggleEditModal"
+          color="primary"
+          variant="ghost"
         />
         <NextButton
           v-tooltip.top-end="$t('CONTACT_PANEL.MERGE_CONTACT')"
-          icon="i-ph-arrows-merge"
-          slate
-          faded
-          sm
+          :aria-label="$t('CONTACT_PANEL.MERGE_CONTACT')"
+          icon="i-lucide-merge"
+          color="primary"
+          variant="ghost"
+          size="md"
           :disabled="uiFlags.isMerging"
           @click="openMergeModal"
         />
         <NextButton
           v-if="isAdmin"
           v-tooltip.top-end="$t('DELETE_CONTACT.BUTTON_LABEL')"
-          icon="i-ph-trash"
-          slate
-          faded
-          sm
-          ruby
+          :aria-label="$t('DELETE_CONTACT.BUTTON_LABEL')"
+          icon="i-lucide-trash-2"
+          color="ruby"
+          variant="ghost"
+          size="md"
           :disabled="uiFlags.isDeleting"
           @click="toggleDeleteModal"
         />
@@ -355,41 +368,3 @@ export default {
     />
   </div>
 </template>
-
-<style scoped>
-.contact-panel-quick-actions {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 0.5rem;
-  width: 100%;
-}
-
-.contact-panel-quick-link {
-  display: inline-flex;
-  min-width: 0;
-  min-height: 2.25rem;
-  align-items: center;
-  justify-content: center;
-  gap: 0.375rem;
-  border: 1px solid rgb(var(--slate-5));
-  border-radius: 0.5rem;
-  background: rgb(var(--slate-2));
-  padding: 0 0.65rem;
-  color: rgb(var(--slate-12));
-  font-size: 0.8125rem;
-  font-weight: 700;
-  line-height: 1.1;
-  text-decoration: none;
-  transition:
-    background 160ms ease,
-    border-color 160ms ease,
-    color 160ms ease;
-}
-
-.contact-panel-quick-link:hover {
-  border-color: rgb(var(--blue-6));
-  background: rgb(var(--blue-2));
-  color: rgb(var(--blue-11));
-  text-decoration: none;
-}
-</style>

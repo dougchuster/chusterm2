@@ -1,4 +1,4 @@
-﻿<script>
+<script>
 import { useAlert } from 'dashboard/composables';
 import { mapGetters } from 'vuex';
 import { useMessageFormatter } from 'shared/composables/useMessageFormatter';

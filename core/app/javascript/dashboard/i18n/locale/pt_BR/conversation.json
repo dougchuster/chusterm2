@@ -19,11 +19,11 @@
       "KEYBOARD_SHORTCUTS": "para ver os atalhos de teclado"
     },
     "EDITORIAL_EMPTY": {
-      "EYEBROW": "Cockpit de conversas",
-      "NO_MESSAGES_TITLE": "Sua camada de conversas está pronta para o primeiro sinal.",
-      "NO_MESSAGES_DESCRIPTION": "As caixas de entrada já estão configuradas e o shell operacional está no lugar. A próxima interação de cliente vai cair aqui com contexto completo e visibilidade de roteamento.",
-      "SELECT_TITLE": "Escolha uma thread para abrir o contexto operacional completo.",
-      "SELECT_DESCRIPTION": "Saia da fila à esquerda e entre no histórico de mensagens, dados do contato, notas e controles de fluxo sem abandonar a superfície principal de comando.",
+      "EYEBROW": "Atendimento",
+      "NO_MESSAGES_TITLE": "Nenhuma conversa por enquanto",
+      "NO_MESSAGES_DESCRIPTION": "As novas mensagens aparecerão aqui assim que um contato iniciar o atendimento.",
+      "SELECT_TITLE": "Selecione uma conversa",
+      "SELECT_DESCRIPTION": "Escolha uma conversa na lista para ver mensagens, dados do contato e controles do atendimento.",
       "ACTION_SETUP": "Configurar caixas de entrada",
       "ACTION_INBOXES": "Revisar caixas de entrada",
       "STATS": {
@@ -212,6 +212,7 @@
       "WHATSAPP_TEMPLATES": "Modelos do Whatsapp"
     },
     "REPLYBOX": {
+      "CHANGE_MODE": "Tipo de mensagem",
       "REPLY": "Responder",
       "PRIVATE_NOTE": "Mensagem Privada",
       "SEND": "Enviar",
@@ -227,6 +228,10 @@
       "DRAG_DROP": "Arraste e solte aqui para anexar",
       "START_AUDIO_RECORDING": "Iniciar gravação de áudio",
       "STOP_AUDIO_RECORDING": "Parar gravação de áudio",
+      "PLAY_AUDIO": "Reproduzir áudio gravado",
+      "PAUSE_AUDIO": "Pausar áudio gravado",
+      "EXPAND_EDITOR": "Expandir editor de mensagem",
+      "COLLAPSE_EDITOR": "Recolher editor de mensagem",
       "COPILOT_THINKING": "O Copiloto está pensando",
       "EMAIL_HEAD": {
         "TO": "Para",

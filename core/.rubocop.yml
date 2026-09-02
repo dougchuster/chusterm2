@@ -1,3 +1,9 @@
+inherit_from: .rubocop_todo.yml
+
+inherit_mode:
+  merge:
+    - Exclude
+
 plugins:
   - rubocop-performance
   - rubocop-rails
@@ -9,6 +15,11 @@ require:
   - ./rubocop/custom_cop_location.rb
   - ./rubocop/attachment_download.rb
   - ./rubocop/one_class_per_file.rb
+
+# Line endings are normalized by the repository-level .gitattributes. Keeping
+# the same check in RuboCop makes Windows worktrees report false positives.
+Layout/EndOfLine:
+  Enabled: false
 
 Layout/LineLength:
   Max: 150

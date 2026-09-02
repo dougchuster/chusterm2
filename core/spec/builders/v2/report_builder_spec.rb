@@ -20,7 +20,7 @@ describe V2::ReportBuilder do
         stub_request(:get, /#{gravatar_url}.*/).to_return(status: 404)
         stub_request(:get, /#{Regexp.escape(favicon_url)}.*/).to_return(status: 404)
 
-        perform_enqueued_jobs do
+        perform_enqueued_jobs(only: EventDispatcherJob) do
           10.times do
             conversation = create(:conversation, account: account,
                                                  inbox: inbox, assignee: user,
@@ -113,7 +113,7 @@ describe V2::ReportBuilder do
           }
 
           conversations = account.conversations.where('created_at < ?', 1.day.ago)
-          perform_enqueued_jobs do
+          perform_enqueued_jobs(only: EventDispatcherJob) do
             # Resolve all 5 conversations
             conversations.each(&:resolved!)
 
@@ -140,7 +140,7 @@ describe V2::ReportBuilder do
           }
 
           conversations = account.conversations.where('created_at < ?', 1.day.ago)
-          perform_enqueued_jobs do
+          perform_enqueued_jobs(only: EventDispatcherJob) do
             # Resolve all 5 conversations (first round)
             conversations.each(&:resolved!)
 
@@ -175,7 +175,7 @@ describe V2::ReportBuilder do
             conversation.messages.outgoing.all.update(sender: nil)
           end
 
-          perform_enqueued_jobs do
+          perform_enqueued_jobs(only: EventDispatcherJob) do
             # Resolve all 5 conversations
             conversations.each(&:resolved!)
 
@@ -210,7 +210,7 @@ describe V2::ReportBuilder do
             conversation.messages.outgoing.all.update(sender: nil)
           end
 
-          perform_enqueued_jobs do
+          perform_enqueued_jobs(only: EventDispatcherJob) do
             # Resolve all 5 conversations
             conversations.each(&:bot_handoff!)
 
@@ -362,7 +362,7 @@ describe V2::ReportBuilder do
 
           conversations = account.conversations.where('created_at < ?', 1.day.ago)
 
-          perform_enqueued_jobs do
+          perform_enqueued_jobs(only: EventDispatcherJob) do
             # ensure 5 reporting events are created
             conversations.each(&:resolved!)
 
@@ -391,7 +391,7 @@ describe V2::ReportBuilder do
 
           conversations = account.conversations.where('created_at < ?', 1.day.ago)
 
-          perform_enqueued_jobs do
+          perform_enqueued_jobs(only: EventDispatcherJob) do
             # Resolve all 5 conversations (first round)
             conversations.each(&:resolved!)
 

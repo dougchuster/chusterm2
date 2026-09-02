@@ -100,11 +100,10 @@
     display_phone_number = metadata&.dig(:display_phone_number)
 
     if phone_number_id.present?
-      channel = Channel::Whatsapp.find_by(
+      return Channel::Whatsapp.find_by(
         "provider = 'whatsapp_cloud' AND provider_config->>'phone_number_id' = ?",
         phone_number_id.to_s
       )
-      return channel if channel
     end
 
     return unless display_phone_number.present?

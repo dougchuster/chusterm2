@@ -123,14 +123,15 @@ onMounted(() => {
 
 <template>
   <div
-    class="bg-n-alpha-3 backdrop-blur-[100px] border-0 outline outline-1 outline-n-container absolute rounded-xl z-50 gap-2 flex flex-col min-w-[136px] shadow-lg pb-2 px-2"
+    class="absolute z-50 flex min-w-[136px] flex-col gap-2 rounded-xl bg-ds-bg-elevated/95 px-2 pb-2 text-ds-fg-default shadow-lg ring-1 ring-ds-border-subtle backdrop-blur-xl"
     :class="{
       'pt-2': !showSearch,
     }"
+    role="menu"
   >
     <div
       v-if="showSearch"
-      class="sticky top-0 bg-n-alpha-3 backdrop-blur-sm pt-2 z-20"
+      class="sticky top-0 z-20 bg-ds-bg-elevated/95 pt-2 backdrop-blur-sm"
     >
       <div class="relative">
         <span class="absolute i-lucide-search size-3.5 top-2 left-3" />
@@ -141,7 +142,10 @@ onMounted(() => {
           :placeholder="
             searchPlaceholder || t('DROPDOWN_MENU.SEARCH_PLACEHOLDER')
           "
-          class="reset-base w-full h-8 py-2 pl-10 pr-2 text-sm focus:outline-none border-none rounded-lg bg-n-alpha-black2 dark:bg-n-solid-1 text-n-slate-12"
+          :aria-label="
+            searchPlaceholder || t('DROPDOWN_MENU.SEARCH_PLACEHOLDER')
+          "
+          class="reset-base h-8 w-full rounded-lg border border-ds-border-subtle bg-ds-bg-sunken py-2 pl-10 pr-2 text-sm text-ds-fg-default outline-none placeholder:text-ds-fg-subtle focus:border-ds-border-focus focus:ring-2 focus:ring-ds-border-focus/30"
           @input="handleSearchInput"
         />
       </div>
@@ -154,7 +158,7 @@ onMounted(() => {
       >
         <p
           v-if="section.title"
-          class="px-2 py-2 text-xs mb-0 font-medium text-n-slate-11 uppercase tracking-wide sticky z-10 bg-n-alpha-3 backdrop-blur-sm"
+          class="sticky z-10 mb-0 bg-ds-bg-elevated/95 px-2 py-2 text-xs font-medium uppercase tracking-wide text-ds-fg-subtle backdrop-blur-sm"
           :class="showSearch ? 'top-10' : 'top-0'"
         >
           {{ section.title }}
@@ -167,7 +171,7 @@ onMounted(() => {
         </div>
         <div
           v-else-if="!section.items.length && section.emptyState"
-          class="text-sm text-n-slate-11 px-2 py-1.5"
+          class="px-2 py-1.5 text-sm text-ds-fg-muted"
         >
           {{ section.emptyState }}
         </div>
@@ -175,11 +179,12 @@ onMounted(() => {
           v-for="(item, itemIndex) in section.items"
           :key="item.value || itemIndex"
           type="button"
-          class="inline-flex items-center justify-start w-full h-8 min-w-0 gap-2 px-2 py-1.5 transition-all duration-200 ease-in-out border-0 rounded-lg z-60 hover:bg-n-alpha-1 dark:hover:bg-n-alpha-2 disabled:cursor-not-allowed disabled:pointer-events-none disabled:opacity-50"
+          role="menuitem"
+          class="inline-flex h-8 w-full min-w-0 items-center justify-start gap-2 rounded-lg border-0 px-2 py-1.5 transition-colors duration-150 hover:bg-ds-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ds-border-focus disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
           :class="{
-            'bg-n-alpha-1 dark:bg-n-solid-active': item.isSelected,
-            'text-n-ruby-11': item.action === 'delete',
-            'text-n-slate-12': item.action !== 'delete',
+            'bg-ds-bg-active': item.isSelected,
+            'text-ds-state-danger': item.action === 'delete',
+            'text-ds-fg-default': item.action !== 'delete',
           }"
           :disabled="item.disabled"
           @click="handleAction(item)"
@@ -209,7 +214,7 @@ onMounted(() => {
         </button>
         <div
           v-if="sectionIndex < filteredMenuSections.length - 1"
-          class="h-px bg-n-alpha-2 mx-2 my-1"
+          class="mx-2 my-1 h-px bg-ds-border-subtle"
         />
       </div>
     </template>
@@ -218,11 +223,12 @@ onMounted(() => {
         v-for="(item, index) in filteredMenuItems"
         :key="index"
         type="button"
-        class="inline-flex items-center justify-start w-full h-8 min-w-0 gap-2 px-2 py-1.5 transition-all duration-200 ease-in-out border-0 rounded-lg z-60 hover:bg-n-alpha-1 dark:hover:bg-n-alpha-2 disabled:cursor-not-allowed disabled:pointer-events-none disabled:opacity-50"
+        role="menuitem"
+        class="inline-flex h-8 w-full min-w-0 items-center justify-start gap-2 rounded-lg border-0 px-2 py-1.5 transition-colors duration-150 hover:bg-ds-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ds-border-focus disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
         :class="{
-          'bg-n-alpha-1 dark:bg-n-solid-active': item.isSelected,
-          'text-n-ruby-11': item.action === 'delete',
-          'text-n-slate-12': item.action !== 'delete',
+          'bg-ds-bg-active': item.isSelected,
+          'text-ds-state-danger': item.action === 'delete',
+          'text-ds-fg-default': item.action !== 'delete',
         }"
         :disabled="item.disabled"
         @click="handleAction(item)"
@@ -253,7 +259,7 @@ onMounted(() => {
     </template>
     <div
       v-if="shouldShowEmptyState"
-      class="text-sm text-n-slate-11 px-2 py-1.5"
+      class="px-2 py-1.5 text-sm text-ds-fg-muted"
     >
       {{
         isSearching

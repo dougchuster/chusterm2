@@ -201,7 +201,7 @@ class Crm::LeadScoreCalculator
       weights: weights,
       thresholds: thresholds,
       stage_mapping: stage_mapping,
-      auto_move_on_score: scoring_config['auto_move_on_score'] != false,
+      auto_move_on_score: scoring_config['auto_move_on_score'] == true,
       components: components
     }
   end
@@ -217,7 +217,7 @@ class Crm::LeadScoreCalculator
   end
 
   def move_deal_for_score(classification)
-    return if scoring_config['auto_move_on_score'] == false
+    return unless scoring_config['auto_move_on_score'] == true
 
     target_stage = stage_for_classification(classification)
     return unless target_stage

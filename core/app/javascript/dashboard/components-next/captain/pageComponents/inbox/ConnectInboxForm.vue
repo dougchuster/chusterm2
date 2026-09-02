@@ -32,7 +32,7 @@ const initialState = {
   enabled: true,
   autoReplyEnabled: true,
   aiMode: 'auto',
-  handoffStrategy: 'human_request_or_score',
+  handoffStrategy: 'human_request',
 };
 
 const state = reactive({ ...initialState });
@@ -71,16 +71,8 @@ const aiModeOptions = computed(() => [
 
 const handoffStrategyOptions = computed(() => [
   {
-    value: 'human_request_or_score',
-    label: t('CAPTAIN.INBOXES.FORM.HANDOFF.HUMAN_REQUEST_OR_SCORE'),
-  },
-  {
     value: 'human_request',
     label: t('CAPTAIN.INBOXES.FORM.HANDOFF.HUMAN_REQUEST'),
-  },
-  {
-    value: 'score_threshold',
-    label: t('CAPTAIN.INBOXES.FORM.HANDOFF.SCORE_THRESHOLD'),
   },
   {
     value: 'manual_only',

@@ -1,4 +1,4 @@
-﻿export const mockAssignableAgents = [
+export const mockAssignableAgents = [
   {
     id: 1,
     account_id: 1,

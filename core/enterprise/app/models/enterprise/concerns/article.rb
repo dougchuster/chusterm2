@@ -65,19 +65,17 @@ module Enterprise::Concerns::Article
       { role: 'system', content: article_to_search_terms_prompt },
       { role: 'user', content: "title: #{title} \n description: #{description} \n content: #{content}" }
     ]
-    headers = { 'Content-Type' => 'application/json', 'Authorization' => "Bearer #{ENV.fetch('OPENAI_API_KEY', nil)}" }
-    body = { model: 'gpt-4o', messages: messages, response_format: { type: 'json_object' } }.to_json
-    Rails.logger.info "Requesting Chat GPT with body: #{body}"
-    response = HTTParty.post(openai_api_url, headers: headers, body: body)
-    Rails.logger.info "Chat GPT response: #{response.body}"
-    JSON.parse(response.parsed_response['choices'][0]['message']['content'])['search_terms']
-  end
-
-  private
-
-  def openai_api_url
-    endpoint = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_ENDPOINT')&.value || 'https://api.openai.com/'
-    endpoint = endpoint.chomp('/')
-    "#{endpoint}/v1/chat/completions"
+    result = Llm::Config.with_api_key(Llm::Config.system_api_key, api_base: Llm::Config.openai_endpoint) do |context|
+      model = Llm::Config.resolve_model(InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_MODEL')&.value)
+      chat = Llm::Config.chat_for(client: context, model: model)
+      chat.with_instructions(messages.first[:content])
+      chat.with_schema({ type: 'object', properties: { search_terms: { type: 'array', items: { type: 'string' } } } })
+      chat.ask(messages.last[:content])
+    end
+    payload = result.content.is_a?(Hash) ? result.content : JSON.parse(result.content.to_s)
+    payload['search_terms'] || payload[:search_terms] || []
+  rescue JSON::ParserError, RubyLLM::Error => e
+    Rails.logger.warn("[ArticleEmbedding] Search-term generation failed: #{e.class}")
+    []
   end
 end

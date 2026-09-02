@@ -150,6 +150,7 @@ class Account < ApplicationRecord
   has_many :whatsapp_channels, dependent: :destroy_async, class_name: '::Channel::Whatsapp'
   has_many :working_hours, dependent: :destroy_async
   has_many :crm_pipelines, dependent: :destroy
+  has_many :crm_board_views, dependent: :destroy_async
   has_many :crm_pipeline_stages, dependent: :destroy
   has_many :crm_deals, dependent: :destroy
   has_many :crm_activities, dependent: :destroy
@@ -161,6 +162,7 @@ class Account < ApplicationRecord
   has_many :crm_cadence_steps, dependent: :destroy
 
   has_one_attached :contacts_export
+  has_one_attached :crm_deals_export
 
   enum :locale, LANGUAGES_CONFIG.map { |key, val| [val[:iso_639_1_code], key] }.to_h, prefix: true
   enum :status, { active: 0, suspended: 1 }

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Composable for branding-related utilities
  * Provides methods to customize text with installation-specific branding
  */

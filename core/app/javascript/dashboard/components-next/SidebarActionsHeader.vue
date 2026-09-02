@@ -36,6 +36,7 @@ const handleButtonClick = button => {
         />
         <Button
           v-tooltip="$t('GENERAL.CLOSE')"
+          :aria-label="$t('GENERAL.CLOSE')"
           icon="i-lucide-x"
           ghost
           sm

@@ -98,8 +98,8 @@ const action = computed(() => ({
 
 <template>
   <BaseAttachmentBubble
-    icon="i-teenyicons-user-circle-solid"
-    icon-bg-color="bg-[#D6409F]"
+    icon="i-lucide-user-round"
+    icon-bg-color="bg-ds-accent-secondary"
     sender-translation-key="CONVERSATION.SHARED_ATTACHMENT.CONTACT"
     :title="contactName"
     :content="phoneNumber"

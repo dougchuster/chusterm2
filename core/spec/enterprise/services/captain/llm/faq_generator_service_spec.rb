@@ -16,7 +16,7 @@ RSpec.describe Captain::Llm::FaqGeneratorService do
   end
 
   before do
-    create(:installation_config, name: 'CAPTAIN_OPEN_AI_API_KEY', value: 'test-key')
+    InstallationConfig.find_or_initialize_by(name: 'CAPTAIN_OPEN_AI_API_KEY').update!(value: 'test-key')
     allow(RubyLLM).to receive(:chat).and_return(mock_chat)
     allow(mock_chat).to receive(:with_temperature).and_return(mock_chat)
     allow(mock_chat).to receive(:with_params).and_return(mock_chat)
@@ -39,6 +39,18 @@ RSpec.describe Captain::Llm::FaqGeneratorService do
       it 'uses SystemPromptsService with the specified language' do
         expect(Captain::Llm::SystemPromptsService).to receive(:faq_generator).with(language).at_least(:once).and_call_original
         service.generate
+      end
+    end
+
+    context 'when the configured model is Anthropic' do
+      before do
+        InstallationConfig.find_or_initialize_by(name: 'CAPTAIN_OPEN_AI_MODEL').update!(value: 'claude-sonnet-5')
+      end
+
+      it 'does not send the OpenAI-only response_format parameter' do
+        expect(mock_chat).not_to receive(:with_params)
+
+        expect(service.generate).to eq(sample_faqs)
       end
     end
 

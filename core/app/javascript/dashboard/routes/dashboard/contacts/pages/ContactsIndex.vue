@@ -63,6 +63,8 @@ const CRM_FILTER_TEXT = {
   activeAudience: 'Audiência ativa',
   campaignCta: 'Criar campanha',
   saveSegment: 'Salvar segmento',
+  openSegmentation: 'Abrir segmentação',
+  collapseSegmentation: 'Recolher',
 };
 const CATEGORY_KIND_OPTIONS = [
   { value: 'area', label: 'Setor jurídico' },
@@ -205,6 +207,7 @@ const isUpdatingCategory = ref(false);
 const isDeletingCategory = ref(false);
 const isFetchingCategories = ref(false);
 const showCategoryForm = ref(false);
+const showSegmentationPanel = ref(false);
 const newCategoryName = ref('');
 const newCategoryKind = ref('custom');
 const bulkDeleteDialogRef = ref(null);
@@ -1563,6 +1566,27 @@ onMounted(async () => {
         </div>
       </section>
       <section
+        v-else-if="!isListView && !showSegmentationPanel"
+        class="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-n-weak bg-n-solid-2 p-3 text-xs"
+      >
+        <div class="min-w-0">
+          <h3 class="m-0 text-sm font-semibold text-n-slate-12">
+            {{ CRM_FILTER_TEXT.title }}
+          </h3>
+          <p class="mb-0 mt-0.5 text-xs text-n-slate-11">
+            {{ activeAudienceSummary }}
+          </p>
+        </div>
+        <button
+          type="button"
+          class="inline-flex h-9 items-center gap-2 rounded border border-n-weak bg-n-surface-1 px-3 font-medium text-n-slate-11 hover:bg-n-slate-2"
+          @click="showSegmentationPanel = true"
+        >
+          <span class="i-lucide-list-filter size-4" aria-hidden="true" />
+          {{ CRM_FILTER_TEXT.openSegmentation }}
+        </button>
+      </section>
+      <section
         v-else-if="!isListView"
         class="mt-4 rounded-lg border border-n-weak bg-n-solid-2 p-3 text-xs sm:p-4"
       >
@@ -1577,14 +1601,24 @@ onMounted(async () => {
               {{ CRM_FILTER_TEXT.subtitle }}
             </p>
           </div>
-          <button
-            v-if="hasCrmFilters"
-            type="button"
-            class="inline-flex h-8 items-center justify-center rounded border border-n-weak px-3 font-medium text-n-slate-11 hover:bg-n-slate-2"
-            @click="clearCrmFilters"
-          >
-            {{ CRM_FILTER_TEXT.clear }}
-          </button>
+          <div class="flex flex-wrap gap-2">
+            <button
+              v-if="hasCrmFilters"
+              type="button"
+              class="inline-flex h-8 items-center justify-center rounded border border-n-weak px-3 font-medium text-n-slate-11 hover:bg-n-slate-2"
+              @click="clearCrmFilters"
+            >
+              {{ CRM_FILTER_TEXT.clear }}
+            </button>
+            <button
+              type="button"
+              class="inline-flex h-8 items-center gap-1 rounded border border-n-weak px-3 font-medium text-n-slate-11 hover:bg-n-slate-2"
+              @click="showSegmentationPanel = false"
+            >
+              <span class="i-lucide-chevron-up size-3.5" aria-hidden="true" />
+              {{ CRM_FILTER_TEXT.collapseSegmentation }}
+            </button>
+          </div>
         </div>
 
         <div class="mt-4 rounded border border-n-weak bg-n-surface-1 p-3">

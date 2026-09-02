@@ -62,7 +62,7 @@ export default {
       :header-title="$t('WHATSAPP_TEMPLATES.MODAL.TITLE')"
       :header-content="modalHeaderContent"
     />
-    <div class="row modal-content">
+    <div class="row px-5 py-5 sm:px-8 sm:py-6">
       <TemplatesPicker
         v-if="!selectedWaTemplate"
         :inbox-id="inboxId"
@@ -77,9 +77,3 @@ export default {
     </div>
   </woot-modal>
 </template>
-
-<style scoped>
-.modal-content {
-  padding: 1.5625rem 2rem;
-}
-</style>

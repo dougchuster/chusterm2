@@ -1,58 +1,33 @@
-<!-- eslint-disable vue/no-bare-strings-in-template, @intlify/vue-i18n/no-raw-text -->
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { computed, reactive, ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
+
 import CrmAPI from 'dashboard/api/crm';
 import CampaignsAPI from 'dashboard/api/campaigns';
+import Icon from 'dashboard/components-next/icon/Icon.vue';
+import {
+  DsBadge,
+  DsButton,
+  DsCard,
+  DsCheckbox,
+  DsEmptyState,
+  DsInput,
+  DsSelect,
+  DsSkeleton,
+} from 'dashboard/design-system/components';
+import { DsPageHeader } from 'dashboard/design-system/templates';
+
+const { t } = useI18n();
 
 const SCORING_CRITERIA = [
-  {
-    key: 'fit',
-    label: 'Aderência à área jurídica',
-    default: 20,
-    description: 'Lead tem área jurídica identificada',
-  },
-  {
-    key: 'urgency',
-    label: 'Urgência / Prazo',
-    default: 15,
-    description: 'Nível de urgência ou prazo judicial',
-  },
-  {
-    key: 'economic',
-    label: 'Potencial econômico',
-    default: 15,
-    description: 'Valor estimado do caso',
-  },
-  {
-    key: 'documents',
-    label: 'Documentação',
-    default: 15,
-    description: 'Status dos documentos enviados',
-  },
-  {
-    key: 'clarity',
-    label: 'Clareza dos fatos',
-    default: 10,
-    description: 'Resumo e tipo de caso preenchidos',
-  },
-  {
-    key: 'engagement',
-    label: 'Engajamento do cliente',
-    default: 10,
-    description: 'Nível de resposta e interação',
-  },
-  {
-    key: 'payment_capacity',
-    label: 'Capacidade de contratação',
-    default: 10,
-    description: 'Informação de capacidade financeira',
-  },
-  {
-    key: 'conflict',
-    label: 'Ausência de conflito de interesses',
-    default: 5,
-    description: 'Verificação de conflito concluída',
-  },
+  { key: 'fit', default: 20 },
+  { key: 'urgency', default: 15 },
+  { key: 'economic', default: 15 },
+  { key: 'documents', default: 15 },
+  { key: 'clarity', default: 10 },
+  { key: 'engagement', default: 10 },
+  { key: 'payment_capacity', default: 10 },
+  { key: 'conflict', default: 5 },
 ];
 
 const DEFAULT_WEIGHTS = Object.fromEntries(
@@ -73,12 +48,65 @@ const DEFAULT_STAGE_MAPPING = {
   prioridade_alta: 'consulta-reuniao',
 };
 
-const CLASSIFICATIONS = [
-  { key: 'baixo_potencial', label: 'Baixo potencial' },
-  { key: 'medio_potencial', label: 'Medio potencial' },
-  { key: 'qualificado', label: 'Qualificado' },
-  { key: 'prioridade_alta', label: 'Prioridade alta' },
+const CLASSIFICATION_KEYS = [
+  'baixo_potencial',
+  'medio_potencial',
+  'qualificado',
+  'prioridade_alta',
 ];
+
+const criterionCopy = computed(() => ({
+  fit: {
+    label: t('CRM.SCORING_CONFIG.CRITERIA.FIT.LABEL'),
+    description: t('CRM.SCORING_CONFIG.CRITERIA.FIT.DESCRIPTION'),
+  },
+  urgency: {
+    label: t('CRM.SCORING_CONFIG.CRITERIA.URGENCY.LABEL'),
+    description: t('CRM.SCORING_CONFIG.CRITERIA.URGENCY.DESCRIPTION'),
+  },
+  economic: {
+    label: t('CRM.SCORING_CONFIG.CRITERIA.ECONOMIC.LABEL'),
+    description: t('CRM.SCORING_CONFIG.CRITERIA.ECONOMIC.DESCRIPTION'),
+  },
+  documents: {
+    label: t('CRM.SCORING_CONFIG.CRITERIA.DOCUMENTS.LABEL'),
+    description: t('CRM.SCORING_CONFIG.CRITERIA.DOCUMENTS.DESCRIPTION'),
+  },
+  clarity: {
+    label: t('CRM.SCORING_CONFIG.CRITERIA.CLARITY.LABEL'),
+    description: t('CRM.SCORING_CONFIG.CRITERIA.CLARITY.DESCRIPTION'),
+  },
+  engagement: {
+    label: t('CRM.SCORING_CONFIG.CRITERIA.ENGAGEMENT.LABEL'),
+    description: t('CRM.SCORING_CONFIG.CRITERIA.ENGAGEMENT.DESCRIPTION'),
+  },
+  payment_capacity: {
+    label: t('CRM.SCORING_CONFIG.CRITERIA.PAYMENT_CAPACITY.LABEL'),
+    description: t('CRM.SCORING_CONFIG.CRITERIA.PAYMENT_CAPACITY.DESCRIPTION'),
+  },
+  conflict: {
+    label: t('CRM.SCORING_CONFIG.CRITERIA.CONFLICT.LABEL'),
+    description: t('CRM.SCORING_CONFIG.CRITERIA.CONFLICT.DESCRIPTION'),
+  },
+}));
+
+const criteria = computed(() =>
+  SCORING_CRITERIA.map(c => ({ ...c, ...criterionCopy.value[c.key] }))
+);
+
+const classificationLabels = computed(() => ({
+  baixo_potencial: t('CRM.SCORING_CONFIG.CLASSIFICATIONS.BAIXO_POTENCIAL'),
+  medio_potencial: t('CRM.SCORING_CONFIG.CLASSIFICATIONS.MEDIO_POTENCIAL'),
+  qualificado: t('CRM.SCORING_CONFIG.CLASSIFICATIONS.QUALIFICADO'),
+  prioridade_alta: t('CRM.SCORING_CONFIG.CLASSIFICATIONS.PRIORIDADE_ALTA'),
+}));
+
+const classifications = computed(() =>
+  CLASSIFICATION_KEYS.map(key => ({
+    key,
+    label: classificationLabels.value[key],
+  }))
+);
 
 const pipelines = ref([]);
 const campaigns = ref([]);
@@ -91,6 +119,10 @@ const saving = reactive({});
 const campaignSaving = reactive({});
 const savedOk = reactive({});
 const campaignSavedOk = reactive({});
+
+const pipelineOptions = computed(() =>
+  pipelines.value.map(p => ({ value: p.id, label: p.name }))
+);
 
 const extractData = response => {
   const payload = response?.data ?? response;
@@ -120,7 +152,7 @@ function buildConfig(stored = {}) {
       ...DEFAULT_STAGE_MAPPING,
       ...(stored?.stage_mapping || {}),
     },
-    autoMoveOnScore: stored?.auto_move_on_score !== false,
+    autoMoveOnScore: stored?.auto_move_on_score === true,
     pipelineId: stored?.crm_pipeline_id || '',
   };
 }
@@ -148,7 +180,7 @@ async function loadData() {
     pipelines.value.forEach(initConfig);
     campaigns.value.forEach(initCampaignConfig);
   } catch {
-    error.value = 'Erro ao carregar configurações de scoring';
+    error.value = t('CRM.SCORING_CONFIG.LOAD_ERROR');
   } finally {
     loading.value = false;
   }
@@ -186,7 +218,10 @@ function buildScoringPayload(config, { includePipelineId = false } = {}) {
   };
 
   if (includePipelineId) {
-    payload.crm_pipeline_id = config.pipelineId || null;
+    // DsSelect emite string; a API espera o id numerico do pipeline.
+    payload.crm_pipeline_id = config.pipelineId
+      ? Number(config.pipelineId)
+      : null;
   }
 
   return payload;
@@ -205,7 +240,9 @@ async function savePipeline(pipeline) {
       savedOk[pipeline.id] = false;
     }, 2000);
   } catch {
-    error.value = `Erro ao salvar configuração do pipeline "${pipeline.name}"`;
+    error.value = t('CRM.SCORING_CONFIG.SAVE_PIPELINE_ERROR', {
+      name: pipeline.name,
+    });
   } finally {
     saving[pipeline.id] = false;
   }
@@ -225,7 +262,9 @@ async function saveCampaign(campaign) {
       campaignSavedOk[campaign.id] = false;
     }, 2000);
   } catch {
-    error.value = `Erro ao salvar scoring da campanha "${campaign.title}"`;
+    error.value = t('CRM.SCORING_CONFIG.CAMPAIGNS.SAVE_ERROR', {
+      title: campaign.title,
+    });
   } finally {
     campaignSaving[campaign.id] = false;
   }
@@ -256,7 +295,17 @@ function isDefault(pipelineId) {
 }
 
 function stageOptions(pipeline) {
-  return pipeline.stages || [];
+  return pipeline?.stages || [];
+}
+
+function stageSelectOptions(pipeline) {
+  return [
+    { value: '', label: t('CRM.SCORING_CONFIG.NO_STAGE') },
+    ...stageOptions(pipeline).map(stage => ({
+      value: stage.slug,
+      label: stage.name,
+    })),
+  ];
 }
 
 function pipelineForCampaign(campaignId) {
@@ -271,355 +320,395 @@ function campaignHasOverride(campaign) {
   return Object.keys(campaign.scoring_config || {}).length > 0;
 }
 
+function campaignMeta(campaign) {
+  return [campaign.campaign_type, campaign.inbox?.name]
+    .filter(Boolean)
+    .join(' - ');
+}
+
 onMounted(loadData);
 </script>
 
 <template>
-  <div class="crm-scoring-page flex h-full flex-col overflow-auto p-4 sm:p-6">
-    <div class="mb-6">
-      <h1 class="text-xl font-bold text-n-slate-12">Configurador de Scoring</h1>
-      <p class="text-sm text-n-slate-10">
-        Defina os pesos de cada critério de pontuação por pipeline. A soma deve
-        ser 100 para scoring calibrado.
+  <section
+    class="flex min-h-0 w-full min-w-0 flex-1 flex-col bg-ui-canvas text-ui-text"
+    :aria-busy="loading || undefined"
+  >
+    <DsPageHeader
+      :title="$t('CRM.SCORING_CONFIG.TITLE')"
+      :breadcrumbs="[
+        { label: $t('CRM.SCORING_CONFIG.BREADCRUMB') },
+        { label: $t('CRM.SCORING_CONFIG.TITLE') },
+      ]"
+    />
+
+    <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4 sm:p-6">
+      <p class="m-0 max-w-2xl text-ui-body-sm text-ui-text-muted">
+        {{ $t('CRM.SCORING_CONFIG.SUBTITLE') }}
       </p>
-    </div>
 
-    <div
-      v-if="error"
-      class="mb-4 rounded-xl border border-n-ruby-7 bg-n-ruby-2 px-4 py-3 text-sm text-n-ruby-11"
-    >
-      {{ error }}
-    </div>
-
-    <div
-      v-if="loading"
-      class="flex flex-1 items-center justify-center text-n-slate-10"
-    >
-      Carregando...
-    </div>
-
-    <div
-      v-else-if="pipelines.length === 0"
-      class="flex flex-1 flex-col items-center justify-center gap-4 text-n-slate-10"
-    >
-      <span class="i-lucide-sliders-horizontal size-12 text-n-slate-7" />
-      <p class="text-lg font-medium">Nenhum pipeline encontrado</p>
-    </div>
-
-    <div v-else class="flex flex-col gap-6">
       <div
-        v-for="pipeline in pipelines"
-        :key="pipeline.id"
-        class="rounded-2xl border border-n-weak bg-n-slate-1 p-5"
+        v-if="error"
+        role="alert"
+        class="rounded-ui-surface border border-ui-danger/20 bg-ui-danger-soft px-4 py-3 text-ui-body-sm text-ui-danger-foreground"
       >
-        <div class="mb-4 flex items-center gap-3">
-          <div
-            class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-n-slate-3"
-          >
-            <span
-              class="i-lucide-sliders-horizontal size-[18px] text-n-slate-11"
-            />
-          </div>
-          <div class="flex min-w-0 flex-1 items-center gap-2">
-            <h2 class="text-base font-bold text-n-slate-12">
-              {{ pipeline.name }}
-            </h2>
-            <span
-              v-if="isDefault(pipeline.id)"
-              class="rounded-lg bg-n-slate-3 px-2 py-0.5 text-xs font-medium text-n-slate-9"
+        {{ error }}
+      </div>
+
+      <div
+        v-if="loading"
+        role="status"
+        :aria-label="$t('CRM.SCORING_CONFIG.LOADING')"
+        class="flex flex-col gap-4"
+      >
+        <span class="sr-only">{{ $t('CRM.SCORING_CONFIG.LOADING') }}</span>
+        <DsSkeleton shape="block" class="h-72" />
+        <DsSkeleton shape="block" class="h-72" />
+      </div>
+
+      <DsEmptyState
+        v-else-if="!pipelines.length"
+        :title="$t('CRM.SCORING_CONFIG.EMPTY_PIPELINES')"
+      />
+
+      <template v-else>
+        <DsCard
+          v-for="pipeline in pipelines"
+          :key="pipeline.id"
+          as="section"
+          :aria-label="pipeline.name"
+        >
+          <div class="mb-4 flex items-center gap-3">
+            <div
+              class="flex size-9 shrink-0 items-center justify-center rounded-ui-surface bg-ui-sunken"
             >
-              padrão
-            </span>
-          </div>
-        </div>
-
-        <div
-          class="mb-1 grid grid-cols-[1fr_80px_96px] gap-x-3 border-b border-n-weak pb-2"
-        >
-          <span class="text-xs font-semibold text-n-slate-10">Critério</span>
-          <span class="text-xs font-semibold text-n-slate-10 text-center"
-            >Peso</span
-          >
-          <span class="text-xs font-semibold text-n-slate-10 text-center"
-            >Padrão</span
-          >
-        </div>
-
-        <div class="flex flex-col divide-y divide-n-weak">
-          <div
-            v-for="criterion in SCORING_CRITERIA"
-            :key="criterion.key"
-            class="grid grid-cols-[1fr_80px_96px] items-center gap-x-3 py-2.5"
-          >
-            <div>
-              <p class="text-sm text-n-slate-12">{{ criterion.label }}</p>
-              <p class="text-xs text-n-slate-9">{{ criterion.description }}</p>
+              <Icon
+                icon="i-lucide-sliders-horizontal"
+                class="size-5 text-ui-text-muted"
+                aria-hidden="true"
+              />
             </div>
-            <input
-              v-if="configs[pipeline.id]"
-              v-model.number="configs[pipeline.id].weights[criterion.key]"
-              type="number"
-              min="0"
-              max="100"
-              class="w-full rounded-lg border border-n-weak bg-n-slate-2 px-3 py-2 text-center text-sm text-n-slate-12 outline-none focus:border-n-brand"
-            />
-            <span class="text-center text-xs text-n-slate-9">
-              (padrão: {{ criterion.default }})
+            <div class="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+              <h2
+                class="m-0 font-manrope text-ui-heading font-semibold text-ui-text"
+              >
+                {{ pipeline.name }}
+              </h2>
+              <DsBadge
+                v-if="isDefault(pipeline.id)"
+                :label="$t('CRM.SCORING_CONFIG.DEFAULT_BADGE')"
+              />
+            </div>
+          </div>
+
+          <div
+            class="mb-1 hidden gap-x-3 border-b border-ui-border-subtle pb-2 sm:grid sm:grid-cols-[minmax(0,1fr)_5rem_6rem]"
+          >
+            <span class="text-ui-caption font-semibold text-ui-text-muted">
+              {{ $t('CRM.SCORING_CONFIG.CRITERIA_HEADER') }}
+            </span>
+            <span
+              class="text-center text-ui-caption font-semibold text-ui-text-muted"
+            >
+              {{ $t('CRM.SCORING_CONFIG.WEIGHT_HEADER') }}
+            </span>
+            <span
+              class="text-center text-ui-caption font-semibold text-ui-text-muted"
+            >
+              {{ $t('CRM.SCORING_CONFIG.DEFAULT_HEADER') }}
             </span>
           </div>
-        </div>
 
-        <div
-          v-if="configs[pipeline.id]"
-          class="mt-5 grid gap-4 border-t border-n-weak pt-4 lg:grid-cols-2"
-        >
-          <div>
-            <div class="mb-3 flex items-center justify-between gap-2">
-              <div>
-                <h3 class="text-sm font-semibold text-n-slate-12">
-                  Faixas de classificação
-                </h3>
-                <p class="text-xs text-n-slate-9">
-                  Defina a pontuação mínima para cada categoria.
+          <div class="flex flex-col divide-y divide-ui-border-subtle">
+            <div
+              v-for="criterion in criteria"
+              :key="criterion.key"
+              class="grid gap-2 py-2.5 sm:grid-cols-[minmax(0,1fr)_5rem_6rem] sm:items-center sm:gap-x-3"
+            >
+              <div class="min-w-0">
+                <p class="m-0 text-ui-body-sm text-ui-text">
+                  {{ criterion.label }}
+                </p>
+                <p class="m-0 text-ui-caption text-ui-text-muted">
+                  {{ criterion.description }}
                 </p>
               </div>
+              <DsInput
+                v-if="configs[pipeline.id]"
+                v-model="configs[pipeline.id].weights[criterion.key]"
+                type="number"
+                min="0"
+                max="100"
+                :label="
+                  $t('CRM.SCORING_CONFIG.WEIGHT_ARIA', {
+                    criterion: criterion.label,
+                  })
+                "
+                hide-label
+                class="text-center"
+              />
+              <span class="text-ui-caption text-ui-text-muted sm:text-center">
+                {{
+                  $t('CRM.SCORING_CONFIG.DEFAULT_VALUE', {
+                    value: criterion.default,
+                  })
+                }}
+              </span>
             </div>
-            <div class="grid grid-cols-2 gap-2">
-              <label
-                v-for="classification in CLASSIFICATIONS"
-                :key="classification.key"
-                class="flex flex-col gap-1 text-xs text-n-slate-10"
+          </div>
+
+          <div
+            v-if="configs[pipeline.id]"
+            class="mt-5 grid gap-4 border-t border-ui-border-subtle pt-4 lg:grid-cols-2"
+          >
+            <div>
+              <h3
+                class="m-0 font-manrope text-ui-label font-semibold text-ui-text"
               >
-                {{ classification.label }}
-                <input
-                  v-model.number="
+                {{ $t('CRM.SCORING_CONFIG.THRESHOLDS_TITLE') }}
+              </h3>
+              <p class="m-0 mb-3 mt-1 text-ui-caption text-ui-text-muted">
+                {{ $t('CRM.SCORING_CONFIG.THRESHOLDS_SUBTITLE') }}
+              </p>
+              <div class="grid grid-cols-2 gap-2">
+                <DsInput
+                  v-for="classification in classifications"
+                  :key="classification.key"
+                  v-model="
                     configs[pipeline.id].thresholds[classification.key]
                   "
                   type="number"
                   min="0"
                   max="100"
-                  class="rounded-lg border border-n-weak bg-n-slate-2 px-3 py-2 text-sm text-n-slate-12 outline-none focus:border-n-brand"
+                  :label="classification.label"
                 />
-              </label>
-            </div>
-          </div>
-
-          <div>
-            <div class="mb-3 flex items-center justify-between gap-2">
-              <div>
-                <h3 class="text-sm font-semibold text-n-slate-12">
-                  Mover no Kanban
-                </h3>
-                <p class="text-xs text-n-slate-9">
-                  Escolha a etapa de destino para cada categoria.
-                </p>
               </div>
-              <label class="flex items-center gap-2 text-xs text-n-slate-10">
-                <input
-                  v-model="configs[pipeline.id].autoMoveOnScore"
-                  type="checkbox"
-                />
-                Auto
-              </label>
             </div>
-            <div class="grid grid-cols-1 gap-2">
-              <label
-                v-for="classification in CLASSIFICATIONS"
-                :key="classification.key"
-                class="flex flex-col gap-1 text-xs text-n-slate-10"
-              >
-                {{ classification.label }}
-                <select
+
+            <div>
+              <div class="mb-3 flex items-start justify-between gap-2">
+                <div>
+                  <h3
+                    class="m-0 font-manrope text-ui-label font-semibold text-ui-text"
+                  >
+                    {{ $t('CRM.SCORING_CONFIG.KANBAN_TITLE') }}
+                  </h3>
+                  <p class="m-0 mt-1 text-ui-caption text-ui-text-muted">
+                    {{ $t('CRM.SCORING_CONFIG.KANBAN_SUBTITLE') }}
+                  </p>
+                </div>
+                <DsCheckbox
+                  v-model="configs[pipeline.id].autoMoveOnScore"
+                  :label="$t('CRM.SCORING_CONFIG.AUTO_MOVE')"
+                  class="mt-1"
+                />
+              </div>
+              <div class="grid grid-cols-1 gap-2">
+                <DsSelect
+                  v-for="classification in classifications"
+                  :key="classification.key"
                   v-model="
                     configs[pipeline.id].stageMapping[classification.key]
                   "
-                  class="rounded-lg border border-n-weak bg-n-slate-2 px-3 py-2 text-sm text-n-slate-12 outline-none focus:border-n-brand"
-                >
-                  <option value="">Não mover</option>
-                  <option
-                    v-for="stage in stageOptions(pipeline)"
-                    :key="stage.id"
-                    :value="stage.slug"
-                  >
-                    {{ stage.name }}
-                  </option>
-                </select>
-              </label>
+                  :label="classification.label"
+                  :options="stageSelectOptions(pipeline)"
+                />
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="mt-4 border-t border-n-weak pt-4">
-          <div class="mb-3 flex items-center gap-2">
-            <span class="text-sm font-semibold text-n-slate-11">Total:</span>
-            <span
-              class="text-sm font-bold"
-              :class="
-                totalFor[pipeline.id] === 100
-                  ? 'text-n-teal-11'
-                  : 'text-amber-600'
-              "
-            >
-              {{ totalFor[pipeline.id] }}
-            </span>
-            <span
-              v-if="totalFor[pipeline.id] === 100"
-              class="text-xs text-n-teal-11"
-            >
-              — scoring calibrado
-            </span>
-            <span v-else class="text-xs text-amber-600">
-              — Atenção: total deve ser 100 para scoring preciso
-            </span>
-          </div>
-
-          <div
-            v-if="savedOk[pipeline.id]"
-            class="mb-3 rounded-xl border border-n-teal-7 bg-n-teal-2 px-4 py-3 text-sm text-n-teal-11"
-          >
-            Salvo com sucesso
-          </div>
-
-          <div class="flex items-center justify-end gap-2">
-            <button
-              class="rounded-lg px-4 py-2 text-sm font-medium text-n-slate-10 transition hover:bg-n-slate-3"
-              :disabled="saving[pipeline.id]"
-              @click="restoreDefaults(pipeline)"
-            >
-              Restaurar padrões
-            </button>
-            <button
-              class="inline-flex items-center gap-1.5 rounded-xl bg-n-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
-              :disabled="saving[pipeline.id]"
-              @click="savePipeline(pipeline)"
-            >
-              {{ saving[pipeline.id] ? 'Salvando...' : 'Salvar configuração' }}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div class="mt-2 border-t border-n-weak pt-6">
-        <div class="mb-4">
-          <h2 class="text-lg font-bold text-n-slate-12">
-            Overrides por campanha
-          </h2>
-          <p class="text-sm text-n-slate-10">
-            Use quando uma campanha precisar de pesos, faixas ou etapas
-            diferentes do pipeline padrão. Ex.: uma campanha de aposentadoria,
-            uma ação trabalhista ou qualquer outro nicho.
-          </p>
-        </div>
-
-        <div
-          v-if="campaigns.length === 0"
-          class="rounded-xl border border-dashed border-n-weak p-4 text-sm text-n-slate-10"
-        >
-          Nenhuma campanha encontrada.
-        </div>
-
-        <div v-else class="flex flex-col gap-4">
-          <div
-            v-for="campaign in campaigns"
-            :key="campaign.id"
-            class="rounded-2xl border border-n-weak bg-n-slate-1 p-5"
-          >
-            <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <div class="min-w-0">
-                <div class="flex items-center gap-2">
-                  <h3 class="truncate text-base font-bold text-n-slate-12">
-                    {{ campaign.title }}
-                  </h3>
-                  <span
-                    v-if="campaignHasOverride(campaign)"
-                    class="rounded-lg bg-n-slate-3 px-2 py-0.5 text-xs font-medium text-n-slate-9"
-                  >
-                    override ativo
-                  </span>
-                </div>
-                <p class="text-xs text-n-slate-9">
-                  {{ campaign.campaign_type }} - {{ campaign.inbox?.name }}
-                </p>
-              </div>
-
-              <label
-                v-if="campaignConfigs[campaign.id]"
-                class="flex min-w-[220px] flex-col gap-1 text-xs text-n-slate-10"
+          <div class="mt-4 border-t border-ui-border-subtle pt-4">
+            <div class="mb-3 flex items-center gap-2" aria-live="polite">
+              <span class="text-ui-label font-semibold text-ui-text">
+                {{ $t('CRM.SCORING_CONFIG.TOTAL_LABEL') }}
+              </span>
+              <span
+                class="text-ui-label font-semibold"
+                :class="
+                  totalFor[pipeline.id] === 100
+                    ? 'text-ui-success'
+                    : 'text-ui-warning'
+                "
               >
-                Pipeline de referência
-                <select
-                  v-model="campaignConfigs[campaign.id].pipelineId"
-                  class="rounded-lg border border-n-weak bg-n-slate-2 px-3 py-2 text-sm text-n-slate-12 outline-none focus:border-n-brand"
-                >
-                  <option
-                    v-for="pipeline in pipelines"
-                    :key="pipeline.id"
-                    :value="pipeline.id"
-                  >
-                    {{ pipeline.name }}
-                  </option>
-                </select>
-              </label>
+                {{ totalFor[pipeline.id] }}
+              </span>
+              <span
+                v-if="totalFor[pipeline.id] === 100"
+                class="inline-flex items-center gap-1 text-ui-caption text-ui-success"
+              >
+                <Icon
+                  icon="i-lucide-circle-check"
+                  class="size-3.5"
+                  aria-hidden="true"
+                />
+                {{ $t('CRM.SCORING_CONFIG.TOTAL_OK') }}
+              </span>
+              <span
+                v-else
+                class="inline-flex items-center gap-1 text-ui-caption text-ui-warning"
+              >
+                <Icon
+                  icon="i-lucide-triangle-alert"
+                  class="size-3.5"
+                  aria-hidden="true"
+                />
+                {{ $t('CRM.SCORING_CONFIG.TOTAL_WARNING') }}
+              </span>
             </div>
 
             <div
-              v-if="campaignConfigs[campaign.id]"
-              class="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]"
+              v-if="savedOk[pipeline.id]"
+              role="status"
+              class="mb-3 rounded-ui-surface border border-ui-success/20 bg-ui-success-soft px-4 py-3 text-ui-body-sm text-ui-success-foreground"
             >
-              <div>
-                <div
-                  class="mb-1 grid grid-cols-[1fr_80px] gap-x-3 border-b border-n-weak pb-2"
-                >
-                  <span class="text-xs font-semibold text-n-slate-10">
-                    Criterio
-                  </span>
-                  <span
-                    class="text-center text-xs font-semibold text-n-slate-10"
-                  >
-                    Peso
-                  </span>
-                </div>
-                <div class="flex flex-col divide-y divide-n-weak">
-                  <div
-                    v-for="criterion in SCORING_CRITERIA"
-                    :key="criterion.key"
-                    class="grid grid-cols-[1fr_80px] items-center gap-x-3 py-2"
-                  >
-                    <div>
-                      <p class="text-sm text-n-slate-12">
-                        {{ criterion.label }}
-                      </p>
-                      <p class="text-xs text-n-slate-9">
-                        {{ criterion.description }}
-                      </p>
-                    </div>
-                    <input
-                      v-model.number="
-                        campaignConfigs[campaign.id].weights[criterion.key]
-                      "
-                      type="number"
-                      min="0"
-                      max="100"
-                      class="w-full rounded-lg border border-n-weak bg-n-slate-2 px-3 py-2 text-center text-sm text-n-slate-12 outline-none focus:border-n-brand"
+              {{ $t('CRM.SCORING_CONFIG.SAVED') }}
+            </div>
+
+            <div class="flex flex-wrap items-center justify-end gap-2">
+              <DsButton
+                variant="ghost"
+                :label="$t('CRM.SCORING_CONFIG.RESTORE_DEFAULTS')"
+                :disabled="saving[pipeline.id]"
+                @click="restoreDefaults(pipeline)"
+              />
+              <DsButton
+                variant="primary"
+                :label="
+                  saving[pipeline.id]
+                    ? $t('CRM.SCORING_CONFIG.SAVING')
+                    : $t('CRM.SCORING_CONFIG.SAVE')
+                "
+                :loading="saving[pipeline.id]"
+                @click="savePipeline(pipeline)"
+              />
+            </div>
+          </div>
+        </DsCard>
+
+        <section
+          aria-labelledby="scoring-campaigns-title"
+          class="mt-2 border-t border-ui-border-subtle pt-6"
+        >
+          <div class="mb-4">
+            <h2
+              id="scoring-campaigns-title"
+              class="m-0 font-manrope text-ui-title font-semibold text-ui-text"
+            >
+              {{ $t('CRM.SCORING_CONFIG.CAMPAIGNS.TITLE') }}
+            </h2>
+            <p class="m-0 mt-1 max-w-2xl text-ui-body-sm text-ui-text-muted">
+              {{ $t('CRM.SCORING_CONFIG.CAMPAIGNS.SUBTITLE') }}
+            </p>
+          </div>
+
+          <DsEmptyState
+            v-if="!campaigns.length"
+            :title="$t('CRM.SCORING_CONFIG.CAMPAIGNS.EMPTY')"
+          />
+
+          <div v-else class="flex flex-col gap-4">
+            <DsCard
+              v-for="campaign in campaigns"
+              :key="campaign.id"
+              as="article"
+              :aria-label="campaign.title"
+            >
+              <div
+                class="mb-4 flex flex-wrap items-start justify-between gap-3"
+              >
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h3
+                      class="m-0 truncate font-manrope text-ui-heading font-semibold text-ui-text"
+                    >
+                      {{ campaign.title }}
+                    </h3>
+                    <DsBadge
+                      v-if="campaignHasOverride(campaign)"
+                      :label="$t('CRM.SCORING_CONFIG.CAMPAIGNS.OVERRIDE_BADGE')"
                     />
                   </div>
+                  <p class="m-0 mt-1 text-ui-caption text-ui-text-muted">
+                    {{ campaignMeta(campaign) }}
+                  </p>
+                </div>
+
+                <div
+                  v-if="campaignConfigs[campaign.id]"
+                  class="w-full sm:w-64"
+                >
+                  <DsSelect
+                    v-model="campaignConfigs[campaign.id].pipelineId"
+                    :label="$t('CRM.SCORING_CONFIG.CAMPAIGNS.PIPELINE_LABEL')"
+                    :options="pipelineOptions"
+                  />
                 </div>
               </div>
 
-              <div class="grid gap-4">
+              <div
+                v-if="campaignConfigs[campaign.id]"
+                class="grid gap-5 lg:grid-cols-2"
+              >
                 <div>
-                  <h4 class="mb-2 text-sm font-semibold text-n-slate-12">
-                    Faixas
-                  </h4>
-                  <div class="grid grid-cols-2 gap-2">
-                    <label
-                      v-for="classification in CLASSIFICATIONS"
-                      :key="classification.key"
-                      class="flex flex-col gap-1 text-xs text-n-slate-10"
+                  <div
+                    class="mb-1 hidden gap-x-3 border-b border-ui-border-subtle pb-2 sm:grid sm:grid-cols-[minmax(0,1fr)_5rem]"
+                  >
+                    <span
+                      class="text-ui-caption font-semibold text-ui-text-muted"
                     >
-                      {{ classification.label }}
-                      <input
-                        v-model.number="
+                      {{ $t('CRM.SCORING_CONFIG.CRITERIA_HEADER') }}
+                    </span>
+                    <span
+                      class="text-center text-ui-caption font-semibold text-ui-text-muted"
+                    >
+                      {{ $t('CRM.SCORING_CONFIG.WEIGHT_HEADER') }}
+                    </span>
+                  </div>
+                  <div class="flex flex-col divide-y divide-ui-border-subtle">
+                    <div
+                      v-for="criterion in criteria"
+                      :key="criterion.key"
+                      class="grid gap-2 py-2 sm:grid-cols-[minmax(0,1fr)_5rem] sm:items-center sm:gap-x-3"
+                    >
+                      <div class="min-w-0">
+                        <p class="m-0 text-ui-body-sm text-ui-text">
+                          {{ criterion.label }}
+                        </p>
+                        <p class="m-0 text-ui-caption text-ui-text-muted">
+                          {{ criterion.description }}
+                        </p>
+                      </div>
+                      <DsInput
+                        v-model="
+                          campaignConfigs[campaign.id].weights[criterion.key]
+                        "
+                        type="number"
+                        min="0"
+                        max="100"
+                        :label="
+                          $t('CRM.SCORING_CONFIG.WEIGHT_ARIA', {
+                            criterion: criterion.label,
+                          })
+                        "
+                        hide-label
+                        class="text-center"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid content-start gap-4">
+                  <div>
+                    <h4
+                      class="m-0 mb-2 font-manrope text-ui-label font-semibold text-ui-text"
+                    >
+                      {{ $t('CRM.SCORING_CONFIG.CAMPAIGNS.THRESHOLDS_TITLE') }}
+                    </h4>
+                    <div class="grid grid-cols-2 gap-2">
+                      <DsInput
+                        v-for="classification in classifications"
+                        :key="classification.key"
+                        v-model="
                           campaignConfigs[campaign.id].thresholds[
                             classification.key
                           ]
@@ -627,136 +716,106 @@ onMounted(loadData);
                         type="number"
                         min="0"
                         max="100"
-                        class="rounded-lg border border-n-weak bg-n-slate-2 px-3 py-2 text-sm text-n-slate-12 outline-none focus:border-n-brand"
+                        :label="classification.label"
                       />
-                    </label>
+                    </div>
                   </div>
-                </div>
 
-                <div>
-                  <div class="mb-2 flex items-center justify-between gap-2">
-                    <h4 class="text-sm font-semibold text-n-slate-12">
-                      Kanban
-                    </h4>
-                    <label
-                      class="flex items-center gap-2 text-xs text-n-slate-10"
-                    >
-                      <input
+                  <div>
+                    <div class="mb-2 flex items-start justify-between gap-2">
+                      <h4
+                        class="m-0 font-manrope text-ui-label font-semibold text-ui-text"
+                      >
+                        {{ $t('CRM.SCORING_CONFIG.CAMPAIGNS.KANBAN_TITLE') }}
+                      </h4>
+                      <DsCheckbox
                         v-model="campaignConfigs[campaign.id].autoMoveOnScore"
-                        type="checkbox"
+                        :label="$t('CRM.SCORING_CONFIG.AUTO_MOVE')"
+                        class="mt-1"
                       />
-                      Auto
-                    </label>
-                  </div>
-                  <div class="grid grid-cols-1 gap-2">
-                    <label
-                      v-for="classification in CLASSIFICATIONS"
-                      :key="classification.key"
-                      class="flex flex-col gap-1 text-xs text-n-slate-10"
-                    >
-                      {{ classification.label }}
-                      <select
+                    </div>
+                    <div class="grid grid-cols-1 gap-2">
+                      <DsSelect
+                        v-for="classification in classifications"
+                        :key="classification.key"
                         v-model="
                           campaignConfigs[campaign.id].stageMapping[
                             classification.key
                           ]
                         "
-                        class="rounded-lg border border-n-weak bg-n-slate-2 px-3 py-2 text-sm text-n-slate-12 outline-none focus:border-n-brand"
-                      >
-                        <option value="">Não mover</option>
-                        <option
-                          v-for="stage in stageOptions(
-                            pipelineForCampaign(campaign.id)
-                          )"
-                          :key="stage.id"
-                          :value="stage.slug"
-                        >
-                          {{ stage.name }}
-                        </option>
-                      </select>
-                    </label>
+                        :label="classification.label"
+                        :options="
+                          stageSelectOptions(pipelineForCampaign(campaign.id))
+                        "
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div class="mt-4 border-t border-n-weak pt-4">
-              <div class="mb-3 flex items-center gap-2">
-                <span class="text-sm font-semibold text-n-slate-11">
-                  Total:
-                </span>
-                <span
-                  class="text-sm font-bold"
-                  :class="
-                    campaignTotalFor[campaign.id] === 100
-                      ? 'text-n-teal-11'
-                      : 'text-amber-600'
-                  "
-                >
-                  {{ campaignTotalFor[campaign.id] }}
-                </span>
-              </div>
+              <div class="mt-4 border-t border-ui-border-subtle pt-4">
+                <div class="mb-3 flex items-center gap-2" aria-live="polite">
+                  <span class="text-ui-label font-semibold text-ui-text">
+                    {{ $t('CRM.SCORING_CONFIG.TOTAL_LABEL') }}
+                  </span>
+                  <span
+                    class="text-ui-label font-semibold"
+                    :class="
+                      campaignTotalFor[campaign.id] === 100
+                        ? 'text-ui-success'
+                        : 'text-ui-warning'
+                    "
+                  >
+                    {{ campaignTotalFor[campaign.id] }}
+                  </span>
+                  <Icon
+                    :icon="
+                      campaignTotalFor[campaign.id] === 100
+                        ? 'i-lucide-circle-check'
+                        : 'i-lucide-triangle-alert'
+                    "
+                    class="size-4"
+                    :class="
+                      campaignTotalFor[campaign.id] === 100
+                        ? 'text-ui-success'
+                        : 'text-ui-warning'
+                    "
+                    aria-hidden="true"
+                  />
+                </div>
 
-              <div
-                v-if="campaignSavedOk[campaign.id]"
-                class="mb-3 rounded-xl border border-n-teal-7 bg-n-teal-2 px-4 py-3 text-sm text-n-teal-11"
-              >
-                Salvo com sucesso
-              </div>
+                <div
+                  v-if="campaignSavedOk[campaign.id]"
+                  role="status"
+                  class="mb-3 rounded-ui-surface border border-ui-success/20 bg-ui-success-soft px-4 py-3 text-ui-body-sm text-ui-success-foreground"
+                >
+                  {{ $t('CRM.SCORING_CONFIG.SAVED') }}
+                </div>
 
-              <div class="flex flex-wrap items-center justify-end gap-2">
-                <button
-                  class="rounded-lg px-4 py-2 text-sm font-medium text-n-slate-10 transition hover:bg-n-slate-3"
-                  :disabled="campaignSaving[campaign.id]"
-                  @click="clearCampaignOverride(campaign)"
-                >
-                  Remover override
-                </button>
-                <button
-                  class="inline-flex items-center gap-1.5 rounded-xl bg-n-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
-                  :disabled="
-                    campaignSaving[campaign.id] ||
-                    campaignTotalFor[campaign.id] !== 100
-                  "
-                  @click="saveCampaign(campaign)"
-                >
-                  {{
-                    campaignSaving[campaign.id]
-                      ? 'Salvando...'
-                      : 'Salvar campanha'
-                  }}
-                </button>
+                <div class="flex flex-wrap items-center justify-end gap-2">
+                  <DsButton
+                    variant="ghost"
+                    :label="$t('CRM.SCORING_CONFIG.CAMPAIGNS.REMOVE_OVERRIDE')"
+                    :disabled="campaignSaving[campaign.id]"
+                    @click="clearCampaignOverride(campaign)"
+                  />
+                  <DsButton
+                    variant="primary"
+                    :label="
+                      campaignSaving[campaign.id]
+                        ? $t('CRM.SCORING_CONFIG.SAVING')
+                        : $t('CRM.SCORING_CONFIG.CAMPAIGNS.SAVE')
+                    "
+                    :loading="campaignSaving[campaign.id]"
+                    :disabled="campaignTotalFor[campaign.id] !== 100"
+                    @click="saveCampaign(campaign)"
+                  />
+                </div>
               </div>
-            </div>
+            </DsCard>
           </div>
-        </div>
-      </div>
+        </section>
+      </template>
     </div>
-  </div>
+  </section>
 </template>
-
-<style scoped>
-.crm-scoring-page {
-  width: 100%;
-  min-width: 0;
-  color: rgb(var(--slate-12));
-}
-
-.crm-scoring-page :deep(*) {
-  min-width: 0;
-}
-
-.crm-scoring-page :deep(input),
-.crm-scoring-page :deep(select),
-.crm-scoring-page :deep(textarea) {
-  width: 100%;
-  color: rgb(var(--slate-12));
-}
-
-@media (max-width: 640px) {
-  .crm-scoring-page :deep(.grid-cols-\[1fr_80px_96px\]),
-  .crm-scoring-page :deep(.grid-cols-\[1fr_80px\]) {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-</style>

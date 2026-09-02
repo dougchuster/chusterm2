@@ -39,6 +39,11 @@ class Api::V1::Accounts::Whatsapp::AuthorizationsController < Api::V1::Accounts:
   end
 
   def fetch_and_validate_inbox
+    unless Current.account_user&.administrator?
+      render json: { success: false, message: I18n.t('errors.authorization') }, status: :unprocessable_entity
+      return
+    end
+
     @inbox = Current.account.inboxes.find(params[:inbox_id])
     validate_reauthorization_required
   end
@@ -76,6 +81,7 @@ class Api::V1::Accounts::Whatsapp::AuthorizationsController < Api::V1::Accounts:
   def validate_embedded_signup_params!
     errors = []
     errors << 'code ou session_key' if params[:code].blank? && params[:session_key].blank?
+    errors << 'business_id' if params[:business_id].blank?
     errors << 'waba_id' if params[:waba_id].blank? && params[:session_key].blank?
     raise ArgumentError, "Parâmetros obrigatórios ausentes: #{errors.join(', ')}" if errors.any?
   end

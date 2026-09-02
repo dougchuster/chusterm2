@@ -7,9 +7,15 @@ class Api::V1::Accounts::Captain::ConversationStatesController < Api::V1::Accoun
   end
 
   def update
-    @state.assign_attributes(state_params)
-    apply_handoff_metadata if @state.ai_mode_changed?
-    @state.save!
+    attributes = state_params
+    requested_mode = attributes.delete(:ai_mode)
+    @state.assign_attributes(attributes)
+
+    if requested_mode.present? && requested_mode != @state.ai_mode
+      apply_mode_change(requested_mode)
+    else
+      @state.save!
+    end
 
     render json: serialize_state(@state)
   rescue ActiveRecord::RecordInvalid => e
@@ -19,8 +25,7 @@ class Api::V1::Accounts::Captain::ConversationStatesController < Api::V1::Accoun
   private
 
   def set_conversation
-    @conversation = Current.account.conversations.find_by(id: params[:conversation_id]) ||
-                    Current.account.conversations.find_by!(display_id: params[:conversation_id])
+    @conversation = Current.account.conversations.find_by!(display_id: params[:conversation_display_id])
     authorize @conversation, :show?
   end
 
@@ -39,17 +44,29 @@ class Api::V1::Accounts::Captain::ConversationStatesController < Api::V1::Accoun
 
     permitted[:captain_assistant_id] = nil if permitted.key?(:captain_assistant_id) && permitted[:captain_assistant_id].blank?
     permitted[:crm_deal_id] = nil if permitted.key?(:crm_deal_id) && permitted[:crm_deal_id].blank?
+    if permitted[:captain_assistant_id].present?
+      permitted[:captain_assistant_id] = Current.account.captain_assistants.find(permitted[:captain_assistant_id]).id
+    end
+    permitted[:crm_deal_id] = Current.account.crm_deals.find(permitted[:crm_deal_id]).id if permitted[:crm_deal_id].present?
     permitted
   end
 
-  def apply_handoff_metadata
-    if CaptainConversationState::HUMAN_MODES.include?(@state.ai_mode)
-      @state.handoff_at ||= Time.current
-      @state.handoff_by ||= Current.user
+  def apply_mode_change(requested_mode)
+    if CaptainConversationState::HUMAN_MODES.include?(requested_mode)
+      decision = Captain::HandoffPolicy.evaluate(
+        trigger: 'manual_takeover',
+        reason: @state.handoff_reason.presence
+      )
+      @state.apply_ai_mode!(
+        mode: requested_mode,
+        reason: decision[:reason],
+        reason_code: decision[:reason_code],
+        actor: Current.user
+      )
     else
-      @state.handoff_at = nil
-      @state.handoff_by = nil
-      @state.handoff_reason = 'IA retomada manualmente'
+      @state.handoff_reason = CaptainConversationState::LEGACY_MANUAL_RESUME_REASON
+      @state.mark_manual_resume!(actor: Current.user)
+      @state.apply_ai_mode!(mode: requested_mode, reason_code: 'manual_resume', actor: Current.user)
     end
   end
 
@@ -60,17 +77,20 @@ class Api::V1::Accounts::Captain::ConversationStatesController < Api::V1::Accoun
       id: state.id,
       account_id: state.account_id,
       conversation_id: state.conversation_id,
+      conversation_display_id: @conversation.display_id,
       contact_id: state.contact_id,
       captain_assistant_id: state.captain_assistant_id,
       crm_deal_id: state.crm_deal_id,
       ai_mode: state.ai_mode,
       handoff_reason: state.handoff_reason,
+      handoff_reason_code: state.handoff_reason_code,
       handoff_at: state.handoff_at,
       handoff_by_id: state.handoff_by_id,
       score_total: state.score_total,
       score_classification: state.score_classification,
       score_payload: state.score_payload,
       score_factors: state.score_payload&.dig('components') || state.score_payload&.dig(:components),
+      relationship: Crm::ContactRelationshipClassifier.new(state.contact).perform,
       context_summary: state.context_summary,
       captain_flow_id: state.captain_flow_id,
       captain_flow_name: state.captain_flow&.name,
@@ -78,6 +98,9 @@ class Api::V1::Accounts::Captain::ConversationStatesController < Api::V1::Accoun
       last_ai_message_at: state.last_ai_message_at,
       handoff_by_name: state.handoff_by&.name,
       handoff_by_avatar: state.handoff_by&.avatar_url,
+      resume_source: state.resume_source,
+      resumed_at: state.resumed_at,
+      resumed_by_name: state.resumed_by&.name,
       crm_deal_title: deal&.title,
       crm_deal_next_best_action: deal&.next_best_action,
       crm_deal_legal_area: deal&.legal_area,

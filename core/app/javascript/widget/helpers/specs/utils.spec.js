@@ -1,4 +1,4 @@
-﻿import { IFrameHelper } from '../utils';
+import { IFrameHelper } from '../utils';
 
 vi.mock('vue', () => ({
   config: {

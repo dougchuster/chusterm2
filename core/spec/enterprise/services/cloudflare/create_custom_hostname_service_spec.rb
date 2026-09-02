@@ -5,6 +5,10 @@ RSpec.describe Cloudflare::CreateCustomHostnameService do
   let(:installation_config_api_key) { create(:installation_config, name: 'CLOUDFLARE_API_KEY', value: 'test-api-key') }
   let(:installation_config_zone_id) { create(:installation_config, name: 'CLOUDFLARE_ZONE_ID', value: 'test-zone-id') }
 
+  before do
+    InstallationConfig.where(name: %w[CLOUDFLARE_API_KEY CLOUDFLARE_ZONE_ID]).delete_all
+  end
+
   describe '#perform' do
     context 'when API token or zone ID is not found' do
       it 'returns error when API token is missing' do

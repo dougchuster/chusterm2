@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { getFileInfo } from '@ChusteRM/utils';
@@ -33,35 +33,29 @@ const displayFileName = computed(() => {
 
 const textColorClass = computed(() => {
   const colorMap = {
-    '7z': 'dark:text-[#EDEEF0] text-[#2F265F]',
-    csv: 'text-n-amber-12',
-    doc: 'dark:text-[#D6E1FF] text-[#1F2D5C]', // indigo-12
-    docx: 'dark:text-[#D6E1FF] text-[#1F2D5C]', // indigo-12
-    json: 'text-n-slate-12',
-    odt: 'dark:text-[#D6E1FF] text-[#1F2D5C]', // indigo-12
-    pdf: 'text-n-slate-12',
-    ppt: 'dark:text-[#FFE0C2] text-[#582D1D]',
-    pptx: 'dark:text-[#FFE0C2] text-[#582D1D]',
-    rar: 'dark:text-[#EDEEF0] text-[#2F265F]',
-    rtf: 'dark:text-[#D6E1FF] text-[#1F2D5C]', // indigo-12
-    tar: 'dark:text-[#EDEEF0] text-[#2F265F]',
-    txt: 'text-n-slate-12',
-    xls: 'text-n-teal-12',
-    xlsx: 'text-n-teal-12',
-    zip: 'dark:text-[#EDEEF0] text-[#2F265F]',
+    csv: 'text-ds-state-warning',
+    doc: 'text-ds-state-info',
+    docx: 'text-ds-state-info',
+    odt: 'text-ds-state-info',
+    pdf: 'text-ds-state-danger',
+    ppt: 'text-ds-state-warning',
+    pptx: 'text-ds-state-warning',
+    rtf: 'text-ds-state-info',
+    xls: 'text-ds-state-success',
+    xlsx: 'text-ds-state-success',
   };
 
-  return colorMap[fileDetails.value.type] || 'text-n-slate-12';
+  return colorMap[fileDetails.value.type] || 'text-ds-fg-default';
 });
 </script>
 
 <template>
   <div
-    class="h-9 bg-n-alpha-white gap-2 overflow-hidden items-center flex px-2 rounded-lg border border-n-container"
+    class="flex h-10 items-center gap-2 overflow-hidden rounded-xl bg-ds-bg-elevated px-2 shadow-[var(--ds-shadow-xs)] ring-1 ring-inset ring-ds-border-subtle"
   >
     <FileIcon class="flex-shrink-0" :file-type="fileDetails.type" />
     <span
-      class="flex-1 min-w-0 text-sm max-w-36"
+      class="min-w-0 max-w-36 flex-1 truncate text-sm font-medium"
       :title="fileDetails.name"
       :class="textColorClass"
     >
@@ -69,7 +63,8 @@ const textColorClass = computed(() => {
     </span>
     <a
       v-tooltip="t('CONVERSATION.DOWNLOAD')"
-      class="flex-shrink-0 size-9 grid place-content-center cursor-pointer text-n-slate-11 hover:text-n-slate-12 transition-colors"
+      :aria-label="t('CONVERSATION.DOWNLOAD')"
+      class="grid size-8 flex-shrink-0 place-content-center rounded-lg text-ds-fg-muted outline-none transition-colors hover:bg-ds-bg-hover hover:text-ds-fg-default focus-visible:ring-2 focus-visible:ring-ds-border-focus"
       :href="attachment.dataUrl"
       rel="noreferrer noopener nofollow"
       target="_blank"

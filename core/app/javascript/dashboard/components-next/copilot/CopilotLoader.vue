@@ -3,19 +3,24 @@
 </script>
 
 <template>
-  <div class="flex justify-start">
+  <div
+    class="flex justify-start"
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+  >
     <div class="flex items-center space-x-2">
-      <span class="text-n-iris-11 font-medium">
+      <span class="font-medium text-ds-accent">
         {{ $t('CAPTAIN.COPILOT.LOADER') }}
       </span>
       <div class="flex space-x-1">
         <div
-          class="w-2 h-2 rounded-full bg-n-iris-9 animate-bounce [animation-delay:-0.3s]"
+          class="size-2 animate-bounce rounded-full bg-ds-accent [animation-delay:-0.3s]"
         />
         <div
-          class="w-2 h-2 rounded-full bg-n-iris-9 animate-bounce [animation-delay:-0.15s]"
+          class="size-2 animate-bounce rounded-full bg-ds-accent [animation-delay:-0.15s]"
         />
-        <div class="w-2 h-2 rounded-full bg-n-iris-9 animate-bounce" />
+        <div class="size-2 animate-bounce rounded-full bg-ds-accent" />
       </div>
     </div>
   </div>

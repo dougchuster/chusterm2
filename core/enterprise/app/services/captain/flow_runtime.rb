@@ -38,6 +38,14 @@ class Captain::FlowRuntime
         execute_crm_action(node)
         advance_state(node)
       when 'handoff'
+        unless Captain::Conversation::HumanHandoffRequestService.requested?(incoming_message)
+          Rails.logger.warn(
+            "[CAPTAIN][FlowRuntime] Ignoring unrequested handoff for conversation #{@conversation.id}"
+          )
+          advance_state(node)
+          next
+        end
+
         execute_handoff(node)
         advance_state(node)
         return { action: :handoff }
@@ -143,7 +151,7 @@ class Captain::FlowRuntime
   def execute_crm_action(node)
     return unless @state.crm_deal_id.present?
 
-    deal = CrmDeal.find_by(id: @state.crm_deal_id)
+    deal = @state.account.crm_deals.find_by(id: @state.crm_deal_id)
     return unless deal
 
     c = (node.config || {}).with_indifferent_access
@@ -151,7 +159,12 @@ class Captain::FlowRuntime
     case c['action_type'].to_s
     when 'move_deal'
       stage = deal.crm_pipeline.crm_pipeline_stages.find_by(slug: c['stage_slug'])
-      Crm::DealMover.new(deal: deal, stage_id: stage.id, actor: nil).perform if stage
+      # Mesma guarda dos outros chamadores do DealMover (StageAutomation,
+      # LeadScoreCalculator, TriageFromConversation): mover para a etapa em que o
+      # negocio ja esta virou reordenacao silenciosa desde a F1.3, e um no de
+      # flow revisitado reposicionaria o card a cada execucao.
+      next_stage_is_current = stage && deal.crm_pipeline_stage_id == stage.id
+      Crm::DealMover.new(deal: deal, stage_id: stage.id, actor: nil).perform if stage && !next_stage_is_current
     when 'create_activity'
       valid_kinds = CrmActivity::KINDS
       kind = c['kind'].presence.then { |k| valid_kinds.include?(k) ? k : 'follow_up' }

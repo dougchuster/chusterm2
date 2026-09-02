@@ -11,9 +11,7 @@ class Captain::Llm::FaqGeneratorService < Llm::BaseAiService
 
   def generate
     response = instrument_llm_call(instrumentation_params) do
-      chat
-        .with_instructions(system_prompt)
-        .ask(@content)
+      faq_chat.ask(@content)
     end
 
     parse_response(response.content)
@@ -25,6 +23,13 @@ class Captain::Llm::FaqGeneratorService < Llm::BaseAiService
   private
 
   attr_reader :content, :language
+
+  def faq_chat
+    configured_chat = chat.with_instructions(system_prompt)
+    return configured_chat if Llm::Config.anthropic_model?(@model)
+
+    configured_chat.with_params(response_format: { type: 'json_object' })
+  end
 
   def system_prompt
     Captain::Llm::SystemPromptsService.faq_generator(language)

@@ -1,4 +1,4 @@
-﻿<script>
+<script>
 import { getContrastingTextColor } from '@ChusteRM/utils';
 
 export default {

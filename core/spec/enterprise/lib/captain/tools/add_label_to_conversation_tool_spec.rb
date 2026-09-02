@@ -41,7 +41,7 @@ RSpec.describe Captain::Tools::AddLabelToConversationTool, type: :model do
         it 'logs tool usage' do
           expect(tool).to receive(:log_tool_usage).with(
             'added_label',
-            { conversation_id: conversation.id, label: 'urgent' }
+            { conversation_id: conversation.id, label: 'urgent', slug: label.slug }
           )
 
           tool.perform(tool_context, label_name: 'urgent')

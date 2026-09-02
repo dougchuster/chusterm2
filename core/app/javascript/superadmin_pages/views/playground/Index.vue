@@ -123,7 +123,7 @@ export default {
         ref="messageInput"
         v-model="messageContent"
         :rows="4"
-        class="resize-none block p-2.5 w-full text-sm rounded-lg border text-[rgb(var(--slate-12))] bg-[rgb(var(--slate-1))] border-[rgb(var(--slate-4))] focus:ring-[rgb(var(--primary))] focus:border-[rgb(var(--primary))] placeholder:text-[rgb(var(--slate-10))]"
+        class="block w-full resize-none rounded-lg border border-n-slate-4 bg-n-slate-1 p-2.5 text-sm text-n-slate-12 placeholder:text-n-slate-10 focus:border-n-brand focus:ring-n-brand"
         placeholder="Type a message... [CMD/CTRL + Enter to send]"
         autofocus
         autocomplete="off"

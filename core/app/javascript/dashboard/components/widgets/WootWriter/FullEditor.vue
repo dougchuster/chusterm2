@@ -1,4 +1,4 @@
-﻿<script>
+<script>
 import {
   fullSchema,
   buildEditor,
@@ -290,7 +290,9 @@ export default {
 
 <template>
   <div>
-    <div class="editor-root editor--article">
+    <div
+      class="editor-root editor--article relative w-full [&_.ProseMirror-menubar-wrapper]:flex [&_.ProseMirror-menubar-wrapper]:flex-col [&_.ProseMirror-menubar-wrapper>.ProseMirror]:break-words [&_.ProseMirror-menubar-wrapper>.ProseMirror]:p-0 [&_.ProseMirror-woot-style]:min-h-20 [&_.ProseMirror-woot-style]:max-h-[7.5rem] [&_.ProseMirror-woot-style]:overflow-auto"
+    >
       <input
         ref="imageUploadInput"
         type="file"
@@ -302,28 +304,3 @@ export default {
     </div>
   </div>
 </template>
-
-<style lang="scss">
-@import '@ChusteRM/prosemirror-schema/src/styles/article.scss';
-
-.ProseMirror-menubar-wrapper {
-  display: flex;
-  flex-direction: column;
-
-  > .ProseMirror {
-    padding: 0;
-    word-break: break-word;
-  }
-}
-
-.editor-root {
-  position: relative;
-  width: 100%;
-}
-
-.ProseMirror-woot-style {
-  min-height: 5rem;
-  max-height: 7.5rem;
-  overflow: auto;
-}
-</style>

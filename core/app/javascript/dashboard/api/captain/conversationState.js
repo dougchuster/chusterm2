@@ -5,8 +5,8 @@ class CaptainConversationStateAPI extends ApiClient {
     super('captain/conversation_states', { accountScoped: true });
   }
 
-  update(conversationId, data) {
-    return super.update(conversationId, { conversation_state: data });
+  update(conversationDisplayId, data) {
+    return super.update(conversationDisplayId, { conversation_state: data });
   }
 }
 

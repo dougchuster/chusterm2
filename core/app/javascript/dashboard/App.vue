@@ -134,12 +134,7 @@ export default {
     class="dashboard-shell relative flex flex-col w-full h-screen min-h-0 overflow-hidden bg-n-background"
     :dir="isRTL ? 'rtl' : 'ltr'"
   >
-    <div class="dashboard-shell__ambient" aria-hidden="true">
-      <div class="dashboard-shell__orb dashboard-shell__orb--primary" />
-      <div class="dashboard-shell__orb dashboard-shell__orb--tertiary" />
-      <div class="dashboard-shell__grid" />
-    </div>
-    <div class="relative z-10 flex min-h-0 flex-1 flex-col">
+    <div class="flex min-h-0 flex-1 flex-col">
       <UpdateBanner :latest-chuste-r-m-version="latestChusteRMVersion" />
       <template v-if="currentAccountId">
         <PendingEmailVerificationBanner v-if="hideOnOnboardingView" />
@@ -151,7 +146,7 @@ export default {
         </transition>
       </router-view>
     </div>
-    <div class="relative z-20">
+    <div>
       <WootSnackbarBox />
       <NetworkNotification />
     </div>
@@ -161,51 +156,4 @@ export default {
 
 <style lang="scss">
 @import './assets/scss/app';
-@import './assets/css/chusterm-theme.css';
-
-.v-popper--theme-tooltip .v-popper__inner {
-  background: black !important;
-  font-size: 0.75rem;
-  padding: 4px 8px !important;
-  border-radius: 6px;
-  font-weight: 400;
-}
-
-.v-popper--theme-tooltip .v-popper__arrow-container {
-  display: none;
-}
-
-.dashboard-shell__ambient {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.dashboard-shell__orb {
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(120px);
-  opacity: 0.3;
-}
-
-.dashboard-shell__orb--primary {
-  top: -5rem;
-  right: -7rem;
-  width: 20rem;
-  height: 20rem;
-  background: rgba(var(--shell-glow-primary));
-}
-
-.dashboard-shell__orb--tertiary {
-  left: -8rem;
-  top: 12%;
-  width: 24rem;
-  height: 24rem;
-  background: rgba(var(--shell-glow-tertiary));
-}
-
-.dashboard-shell__grid {
-  display: none;
-}
 </style>

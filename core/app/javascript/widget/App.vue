@@ -1,4 +1,4 @@
-﻿<script>
+<script>
 import { mapGetters, mapActions } from 'vuex';
 import { setHeader } from 'widget/helpers/axios';
 import addHours from 'date-fns/addHours';

@@ -22,47 +22,28 @@ defineProps({
 </script>
 
 <template>
-  <section
-    class="relative flex flex-col items-center justify-center w-full h-full overflow-hidden"
-  >
+  <section class="flex min-h-72 w-full items-center justify-center px-4 py-10">
     <div
-      class="relative w-full max-w-5xl mx-auto overflow-hidden h-full max-h-[28rem]"
+      class="flex w-full max-w-2xl flex-col items-center rounded-lg border border-dashed border-n-weak bg-n-solid-2 px-6 py-10 text-center sm:px-10"
     >
       <div
-        v-if="showBackdrop"
-        class="w-full h-full space-y-4 overflow-y-hidden opacity-50 pointer-events-none"
+        class="mb-4 grid size-10 place-items-center rounded-md bg-n-alpha-2 text-n-slate-11"
+        :class="{ 'border border-n-weak': !showBackdrop }"
+        aria-hidden="true"
       >
-        <slot name="empty-state-item" />
+        <span class="i-lucide-inbox size-5" />
       </div>
-      <div
-        class="flex flex-col items-center justify-end w-full h-full pb-20"
-        :class="{
-          'absolute inset-x-0 bottom-0 bg-gradient-to-t from-n-surface-1 from-25% to-transparent':
-            showBackdrop,
-        }"
-      >
-        <div
-          class="flex flex-col items-center justify-center gap-6"
-          :class="{
-            'mt-48': !showBackdrop,
-          }"
-        >
-          <div class="flex flex-col items-center justify-center gap-3">
-            <h2 class="text-3xl font-medium text-center text-n-slate-12">
-              {{ title }}
-            </h2>
-            <p
-              v-if="subtitle"
-              class="max-w-xl text-base text-center text-n-slate-11 tracking-[0.3px]"
-            >
-              {{ subtitle }}
-            </p>
-          </div>
-          <Policy :permissions="actionPerms">
-            <slot name="actions" />
-          </Policy>
+      <h2 class="text-xl font-medium text-n-slate-12">
+        {{ title }}
+      </h2>
+      <p v-if="subtitle" class="mt-2 max-w-xl text-sm text-n-slate-11">
+        {{ subtitle }}
+      </p>
+      <Policy :permissions="actionPerms">
+        <div class="mt-6">
+          <slot name="actions" />
         </div>
-      </div>
+      </Policy>
     </div>
   </section>
 </template>

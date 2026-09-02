@@ -9,9 +9,11 @@ import {
   watch,
 } from 'vue';
 import CrmAPI from 'dashboard/api/crm';
+import { AI_HANDOFF_REASON_LABELS } from 'dashboard/helper/crmOptions';
 import CaptainConversationStateAPI from 'dashboard/api/captain/conversationState';
 import ConversationApi from 'dashboard/api/inbox/conversation';
 import MessageApi from 'dashboard/api/inbox/message';
+import CRMDealOutcomeControl from './CRMDealOutcomeControl.vue';
 
 const props = defineProps({
   deal: {
@@ -23,6 +25,10 @@ const props = defineProps({
     default: () => [],
   },
   agents: {
+    type: Array,
+    default: () => [],
+  },
+  lossReasons: {
     type: Array,
     default: () => [],
   },
@@ -65,6 +71,7 @@ const messagesLoading = ref(false);
 const aiLoading = ref(false);
 const updatingStage = ref(false);
 const updatingStatus = ref(false);
+const updatingOutcome = ref(false);
 const updatingAi = ref(false);
 const sending = ref(false);
 const error = ref('');
@@ -131,17 +138,7 @@ const contactAvatarUrl = computed(
     ''
 );
 
-const attendanceNumber = computed(() => {
-  const titleNumber = String(localDeal.value?.title || '').match(/#\s*(\d+)/);
-  return (
-    conversationLookupId.value ||
-    localDeal.value?.conversation_id ||
-    titleNumber?.[1] ||
-    localDeal.value?.id ||
-    props.deal?.id ||
-    ''
-  );
-});
+const attendanceNumber = computed(() => conversationDisplayId.value || '');
 
 const attendanceLabel = computed(() =>
   attendanceNumber.value
@@ -178,11 +175,9 @@ const conversationRecordId = computed(
     ''
 );
 
-const conversationLookupId = computed(
-  () => conversationDisplayId.value || conversationRecordId.value
+const hasConversation = computed(
+  () => !!(conversationDisplayId.value || conversationRecordId.value)
 );
-
-const hasConversation = computed(() => !!conversationLookupId.value);
 const canLoadMessages = computed(() => !!conversationDisplayId.value);
 
 const conversationUrl = computed(() => {
@@ -198,11 +193,55 @@ const currentOperationalStatus = computed(
   () => localDeal.value?.operational_status || props.deal?.operational_status || 'active'
 );
 
+const currentDealStatus = computed(
+  () => localDeal.value?.status || props.deal?.status || 'open'
+);
+const currentLossReasonId = computed(
+  () =>
+    localDeal.value?.crm_loss_reason_id || props.deal?.crm_loss_reason_id || ''
+);
+const currentLossReasonName = computed(
+  () =>
+    localDeal.value?.loss_reason?.name || props.deal?.loss_reason?.name || ''
+);
+const currentLossNote = computed(
+  () =>
+    localDeal.value?.lost_reason_note || props.deal?.lost_reason_note || ''
+);
+
 const aiMode = computed(() => aiState.value?.ai_mode || 'auto');
 const aiModeLabel = computed(() => AI_MODE_LABELS[aiMode.value] || 'IA ativa');
 const humanControlled = computed(() =>
   ['paused', 'human_only'].includes(aiMode.value)
 );
+
+// UX-04: motivo estruturado da pausa (handoff_reason_code da Fase 1) + quem/quando
+const aiPauseDetail = computed(() => {
+  const state = aiState.value;
+  if (!state || !humanControlled.value) return '';
+
+  const parts = [];
+  const codeLabel = AI_HANDOFF_REASON_LABELS[state.handoff_reason_code];
+  if (codeLabel) parts.push(codeLabel);
+  else if (state.handoff_reason) parts.push(state.handoff_reason);
+
+  if (state.handoff_by_name) parts.push(`por ${state.handoff_by_name}`);
+  if (state.handoff_at) parts.push(`em ${formatDateTime(state.handoff_at)}`);
+
+  return parts.join(' · ');
+});
+
+const aiResumeDetail = computed(() => {
+  const state = aiState.value;
+  if (!state || humanControlled.value) return '';
+  if (state.resume_source !== 'manual') return '';
+
+  const parts = ['Retomada manual'];
+  if (state.resumed_by_name) parts.push(`por ${state.resumed_by_name}`);
+  if (state.resumed_at) parts.push(`em ${formatDateTime(state.resumed_at)}`);
+
+  return parts.join(' · ');
+});
 const isAiLoadingInitialState = computed(() => aiLoading.value && !aiState.value);
 
 const summaryText = computed(
@@ -604,7 +643,7 @@ async function refreshMessages(expectedToken = loadToken) {
 }
 
 async function loadAiState(expectedToken = loadToken) {
-  if (!hasConversation.value) {
+  if (!conversationDisplayId.value) {
     aiState.value = null;
     return;
   }
@@ -612,7 +651,7 @@ async function loadAiState(expectedToken = loadToken) {
   aiLoading.value = true;
   try {
     const { data } = await CaptainConversationStateAPI.show(
-      conversationLookupId.value
+      conversationDisplayId.value
     );
     if (expectedToken !== loadToken) return;
 
@@ -735,8 +774,72 @@ async function updateOperationalStatus(status) {
   }
 }
 
+async function markWon() {
+  if (!localDeal.value?.id) return;
+  updatingOutcome.value = true;
+  error.value = '';
+
+  try {
+    const { data } = await CrmAPI.markDealWon(localDeal.value.id);
+    mergeDeal(data);
+    pushSystemEvent('Negócio marcado como ganho', '', 'i-lucide-trophy');
+  } catch (e) {
+    error.value =
+      e?.response?.data?.message ||
+      e?.response?.data?.error ||
+      'Nao foi possivel marcar o negocio como ganho.';
+  } finally {
+    updatingOutcome.value = false;
+  }
+}
+
+async function markLost({ lossReasonId, note }) {
+  if (!localDeal.value?.id) return;
+  updatingOutcome.value = true;
+  error.value = '';
+
+  try {
+    const { data } = await CrmAPI.markDealLost(
+      localDeal.value.id,
+      lossReasonId,
+      note
+    );
+    mergeDeal(data);
+    pushSystemEvent('Negócio marcado como perdido', note, 'i-lucide-circle-x');
+  } catch (e) {
+    error.value =
+      e?.response?.data?.message ||
+      e?.response?.data?.error ||
+      'Nao foi possivel marcar o negocio como perdido.';
+  } finally {
+    updatingOutcome.value = false;
+  }
+}
+
+async function reopenDeal() {
+  if (!localDeal.value?.id) return;
+  updatingOutcome.value = true;
+  error.value = '';
+
+  try {
+    const { data } = await CrmAPI.reopenDeal(localDeal.value.id);
+    mergeDeal(data);
+    pushSystemEvent('Negócio reaberto', '', 'i-lucide-rotate-ccw');
+  } catch (e) {
+    error.value =
+      e?.response?.data?.message ||
+      e?.response?.data?.error ||
+      'Nao foi possivel reabrir o negocio.';
+  } finally {
+    updatingOutcome.value = false;
+  }
+}
+
 async function setAiMode(mode) {
-  if (!hasConversation.value) return;
+  if (!conversationDisplayId.value) {
+    error.value = 'A conversa não possui display ID para controlar a IA.';
+    return;
+  }
   if (mode === aiMode.value && !handoffReason.value.trim()) return;
 
   updatingAi.value = true;
@@ -751,7 +854,7 @@ async function setAiMode(mode) {
           : 'IA pausada pelo Kanban')
       : 'IA retomada pelo Kanban';
     const { data } = await CaptainConversationStateAPI.update(
-      conversationLookupId.value,
+      conversationDisplayId.value,
       {
         ai_mode: mode,
         handoff_reason: isHumanMode ? reason : '',
@@ -773,7 +876,9 @@ async function setAiMode(mode) {
 }
 
 function isAiModeButtonDisabled(mode) {
-  return updatingAi.value || !hasConversation.value || aiMode.value === mode;
+  return (
+    updatingAi.value || !conversationDisplayId.value || aiMode.value === mode
+  );
 }
 
 async function sendDraft() {
@@ -1043,6 +1148,19 @@ onBeforeUnmount(() => {
           </select>
         </label>
 
+        <CRMDealOutcomeControl
+          class="col-span-full rounded-lg border border-n-weak bg-n-slate-1 p-2 dark:bg-n-slate-2"
+          :status="currentDealStatus"
+          :loss-reasons="lossReasons"
+          :loss-reason-id="currentLossReasonId"
+          :loss-reason-name="currentLossReasonName"
+          :loss-note="currentLossNote"
+          :busy="updatingOutcome"
+          @mark-won="markWon"
+          @mark-lost="markLost"
+          @reopen="reopenDeal"
+        />
+
         <div class="crm-attendance-ai">
           <div class="crm-attendance-ai__top">
             <span class="crm-attendance-ai__status">
@@ -1103,6 +1221,20 @@ onBeforeUnmount(() => {
               </button>
             </div>
           </div>
+          <p
+            v-if="aiPauseDetail"
+            class="crm-attendance-ai__detail crm-attendance-ai__detail--paused"
+          >
+            <span class="i-lucide-pause-circle size-3.5 flex-shrink-0" />
+            {{ aiPauseDetail }}
+          </p>
+          <p
+            v-else-if="aiResumeDetail"
+            class="crm-attendance-ai__detail crm-attendance-ai__detail--resumed"
+          >
+            <span class="i-lucide-play-circle size-3.5 flex-shrink-0" />
+            {{ aiResumeDetail }}
+          </p>
           <input
             v-model="handoffReason"
             class="crm-attendance-reason"
@@ -1611,6 +1743,24 @@ onBeforeUnmount(() => {
   height: 1.9rem;
   padding: 0 0.55rem;
   font-size: 0.78rem;
+}
+
+/* UX-04: motivo estruturado da pausa/retomada da IA */
+.crm-attendance-ai__detail {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+.crm-attendance-ai__detail--paused {
+  color: rgb(var(--ruby-11));
+}
+
+.crm-attendance-ai__detail--resumed {
+  color: rgb(var(--teal-11));
 }
 
 .crm-attendance-mini-button,

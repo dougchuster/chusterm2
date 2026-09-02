@@ -30,7 +30,7 @@ body {
     'Helvetica Neue',
     Tahoma,
     Arial,
-    sans-serif !important;
+    sans-serif;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   height: 100%;
@@ -40,7 +40,7 @@ body {
 }
 
 .tooltip {
-  @apply bg-n-solid-2 text-n-slate-12 py-1 px-2 z-40 text-xs rounded-md max-w-96;
+  @apply z-40 max-w-96 rounded-md bg-ds-bg-elevated px-2 py-1 text-xs text-ds-fg-default shadow-md ring-1 ring-ds-border-subtle;
 }
 
 #app {
@@ -103,21 +103,21 @@ body {
 
   /* heading-1: Large heading for pages and panels */
   .text-heading-1 {
-    @apply font-inter text-lg font-520;
+    @apply font-interDisplay text-lg font-520;
     line-height: 24px; /* 133.333% */
     letter-spacing: -0.27px;
   }
 
   /* heading-2: Secondary heading for sections */
   .text-heading-2 {
-    @apply font-inter text-base font-medium;
+    @apply font-interDisplay text-base font-medium;
     line-height: 24px; /* 133.333% */
     letter-spacing: -0.27px;
   }
 
   /* heading-3: For card headings, breadcrumbs, subsections */
   .text-heading-3 {
-    @apply font-inter text-sm font-medium;
+    @apply font-interDisplay text-sm font-medium;
     line-height: 21px; /* 150% */
     letter-spacing: -0.27px;
   }

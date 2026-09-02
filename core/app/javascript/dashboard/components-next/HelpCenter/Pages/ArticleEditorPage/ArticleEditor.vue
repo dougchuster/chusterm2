@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { computed } from 'vue';
 import { debounce } from '@ChusteRM/utils';
 import { useI18n } from 'vue-i18n';

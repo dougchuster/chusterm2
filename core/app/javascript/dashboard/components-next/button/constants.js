@@ -1,5 +1,13 @@
 export const VARIANT_OPTIONS = ['solid', 'outline', 'faded', 'link', 'ghost'];
-export const COLOR_OPTIONS = ['blue', 'ruby', 'amber', 'slate', 'teal', 'primary', 'tertiary'];
+export const COLOR_OPTIONS = [
+  'blue',
+  'ruby',
+  'amber',
+  'slate',
+  'teal',
+  'primary',
+  'tertiary',
+];
 export const SIZE_OPTIONS = ['xs', 'sm', 'md', 'lg'];
 export const JUSTIFY_OPTIONS = ['start', 'center', 'end'];
 

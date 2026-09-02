@@ -19,11 +19,11 @@
       "KEYBOARD_SHORTCUTS": "to view keyboard shortcuts"
     },
     "EDITORIAL_EMPTY": {
-      "EYEBROW": "Conversation cockpit",
-      "NO_MESSAGES_TITLE": "Your conversation layer is ready for its first signal.",
-      "NO_MESSAGES_DESCRIPTION": "Inboxes are configured and the shell is in place. The next customer interaction will land here with full context and routing visibility.",
-      "SELECT_TITLE": "Choose a thread to open the full operating context.",
-      "SELECT_DESCRIPTION": "Move from the queue on the left into message history, contact data, notes, and workflow controls without leaving the main command surface.",
+      "EYEBROW": "Service",
+      "NO_MESSAGES_TITLE": "No conversations yet",
+      "NO_MESSAGES_DESCRIPTION": "New messages will appear here when a contact starts a conversation.",
+      "SELECT_TITLE": "Select a conversation",
+      "SELECT_DESCRIPTION": "Choose a conversation from the list to view messages, contact details, and service controls.",
       "ACTION_SETUP": "Configure inboxes",
       "ACTION_INBOXES": "Review inboxes",
       "STATS": {
@@ -212,6 +212,7 @@
       "WHATSAPP_TEMPLATES": "Whatsapp Templates"
     },
     "REPLYBOX": {
+      "CHANGE_MODE": "Message type",
       "REPLY": "Reply",
       "PRIVATE_NOTE": "Private Note",
       "SEND": "Send",
@@ -227,6 +228,10 @@
       "DRAG_DROP": "Drag and drop here to attach",
       "START_AUDIO_RECORDING": "Start audio recording",
       "STOP_AUDIO_RECORDING": "Stop audio recording",
+      "PLAY_AUDIO": "Play recorded audio",
+      "PAUSE_AUDIO": "Pause recorded audio",
+      "EXPAND_EDITOR": "Expand message editor",
+      "COLLAPSE_EDITOR": "Collapse message editor",
       "COPILOT_THINKING": "Copilot is thinking",
       "EMAIL_HEAD": {
         "TO": "TO",

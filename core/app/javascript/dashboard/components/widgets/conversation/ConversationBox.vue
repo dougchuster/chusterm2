@@ -91,24 +91,18 @@ export default {
 
 <template>
   <div
-    class="conversation-panel-shell conversation-details-wrap flex flex-col min-w-0 w-full bg-n-surface-1 relative"
-    :class="{
-      'border-l rtl:border-l-0 rtl:border-r border-n-weak': !isOnExpandedLayout,
-    }"
+    class="conversation-panel-shell conversation-details-wrap relative flex min-w-0 flex-1 flex-col overflow-hidden border-ds-border-subtle bg-ds-bg-surface ltr:border-r rtl:border-l"
   >
     <ConversationHeader
       v-if="currentChat.id"
       :chat="currentChat"
       :show-back-button="isOnExpandedLayout && !isInboxView"
-      class="conversation-panel-header"
-      :class="{
-        'border-b border-b-n-weak !pt-2': !dashboardApps.length,
-      }"
+      class="conversation-panel-header relative z-10"
     />
     <woot-tabs
       v-if="dashboardApps.length && currentChat.id"
       :index="activeIndex"
-      class="conversation-panel-tabs h-10"
+      class="conversation-panel-tabs h-10 bg-ds-bg-elevated px-2 shadow-[var(--ds-shadow-xs)]"
       @change="onDashboardAppTabChange"
     >
       <woot-tabs-item
@@ -122,7 +116,7 @@ export default {
     </woot-tabs>
     <div
       v-show="!activeIndex"
-      class="conversation-panel-body flex h-full min-h-0 m-0"
+      class="conversation-panel-body m-0 flex h-full min-h-0 bg-ds-bg-surface"
     >
       <MessagesView
         v-if="currentChat.id"

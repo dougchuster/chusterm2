@@ -102,11 +102,14 @@ onUnmounted(() => {
     >
       <ButtonV4
         v-tooltip="$t('CONVERSATION.HEADER.MORE_ACTIONS')"
+        :aria-label="$t('CONVERSATION.HEADER.MORE_ACTIONS')"
+        aria-haspopup="menu"
+        :aria-expanded="showActionsDropdown"
         size="sm"
         variant="ghost"
         color="slate"
         icon="i-lucide-more-vertical"
-        class="rounded-md group-hover:bg-n-alpha-2"
+        class="rounded-md group-hover:bg-ds-bg-hover"
         @click="toggleDropdown()"
       />
       <DropdownMenu

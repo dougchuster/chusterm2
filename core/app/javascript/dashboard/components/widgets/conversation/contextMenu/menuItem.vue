@@ -1,33 +1,62 @@
 <script setup>
+import { computed } from 'vue';
 import Avatar from 'dashboard/components-next/avatar/Avatar.vue';
 import Icon from 'dashboard/components-next/icon/Icon.vue';
 
-defineProps({
+const props = defineProps({
   option: {
     type: Object,
-    default: () => {},
+    default: () => ({}),
   },
   variant: {
     type: String,
     default: 'default',
   },
 });
+
+const ICON_MAP = {
+  mail: 'i-lucide-mail-open',
+  'mail-unread': 'i-lucide-mail',
+  checkmark: 'i-lucide-circle-check',
+  'arrow-redo': 'i-lucide-rotate-ccw',
+  'book-clock': 'i-lucide-circle-pause',
+  snooze: 'i-lucide-clock-3',
+  warning: 'i-lucide-triangle-alert',
+  tag: 'i-lucide-tag',
+  'person-add': 'i-lucide-user-plus',
+  'people-team-add': 'i-lucide-users-round',
+  delete: 'i-lucide-trash-2',
+  open: 'i-lucide-external-link',
+  copy: 'i-lucide-copy',
+};
+
+const icon = computed(() => {
+  const iconName = props.option?.icon;
+  if (!iconName) return '';
+  if (iconName.startsWith('i-')) return iconName;
+  return ICON_MAP[iconName] || 'i-lucide-circle';
+});
 </script>
 
 <template>
-  <div class="menu text-n-slate-12 min-h-7 min-w-0" role="button">
-    <fluent-icon
-      v-if="variant === 'icon' && option.icon"
-      :icon="option.icon"
-      size="14"
-      class="flex-shrink-0"
+  <button
+    type="button"
+    role="menuitem"
+    class="group flex min-h-9 w-full min-w-[12.5rem] items-center gap-2 overflow-hidden rounded-lg px-2.5 py-1.5 text-left text-xs font-medium text-ds-fg-default outline-none transition-colors hover:bg-ds-accent hover:text-ds-fg-on-accent focus-visible:bg-ds-accent-soft focus-visible:text-ds-accent focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ds-border-focus"
+  >
+    <Icon
+      v-if="variant === 'icon' && icon"
+      :icon="icon"
+      class="size-3.5 shrink-0"
+      aria-hidden="true"
     />
     <span
       v-if="
         (variant === 'label' || variant === 'label-assigned') && option.color
       "
-      class="label-pill flex-shrink-0"
+      class="size-4 shrink-0 rounded-full border border-ds-border-strong"
       :style="{ backgroundColor: option.color }"
+      aria-hidden="true"
     />
     <Avatar
       v-if="variant === 'agent'"
@@ -35,38 +64,16 @@ defineProps({
       :src="option.thumbnail"
       :status="option.status === 'online' ? option.status : null"
       :size="20"
-      class="flex-shrink-0"
+      class="shrink-0"
     />
-    <p class="menu-label truncate min-w-0 flex-1">
+    <span class="min-w-0 flex-1 truncate">
       {{ option.label }}
-    </p>
+    </span>
     <Icon
       v-if="variant === 'label-assigned'"
       icon="i-lucide-check"
-      class="flex-shrink-0 size-3.5 mr-1"
+      class="mr-1 size-3.5 shrink-0"
+      aria-hidden="true"
     />
-  </div>
+  </button>
 </template>
-
-<style scoped lang="scss">
-.menu {
-  width: calc(6.25rem * 2);
-  @apply flex items-center flex-nowrap p-1 rounded-md overflow-hidden cursor-pointer;
-
-  .menu-label {
-    @apply my-0 mx-2 text-xs flex-shrink-0;
-  }
-
-  &:hover {
-    @apply bg-n-brand text-white;
-  }
-}
-
-.agent-thumbnail {
-  margin-top: 0 !important;
-}
-
-.label-pill {
-  @apply w-4 h-4 rounded-full border border-n-strong border-solid flex-shrink-0;
-}
-</style>

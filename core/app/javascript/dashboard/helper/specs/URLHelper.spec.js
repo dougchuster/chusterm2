@@ -1,4 +1,4 @@
-﻿import {
+import {
   frontendURL,
   conversationUrl,
   isValidURL,

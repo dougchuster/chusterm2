@@ -34,37 +34,52 @@ module Crm
       }
     end
 
+    # BUG-01: summaries memoizados — overall_status/critical_counts reusam os
+    # mesmos hashes em vez de disparar todas as queries COUNT uma segunda vez.
     def deals_summary
-      scope = @account.crm_deals.open_deals
-      {
-        open: scope.count,
-        without_owner: scope.where(owner_id: nil).count,
-        hot_leads_without_owner: hot_leads_without_owner(scope).count,
-        without_conversation: scope.where(conversation_id: nil).count
-      }
+      @deals_summary ||= begin
+        scope = @account.crm_deals.open_deals
+        {
+          open: scope.count,
+          without_owner: scope.where(owner_id: nil).count,
+          hot_leads_without_owner: hot_leads_without_owner(scope).count,
+          without_conversation: scope.where(conversation_id: nil).count
+        }
+      end
     end
 
     def labels_summary
-      scope = @account.labels
-      system_labels = scope.where(is_system: true)
-      {
-        total: scope.count,
-        crm_system: system_labels.count,
-        missing_category: scope.where(category: [nil, '']).count,
-        missing_slug: scope.where(slug: [nil, '']).count,
-        system_visible_on_sidebar: system_labels.where(show_on_sidebar: true).count
-      }
+      @labels_summary ||= begin
+        scope = @account.labels
+        system_labels = scope.where(is_system: true)
+        {
+          total: scope.count,
+          crm_system: system_labels.count,
+          missing_category: scope.where(category: [nil, '']).count,
+          missing_slug: scope.where(slug: [nil, '']).count,
+          system_visible_on_sidebar: system_labels.where(show_on_sidebar: true).count
+        }
+      end
     end
 
     def media_summary
+      @media_summary ||= build_media_summary
+    end
+
+    def build_media_summary
       attachments = Attachment.joins(:message).where(messages: { account_id: @account.id })
       stale_processing = attachments.where("attachments.meta->>'media_understanding_status' = ?", 'processing')
                                     .where('attachments.updated_at < ?', MEDIA_STALE_AFTER.ago)
+      failed_media = attachments.where("attachments.meta->>'media_understanding_status' = ?", 'failed')
       {
-        audio_with_transcription: attachments.where(file_type: :audio).where("attachments.meta->>'transcribed_text' IS NOT NULL").count,
-        media_with_understanding: attachments.where(file_type: %i[image file])
-                                             .where("attachments.meta->>'media_understanding_status' IN (?)", %w[completed failed])
+        audio_with_transcription: attachments.where(file_type: :audio)
+                                             .where("NULLIF(attachments.meta->>'transcribed_text', '') IS NOT NULL")
                                              .count,
+        audio_failed: failed_media.where(file_type: :audio).count,
+        media_with_understanding: attachments.where(file_type: %i[image file])
+                                             .where("attachments.meta->>'media_understanding_status' = ?", 'processed')
+                                             .count,
+        media_failed: failed_media.where(file_type: %i[image file video]).count,
         stale_processing: stale_processing.count
       }
     end
@@ -100,6 +115,8 @@ module Crm
       {
         hot_leads_without_owner: deals_summary[:hot_leads_without_owner],
         system_visible_on_sidebar: labels_summary[:system_visible_on_sidebar],
+        failed_audio_transcriptions: media_summary[:audio_failed],
+        failed_media_understanding: media_summary[:media_failed],
         stale_processing_media: media_summary[:stale_processing]
       }
     end

@@ -25,9 +25,9 @@ const formatCurrency = (amount, currency) => {
 
 const getStatusClass = status => {
   const classes = {
-    paid: 'bg-n-teal-5 text-n-teal-12',
+    paid: 'bg-ds-state-success-soft text-ds-state-success',
   };
-  return classes[status] || 'bg-n-solid-3 text-n-slate-12';
+  return classes[status] || 'bg-ds-bg-sunken text-ds-fg-muted';
 };
 
 const getStatusI18nKey = (type, status = '') => {
@@ -52,17 +52,17 @@ const financialStatus = computed(() => {
 
 const getFulfillmentClass = status => {
   const classes = {
-    fulfilled: 'text-n-teal-9',
-    partial: 'text-n-amber-9',
-    unfulfilled: 'text-n-ruby-9',
+    fulfilled: 'text-ds-state-success',
+    partial: 'text-ds-state-warning',
+    unfulfilled: 'text-ds-state-danger',
   };
-  return classes[status] || 'text-n-slate-11';
+  return classes[status] || 'text-ds-fg-muted';
 };
 </script>
 
 <template>
   <div
-    class="py-3 border-b border-n-weak last:border-b-0 flex flex-col gap-1.5"
+    class="flex flex-col gap-1.5 border-b border-ds-border-subtle py-3 last:border-b-0"
   >
     <div class="flex justify-between items-center">
       <div class="font-medium flex">
@@ -70,32 +70,37 @@ const getFulfillmentClass = status => {
           :href="order.admin_url"
           target="_blank"
           rel="noopener noreferrer"
-          class="hover:underline text-n-slate-12 cursor-pointer truncate"
+          class="inline-flex min-w-0 items-center gap-1 truncate rounded-md font-medium text-ds-fg-default outline-none hover:text-ds-accent hover:underline focus-visible:ring-2 focus-visible:ring-ds-border-focus"
         >
-          {{ $t('CONVERSATION_SIDEBAR.SHOPIFY.ORDER_ID', { id: order.id }) }}
-          <i class="i-lucide-external-link pl-5" />
+          <span class="truncate">
+            {{ $t('CONVERSATION_SIDEBAR.SHOPIFY.ORDER_ID', { id: order.id }) }}
+          </span>
+          <i class="i-lucide-external-link size-3.5 shrink-0" />
         </a>
       </div>
       <div
         :class="getStatusClass(order.financial_status)"
-        class="text-xs px-2 py-1 rounded capitalize truncate"
+        class="truncate rounded-full px-2 py-1 text-xs font-medium capitalize"
         :title="financialStatus"
       >
         {{ financialStatus }}
       </div>
     </div>
-    <div class="text-sm text-n-slate-12">
-      <span class="text-n-slate-11 border-r border-n-weak pr-2">
+    <div class="flex items-center text-sm text-ds-fg-muted">
+      <time
+        :datetime="order.created_at"
+        class="border-r border-ds-border-subtle pr-2"
+      >
         {{ formatDate(order.created_at) }}
-      </span>
-      <span class="text-n-slate-11 pl-2">
+      </time>
+      <span class="pl-2">
         {{ formatCurrency(order.total_price, order.currency) }}
       </span>
     </div>
     <div v-if="fulfillmentStatus">
       <span
         :class="getFulfillmentClass(order.fulfillment_status)"
-        class="capitalize font-medium"
+        class="font-medium capitalize"
         :title="fulfillmentStatus"
       >
         {{ fulfillmentStatus }}

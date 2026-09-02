@@ -7,6 +7,7 @@ export default {
   },
   data() {
     return {
+      modifierKey: 'Ctrl',
       keyShortcuts: [
         {
           key: 'K',
@@ -23,7 +24,7 @@ export default {
 </script>
 
 <template>
-  <div class="flex flex-col gap-2 mt-9">
+  <div class="mt-9 flex flex-col gap-2">
     <div
       v-for="keyShortcut in keyShortcuts"
       :key="keyShortcut.key"
@@ -31,17 +32,17 @@ export default {
     >
       <div class="flex items-center gap-2">
         <Hotkey
-          custom-class="w-8 h-6 text-lg font-medium text-n-slate-12 outline outline-n-container outline-1 bg-n-alpha-3"
+          custom-class="h-7 min-w-8 px-1.5 text-sm font-semibold text-ds-fg-muted ring-1 ring-ds-border-subtle bg-ds-bg-elevated"
         >
-          ⌘
+          {{ modifierKey }}
         </Hotkey>
         <Hotkey
-          custom-class="w-8 h-6 text-xs font-medium text-n-slate-12 outline outline-n-container outline-1 bg-n-alpha-3"
+          custom-class="h-7 min-w-8 px-1.5 text-xs font-semibold text-ds-fg-muted ring-1 ring-ds-border-subtle bg-ds-bg-elevated"
         >
           {{ keyShortcut.key }}
         </Hotkey>
       </div>
-      <span class="text-sm font-medium text-center text-n-slate-12">
+      <span class="text-center text-sm font-medium text-ds-fg-muted">
         {{ keyShortcut.description }}
       </span>
     </div>

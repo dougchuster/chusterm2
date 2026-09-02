@@ -2,7 +2,13 @@ type: object
 properties:
   id:
     type: number
-    description: ID of the conversation
+    description: Account-scoped display ID used in Chatwoot conversation routes
+  display_id:
+    type: number
+    description: Account-scoped display ID used in Chatwoot conversation routes
+  database_id:
+    type: number
+    description: Internal database ID used by relational references
   messages:
     type: array
     items:

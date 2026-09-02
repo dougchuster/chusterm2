@@ -1,6 +1,15 @@
 class MessageTemplates::HookExecutionService
   MAX_ATTACHMENT_WAIT_SECONDS = 4
   DEFAULT_CAPTAIN_RESPONSE_DELAY_SECONDS = 3
+  MAX_AUTO_RESUME_AFTER_HOURS = 168
+  AUTO_RESUME_HUMAN_REQUEST_LOOKBACK = 7.days
+  AUTO_RESUME_REASON_CODE = 'automatic_resume'.freeze
+  EXPLICIT_HUMAN_REQUEST_PATTERN = /
+    \b(?:quero|preciso|gostaria|prefiro|solicito)\b.{0,40}
+    \b(?:atendente|advogad[oa]|human[oa]|pessoa)\b|
+    \b(?:falar|conversar|atendimento)\b.{0,30}
+    \b(?:atendente|advogad[oa]|human[oa]|pessoa)\b
+  /ix
 
   pattr_initialize [:message!]
 
@@ -17,7 +26,7 @@ class MessageTemplates::HookExecutionService
   delegate :contact, to: :conversation
 
   def trigger_templates
-    return perform_customer_handoff if customer_contact?
+    attempt_automatic_resume!
     return perform_human_attending_handoff if public_human_message?(message)
     return perform_human_attending_handoff if message.incoming? && human_intervention_active?
     return perform_human_attending_handoff if message.incoming? && human_attending_conversation?
@@ -113,7 +122,6 @@ class MessageTemplates::HookExecutionService
     message.incoming? &&
       inbox.captain_responsible? &&
       !captain_human_controlled? &&
-      !customer_contact? &&
       !human_attending_conversation? &&
       captain_manageable_conversation?
   end
@@ -134,7 +142,7 @@ class MessageTemplates::HookExecutionService
   def human_intervention_active?
     latest_human = latest_public_human_message
     return false if latest_human.blank?
-    return false if ai_manually_resumed_after?(latest_human)
+    return false if ai_resumed_after?(latest_human)
 
     true
   end
@@ -142,7 +150,7 @@ class MessageTemplates::HookExecutionService
   def human_attending_conversation?
     latest_human = latest_public_human_message
     return false if latest_human.blank?
-    return false if ai_manually_resumed_after?(latest_human)
+    return false if ai_resumed_after?(latest_human)
 
     latest_ai = latest_public_ai_message
     return true if latest_ai.blank?
@@ -150,12 +158,63 @@ class MessageTemplates::HookExecutionService
     latest_human.id > latest_ai.id || latest_human.created_at >= latest_ai.created_at
   end
 
-  def ai_manually_resumed_after?(latest_human)
-    state = conversation.captain_conversation_state
-    return false if state.blank? || state.human_controlled?
-    return false unless state.handoff_reason == 'IA retomada manualmente'
+  def ai_resumed_after?(latest_human)
+    # BUG-03: decisão estruturada no modelo (resume_source), sem magic string.
+    # Inclui a retomada automática governada após inatividade.
+    conversation.captain_conversation_state&.resumed_after?(latest_human.created_at) || false
+  end
 
-    state.updated_at > latest_human.created_at
+  def attempt_automatic_resume!
+    return unless eligible_for_automatic_resume?
+
+    state = conversation.captain_conversation_state
+    state.mark_automatic_resume!
+    state.apply_ai_mode!(
+      mode: 'auto',
+      reason: 'IA retomada automaticamente após novo contato do cliente.',
+      reason_code: AUTO_RESUME_REASON_CODE,
+      actor: nil
+    )
+    Rails.logger.info("[CAPTAIN] Automatically resumed conversation #{conversation.id} after customer recontact")
+  end
+
+  def eligible_for_automatic_resume?
+    return false unless message.incoming?
+    return false unless inbox.captain_active?
+    return false if conversation.assignee_id.present?
+    return false if explicit_human_request?(message.content)
+    return false if recent_explicit_human_request?
+
+    state = conversation.captain_conversation_state
+    return false unless state&.ai_mode == 'human_only'
+    return false unless state.handoff_reason_code == 'human_message'
+
+    latest_human = latest_public_human_message
+    return false if latest_human.blank?
+
+    threshold_hours = auto_resume_after_hours
+    return false if threshold_hours.zero?
+
+    message.created_at >= latest_human.created_at + threshold_hours.hours
+  end
+
+  def auto_resume_after_hours
+    configured = inbox.captain_inbox&.routing_config&.dig('auto_resume_after_hours').to_i
+    configured.clamp(0, MAX_AUTO_RESUME_AFTER_HOURS)
+  end
+
+  def explicit_human_request?(content)
+    content.to_s.match?(EXPLICIT_HUMAN_REQUEST_PATTERN)
+  end
+
+  def recent_explicit_human_request?
+    reference_time = message.created_at || Time.current
+    conversation.messages.incoming
+                .where(created_at: (reference_time - AUTO_RESUME_HUMAN_REQUEST_LOOKBACK)..reference_time)
+                .where.not(id: message.id)
+                .reorder(id: :desc)
+                .limit(50)
+                .any? { |candidate| explicit_human_request?(candidate.content) }
   end
 
   def latest_public_human_message
@@ -205,30 +264,17 @@ class MessageTemplates::HookExecutionService
     ::MessageTemplates::Template::OutOfOffice.perform_if_applicable(conversation)
   end
 
-  def perform_customer_handoff
-    Rails.logger.info("Customer contact detected, disabling Captain for conversation: #{conversation.id}")
-    state = conversation.captain_conversation_state || CaptainConversationState.for_conversation!(conversation)
-    state.apply_ai_mode!(
-      mode: 'human_only',
-      reason: 'Contato classificado como cliente; atendimento por IA desativado.',
-      actor: nil
-    )
-    conversation.bot_handoff! if conversation.pending? || conversation.snoozed?
-  end
-
   def perform_human_attending_handoff
     Rails.logger.info("Human attending conversation, disabling Captain for conversation: #{conversation.id}")
-    state = conversation.captain_conversation_state || CaptainConversationState.for_conversation!(conversation)
+    decision = Captain::HandoffPolicy.evaluate(trigger: 'human_message')
+    state = CaptainConversationState.for_conversation!(conversation)
     state.apply_ai_mode!(
       mode: 'human_only',
-      reason: 'Atendimento humano detectado; IA pausada automaticamente.',
+      reason: decision[:reason],
+      reason_code: decision[:reason_code],
       actor: nil
     )
     conversation.bot_handoff! if conversation.pending? || conversation.snoozed?
-  end
-
-  def customer_contact?
-    Crm::SavedContactCustomerClassifier.customer_contact?(contact)
   end
 
   def captain_handling_conversation?

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Formats a custom domain with https protocol if needed
  * @param {string} customDomain - The custom domain to format
  * @returns {string} Formatted domain with https protocol

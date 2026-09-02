@@ -4,7 +4,7 @@ RSpec.describe Llm::BaseAiService do
   subject(:service) { described_class.new }
 
   before do
-    create(:installation_config, name: 'CAPTAIN_OPEN_AI_API_KEY', value: 'test-key')
+    InstallationConfig.find_or_initialize_by(name: 'CAPTAIN_OPEN_AI_API_KEY').update!(value: 'test-key')
   end
 
   describe '#sanitize_json_response' do

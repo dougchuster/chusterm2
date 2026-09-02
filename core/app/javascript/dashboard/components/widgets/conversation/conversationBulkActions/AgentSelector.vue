@@ -2,13 +2,11 @@
 import { mapGetters } from 'vuex';
 import Avatar from 'next/avatar/Avatar.vue';
 import Spinner from 'shared/components/Spinner.vue';
-import NextButton from 'dashboard/components-next/button/Button.vue';
 
 export default {
   components: {
     Avatar,
     Spinner,
-    NextButton,
   },
   props: {
     selectedInboxes: {
@@ -60,8 +58,16 @@ export default {
       return this.conversationCount > 1 ? 'conversations' : 'conversation';
     },
   },
+  watch: {
+    'assignableAgentsUiFlags.isFetching'(isFetching) {
+      if (!isFetching) {
+        this.focusSearch();
+      }
+    },
+  },
   mounted() {
     this.$store.dispatch('inboxAssignableAgents/fetch', this.selectedInboxes);
+    this.focusSearch();
   },
   methods: {
     submit() {
@@ -70,9 +76,57 @@ export default {
     goBack() {
       this.goBackToAgentList = true;
       this.selectedAgent = null;
+      this.focusSearch();
     },
     assignAgent(agent) {
       this.selectedAgent = agent;
+      this.$nextTick(() => this.$refs.goBackButton?.focus());
+    },
+    agentDisplayName(agent) {
+      return agent.id === null ? this.$t('BULK_ACTION.TEAMS.NONE') : agent.name;
+    },
+    focusSearch() {
+      this.$nextTick(() => this.$refs.searchInput?.focus());
+    },
+    focusAgentOption(event) {
+      const options = Array.from(
+        this.$el.querySelectorAll('[data-agent-option]')
+      );
+      if (!options.length) return;
+
+      const activeIndex = options.indexOf(document.activeElement);
+      let nextIndex;
+
+      if (event.key === 'Home') {
+        nextIndex = 0;
+      } else if (event.key === 'End') {
+        nextIndex = options.length - 1;
+      } else if (event.key === 'ArrowDown') {
+        nextIndex = activeIndex < 0 ? 0 : (activeIndex + 1) % options.length;
+      } else {
+        nextIndex =
+          activeIndex < 0
+            ? options.length - 1
+            : (activeIndex - 1 + options.length) % options.length;
+      }
+
+      event.preventDefault();
+      options[nextIndex].focus();
+    },
+    onPanelKeydown(event) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        this.onClose();
+        return;
+      }
+
+      if (
+        !this.selectedAgent &&
+        ['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)
+      ) {
+        this.focusAgentOption(event);
+      }
     },
     onClose() {
       this.$emit('close');
@@ -88,69 +142,113 @@ export default {
 </script>
 
 <template>
-  <div v-on-clickaway="onCloseAgentList" class="bulk-action__agents">
-    <div class="triangle">
-      <svg height="12" viewBox="0 0 24 12" width="24">
-        <path d="M20 12l-8-8-12 12" fill-rule="evenodd" stroke-width="1px" />
-      </svg>
+  <div
+    v-on-clickaway="onCloseAgentList"
+    class="absolute top-12 z-20 flex w-[min(17rem,calc(100vw-1rem))] origin-top-right flex-col overflow-hidden rounded-xl bg-ds-bg-elevated/95 text-ds-fg-default shadow-[var(--ds-shadow-lg)] ring-1 ring-ds-border-subtle backdrop-blur-xl ltr:right-2 rtl:left-2"
+    role="dialog"
+    :aria-label="$t('BULK_ACTION.AGENT_SELECT_LABEL')"
+    @keydown="onPanelKeydown"
+  >
+    <span
+      class="absolute -top-1.5 z-10 size-3 rotate-45 border-l border-t border-ds-border-subtle bg-ds-bg-elevated ltr:right-[var(--triangle-position)] rtl:left-[var(--triangle-position)]"
+      aria-hidden="true"
+    />
+    <div
+      class="flex min-h-11 items-center justify-between border-b border-ds-border-subtle px-3 py-2"
+    >
+      <span class="text-sm font-semibold text-ds-fg-default">
+        {{ $t('BULK_ACTION.AGENT_SELECT_LABEL') }}
+      </span>
+      <button
+        type="button"
+        class="inline-flex size-8 items-center justify-center rounded-lg text-ds-fg-muted transition-colors hover:bg-ds-bg-hover hover:text-ds-fg-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
+        :aria-label="$t('GENERAL.CLOSE')"
+        @click="onClose"
+      >
+        <span class="i-lucide-x size-4" aria-hidden="true" />
+      </button>
     </div>
-    <div class="flex items-center justify-between header">
-      <span>{{ $t('BULK_ACTION.AGENT_SELECT_LABEL') }}</span>
-      <NextButton ghost xs slate icon="i-lucide-x" @click="onClose" />
-    </div>
-    <div class="container">
+    <div class="max-h-72 overflow-y-auto">
       <div
         v-if="assignableAgentsUiFlags.isFetching"
-        class="agent__list-loading"
+        class="flex min-h-32 flex-col items-center justify-center gap-2 p-5 text-ds-fg-muted"
+        role="status"
+        aria-live="polite"
       >
         <Spinner />
-        <p>{{ $t('BULK_ACTION.AGENT_LIST_LOADING') }}</p>
+        <p class="m-0 text-sm">
+          {{ $t('BULK_ACTION.AGENT_LIST_LOADING') }}
+        </p>
       </div>
-      <div v-else class="agent__list-container">
-        <ul v-if="!selectedAgent">
-          <li class="search-container">
-            <div
-              class="flex items-center justify-between h-8 gap-2 agent-list-search"
-            >
-              <fluent-icon icon="search" class="search-icon" size="16" />
+      <div v-else>
+        <ul
+          v-if="!selectedAgent"
+          class="m-0 list-none p-1.5"
+          role="listbox"
+          :aria-label="$t('BULK_ACTION.AGENT_SELECT_LABEL')"
+        >
+          <li
+            class="sticky top-0 z-20 bg-ds-bg-elevated/95 p-1 backdrop-blur-sm"
+            role="none"
+          >
+            <div class="relative flex items-center">
+              <span
+                class="i-lucide-search pointer-events-none absolute size-4 text-ds-fg-subtle ltr:left-3 rtl:right-3"
+                aria-hidden="true"
+              />
               <input
+                ref="searchInput"
                 v-model="query"
                 type="search"
                 :placeholder="$t('BULK_ACTION.SEARCH_INPUT_PLACEHOLDER')"
-                class="reset-base !outline-0 !text-sm agent--search_input"
+                :aria-label="$t('BULK_ACTION.SEARCH_INPUT_PLACEHOLDER')"
+                class="reset-base mb-0 h-9 w-full rounded-lg border border-ds-border-subtle bg-ds-bg-sunken py-2 text-sm text-ds-fg-default outline-none placeholder:text-ds-fg-subtle focus:border-ds-border-focus focus:ring-2 focus:ring-ds-border-focus/30 ltr:pl-9 ltr:pr-3 rtl:pl-3 rtl:pr-9"
               />
             </div>
           </li>
-          <li v-for="agent in filteredAgents" :key="agent.id">
-            <div class="agent-list-item" @click="assignAgent(agent)">
+          <li
+            v-for="agent in filteredAgents"
+            :key="agent.id ?? 'unassigned'"
+            role="none"
+          >
+            <button
+              type="button"
+              role="option"
+              data-agent-option
+              class="flex min-h-10 w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-ds-fg-default transition-colors hover:bg-ds-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ds-border-focus"
+              :aria-selected="false"
+              @click="assignAgent(agent)"
+            >
               <Avatar
-                :name="agent.name"
+                :name="agentDisplayName(agent)"
                 :src="agent.thumbnail"
                 :status="agent.availability_status"
                 :size="22"
                 hide-offline-status
                 rounded-full
               />
-              <span class="my-0 text-n-slate-12">
-                {{ agent.name }}
+              <span class="my-0 min-w-0 truncate text-sm">
+                {{ agentDisplayName(agent) }}
               </span>
-            </div>
+            </button>
           </li>
         </ul>
-        <div v-else class="agent-confirmation-container">
-          <p v-if="selectedAgent.id">
+        <div v-else class="flex min-h-40 flex-col gap-4 p-3" aria-live="polite">
+          <p
+            v-if="selectedAgent.id"
+            class="m-0 flex-1 text-sm text-ds-fg-muted"
+          >
             {{
               $t('BULK_ACTION.ASSIGN_CONFIRMATION_LABEL', {
                 conversationCount,
                 conversationLabel,
               })
             }}
-            <strong>
+            <strong class="font-semibold text-ds-fg-default">
               {{ selectedAgent.name }}
             </strong>
-            <span>?</span>
           </p>
-          <p v-else>
+          <p v-else class="m-0 flex-1 text-sm text-ds-fg-muted">
             {{
               $t('BULK_ACTION.UNASSIGN_CONFIRMATION_LABEL', {
                 conversationCount,
@@ -158,97 +256,27 @@ export default {
               })
             }}
           </p>
-          <div class="agent-confirmation-actions">
-            <NextButton
-              faded
-              sm
-              slate
-              type="reset"
-              :label="$t('BULK_ACTION.GO_BACK_LABEL')"
+          <div class="grid w-full grid-cols-2 gap-2">
+            <button
+              ref="goBackButton"
+              type="button"
+              class="inline-flex h-9 items-center justify-center rounded-lg border border-ds-border-subtle bg-ds-bg-surface px-3 text-sm font-medium text-ds-fg-default transition-colors hover:bg-ds-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
               @click="goBack"
-            />
-            <NextButton
-              sm
-              type="submit"
-              :label="$t('BULK_ACTION.YES')"
-              :is-loading="uiFlags.isUpdating"
+            >
+              {{ $t('BULK_ACTION.GO_BACK_LABEL') }}
+            </button>
+            <button
+              type="button"
+              class="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-ds-accent px-3 text-sm font-semibold text-ds-fg-on-accent transition-colors hover:bg-ds-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus disabled:cursor-not-allowed disabled:opacity-50"
+              :disabled="uiFlags.isUpdating"
               @click="submit"
-            />
+            >
+              <Spinner v-if="uiFlags.isUpdating" class="size-4" />
+              <span>{{ $t('BULK_ACTION.YES') }}</span>
+            </button>
           </div>
         </div>
       </div>
     </div>
   </div>
 </template>
-
-<style scoped lang="scss">
-.bulk-action__agents {
-  @apply max-w-[75%] absolute ltr:right-2 rtl:left-2 top-12 origin-top-right w-auto z-20 min-w-[15rem] bg-n-alpha-3 backdrop-blur-[100px] border-n-weak rounded-lg border border-solid shadow-md;
-  .header {
-    @apply p-2.5;
-
-    span {
-      @apply text-sm font-medium;
-    }
-  }
-
-  .container {
-    @apply overflow-y-auto max-h-[15rem];
-    .agent__list-container {
-      @apply h-full;
-    }
-    .agent-list-search {
-      @apply py-0 px-2.5 bg-n-alpha-black2 border border-solid border-n-strong rounded-md;
-      .search-icon {
-        @apply text-n-slate-10;
-      }
-
-      .agent--search_input {
-        @apply border-0 text-xs m-0 dark:bg-transparent bg-transparent h-[unset] w-full;
-      }
-    }
-  }
-  .triangle {
-    @apply block z-10 absolute -top-3 text-left ltr:right-[--triangle-position] rtl:left-[--triangle-position];
-
-    svg path {
-      @apply fill-n-alpha-3 backdrop-blur-[100px]  stroke-n-weak;
-    }
-  }
-}
-ul {
-  @apply m-0 list-none;
-
-  li {
-    &:last-child {
-      .agent-list-item {
-        @apply last:rounded-b-lg;
-      }
-    }
-  }
-}
-
-.agent-list-item {
-  @apply flex items-center p-2.5 gap-2 cursor-pointer hover:bg-n-slate-3 dark:hover:bg-n-solid-3;
-  span {
-    @apply text-sm;
-  }
-}
-
-.agent-confirmation-container {
-  @apply flex flex-col h-full p-2.5;
-  p {
-    @apply flex-grow;
-  }
-  .agent-confirmation-actions {
-    @apply w-full grid grid-cols-2 gap-2.5;
-  }
-}
-.search-container {
-  @apply py-0 px-2.5 sticky top-0 z-20 bg-n-alpha-3 backdrop-blur-[100px];
-}
-
-.agent__list-loading {
-  @apply m-2.5 rounded-md dark:bg-n-solid-3 bg-n-slate-2 flex items-center justify-center flex-col p-5 h-[calc(95%-6.25rem)];
-}
-</style>

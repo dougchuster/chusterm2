@@ -1,4 +1,4 @@
-﻿<script>
+<script>
 import { mapGetters } from 'vuex';
 import { useAdmin } from 'dashboard/composables/useAdmin';
 import { useAlert } from 'dashboard/composables';
@@ -270,7 +270,9 @@ export default {
         ...(type === 'agent' && { thumbnail: option.thumbnail }),
         ...(type === 'agent' && { status: option.availability_status }),
         ...(type === 'text' && { label: option.label }),
-        ...(type === 'label' && { label: option.display_title || option.title }),
+        ...(type === 'label' && {
+          label: option.display_title || option.title,
+        }),
         ...(type === 'agent' && { label: option.name }),
         ...(type === 'team' && { label: option.name }),
       };
@@ -281,7 +283,8 @@ export default {
 
 <template>
   <div
-    class="p-1 rounded-md shadow-xl bg-n-alpha-3/50 backdrop-blur-[100px] outline-1 outline outline-n-weak/50"
+    class="rounded-xl bg-ds-bg-elevated/95 p-1 text-ds-fg-default shadow-xl ring-1 ring-ds-border-subtle backdrop-blur-xl"
+    role="menu"
   >
     <template v-if="isAllowed([MENU.MARK_AS_READ, MENU.MARK_AS_UNREAD])">
       <MenuItem
@@ -296,7 +299,10 @@ export default {
         variant="icon"
         @click.stop="$emit('markAsRead')"
       />
-      <hr class="m-1 rounded border-b border-n-weak dark:border-n-weak" />
+      <hr
+        class="m-1 rounded border-b border-ds-border-subtle"
+        role="separator"
+      />
     </template>
     <template v-if="isAllowed([MENU.STATUS, MENU.SNOOZE])">
       <template v-for="option in statusMenuConfig">
@@ -314,7 +320,10 @@ export default {
         variant="icon"
         @click.stop="snoozeConversation()"
       />
-      <hr class="m-1 rounded border-b border-n-weak dark:border-n-weak" />
+      <hr
+        class="m-1 rounded border-b border-ds-border-subtle"
+        role="separator"
+      />
     </template>
     <template
       v-if="isAllowed([MENU.PRIORITY, MENU.LABEL, MENU.AGENT, MENU.TEAM])"
@@ -379,7 +388,10 @@ export default {
           @click.stop="$emit('assignTeam', team)"
         />
       </MenuItemWithSubmenu>
-      <hr class="m-1 rounded border-b border-n-weak dark:border-n-weak" />
+      <hr
+        class="m-1 rounded border-b border-ds-border-subtle"
+        role="separator"
+      />
     </template>
     <template v-if="isAllowed([MENU.OPEN_NEW_TAB, MENU.COPY_LINK])">
       <MenuItem
@@ -396,7 +408,10 @@ export default {
       />
     </template>
     <template v-if="isAdmin && isAllowed([MENU.DELETE])">
-      <hr class="m-1 rounded border-b border-n-weak dark:border-n-weak" />
+      <hr
+        class="m-1 rounded border-b border-ds-border-subtle"
+        role="separator"
+      />
       <MenuItem
         :option="deleteOption"
         variant="icon"

@@ -16,24 +16,19 @@ const props = defineProps({
 
 const exporting = ref(false);
 const error = ref('');
+const successMessage = ref('');
 
+// PERF-04: o export roda em background no servidor; o CSV chega por email.
 const triggerExport = async () => {
   exporting.value = true;
   error.value = '';
+  successMessage.value = '';
 
   try {
     const response = await CrmAPI.exportDeals(props.filters);
-
-    // Cria link de download com Blob
-    const blob = new Blob([response.data], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `crm_deals_${new Date().toISOString().slice(0, 10)}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    successMessage.value =
+      response?.data?.message ||
+      'Exportação em processamento. Você receberá um email com o link.';
   } catch (err) {
     if (err?.response?.status === 403) {
       error.value =
@@ -71,6 +66,14 @@ const triggerExport = async () => {
         style="width: 0.875rem; height: 0.875rem; flex-shrink: 0"
       />
       {{ error }}
+    </p>
+
+    <p v-if="successMessage" class="crm-export-btn__success">
+      <span
+        class="i-lucide-mail-check"
+        style="width: 0.875rem; height: 0.875rem; flex-shrink: 0"
+      />
+      {{ successMessage }}
     </p>
   </div>
 </template>
@@ -139,6 +142,16 @@ const triggerExport = async () => {
   margin: 0;
   font-size: 0.75rem;
   color: rgb(var(--ruby-11));
+  max-width: 22rem;
+}
+
+.crm-export-btn__success {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0;
+  font-size: 0.75rem;
+  color: rgb(var(--teal-11));
   max-width: 22rem;
 }
 </style>

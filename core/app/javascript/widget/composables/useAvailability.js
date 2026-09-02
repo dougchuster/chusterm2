@@ -1,4 +1,4 @@
-﻿import { computed, unref } from 'vue';
+import { computed, unref } from 'vue';
 import {
   isOnline as checkIsOnline,
   isInWorkingHours as checkInWorkingHours,

@@ -25,6 +25,21 @@ module Redis::Alfred
       $alfred.with { |conn| conn.del(key) }
     end
 
+    # Deletes a lock only when it is still owned by the caller. WATCH/MULTI
+    # keeps the compare-and-delete atomic and also works with MockRedis in
+    # tests, which does not implement Lua EVAL correctly on Ruby 3.4.
+    def delete_if_value(key, expected_value)
+      $alfred.with do |conn|
+        deleted = conn.watch(key) do
+          next 0 unless conn.get(key).to_s == expected_value.to_s
+
+          result = conn.multi { |transaction| transaction.del(key) }
+          result&.first.to_i
+        end
+        deleted.to_i
+      end
+    end
+
     # increment a key by 1. throws error if key value is incompatible
     # sets key to 0 before operation if key doesn't exist
     def incr(key)

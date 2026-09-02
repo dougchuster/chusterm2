@@ -1,7 +1,15 @@
 <script>
 import { MESSAGE_TYPE } from 'widget/helpers/constants';
 import { useMessageFormatter } from 'shared/composables/useMessageFormatter';
-import { ATTACHMENT_ICONS } from 'shared/constants/messages';
+
+const ATTACHMENT_ICONS = {
+  image: 'i-lucide-image',
+  audio: 'i-lucide-headphones',
+  video: 'i-lucide-video',
+  file: 'i-lucide-file',
+  location: 'i-lucide-map-pin',
+  fallback: 'i-lucide-link',
+};
 
 export default {
   name: 'MessagePreview',
@@ -63,30 +71,26 @@ export default {
 <template>
   <div class="overflow-hidden text-ellipsis whitespace-nowrap">
     <template v-if="showMessageType">
-      <fluent-icon
+      <span
         v-if="isMessagePrivate"
-        size="16"
-        class="-mt-0.5 align-middle text-n-slate-11 inline-block"
-        icon="lock-closed"
+        class="i-lucide-lock-keyhole -mt-0.5 inline-block size-4 align-middle text-ds-fg-subtle"
+        aria-hidden="true"
       />
-      <fluent-icon
+      <span
         v-else-if="messageByAgent"
-        size="16"
-        class="-mt-0.5 align-middle text-n-slate-11 inline-block"
-        icon="arrow-reply"
+        class="i-lucide-corner-up-left -mt-0.5 inline-block size-4 align-middle text-ds-fg-subtle"
+        aria-hidden="true"
       />
-      <fluent-icon
+      <span
         v-else-if="isMessageAnActivity"
-        size="16"
-        class="-mt-0.5 align-middle text-n-slate-11 inline-block"
-        icon="info"
+        class="i-lucide-info -mt-0.5 inline-block size-4 align-middle text-ds-fg-subtle"
+        aria-hidden="true"
       />
     </template>
     <span v-if="message.content && isMessageSticker">
-      <fluent-icon
-        size="16"
-        class="-mt-0.5 align-middle inline-block text-n-slate-11"
-        icon="image"
+      <span
+        class="i-lucide-image -mt-0.5 inline-block size-4 align-middle text-ds-fg-subtle"
+        aria-hidden="true"
       />
       {{ $t('CHAT_LIST.ATTACHMENTS.image.CONTENT') }}
     </span>
@@ -94,11 +98,11 @@ export default {
       {{ parsedLastMessage }}
     </span>
     <span v-else-if="message.attachments">
-      <fluent-icon
+      <span
         v-if="attachmentIcon && showMessageType"
-        size="16"
-        class="-mt-0.5 align-middle inline-block text-n-slate-11"
-        :icon="attachmentIcon"
+        class="-mt-0.5 inline-block size-4 align-middle text-ds-fg-subtle"
+        :class="attachmentIcon"
+        aria-hidden="true"
       />
       {{ $t(`${attachmentMessageContent}`) }}
     </span>

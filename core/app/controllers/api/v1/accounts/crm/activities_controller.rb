@@ -55,6 +55,8 @@ class Api::V1::Accounts::Crm::ActivitiesController < Api::V1::Accounts::Crm::Bas
       params: schedule_suggestion_params
     ).perform
     render json: result
+  rescue ActiveRecord::RecordNotFound
+    render_conversation_not_found
   end
 
   def schedule_suggestion
@@ -83,6 +85,8 @@ class Api::V1::Accounts::Crm::ActivitiesController < Api::V1::Accounts::Crm::Bas
     }, status: :accepted
   rescue ActiveRecord::RecordInvalid => e
     render json: { error: e.message }, status: :unprocessable_entity
+  rescue ActiveRecord::RecordNotFound
+    render_conversation_not_found
   end
 
   def create
@@ -91,6 +95,8 @@ class Api::V1::Accounts::Crm::ActivitiesController < Api::V1::Accounts::Crm::Bas
     @activity = Current.account.crm_activities.create!(activity_params)
     Crm::AuditLogger.log(account: Current.account, actor: Current.user, action: 'activity_created', target: @activity)
     render json: serialize_activity(@activity), status: :created
+  rescue ActiveRecord::RecordNotFound
+    render_conversation_not_found
   rescue ActiveRecord::RecordInvalid => e
     render json: { error: e.message }, status: :unprocessable_entity
   end
@@ -98,15 +104,18 @@ class Api::V1::Accounts::Crm::ActivitiesController < Api::V1::Accounts::Crm::Bas
   def update
     authorize @activity, :update?
 
-    @activity.update!(activity_update_params)
+    attributes = activity_update_params
+    @activity.update!(attributes)
     Crm::AuditLogger.log(
       account: Current.account,
       actor: Current.user,
       action: 'activity_updated',
       target: @activity,
-      payload: { changes: audited_changes(@activity, activity_update_params.keys) }
+      payload: { changes: audited_changes(@activity, attributes.keys) }
     )
     render json: serialize_activity(@activity)
+  rescue ActiveRecord::RecordNotFound
+    render_conversation_not_found
   rescue ActiveRecord::RecordInvalid => e
     render json: { error: e.message }, status: :unprocessable_entity
   end
@@ -185,13 +194,16 @@ class Api::V1::Accounts::Crm::ActivitiesController < Api::V1::Accounts::Crm::Bas
     attrs = params.permit(:crm_deal_id, :contact_id, :conversation_id, :owner_id, :assignee_id,
                           :kind, :title, :description, :priority, :due_at, :reminder_at).to_h
     attrs[:owner_id] = Current.user.id if attrs[:owner_id].blank?
-    attrs
+    resolve_activity_references!(attrs)
+    resolve_conversation_id!(attrs)
   end
 
   def schedule_suggestion_params
-    params.permit(:crm_deal_id, :contact_id, :conversation_id, :assignee_id,
-                  :kind, :title, :description, :priority, :from, :to,
-                  :duration_minutes, :horizon_days)
+    attrs = params.permit(:crm_deal_id, :contact_id, :conversation_id, :assignee_id,
+                          :kind, :title, :description, :priority, :from, :to,
+                          :duration_minutes, :horizon_days)
+    resolve_activity_references!(attrs)
+    resolve_conversation_id!(attrs)
   end
 
   def scheduled_activity_params
@@ -204,7 +216,8 @@ class Api::V1::Accounts::Crm::ActivitiesController < Api::V1::Accounts::Crm::Bas
     attrs[:title] = 'Consulta juridica' if attrs[:title].blank?
     attrs[:due_at] = parsed_time(attrs[:due_at]) if attrs[:due_at].present?
     attrs[:reminder_at] = parsed_time(attrs[:reminder_at]) if attrs[:reminder_at].present?
-    attrs
+    resolve_activity_references!(attrs)
+    resolve_conversation_id!(attrs)
   end
 
   def sync_google_calendar?
@@ -223,7 +236,7 @@ class Api::V1::Accounts::Crm::ActivitiesController < Api::V1::Accounts::Crm::Bas
   def filtered_activities
     activities = Current.account.crm_activities
     activities = activities.includes(:contact, :conversation, :owner, :assignee,
-                                     crm_deal: [:contact, :crm_pipeline_stage])
+                                     crm_deal: [:contact, :crm_pipeline_stage, :conversation])
     activities = activities.where(crm_deal_id: params[:deal_id]) if params[:deal_id].present?
     activities = activities.where(owner_id: params[:owner_id]) if params[:owner_id].present?
     activities = activities.where(assignee_id: params[:assignee_id]) if params[:assignee_id].present?
@@ -232,12 +245,26 @@ class Api::V1::Accounts::Crm::ActivitiesController < Api::V1::Accounts::Crm::Bas
     activities = filter_by_status(activities) unless params[:q].present?
     activities = filter_by_due_range(activities)
     activities = filter_by_search(activities)
-    activities.order(Arel.sql('due_at IS NULL, due_at ASC, created_at DESC'))
+    activities = activities.order(Arel.sql('due_at IS NULL, due_at ASC, created_at DESC'))
+    requested_limit = params[:limit].to_i
+    requested_limit.positive? ? activities.limit([requested_limit, 200].min) : activities
   end
 
   def activity_update_params
-    params.permit(:crm_deal_id, :contact_id, :conversation_id, :assignee_id,
-                  :kind, :title, :description, :priority, :due_at, :reminder_at)
+    attrs = params.permit(:crm_deal_id, :contact_id, :conversation_id, :assignee_id,
+                          :kind, :title, :description, :priority, :due_at, :reminder_at)
+    resolve_activity_references!(attrs)
+    resolve_conversation_id!(attrs)
+  end
+
+  def resolve_activity_references!(attributes)
+    resolve_account_scoped_ids!(
+      attributes,
+      crm_deal_id: :crm_deals,
+      contact_id: :contacts,
+      owner_id: :users,
+      assignee_id: :users
+    )
   end
 
   def snooze_until
@@ -324,10 +351,13 @@ class Api::V1::Accounts::Crm::ActivitiesController < Api::V1::Accounts::Crm::Bas
   def serialize_activity(activity)
     deal = activity.crm_deal
     contact = activity.contact || deal&.contact
+    conversation = activity.conversation || deal&.conversation
 
     {
       id: activity.id,
       crm_deal_id: activity.crm_deal_id,
+      conversation_id: conversation&.id || activity.conversation_id,
+      conversation_display_id: conversation&.display_id,
       kind: activity.kind,
       title: activity.title,
       description: activity.description,
@@ -350,6 +380,7 @@ class Api::V1::Accounts::Crm::ActivitiesController < Api::V1::Accounts::Crm::Bas
       created_at: activity.created_at,
       contact: contact ? serialize_contact(contact) : nil,
       deal: deal ? serialize_deal(deal) : nil,
+      conversation: conversation ? serialize_conversation(conversation) : nil,
       owner: serialize_user(activity.owner),
       assignee: serialize_user(activity.assignee)
     }
@@ -380,6 +411,13 @@ class Api::V1::Accounts::Crm::ActivitiesController < Api::V1::Accounts::Crm::Bas
         name: deal.crm_pipeline_stage.name,
         slug: deal.crm_pipeline_stage.slug
       } : nil
+    }
+  end
+
+  def serialize_conversation(conversation)
+    {
+      id: conversation.id,
+      display_id: conversation.display_id
     }
   end
 

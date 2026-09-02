@@ -1,6 +1,4 @@
 <script setup>
-import Button from 'dashboard/components-next/button/Button.vue';
-import ButtonGroup from 'dashboard/components-next/buttonGroup/ButtonGroup.vue';
 import { useUISettings } from 'dashboard/composables/useUISettings';
 import { computed } from 'vue';
 import { FEATURE_FLAGS } from 'dashboard/featureFlags';
@@ -56,34 +54,37 @@ useKeyboardEvents(keyboardEvents);
 </script>
 
 <template>
-  <ButtonGroup
-    class="flex flex-col justify-center items-center absolute top-36 xl:top-24 ltr:right-2 rtl:left-2 bg-n-solid-2/90 backdrop-blur-lg border border-n-weak/50 rounded-full gap-1.5 p-1.5 shadow-sm transition-shadow duration-200 hover:shadow"
+  <div
+    class="absolute top-36 flex flex-col items-center justify-center gap-1.5 rounded-full border border-ds-border-subtle bg-ds-bg-elevated/90 p-1.5 shadow-[var(--ds-shadow-sm)] backdrop-blur-lg ltr:right-2 rtl:left-2 xl:top-24"
   >
-    <Button
+    <button
       v-tooltip.top="$t('CONVERSATION.SIDEBAR.CONTACT')"
-      ghost
-      slate
-      sm
-      class="!rounded-full transition-all duration-[250ms] ease-out active:!scale-95 active:!brightness-105 active:duration-75"
+      type="button"
+      class="inline-flex size-9 items-center justify-center rounded-full text-ds-fg-muted outline-none transition-colors duration-150 hover:bg-ds-bg-hover hover:text-ds-fg-default focus-visible:ring-2 focus-visible:ring-ds-border-focus active:scale-95"
       :class="{
-        'bg-n-alpha-2 active:shadow-sm': isContactSidebarOpen,
+        'bg-ds-accent-soft text-ds-accent shadow-[var(--ds-shadow-xs)]':
+          isContactSidebarOpen,
       }"
-      icon="i-ph-user-bold"
+      :aria-label="$t('CONVERSATION.SIDEBAR.CONTACT')"
+      :aria-pressed="isContactSidebarOpen"
       @click="handleConversationSidebarToggle"
-    />
-    <Button
+    >
+      <span class="i-lucide-contact-round size-4" aria-hidden="true" />
+    </button>
+    <button
       v-if="showCopilotTab"
       v-tooltip.bottom="$t('CONVERSATION.SIDEBAR.COPILOT')"
-      ghost
-      slate
-      sm
-      class="!rounded-full transition-all duration-[250ms] ease-out active:!scale-95 active:duration-75"
+      type="button"
+      class="inline-flex size-9 items-center justify-center rounded-full text-ds-fg-muted outline-none transition-colors duration-150 hover:bg-ds-bg-hover hover:text-ds-fg-default focus-visible:ring-2 focus-visible:ring-ds-border-focus active:scale-95"
       :class="{
-        'bg-n-alpha-2 !text-n-iris-9 active:!brightness-105 active:shadow-sm':
+        'bg-ds-accent-soft text-ds-accent shadow-[var(--ds-shadow-xs)]':
           isCopilotPanelOpen,
       }"
-      icon="i-woot-captain"
+      :aria-label="$t('CONVERSATION.SIDEBAR.COPILOT')"
+      :aria-pressed="isCopilotPanelOpen"
       @click="handleCopilotSidebarToggle"
-    />
-  </ButtonGroup>
+    >
+      <span class="i-lucide-sparkles size-4" aria-hidden="true" />
+    </button>
+  </div>
 </template>

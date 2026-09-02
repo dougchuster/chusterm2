@@ -156,7 +156,7 @@ class Captain::Assistant < ApplicationRecord
   end
 
   def default_llm_provider
-    Llm::Models.models.dig(global_captain_model || account.captain_assistant_model, 'provider') || 'openai'
+    'openrouter'
   end
 
   def global_captain_model
@@ -164,26 +164,21 @@ class Captain::Assistant < ApplicationRecord
   end
 
   def agent_tools
-    return [] if openai_compatible_gemini_model?
-
     tools = []
     tools << self.class.resolve_tool_class('faq_lookup').new(self) if ActiveModel::Type::Boolean.new.cast(feature_faq)
     tools << self.class.resolve_tool_class('handoff').new(self)
     tools.compact
   end
 
-  def openai_compatible_gemini_model?
-    Llm::Config.openai_compatible_gemini_model?(llm_config_with_defaults[:main_model])
-  rescue StandardError => e
-    Rails.logger.warn "[Captain] Could not detect Gemini OpenAI-compatible model for assistant tools: #{e.message}"
-    false
-  end
-
   def prompt_context
     {
       name: name,
+      **identity_prompt_context,
       description: description,
       instructions: config['instructions'],
+      handoff_on_explicit_request_only: ActiveModel::Type::Boolean.new.cast(
+        config['handoff_on_explicit_request_only']
+      ),
       product_name: config['product_name'] || 'this product',
       scenarios: scenarios.enabled.map do |scenario|
         {
@@ -199,5 +194,16 @@ class Captain::Assistant < ApplicationRecord
 
   def default_avatar_url
     "#{ENV.fetch('FRONTEND_URL', nil)}/assets/images/dashboard/captain/logo.svg"
+  end
+
+  def professional_identity?
+    ActiveModel::Type::Boolean.new.cast(config['professional_identity'])
+  end
+
+  def identity_prompt_context
+    {
+      public_identity: config['public_identity'].presence || name,
+      professional_identity: professional_identity?
+    }
   end
 end

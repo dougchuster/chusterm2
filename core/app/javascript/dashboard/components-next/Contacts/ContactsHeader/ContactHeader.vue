@@ -66,6 +66,9 @@ const emit = defineEmits([
             <div v-if="!isLabelView && !isActiveView" class="relative">
               <Button
                 id="toggleContactsFilterButton"
+                :aria-label="
+                  $t('CONTACTS_LAYOUT.HEADER.ACTIONS.FILTER_CONTACTS')
+                "
                 :icon="
                   isSegmentsView ? 'i-lucide-pen-line' : 'i-lucide-list-filter'
                 "
@@ -90,6 +93,11 @@ const emit = defineEmits([
                 !isActiveView
               "
               icon="i-lucide-save"
+              :aria-label="
+                $t(
+                  'CONTACTS_LAYOUT.HEADER.ACTIONS.FILTERS.CREATE_SEGMENT.CONFIRM'
+                )
+              "
               color="slate"
               size="sm"
               variant="ghost"
@@ -98,6 +106,11 @@ const emit = defineEmits([
             <Button
               v-if="isSegmentsView && !isLabelView && !isActiveView"
               icon="i-lucide-trash"
+              :aria-label="
+                $t(
+                  'CONTACTS_LAYOUT.HEADER.ACTIONS.FILTERS.DELETE_SEGMENT.CONFIRM'
+                )
+              "
               color="slate"
               size="sm"
               variant="ghost"

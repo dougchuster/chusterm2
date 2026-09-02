@@ -1,5 +1,6 @@
 {
   "BULK_ACTION": {
+    "SELECT_CONVERSATION": "Selecionar conversa com {name}",
     "CONVERSATIONS_SELECTED": "{conversationCount} conversas selecionadas",
     "AGENT_SELECT_LABEL": "Selecionar agente",
     "ASSIGN_CONFIRMATION_LABEL": "Você tem certeza que quer atribuir {conversationCount} {conversationLabel} para",

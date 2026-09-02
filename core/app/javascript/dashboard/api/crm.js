@@ -160,8 +160,56 @@ class CrmAPI {
     return axios.post(crmUrl('deals/bulk_action'), data);
   }
 
-  moveDeal(dealId, stageId) {
-    return axios.post(crmUrl(`deals/${dealId}/move`), { stage_id: stageId });
+  // F1.3: afterId e o card que fica acima do movido, beforeId o que fica
+  // abaixo. Quem calcula a posicao e o servidor; o cliente so relata os
+  // vizinhos. Omitir os dois joga o card para o topo da coluna de destino.
+  // F1.6: continua a coluna de onde o endpoint do board parou. Sem
+  // `order: board` a pagina 2 volta a ordenar por data e repete cards.
+  getColumnPage(stageId, { page = 2, perPage = 25, ...filters } = {}) {
+    return axios.get(crmUrl('deals'), {
+      params: {
+        ...filters,
+        stage_id: stageId,
+        order: 'board',
+        page,
+        per_page: perPage,
+      },
+    });
+  }
+
+  // F2.7: visoes salvas. `board_views` devolve as minhas mais as que a equipe
+  // compartilhou; editar e apagar so valem para as minhas (o servidor responde
+  // 404 para o resto).
+  getBoardViews() {
+    return axios.get(crmUrl('board_views'));
+  }
+
+  createBoardView(boardView) {
+    return axios.post(crmUrl('board_views'), { board_view: boardView });
+  }
+
+  updateBoardView(viewId, boardView) {
+    return axios.patch(crmUrl(`board_views/${viewId}`), {
+      board_view: boardView,
+    });
+  }
+
+  deleteBoardView(viewId) {
+    return axios.delete(crmUrl(`board_views/${viewId}`));
+  }
+
+  getBoard(pipelineId, { perColumn, ...filters } = {}) {
+    return axios.get(crmUrl(`pipelines/${pipelineId}/board`), {
+      params: { ...filters, per_column: perColumn },
+    });
+  }
+
+  moveDeal(dealId, stageId, { afterId, beforeId } = {}) {
+    return axios.post(crmUrl(`deals/${dealId}/move`), {
+      stage_id: stageId,
+      after_id: afterId,
+      before_id: beforeId,
+    });
   }
 
   markDealWon(dealId) {
@@ -189,6 +237,11 @@ class CrmAPI {
 
   markDealBaseClient(dealId, data = {}) {
     return axios.post(crmUrl(`deals/${dealId}/mark_base_client`), data);
+  }
+
+  // UX-05: listas de domínio (áreas, origens, urgências) vêm do backend
+  getOptions() {
+    return axios.get(crmUrl('options'));
   }
 
   getLossReasons() {
@@ -266,18 +319,20 @@ class CrmAPI {
     return axios.post(crmUrl('lead-scores/recompute'), { deal_id: dealId });
   }
 
-  triageFromConversation(conversationId) {
-    return axios.post(crmUrl(`triage/from-conversation/${conversationId}`));
+  triageFromConversation(conversationDatabaseId) {
+    return axios.post(
+      crmUrl(`triage/from-conversation/${conversationDatabaseId}`)
+    );
   }
 
   getAuditEvents(params = {}) {
     return axios.get(crmUrl('audit-events'), { params });
   }
 
+  // PERF-04: o export roda em job no backend; a resposta é JSON (202) e o
+  // arquivo chega por email — não é mais um download direto (blob).
   exportDeals(params = {}) {
-    return axios.post(crmUrl('deals/export'), params, {
-      responseType: 'blob',
-    });
+    return axios.post(crmUrl('deals/export'), params);
   }
 
   purgeOrphanDeals() {

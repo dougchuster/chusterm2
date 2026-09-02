@@ -1,4 +1,6 @@
 class CrmPipelineStage < ApplicationRecord
+  include AccountAssociationScoped
+
   belongs_to :account
   belongs_to :crm_pipeline
   has_many :crm_deals, dependent: :restrict_with_error
@@ -7,6 +9,7 @@ class CrmPipelineStage < ApplicationRecord
   before_validation :ensure_slug
 
   validates :account, :crm_pipeline, :name, :slug, presence: true
+  validates_same_account_for :crm_pipeline
   validates :slug, uniqueness: { scope: :crm_pipeline_id }
 
   scope :active, -> { where(archived_at: nil) }

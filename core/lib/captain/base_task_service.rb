@@ -31,8 +31,7 @@
   end
 
   def api_base
-    endpoint = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_ENDPOINT')&.value.presence || 'https://api.openai.com/'
-    Llm::Config.normalize_endpoint(endpoint)
+    Llm::Config.normalize_endpoint(Llm::Config.openai_endpoint)
   end
 
   def make_api_call(model:, messages:, schema: nil, tools: [])
@@ -64,7 +63,7 @@
       build_ruby_llm_response(chat.ask(conversation_messages.last[:content]), messages)
     end
   rescue StandardError => e
-    ChusteRMExceptionTracker.new(e, account: account).capture_exception
+    ::ChusteRMExceptionTracker.new(e, account: account).capture_exception
     { error: e.message, request_messages: messages }
   end
 
@@ -150,7 +149,7 @@
   end
 
   def api_key
-    @api_key ||= openai_hook&.settings&.dig('api_key') || system_api_key
+    @api_key ||= system_api_key
   end
 
   def openai_hook
@@ -158,7 +157,7 @@
   end
 
   def system_api_key
-    @system_api_key ||= InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_API_KEY')&.value
+    @system_api_key ||= Llm::Config.system_api_key
   end
 
   def prompt_from_file(file_name)

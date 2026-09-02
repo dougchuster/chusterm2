@@ -42,21 +42,38 @@ if (isLibraryMode) {
   plugins = [vue(vueOptions)];
 }
 
-// Separa bibliotecas pesadas e o catálogo de ícones em chunks dedicados.
-// Sem isso, dashboard-icons.json (~114 KB de paths SVG) era arrastado para um
-// chunk único de ~10 MB, comprometendo Time-to-Interactive.
+// Separa bibliotecas pesadas, localizações i18n e o catálogo de ícones em chunks dedicados.
+// Sem isso, 20+ MB de traduções e ícones eram arrastados para um chunk único gigante.
 const manualChunks = (id: string) => {
-  if (id.includes('FluentIcon/dashboard-icons.json')) return 'icons-dashboard';
-  if (id.includes('FluentIcon/icons.json')) return 'icons-base';
-  if (!id.includes('node_modules')) return undefined;
-  if (id.includes('@sentry')) return 'vendor-sentry';
-  if (id.includes('chart.js') || id.includes('vue-chartjs')) return 'vendor-charts';
-  if (id.includes('@formkit')) return 'vendor-formkit';
-  if (id.includes('@tiptap') || id.includes('prosemirror')) return 'vendor-editor';
-  if (id.includes('highlight.js') || id.includes('@highlightjs')) return 'vendor-highlight';
-  if (id.includes('vue-dompurify-html') || id.includes('dompurify')) return 'vendor-dompurify';
-  if (id.includes('floating-vue')) return 'vendor-floating';
-  if (id.includes('lucide')) return 'vendor-lucide';
+  const normalizedId = id.replace(/\\/g, '/');
+  if (normalizedId.includes('FluentIcon/dashboard-icons.json')) return 'icons-dashboard';
+  if (normalizedId.includes('FluentIcon/icons.json')) return 'icons-base';
+  if (normalizedId.includes('dashboard/i18n/locale/')) return 'i18n-locales';
+  if (!normalizedId.includes('node_modules')) return undefined;
+  if (
+    normalizedId.includes('node_modules/vue/') ||
+    normalizedId.includes('node_modules/@vue/') ||
+    normalizedId.includes('node_modules/vue-router/') ||
+    normalizedId.includes('node_modules/vue-i18n/') ||
+    normalizedId.includes('node_modules/pinia/')
+  ) {
+    return 'vendor-vue';
+  }
+  if (
+    normalizedId.includes('node_modules/axios') ||
+    normalizedId.includes('node_modules/date-fns') ||
+    normalizedId.includes('node_modules/lodash')
+  ) {
+    return 'vendor-utils';
+  }
+  if (normalizedId.includes('node_modules/@sentry')) return 'vendor-sentry';
+  if (normalizedId.includes('node_modules/chart.js') || normalizedId.includes('node_modules/vue-chartjs')) return 'vendor-charts';
+  if (normalizedId.includes('node_modules/@formkit')) return 'vendor-formkit';
+  if (normalizedId.includes('node_modules/@tiptap') || normalizedId.includes('node_modules/prosemirror')) return 'vendor-editor';
+  if (normalizedId.includes('node_modules/highlight.js')) return 'vendor-highlight';
+  if (normalizedId.includes('node_modules/vue-dompurify-html') || normalizedId.includes('node_modules/dompurify')) return 'vendor-dompurify';
+  if (normalizedId.includes('node_modules/floating-vue')) return 'vendor-floating';
+  if (normalizedId.includes('node_modules/lucide')) return 'vendor-lucide';
   return undefined;
 };
 

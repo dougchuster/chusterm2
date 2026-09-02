@@ -154,7 +154,7 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
   end
 
   def conversation_filter_params
-    params.permit(:page, payload: FILTER_PAYLOAD_PARAMS)
+    params.permit(:page, :q, payload: FILTER_PAYLOAD_PARAMS)
   end
 
   def attachment_params

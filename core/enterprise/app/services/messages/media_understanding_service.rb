@@ -24,7 +24,7 @@ class Messages::MediaUnderstandingService
     return { error: 'Unsupported attachment' } unless supported_attachment?
     return existing_result if already_processed?
     return mark_skipped('captain_integration_disabled') unless account.feature_enabled?('captain_integration')
-    return mark_skipped('gemini_multimodal_not_configured') unless Llm::GeminiMultimodalService.active?(purpose: :media)
+    return mark_skipped('openrouter_multimodal_not_configured') unless Llm::OpenRouterMultimodalService.active?(purpose: :media)
 
     update_meta(media_understanding_status: 'processing')
     result = understand_attachment
@@ -34,6 +34,10 @@ class Messages::MediaUnderstandingService
     sync_document_labels
     notify_message_update
     { success: true, result: result }
+  rescue Llm::TransientProviderError => e
+    Rails.logger.warn("[MediaUnderstanding] Temporary provider failure for attachment #{attachment.id}: #{e.message}")
+    mark_retrying(e.message)
+    raise
   rescue StandardError => e
     Rails.logger.warn("[MediaUnderstanding] Failed for attachment #{attachment.id}: #{e.message}")
     mark_failed(e.message)
@@ -50,7 +54,7 @@ class Messages::MediaUnderstandingService
   end
 
   def understand_attachment
-    multimodal = Llm::GeminiMultimodalService.new
+    multimodal = Llm::OpenRouterMultimodalService.new
     return { video_description: multimodal.describe_video(attachment) } if attachment.video?
 
     multimodal.understand_media(attachment)
@@ -82,6 +86,12 @@ class Messages::MediaUnderstandingService
   def mark_failed(reason)
     update_meta(media_understanding_status: 'failed', media_understanding_error: reason.to_s.truncate(500))
     { error: reason }
+  end
+
+  def mark_retrying(reason)
+    update_meta(media_understanding_status: 'processing', media_understanding_error: "transient_provider_retry: #{reason}".truncate(500))
+    notify_message_update
+    { error: reason, retrying: true }
   end
 
   def update_meta(values)

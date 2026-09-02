@@ -23,31 +23,43 @@ const openLinearAccount = () => {
 </script>
 
 <template>
-  <div class="flex flex-col p-3">
-    <div class="w-12 h-12 mb-3">
+  <div
+    class="flex flex-col rounded-xl bg-ds-bg-elevated p-3 text-ds-fg-default"
+  >
+    <div
+      class="mb-3 grid size-12 place-content-center rounded-xl bg-ds-bg-sunken p-2 ring-1 ring-inset ring-ds-border-subtle"
+    >
       <img
         :src="`/dashboard/images/integrations/${integrationId}.png`"
-        class="object-contain w-full h-full border rounded-md shadow-sm border-n-weak dark:hidden dark:bg-n-alpha-2"
+        alt=""
+        class="size-full object-contain dark:hidden"
       />
       <img
         :src="`/dashboard/images/integrations/${integrationId}-dark.png`"
-        class="hidden object-contain w-full h-full border rounded-md shadow-sm border-n-weak dark:block"
+        alt=""
+        class="hidden size-full object-contain dark:block"
       />
     </div>
 
     <div class="flex-1 mb-4">
-      <h3 class="mb-1.5 text-sm font-medium text-n-slate-12">
+      <h3 class="mb-1.5 font-manrope text-sm font-semibold text-ds-fg-default">
         {{ $t('INTEGRATION_SETTINGS.LINEAR.CTA.TITLE') }}
       </h3>
-      <p v-if="isAdmin" class="text-sm text-n-slate-11">
+      <p v-if="isAdmin" class="text-sm leading-5 text-ds-fg-muted">
         {{ $t('INTEGRATION_SETTINGS.LINEAR.CTA.DESCRIPTION') }}
       </p>
-      <p v-else class="text-sm text-n-slate-11">
+      <p v-else class="text-sm leading-5 text-ds-fg-muted">
         {{ $t('INTEGRATION_SETTINGS.LINEAR.CTA.AGENT_DESCRIPTION') }}
       </p>
     </div>
 
-    <NextButton v-if="isAdmin" faded slate @click="openLinearAccount">
+    <NextButton
+      v-if="isAdmin"
+      type="button"
+      color="primary"
+      variant="faded"
+      @click="openLinearAccount"
+    >
       {{ $t('INTEGRATION_SETTINGS.LINEAR.CTA.BUTTON_TEXT') }}
     </NextButton>
   </div>

@@ -109,11 +109,14 @@ export default {
           <label :class="{ error: v$.content.$error }">
             {{ $t('CANNED_MGMT.EDIT.FORM.CONTENT.LABEL') }}
           </label>
-          <div class="editor-wrap">
+          <div class="mb-4">
             <WootMessageEditor
               v-model="content"
-              class="message-editor [&>div]:px-1"
-              :class="{ editor_warning: v$.content.$error }"
+              class="mb-0 rounded-lg bg-ds-bg-sunken px-1 py-0 ring-1 ring-ds-border transition-shadow hover:ring-ds-border-strong [&>div]:px-1"
+              :class="{
+                'ring-ds-state-danger hover:ring-ds-state-danger':
+                  v$.content.$error,
+              }"
               channel-type="Context::Default"
               enable-variables
               :enable-canned-responses="false"

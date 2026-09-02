@@ -10,7 +10,7 @@ RSpec.describe Captain::ReplySuggestionService do
   let(:captured_messages) { [] }
 
   before do
-    create(:installation_config, name: 'CAPTAIN_OPEN_AI_API_KEY', value: 'test-key')
+    InstallationConfig.find_or_initialize_by(name: 'CAPTAIN_OPEN_AI_API_KEY').update!(value: 'test-key')
     create(:message, conversation: conversation, message_type: :incoming, content: 'I need help')
     allow(account).to receive(:feature_enabled?).with('captain_tasks').and_return(true)
 

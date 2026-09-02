@@ -1,5 +1,6 @@
 <script>
 import SnackbarContainer from './components/SnackBar/Container.vue';
+import { setColorTheme } from 'dashboard/helper/themeHelper';
 
 const COLOR_SCHEME_STORAGE_KEY = 'color_scheme';
 const LEGACY_LOGIN_THEME_STORAGE_KEY = 'chusterm-login-theme';
@@ -8,68 +9,46 @@ const THEME_MEDIA_QUERY = '(prefers-color-scheme: dark)';
 export default {
   components: { SnackbarContainer },
   data() {
-    return { theme: 'light' };
+    return {
+      themeMediaQuery: null,
+      themeStorageHandler: null,
+    };
   },
   mounted() {
-    this.setColorTheme();
+    this.initializeColorTheme();
     this.listenToThemeChanges();
+    this.listenToStorageChanges();
     this.setLocale(window.chustermConfig.selectedLocale);
   },
+  unmounted() {
+    if (this.themeMediaQuery) {
+      this.themeMediaQuery.onchange = null;
+    }
+    if (this.themeStorageHandler) {
+      window.removeEventListener('storage', this.themeStorageHandler);
+    }
+  },
   methods: {
-    setColorTheme() {
+    initializeColorTheme() {
       const isOSOnDarkMode = window.matchMedia(THEME_MEDIA_QUERY).matches;
-      const preferredTheme = this.getPreferredTheme();
-      const resolvedTheme =
-        preferredTheme === 'dark' ||
-        ((preferredTheme === 'auto' || preferredTheme === 'system') &&
-          isOSOnDarkMode)
-          ? 'dark'
-          : 'light';
-
-      this.applyDocumentTheme(resolvedTheme);
-    },
-    getPreferredTheme() {
-      const storedTheme =
-        localStorage.getItem(COLOR_SCHEME_STORAGE_KEY) ||
-        localStorage.getItem(LEGACY_LOGIN_THEME_STORAGE_KEY);
-
-      if (['light', 'dark', 'auto', 'system'].includes(storedTheme)) {
-        return storedTheme;
-      }
-
-      return 'auto';
-    },
-    applyDocumentTheme(resolvedTheme) {
-      this.theme = resolvedTheme;
-      document.documentElement.dataset.theme = resolvedTheme;
-      document.body.dataset.theme = resolvedTheme;
-      document.documentElement.classList.toggle(
-        'dark',
-        resolvedTheme === 'dark'
-      );
-      document.body.classList.toggle('dark', resolvedTheme === 'dark');
-      document.body.classList.toggle('theme-dark', resolvedTheme === 'dark');
-      document.body.classList.toggle('theme-light', resolvedTheme !== 'dark');
-      document.documentElement.style.setProperty('color-scheme', resolvedTheme);
+      setColorTheme(isOSOnDarkMode);
     },
     listenToThemeChanges() {
-      const mql = window.matchMedia(THEME_MEDIA_QUERY);
-
-      mql.onchange = e => {
-        const preferredTheme = this.getPreferredTheme();
-        if (preferredTheme === 'auto' || preferredTheme === 'system') {
-          this.applyDocumentTheme(e.matches ? 'dark' : 'light');
+      this.themeMediaQuery = window.matchMedia(THEME_MEDIA_QUERY);
+      this.themeMediaQuery.onchange = event => {
+        setColorTheme(event.matches);
+      };
+    },
+    listenToStorageChanges() {
+      this.themeStorageHandler = event => {
+        if (
+          event.key === COLOR_SCHEME_STORAGE_KEY ||
+          event.key === LEGACY_LOGIN_THEME_STORAGE_KEY
+        ) {
+          this.initializeColorTheme();
         }
       };
-
-      window.addEventListener('storage', e => {
-        if (
-          e.key === COLOR_SCHEME_STORAGE_KEY ||
-          e.key === LEGACY_LOGIN_THEME_STORAGE_KEY
-        ) {
-          this.setColorTheme();
-        }
-      });
+      window.addEventListener('storage', this.themeStorageHandler);
     },
     setLocale(locale) {
       const isAuthRoute =
@@ -82,7 +61,9 @@ export default {
 </script>
 
 <template>
-  <div class="h-full min-h-screen w-full antialiased" :class="theme">
+  <div
+    class="h-full min-h-screen w-full bg-ds-bg-canvas text-ds-fg-default antialiased"
+  >
     <router-view />
     <SnackbarContainer />
   </div>
@@ -93,12 +74,14 @@ export default {
 @tailwind components;
 @tailwind utilities;
 
+@import 'shared/assets/fonts/InterDisplay/inter-display';
+@import 'shared/assets/fonts/inter';
 @import '../dashboard/assets/scss/next-colors';
+@import '../dashboard/assets/scss/design-tokens';
 
 html,
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+  font-family: var(--ds-font-sans);
   @apply h-full w-full;
 
   input,

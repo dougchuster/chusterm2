@@ -1,487 +1,306 @@
-<!-- eslint-disable vue/no-bare-strings-in-template, @intlify/vue-i18n/no-raw-text, vue/no-static-inline-styles -->
 <script setup>
-import { computed, ref, watch } from 'vue';
+/**
+ * Card do Kanban — F2.4 do PLANO-KANBAN-CRM-2026.md, §7.
+ *
+ * As quatro regras de hierarquia que o desenho obedece:
+ *
+ * 1. O olho bate primeiro no **nome do contato**, depois na **próxima ação**.
+ *    Nada mais compete. A referência do negócio só aparece quando diz algo que
+ *    o nome não diz.
+ * 2. Negócio aberto **sem próxima ação** é o estado mais alarmante do board:
+ *    bloco vermelho e um botão que agenda em um clique. É a meta de "<10% sem
+ *    próxima ação" do plano, transformada em interface.
+ * 3. No máximo dois badges visíveis + "+N". O resto vive no drawer.
+ * 4. A densidade é do atendente: compacta esconde valor e categoria, detalhada
+ *    acrescenta a próxima melhor ação.
+ *
+ * Ele é deliberadamente burro: recebe o negócio e a etapa, decide **sinal**
+ * (via `crmCardSignals`, que é testável sem montar componente) e devolve
+ * intenções. Quem busca dono, chama API e move card é o board.
+ */
+import { computed } from 'vue';
+
+import Icon from 'dashboard/components-next/icon/Icon.vue';
+import { DsButton, DsDropdown } from 'dashboard/design-system/components';
+import {
+  nextActionSignal,
+  rottingSignal,
+  visibleBadges,
+} from 'dashboard/helper/crmCardSignals';
+
 import CRMScoreBadge from './CRMScoreBadge.vue';
-import CRMLegalAreaBadge from './CRMLegalAreaBadge.vue';
 
 const props = defineProps({
-  deal: {
-    type: Object,
-    required: true,
-  },
-  accountId: {
-    type: Number,
-    required: true,
-  },
-  scoreRefreshing: {
-    type: Boolean,
-    default: false,
-  },
-  selected: {
-    type: Boolean,
-    default: false,
-  },
+  deal: { type: Object, required: true },
+  stage: { type: Object, default: () => ({}) },
+  selected: { type: Boolean, default: false },
+  ownerName: { type: String, default: '' },
+  density: { type: String, default: 'normal' },
+  href: { type: String, default: '' },
+  // Injetável para o teste não depender do relógio da máquina.
+  now: { type: [Date, String], default: () => new Date() },
 });
 
 const emit = defineEmits([
-  'recompute-score',
-  'openDrawer',
-  'delete-deal',
-  'updateTitle',
-  'toggleSelect',
-  'discardDeal',
+  'open',
+  'attend',
+  'select',
+  'recompute',
   'markBaseClient',
+  'discard',
+  'scheduleNextAction',
 ]);
 
-const isEditingTitle = ref(false);
-const titleDraft = ref('');
-const pointerStart = ref(null);
-
-const score = computed(() =>
-  Number(props.deal.score_total ?? props.deal.score ?? 0)
+const contactName = computed(
+  () => props.deal.contact_name || props.deal.contact_phone_number || ''
 );
 
-const classification = computed(() => props.deal.score_classification ?? '');
-
-const contactUrl = computed(() => {
-  const cid = props.deal.contact_id ?? props.deal.chatwootContactId;
-  if (!cid) return '';
-  return `/app/accounts/${props.accountId}/contacts/${cid}`;
-});
-
-const dealDetailsUrl = computed(() =>
-  props.deal.id
-    ? `/app/accounts/${props.accountId}/crm/deals/${props.deal.id}`
-    : ''
-);
-
-const displayName = computed(
-  () =>
-    props.deal.contact_name ||
-    props.deal.contact?.name ||
-    props.deal.title ||
-    'Lead sem nome'
-);
-
-const dealRef = computed(() => {
-  const title = props.deal.title || '';
-  if (!title || title === displayName.value) return '';
+// A referência só ganha espaço quando acrescenta: repetir o nome gastaria a
+// linha mais valiosa do card com redundância.
+const reference = computed(() => {
+  const title = props.deal.title;
+  if (!title || title === contactName.value) return '';
   return title;
 });
 
-const contactPhone = computed(() => props.deal.contact_phone_number || '');
+const nextAction = computed(() => nextActionSignal(props.deal, props.now));
+const rotting = computed(() =>
+  rottingSignal(props.deal, props.stage, props.now)
+);
 
-const operationalStatus = computed(() => props.deal.operational_status || '');
+const badges = computed(() =>
+  visibleBadges([
+    props.deal.captain_ai_mode === 'auto' ? 'ai' : null,
+    props.deal.is_stale ? 'stale' : null,
+    props.deal.operational_status === 'returning_client' ? 'returning' : null,
+    props.deal.legal_area || null,
+  ])
+);
 
-const operationalLabel = computed(() => {
-  const labels = {
-    active: 'Lead ativo',
-    returning_client: 'Retorno',
-    base_client: 'Cliente Base',
-    converted_client: 'Cliente Convertido',
-    invalid: 'Inválido',
-    spam: 'Spam',
-    duplicated: 'Duplicado',
-    no_lead: 'Não é lead',
-    archived: 'Arquivado',
-  };
-  return labels[operationalStatus.value] || '';
+const money = computed(() => {
+  const cents = Number(props.deal.value_estimate_cents || 0);
+  if (!cents) return '';
+
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(cents / 100);
 });
 
-const urgencyClass = computed(() => {
-  const u = (
-    props.deal.urgency_level ||
-    props.deal.urgencyLevel ||
-    ''
-  ).toLowerCase();
-  if (u === 'critica') return 'bg-n-ruby-3 text-n-ruby-11 font-semibold';
-  if (u === 'alta') return 'bg-n-amber-3 text-n-amber-11';
-  if (u === 'media') return 'bg-n-yellow-3 text-n-yellow-11';
-  return 'bg-n-slate-3 text-n-slate-10';
+const dueLabel = computed(() => {
+  if (!nextAction.value.dueAt) return '';
+
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(nextAction.value.dueAt));
 });
 
-const urgencyLabel = computed(() => {
-  const u = (
-    props.deal.urgency_level ||
-    props.deal.urgencyLevel ||
-    ''
-  ).toLowerCase();
-  const labels = {
-    critica: '🔴 Crítica',
-    alta: '🟠 Alta',
-    media: '🟡 Média',
-    baixa: '🟢 Baixa',
-  };
-  return labels[u] || u || '';
-});
+const isCompact = computed(() => props.density === 'compact');
+const isDetailed = computed(() => props.density === 'detailed');
 
-const hasNextAction = computed(
-  () => !!(props.deal.next_best_action || props.deal.nextBestAction)
+const displayName = computed(() => contactName.value);
+const label = computed(
+  () => props.deal.title || contactName.value || String(props.deal.id)
 );
-
-const nextAction = computed(
-  () => props.deal.next_best_action || props.deal.nextBestAction || ''
-);
-
-const hasConversation = computed(
-  () => !!(props.deal.conversation_id || props.deal.conversation?.id)
-);
-
-const unreadCount = computed(() =>
-  Number(
-    props.deal.unread_count ||
-      props.deal.conversation_unread_count ||
-      props.deal.unread_messages_count ||
-      0
-  )
-);
-
-const aiMode = computed(
-  () => props.deal.ai_mode || props.deal.captain_ai_mode || ''
-);
-
-const aiHumanControlled = computed(() =>
-  ['paused', 'human_only'].includes(aiMode.value)
-);
-
-const aiBadgeLabel = computed(() => {
-  if (!aiMode.value) return '';
-  return aiHumanControlled.value ? 'Humano' : 'IA';
-});
-
-watch(
-  () => props.deal.title,
-  value => {
-    if (!isEditingTitle.value) titleDraft.value = value || '';
-  },
-  { immediate: true }
-);
-
-function startTitleEdit() {
-  titleDraft.value = props.deal.title || displayName.value || '';
-  isEditingTitle.value = true;
-}
-
-function cancelTitleEdit() {
-  titleDraft.value = props.deal.title || '';
-  isEditingTitle.value = false;
-}
-
-function saveTitleEdit() {
-  const nextTitle = titleDraft.value.trim();
-  if (!nextTitle) {
-    cancelTitleEdit();
-    return;
-  }
-
-  isEditingTitle.value = false;
-  if (nextTitle !== props.deal.title) {
-    emit('updateTitle', { deal: props.deal, title: nextTitle });
-  }
-}
-
-function rememberPointerStart(event) {
-  pointerStart.value = { x: event.clientX, y: event.clientY };
-}
-
-function shouldIgnoreOpen(event) {
-  if (!event || !pointerStart.value) return false;
-  const dx = Math.abs(event.clientX - pointerStart.value.x);
-  const dy = Math.abs(event.clientY - pointerStart.value.y);
-  return dx + dy > 8;
-}
-
-function openAttendance(event) {
-  if (shouldIgnoreOpen(event)) return;
-  emit('openDrawer', props.deal);
-}
 </script>
 
 <template>
   <article
-    class="crm-deal-card group flex min-w-0 cursor-grab flex-col gap-2 rounded-xl border border-n-weak bg-n-slate-2 p-3 shadow-sm transition-all duration-150 hover:border-n-slate-6 hover:shadow-md active:cursor-grabbing"
-    :class="selected ? 'ring-2 ring-n-brand/30' : ''"
-    tabindex="0"
-    role="button"
-    title="Abrir atendimento no Kanban"
-    @pointerdown="rememberPointerStart"
-    @click="openAttendance"
-    @keydown.enter.prevent="emit('openDrawer', deal)"
-    @keydown.space.prevent="emit('openDrawer', deal)"
+    data-testid="crm-board-card"
+    :data-rotting="rotting.level"
+    :style="{ borderLeftColor: stage.color || 'transparent' }"
+    class="group cursor-grab rounded-ui-surface border border-l-4 bg-ui-surface p-3 shadow-ui-card transition-colors active:cursor-grabbing"
+    :class="{
+      'border-ui-border hover:border-ui-border-strong': rotting.level !== 'late' && rotting.level !== 'warning',
+      'border-ui-warning': rotting.level === 'warning',
+      'border-ui-danger': rotting.level === 'late',
+    }"
   >
-    <!-- Header: nome do contato + score badge -->
-    <div class="flex items-start justify-between gap-2">
-      <label
-        class="grid flex-shrink-0 place-content-center w-4 h-5"
-        title="Selecionar lead"
-      >
-        <input
-          type="checkbox"
-          :checked="selected"
-          class="size-3.5 cursor-pointer accent-n-brand"
-          @click.stop
-          @change.stop="emit('toggleSelect', deal)"
-        />
-      </label>
+    <div class="flex items-start gap-2">
       <input
-        v-if="isEditingTitle"
-        v-model="titleDraft"
-        class="flex-1 min-w-0 h-7 px-2 text-xs font-semibold text-n-slate-12 border border-n-brand rounded-md bg-n-slate-1 outline-none"
-        type="text"
-        autofocus
+        type="checkbox"
+        :checked="selected"
+        :aria-label="$t('CRM.CARD.SELECT', { name: label })"
+        class="mt-1 size-4 shrink-0 rounded border-ui-border accent-ui-brand"
         @click.stop
-        @dblclick.stop
-        @keydown.enter.prevent="saveTitleEdit"
-        @keydown.esc.prevent="cancelTitleEdit"
-        @blur="saveTitleEdit"
+        @change="emit('select', $event.target.checked)"
       />
       <button
-        v-else
+        data-testid="crm-card-open"
         type="button"
-        class="flex-1 min-w-0 m-0 p-0 text-left text-xs font-semibold text-n-slate-12 leading-snug line-clamp-2 bg-transparent border-0 cursor-text"
-        title="Editar titulo do atendimento"
-        @click.stop="startTitleEdit"
+        class="min-w-0 flex-1 text-left focus-visible:rounded-ui-control focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus"
+        @click="emit('open')"
       >
-        {{ displayName }}
+        <span
+          data-testid="crm-card-name"
+          class="block truncate text-ui-body-sm font-semibold text-ui-text"
+        >
+          {{ displayName || $t('CRM.CARD.NO_CONTACT') }}
+        </span>
+        <span
+          v-if="reference"
+          data-testid="crm-card-reference"
+          class="mt-0.5 block truncate text-ui-caption text-ui-text-muted"
+        >
+          {{ reference }}
+        </span>
       </button>
-      <CRMScoreBadge
-        :score="score"
-        :classification="classification"
+      <DsButton
+        data-testid="crm-card-attend"
+        icon="i-lucide-message-circle"
+        variant="ghost"
         size="sm"
+        :aria-label="$t('CRM.CARD.ATTEND', { name: label })"
+        @click.stop="emit('attend')"
       />
+      <DsDropdown :aria-label="$t('CRM.CARD.MORE_ACTIONS', { name: label })">
+        <button
+          data-testid="crm-card-recompute"
+          type="button"
+          role="menuitem"
+          class="flex min-h-10 w-full items-center gap-2 rounded-ui-control px-3 text-left text-ui-body-sm text-ui-text hover:bg-ui-hover"
+          @click="emit('recompute')"
+        >
+          <Icon icon="i-lucide-refresh-cw" class="size-4" />
+          {{ $t('CRM.CARD.RECOMPUTE_SCORE') }}
+        </button>
+        <button
+          data-testid="crm-card-base-client"
+          type="button"
+          role="menuitem"
+          class="flex min-h-10 w-full items-center gap-2 rounded-ui-control px-3 text-left text-ui-body-sm text-ui-text hover:bg-ui-hover"
+          @click="emit('markBaseClient')"
+        >
+          <Icon icon="i-lucide-contact-round" class="size-4" />
+          {{ $t('CRM.CARD.MARK_BASE_CLIENT') }}
+        </button>
+        <button
+          v-if="deal.status === 'open'"
+          data-testid="crm-card-discard"
+          type="button"
+          role="menuitem"
+          class="flex min-h-10 w-full items-center gap-2 rounded-ui-control px-3 text-left text-ui-body-sm text-ui-danger hover:bg-ui-hover"
+          @click="emit('discard')"
+        >
+          <Icon icon="i-lucide-ban" class="size-4" />
+          {{ $t('CRM.CARD.DISCARD') }}
+        </button>
+      </DsDropdown>
+    </div>
+
+    <!-- Regra 2: o bloco mais alto do card, porque é o estado mais alarmante. -->
+    <div
+      v-if="nextAction.tone === 'missing'"
+      data-testid="crm-card-no-next-action"
+      class="mt-2 flex items-center gap-2 rounded-ui-control bg-ui-danger-subtle px-2 py-1.5 text-ui-caption font-medium text-ui-danger"
+    >
+      <Icon icon="i-lucide-circle-alert" class="size-4 shrink-0" />
+      <span class="min-w-0 flex-1 truncate">
+        {{ $t('CRM.CARD.NO_NEXT_ACTION') }}
+      </span>
+      <button
+        data-testid="crm-card-schedule"
+        type="button"
+        class="shrink-0 rounded-ui-control px-2 py-0.5 underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus"
+        :aria-label="$t('CRM.CARD.SCHEDULE_NEXT_ACTION', { name: label })"
+        @click.stop="emit('scheduleNextAction')"
+      >
+        {{ $t('CRM.CARD.SCHEDULE') }}
+      </button>
     </div>
 
     <div
-      v-if="hasConversation || aiBadgeLabel || unreadCount"
-      class="flex flex-wrap items-center gap-1"
+      v-else-if="nextAction.tone !== 'none'"
+      data-testid="crm-card-next-action"
+      :data-tone="nextAction.tone"
+      class="mt-2 flex items-center gap-2 text-ui-caption"
+      :class="{
+        'text-ui-danger': nextAction.tone === 'overdue',
+        'text-ui-warning': nextAction.tone === 'today',
+        'text-ui-text-muted':
+          nextAction.tone === 'future' || nextAction.tone === 'undated',
+      }"
     >
-      <span
-        v-if="hasConversation"
-        class="inline-flex items-center gap-1 rounded-full bg-n-teal-3 px-1.5 py-0.5 text-[0.68rem] font-semibold text-n-teal-11"
-        title="Conversa vinculada"
-      >
-        <span class="i-lucide-message-square size-3" />
-        Chat
-      </span>
-      <span
-        v-if="aiBadgeLabel"
-        class="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[0.68rem] font-semibold"
-        :class="
-          aiHumanControlled
-            ? 'bg-n-ruby-3 text-n-ruby-11'
-            : 'bg-n-brand/10 text-n-brand'
-        "
-        title="Controle da IA"
-      >
-        <span class="i-lucide-bot size-3" />
-        {{ aiBadgeLabel }}
-      </span>
-      <span
-        v-if="unreadCount"
-        class="inline-flex items-center gap-1 rounded-full bg-n-ruby-3 px-1.5 py-0.5 text-[0.68rem] font-semibold text-n-ruby-11"
-        title="Mensagens nao lidas"
-      >
-        <span class="i-lucide-circle-dot size-3" />
-        {{ unreadCount > 9 ? '9+' : unreadCount }}
+      <Icon icon="i-lucide-calendar-clock" class="size-3.5 shrink-0" />
+      <span class="min-w-0 flex-1 truncate">
+        {{ dueLabel || $t('CRM.CARD.UNDATED') }}
       </span>
     </div>
 
-    <!-- Referência do atendimento (somente se diferente do nome) -->
-    <p v-if="dealRef" class="m-0 truncate text-xs text-n-slate-10">
-      {{ dealRef }}
-    </p>
-    <p v-if="contactPhone" class="m-0 truncate text-xs text-n-slate-10">
-      <span
-        class="i-lucide-phone inline-block size-3 mr-0.5 align-[-0.06rem]"
-      />
-      {{ contactPhone }}
-    </p>
-    <p v-if="deal.source" class="m-0 truncate text-xs text-n-slate-10">
-      <span
-        class="i-lucide-map-pin inline-block size-3 mr-0.5 align-[-0.06rem]"
-      />
-      {{
-        deal.source_detail
-          ? `${deal.source} · ${deal.source_detail}`
-          : deal.source
-      }}
-    </p>
-
-    <!-- Tags: área jurídica + urgência -->
     <div
-      v-if="deal.legal_area || deal.urgency_level"
-      class="flex flex-wrap gap-1"
+      class="mt-3 flex items-center justify-between gap-2 border-t border-ui-border-subtle pt-2"
     >
-      <CRMLegalAreaBadge
-        v-if="deal.legal_area"
-        :area="deal.legal_area"
-        compact
-      />
-      <span
-        v-if="deal.urgency_level"
-        class="inline-flex items-center rounded-full text-[0.6875rem] font-medium px-1.5 py-0.5"
-        :class="urgencyClass"
-      >
-        {{ urgencyLabel }}
-      </span>
-      <span
-        v-if="operationalLabel"
-        class="inline-flex items-center rounded-full text-[0.6875rem] font-semibold px-1.5 py-0.5"
-        :class="{
-          'bg-n-teal-3 text-n-teal-11':
-            operationalStatus === 'base_client' ||
-            operationalStatus === 'converted_client',
-          'bg-n-brand/10 text-n-brand':
-            operationalStatus === 'returning_client',
-          'bg-n-ruby-3 text-n-ruby-11': [
-            'invalid',
-            'spam',
-            'duplicated',
-            'no_lead',
-          ].includes(operationalStatus),
-          'bg-n-slate-3 text-n-slate-10': ![
-            'base_client',
-            'converted_client',
-            'returning_client',
-            'invalid',
-            'spam',
-            'duplicated',
-            'no_lead',
-          ].includes(operationalStatus),
-        }"
-      >
-        {{ operationalLabel }}
-      </span>
-    </div>
-
-    <!-- Próxima ação (compacta) -->
-    <p
-      v-if="hasNextAction"
-      class="m-0 line-clamp-2 overflow-hidden rounded-r-md bg-n-brand/5 py-1 px-2 text-[0.6875rem] text-n-slate-11 leading-relaxed border-l-2 border-n-brand"
-      :title="nextAction"
-    >
-      <span
-        class="i-lucide-lightbulb inline-block size-3 mr-1 align-[-0.06rem] text-n-brand"
-      />
-      {{ nextAction }}
-    </p>
-
-    <!-- Footer: botões de ação -->
-    <div
-      class="flex items-center justify-between gap-2 pt-1 mt-0.5 border-t border-n-slate-4/60"
-    >
-      <div class="flex items-center gap-1">
-        <button
-          type="button"
-          class="relative grid size-7 place-content-center rounded-md border border-n-teal-6 bg-n-teal-2 text-n-teal-10 transition-colors duration-150 hover:bg-n-teal-3 disabled:opacity-50"
-          title="Atender no Kanban"
-          @click.stop="emit('openDrawer', deal)"
+      <div class="flex min-w-0 items-center gap-1.5">
+        <CRMScoreBadge
+          :score="Number(deal.score_total || 0)"
+          :classification="deal.score_classification || ''"
+          size="sm"
+        />
+        <span
+          v-for="badge in badges.shown"
+          :key="badge"
+          data-testid="crm-card-badge"
+          class="truncate rounded-ui-control bg-ui-sunken px-1.5 text-ui-caption text-ui-text-muted"
         >
-          <span class="i-lucide-message-square-text size-3" />
-          <span
-            v-if="unreadCount"
-            class="absolute -right-1 -top-1 grid min-w-4 place-content-center rounded-full bg-n-ruby-9 px-1 text-[0.58rem] font-bold leading-4 text-white"
-          >
-            {{ unreadCount > 9 ? '9+' : unreadCount }}
-          </span>
-        </button>
-
-        <button
-          type="button"
-          class="grid size-7 place-content-center rounded-md border border-n-weak bg-n-slate-1 text-n-slate-10 transition-colors duration-150 hover:bg-n-slate-3 hover:text-n-slate-12 disabled:opacity-50"
-          title="Recalcular score"
-          :disabled="scoreRefreshing"
-          @click.stop="emit('recompute-score', deal)"
+          <template v-if="badge === 'ai'">{{
+            $t('CRM.CARD.AI_ACTIVE')
+          }}</template>
+          <template v-else>{{ badge }}</template>
+        </span>
+        <span
+          v-if="badges.overflow"
+          data-testid="crm-card-badge-overflow"
+          class="shrink-0 text-ui-caption text-ui-text-subtle"
         >
-          <span class="i-lucide-sparkles size-3" />
-        </button>
-
-        <a
-          v-if="dealDetailsUrl"
-          type="button"
-          class="grid size-7 place-content-center rounded-md border border-n-weak bg-n-slate-1 text-n-slate-10 transition-colors duration-150 hover:bg-n-slate-3 hover:text-n-slate-12"
-          :href="dealDetailsUrl"
-          title="Abrir ficha 360"
-          @click.stop
-        >
-          <span class="i-lucide-external-link size-3" />
-        </a>
-
-        <a
-          v-if="contactUrl"
-          class="grid size-7 place-content-center rounded-md border border-n-weak bg-n-slate-1 text-n-slate-10 transition-colors duration-150 hover:bg-n-slate-3 hover:text-n-slate-12"
-          :href="contactUrl"
-          title="Ver contato"
-          @click.stop
-        >
-          <span class="i-lucide-user size-3" />
-        </a>
-
-        <button
-          type="button"
-          class="grid size-7 place-content-center rounded-md border border-n-ruby-6 bg-n-ruby-2/0 text-n-ruby-9 transition-colors duration-150 hover:bg-n-ruby-2"
-          title="Marcar como spam"
-          @click.stop="emit('discardDeal', { deal, reason: 'spam' })"
-        >
-          <span class="i-lucide-ban size-3" />
-        </button>
-
-        <button
-          type="button"
-          class="grid size-7 place-content-center rounded-md border border-n-weak bg-n-slate-1 text-n-slate-10 transition-colors duration-150 hover:bg-n-slate-3 hover:text-n-slate-12"
-          title="Marcar Cliente Base"
-          @click.stop="emit('markBaseClient', deal)"
-        >
-          <span class="i-lucide-archive size-3" />
-        </button>
-
-        <button
-          type="button"
-          class="grid size-7 place-content-center rounded-md border border-n-ruby-6 bg-n-ruby-2/0 text-n-ruby-9 transition-colors duration-150 hover:bg-n-ruby-2"
-          title="Excluir definitivamente"
-          @click.stop="emit('delete-deal', deal)"
-        >
-          <span class="i-lucide-trash-2 size-3" />
-        </button>
+          {{ $t('CRM.CARD.MORE_BADGES', { count: badges.overflow }) }}
+        </span>
       </div>
+      <span
+        v-if="!isCompact && money"
+        data-testid="crm-card-value"
+        class="shrink-0 text-ui-caption font-medium text-ui-text"
+      >
+        {{ money }}
+      </span>
     </div>
+
+    <div class="mt-2 flex items-center gap-2 text-ui-caption text-ui-text-muted">
+      <span
+        v-if="!isCompact && deal.legal_area"
+        data-testid="crm-card-area"
+        class="truncate"
+      >
+        {{ deal.legal_area }}
+      </span>
+      <span
+        v-if="rotting.level === 'late'"
+        data-testid="crm-card-stale"
+        class="shrink-0 text-ui-danger"
+      >
+        {{ $t('CRM.CARD.STALE', { days: rotting.daysInStage }) }}
+      </span>
+      <span class="ml-auto min-w-0 shrink-0 truncate">
+        {{ ownerName || $t('CRM.CARD.NO_OWNER') }}
+      </span>
+      <a
+        :href="href"
+        :aria-label="$t('CRM.CARD.OPEN_RECORD', { name: label })"
+        class="shrink-0 rounded-ui-control p-1 hover:bg-ui-hover hover:text-ui-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus"
+        @click.stop
+      >
+        <Icon icon="i-lucide-arrow-up-right" class="size-4" />
+      </a>
+    </div>
+
+    <p
+      v-if="isDetailed && deal.next_best_action"
+      data-testid="crm-card-next-best-action"
+      class="mt-2 line-clamp-2 border-t border-ui-border-subtle pt-2 text-ui-caption text-ui-text-muted"
+    >
+      {{ deal.next_best_action }}
+    </p>
   </article>
 </template>
-
-<style scoped>
-.crm-deal-card {
-  position: relative;
-  background:
-    linear-gradient(
-      180deg,
-      rgb(var(--ds-shell-panel) / 0.94),
-      rgb(var(--ds-shell-panel-sunken) / 0.76)
-    );
-}
-
-.crm-deal-card::before {
-  position: absolute;
-  inset-block: 0.75rem;
-  left: 0;
-  width: 0.18rem;
-  border-radius: 999px;
-  background: rgb(var(--ds-shell-accent) / 0.68);
-  content: '';
-  opacity: 0.78;
-}
-
-.crm-deal-card:focus-visible {
-  outline: 2px solid rgb(var(--ds-shell-focus));
-  outline-offset: 2px;
-}
-
-.crm-deal-card:hover {
-  transform: translateY(-1px);
-}
-
-.crm-deal-card button,
-.crm-deal-card a {
-  min-width: 1.75rem;
-  min-height: 1.75rem;
-}
-</style>

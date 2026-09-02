@@ -1,4 +1,4 @@
-﻿<script>
+<script>
 import { defineAsyncComponent, useTemplateRef } from 'vue';
 import { mapGetters } from 'vuex';
 import { useAlert } from 'dashboard/composables';
@@ -296,8 +296,8 @@ export default {
     },
     replyBoxClass() {
       return {
-        'is-private': this.isPrivate,
-        'is-focused': this.isFocused || this.hasAttachments,
+        'is-private bg-ds-state-warning-soft': this.isPrivate,
+        'ring-2 ring-ds-border-focus': this.isFocused || this.hasAttachments,
       };
     },
     hasAttachments() {
@@ -1239,7 +1239,11 @@ export default {
 
 <template>
   <ReplyBoxBanner :message="message" :is-on-private-note="isOnPrivateNote" />
-  <div ref="replyEditor" class="reply-box" :class="replyBoxClass">
+  <div
+    ref="replyEditor"
+    class="reply-box relative mx-2 mb-2 rounded-2xl bg-ds-bg-surface text-ds-fg-default shadow-md ring-1 ring-inset ring-ds-border-subtle transition-shadow duration-150"
+    :class="replyBoxClass"
+  >
     <ReplyTopPanel
       :mode="replyType"
       :conversation-id="conversationId"
@@ -1273,7 +1277,10 @@ export default {
       leave-from-class="opacity-100 translate-y-0 scale-100"
       leave-to-class="opacity-0 translate-y-2 scale-[0.98]"
     >
-      <div :key="copilot.editorTransitionKey.value" class="reply-box__top">
+      <div
+        :key="copilot.editorTransitionKey.value"
+        class="reply-box__top relative px-3"
+      >
         <ReplyToMessage
           v-if="shouldShowReplyToMessage"
           :message="inReplyTo"
@@ -1282,8 +1289,10 @@ export default {
         <EmojiInput
           v-if="showEmojiPicker"
           v-on-clickaway="hideEmojiPicker"
+          class="!-bottom-10 !top-[unset] [&::before]:!bottom-2 [&::before]:drop-shadow-[0_4px_4px_rgb(0_0_0/0.08)] ltr:!-left-80 ltr:!right-[unset] ltr:[&::before]:!-right-4 ltr:[&::before]:!-rotate-90 rtl:!-right-80 rtl:!left-[unset] rtl:[&::before]:!-left-4 rtl:[&::before]:!rotate-90"
           :class="{
-            'emoji-dialog--expanded': isOnExpandedLayout || popOutReplyBox,
+            '!bottom-0 !left-[unset] !z-[100] [&::before]:!-bottom-2 [&::before]:!rotate-0 ltr:[&::before]:!left-1 rtl:[&::before]:!right-1':
+              isOnExpandedLayout || popOutReplyBox,
           }"
           :on-click="addIntoEditor"
         />
@@ -1322,11 +1331,15 @@ export default {
           v-model="message"
           :conversation-id="conversationId"
           :editor-id="editorStateId"
-          class="input popover-prosemirror-menu"
+          class="input popover-prosemirror-menu [&_.ProseMirror-woot-style]:!min-h-[3.75rem]"
+          :class="
+            popOutReplyBox
+              ? '[&_.ProseMirror-woot-style]:!max-h-none'
+              : '[&_.ProseMirror-woot-style]:!max-h-40'
+          "
           :is-private="isOnPrivateNote"
           :placeholder="messagePlaceHolder"
           :update-selection-with="updateEditorSelectionWith"
-          :min-height="4"
           :disabled="isEditorDisabled"
           enable-variables
           :variables="messageVariables"
@@ -1452,43 +1465,3 @@ export default {
     />
   </div>
 </template>
-
-<style lang="scss" scoped>
-.send-button {
-  @apply mb-0;
-}
-
-.reply-box {
-  @apply relative mb-2 mx-2 border border-n-weak rounded-xl bg-n-solid-1;
-
-  &.is-private {
-    @apply bg-n-solid-amber dark:border-n-amber-3/10 border-n-amber-12/5;
-  }
-}
-
-.send-button {
-  @apply mb-0;
-}
-
-.reply-box__top {
-  @apply relative py-0 px-3 -mt-px;
-}
-
-.emoji-dialog {
-  @apply top-[unset] -bottom-10 ltr:-left-80 ltr:right-[unset] rtl:left-[unset] rtl:-right-80;
-
-  &::before {
-    filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.08));
-    @apply ltr:-right-4 bottom-2 rtl:-left-4 ltr:rotate-[270deg] rtl:rotate-[90deg];
-  }
-}
-
-.emoji-dialog--expanded {
-  @apply left-[unset] bottom-0 absolute z-[100];
-
-  &::before {
-    transform: rotate(0deg);
-    @apply ltr:left-1 rtl:right-1 -bottom-2;
-  }
-}
-</style>

@@ -3,13 +3,8 @@
 describe Enterprise::Billing::HandleStripeEventService do
   subject(:stripe_event_service) { described_class }
 
-  let(:event) { double }
-  let(:data) { double }
-  let(:subscription) { double }
-  let!(:account) { create(:account, custom_attributes: { stripe_customer_id: 'cus_123' }) }
-
   before do
-    # Create cloud plans configuration
+    InstallationConfig.where(name: %w[ChusteRM_CLOUD_PLANS CAPTAIN_CLOUD_PLAN_LIMITS]).delete_all
     create(:installation_config, {
              name: 'ChusteRM_CLOUD_PLANS',
              value: [
@@ -39,6 +34,13 @@ describe Enterprise::Billing::HandleStripeEventService do
     allow(subscription).to receive(:customer).and_return('cus_123')
     allow(event).to receive(:type).and_return('customer.subscription.updated')
   end
+
+
+  let(:event) { double }
+  let(:data) { double }
+  let(:subscription) { double }
+  let!(:account) { create(:account, custom_attributes: { stripe_customer_id: 'cus_123' }) }
+
 
   describe 'subscription update handling' do
     it 'updates account attributes and disables premium features for default plan' do

@@ -155,6 +155,20 @@ By default, it renders:
     };
   </script>
   <% if @portal.channel_web_widget.present? && !@is_plain_layout_enabled %>
-  <%= @portal.channel_web_widget.web_widget_script.html_safe %>
+  <script>
+    (function(d, t) {
+      var BASE_URL = "<%= j ENV.fetch('FRONTEND_URL', '') %>";
+      var g = d.createElement(t), s = d.getElementsByTagName(t)[0];
+      g.src = BASE_URL + "/packs/js/sdk.js";
+      g.async = true;
+      s.parentNode.insertBefore(g, s);
+      g.onload = function() {
+        window.ChusteRMSDK.run({
+          websiteToken: "<%= j @portal.channel_web_widget.website_token %>",
+          baseUrl: BASE_URL
+        });
+      };
+    })(document, "script");
+  </script>
   <% end %>
 </html>

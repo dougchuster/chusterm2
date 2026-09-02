@@ -173,6 +173,29 @@ class ActionCableListener < BaseListener
     broadcast(account, [user.pubsub_token], CONVERSATION_MENTIONED, conversation.push_event_data)
   end
 
+  # PERF-02: eventos de deals do CRM para o board em realtime (room da conta)
+  def crm_deal_created(event)
+    deal = event.data[:deal]
+    broadcast(deal.account, [account_token(deal.account)], CRM_DEAL_CREATED, deal.push_event_data)
+  end
+
+  def crm_deal_updated(event)
+    deal = event.data[:deal]
+    payload = deal.push_event_data.merge(
+      changed_attributes: event.data[:changed_attributes],
+      previous_stage_id: event.data[:previous_stage_id]
+    )
+    broadcast(deal.account, [account_token(deal.account)], CRM_DEAL_UPDATED, payload)
+  end
+
+  def crm_deal_deleted(event)
+    deal_data = event.data[:deal_data]
+    account = Account.find_by(id: deal_data[:account_id])
+    return if account.blank?
+
+    broadcast(account, [account_token(account)], CRM_DEAL_DELETED, deal_data)
+  end
+
   private
 
   def account_token(account)

@@ -4,6 +4,12 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
   MAX_MEDIA_UNDERSTANDING_WAIT_ATTEMPTS = 20
   DEFAULT_RESPONSE_MAX_WAIT_SECONDS = 45
   RESPONSE_GENERATION_LOCK_TTL = 90.seconds
+  RESPONSE_PART_DELAY_SECONDS = 6.seconds
+  UNREQUESTED_HANDOFF_FALLBACK =
+    'Vou continuar seu atendimento por aqui. Conte em uma frase o ponto que você quer resolver agora.'.freeze
+  UNREADABLE_MEDIA_CUSTOMER_MESSAGE =
+    'Recebi o arquivo, mas não consegui ler o conteúdo com segurança. ' \
+    'Reenvie em PDF ou em fotos nítidas; vou encaminhar o atendimento para a equipe verificar o documento.'.freeze
   retry_on ActiveStorage::FileNotFoundError, attempts: 3, wait: 2.seconds
   retry_on Faraday::BadRequestError, attempts: 3, wait: 2.seconds
 
@@ -18,7 +24,6 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
     return unless conversation_pending?
     return unless inbox_captain_active?
     ensure_captain_state!
-    return if customer_contact_handoff!
     return if public_human_response_exists?
     return if public_human_response_after_last_ai?
     return if public_human_response_after_latest_incoming?
@@ -26,9 +31,12 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
     return unless latest_public_message_needs_ai_response?
     return if wait_for_debounce_window?
     return if wait_for_pending_media_understanding?
+    return if handoff_unreadable_media_context!
     return unless acquire_response_generation_lock
 
     begin
+      return process_explicit_customer_handoff if customer_requested_human_handoff?
+
       Captain::FlowRouter.new(conversation: @conversation).route! if @conversation.captain_conversation_state.nil? || @conversation.captain_conversation_state.captain_flow_id.blank?
 
       runtime = Captain::FlowRuntime.new(conversation: @conversation)
@@ -102,6 +110,8 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
 
   def process_response
     return unless conversation_pending?
+    return if public_outgoing_received_during_generation?
+    return if reschedule_for_incoming_received_during_generation?
 
     if handoff_requested?
       process_action('handoff')
@@ -129,6 +139,10 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
       .select { |m| m.message_type == 'incoming' }
       .map(&:id)
       .max
+    @last_context_outgoing_id = messages
+      .select { |m| m.message_type == 'outgoing' }
+      .map(&:id)
+      .max
 
     messages.map do |message|
       message_hash = {
@@ -151,7 +165,23 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
   end
 
   def handoff_requested?
-    @response['response'] == 'conversation_handoff'
+    return false unless @response['response'] == 'conversation_handoff'
+    return true if customer_requested_human_handoff?
+
+    Rails.logger.warn(
+      "[CAPTAIN][ResponseBuilderJob] Ignoring unrequested LLM handoff for conversation #{@conversation.id}"
+    )
+    @response['response'] = UNREQUESTED_HANDOFF_FALLBACK
+    @response['reasoning'] = 'Handoff rejected because the customer did not request a human'
+    false
+  end
+
+  def customer_requested_human_handoff?
+    return false if @inbox.captain_inbox&.handoff_strategy == 'manual_only'
+
+    requested = Captain::Conversation::HumanHandoffRequestService.requested_in_conversation?(@conversation)
+    @handoff_trigger = 'customer_request' if requested
+    requested
   end
 
   def process_action(action)
@@ -165,6 +195,17 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
         send_out_of_office_message_if_applicable
       end
     end
+  end
+
+  def process_explicit_customer_handoff
+    return unless conversation_pending?
+
+    Current.executed_by = @assistant
+    @response = {
+      'response' => 'conversation_handoff',
+      'reasoning' => 'Cliente solicitou atendimento direto com a Dra. Paula Matos.'
+    }
+    process_action('handoff')
   end
 
   def send_out_of_office_message_if_applicable
@@ -198,7 +239,7 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
     )
   rescue StandardError => e
     Rails.logger.warn "[CAPTAIN][ResponseBuilderJob] CRM handoff note failed: #{e.class} - #{e.message}"
-    ChusteRMExceptionTracker.new(e, account: account).capture_exception
+    ::ChusteRMExceptionTracker.new(e, account: account).capture_exception
   end
 
   def recent_crm_handoff_note_exists?
@@ -211,23 +252,79 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
 
   def create_messages
     validate_message_content!(@response['response'])
+
+    # Apply semantic/identity/question limits to the complete response before
+    # splitting it into WhatsApp bubbles. Applying the policy per part allowed
+    # a second bubble to restart intake and request CPF after the first one had
+    # already answered the customer's question.
+    sanitized_response = response_policy.apply(@response['response'])
+    validate_message_content!(sanitized_response)
+    partes = Captain::Conversation::MessageSegmenterService.new(text: sanitized_response).perform
+    partes = prioritize_review_notice(partes)
+
     create_outgoing_message(
-      @response['response'],
+      partes.first,
       agent_name: @response['agent_name'],
-      context_incoming_id: @last_context_incoming_id
+      context_incoming_id: @last_context_incoming_id,
+      response_metadata: {
+        response_origin: @response['response_origin'],
+        ai_error_category: @response['ai_error_category']
+      },
+      policy_applied: true
     )
+
+    schedule_remaining_parts(partes.drop(1))
+  end
+
+  # As partes seguintes saem espaçadas, para o atendimento chegar em mensagens
+  # curtas. Cada uma é reavaliada no envio e descartada se um humano assumir.
+  def schedule_remaining_parts(partes)
+    return if partes.blank?
+
+    partes.each_with_index do |parte, indice|
+      Captain::Conversation::ResponsePartJob
+        .set(wait: RESPONSE_PART_DELAY_SECONDS * (indice + 1))
+        .perform_later(
+          @conversation,
+          @assistant,
+          parte,
+          @response['agent_name'],
+          policy_applied: true,
+          origin_incoming_id: @last_context_incoming_id
+        )
+    end
+  end
+
+  def prioritize_review_notice(partes)
+    notice_index = partes.index do |parte|
+      Captain::Conversation::ResponsePolicyService.review_notice?(parte)
+    end
+    return partes if notice_index.blank? || notice_index.zero?
+
+    prioritized = partes.dup
+    notice_part = prioritized.delete_at(notice_index)
+    combined_first = "#{prioritized.first} #{notice_part}".strip
+
+    if combined_first.length <= Captain::Conversation::MessageSegmenterService::MAX_CHARACTERS_PER_PART
+      prioritized[0] = combined_first
+    else
+      prioritized.unshift(notice_part)
+    end
+    prioritized
   end
 
   def validate_message_content!(content)
     raise ArgumentError, 'Message content cannot be blank' if content.blank?
   end
 
-  def create_outgoing_message(message_content, agent_name: nil, context_incoming_id: nil)
-    message_content = response_policy.apply(message_content)
+  def create_outgoing_message(message_content, agent_name: nil, context_incoming_id: nil, response_metadata: {}, policy_applied: false)
+    message_content = response_policy.apply(message_content) unless policy_applied
     validate_message_content!(message_content)
 
     additional_attrs = {}
     additional_attrs[:agent_name] = agent_name if agent_name.present?
+    additional_attrs[:ai_response_origin] = response_metadata[:response_origin] if response_metadata[:response_origin].present?
+    additional_attrs[:ai_error_category] = response_metadata[:ai_error_category] if response_metadata[:ai_error_category].present?
     # Records the last incoming message ID that was in context when this response was generated.
     # Used by latest_public_message_needs_ai_response? to handle messages that arrived during LLM generation.
     additional_attrs[:context_latest_incoming_id] = context_incoming_id if context_incoming_id.present?
@@ -241,7 +338,15 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
       additional_attributes: additional_attrs
     )
     mark_last_ai_message!(message)
+    mark_analysis_notice_delivered!(message.content)
     message
+  end
+
+  def mark_analysis_notice_delivered!(content)
+    return unless Captain::Conversation::ResponsePolicyService.review_notice?(content)
+
+    state = CaptainConversationState.for_conversation!(@conversation)
+    state.update!(analysis_notice_sent_at: Time.current) if state.analysis_notice_sent_at.blank?
   end
 
   def schedule_followup_if_unhandled_messages
@@ -259,13 +364,46 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
     end
   end
 
+  def reschedule_for_incoming_received_during_generation?
+    return false unless @last_context_incoming_id
+
+    latest_incoming = latest_public_incoming_message
+    return false if latest_incoming.blank? || latest_incoming.id <= @last_context_incoming_id
+
+    Rails.logger.info(
+      "[CAPTAIN][ResponseBuilderJob] Discarding stale response for conversation #{@conversation.id}; " \
+      "context_incoming_id=#{@last_context_incoming_id} latest_incoming_id=#{latest_incoming.id}"
+    )
+    schedule_response(
+      response_delay_seconds,
+      latest_incoming.id,
+      @burst_started_at || latest_incoming.created_at
+    )
+    true
+  end
+
+  def public_outgoing_received_during_generation?
+    newer_outgoing = @conversation.messages
+      .where(message_type: :outgoing, private: false)
+      .where('id > ?', @last_context_outgoing_id || 0)
+      .exists?
+    return false unless newer_outgoing
+
+    Rails.logger.info(
+      "[CAPTAIN][ResponseBuilderJob] Discarding response for conversation #{@conversation.id}; " \
+      'a human or another automation replied during generation'
+    )
+    true
+  end
+
   def wait_for_pending_media_understanding?
     pending_attachments = pending_media_attachments_for_ai_response
     return false if pending_attachments.blank?
 
     if @media_wait_attempt >= MAX_MEDIA_UNDERSTANDING_WAIT_ATTEMPTS
-      Rails.logger.info(
-        "[CAPTAIN][ResponseBuilderJob] Media still pending after #{@media_wait_attempt} attempts; continuing conversation #{@conversation.id}"
+      Rails.logger.warn(
+        "[CAPTAIN][ResponseBuilderJob] Media still pending after #{@media_wait_attempt} attempts; " \
+        "pausing AI for conversation #{@conversation.id}"
       )
       return false
     end
@@ -322,13 +460,20 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
 
     status = attachment.meta&.dig('media_understanding_status')
     return false if %w[failed skipped].include?(status)
-    return false unless account.audio_transcriptions.present? && Llm::MediaConfig.transcription_configured?
+    return false unless audio_transcription_enabled_for_ai_context?
 
     status.blank? || status == 'processing'
   end
 
+  def audio_transcription_enabled_for_ai_context?
+    return false unless Llm::MediaConfig.transcription_configured?
+    return true if account.audio_transcriptions.nil?
+
+    ActiveModel::Type::Boolean.new.cast(account.audio_transcriptions)
+  end
+
   def media_pending_for_ai_context?(attachment)
-    return false unless Llm::GeminiMultimodalService.active?(purpose: :media)
+    return false unless Llm::OpenRouterMultimodalService.active?(purpose: :media)
     return false if attachment.meta&.dig('image_description').present? ||
                     attachment.meta&.dig('video_description').present? ||
                     attachment.meta&.dig('ocr_text').present?
@@ -337,8 +482,93 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
     status.blank? || status == 'processing'
   end
 
+  def handoff_unreadable_media_context!
+    unreadable_attachments = unreadable_media_attachments_for_ai_response
+    return false if unreadable_attachments.blank?
+
+    reason = 'Mídia sem contexto seguro para IA; leitura falhou ou excedeu o tempo nos anexos: ' \
+             "#{unreadable_attachments.map(&:id).join(', ')}"
+    Rails.logger.warn("[CAPTAIN][ResponseBuilderJob] #{reason} conversation=#{@conversation.id}")
+    create_unreadable_media_public_message
+    create_unreadable_media_private_note(unreadable_attachments)
+    mark_conversation_human_only!(trigger: 'provider_failure', reason: reason)
+    true
+  end
+
+  def unreadable_media_attachments_for_ai_response
+    incoming_messages_requiring_response.flat_map(&:attachments).select do |attachment|
+      unreadable_media_attachment_for_ai_context?(attachment)
+    end
+  end
+
+  def unreadable_media_attachment_for_ai_context?(attachment)
+    return false if usable_media_context?(attachment)
+    return false unless attachment.audio? || attachment.image? || attachment.video? || attachment.file?
+
+    status = attachment.meta&.dig('media_understanding_status')
+    return true if %w[failed skipped].include?(status)
+    return true if %w[processed completed].include?(status)
+
+    @media_wait_attempt >= MAX_MEDIA_UNDERSTANDING_WAIT_ATTEMPTS && attachment_pending_for_ai_context?(attachment)
+  end
+
+  def usable_media_context?(attachment)
+    meta = attachment.meta.to_h
+
+    return meta['transcribed_text'].present? if attachment.audio?
+    return meta.values_at('image_description', 'ocr_text').any?(&:present?) || image_available_to_model?(attachment) if attachment.image?
+    return meta.values_at('video_description', 'transcribed_text').any?(&:present?) if attachment.video?
+    return meta.values_at('ocr_text', 'image_description', 'transcribed_text').any?(&:present?) if attachment.file?
+
+    false
+  end
+
+  def image_available_to_model?(attachment)
+    attachment.external_url.present? || attachment.download_url.present? || attachment.file.attached?
+  end
+
+  def create_unreadable_media_public_message
+    return if recent_unreadable_media_public_message_exists?
+
+    create_outgoing_message(
+      UNREADABLE_MEDIA_CUSTOMER_MESSAGE,
+      context_incoming_id: latest_public_incoming_message&.id
+    )
+  end
+
+  def recent_unreadable_media_public_message_exists?
+    @conversation.messages
+                 .where(message_type: :outgoing, private: false, sender: @assistant)
+                 .where('created_at > ?', 30.minutes.ago)
+                 .where('content LIKE ?', 'Recebi o arquivo, mas não consegui ler o conteúdo%')
+                 .exists?
+  end
+
+  def create_unreadable_media_private_note(failed_attachments)
+    return if recent_unreadable_media_note_exists?
+
+    @conversation.messages.create!(
+      message_type: :outgoing,
+      private: true,
+      sender: @assistant,
+      account: @conversation.account,
+      inbox: @conversation.inbox,
+      content: 'IA pausada: não foi possível transcrever ou analisar a mídia após as tentativas automáticas. ' \
+               "Anexos: #{failed_attachments.map(&:id).join(', ')}. Atendimento humano necessário para evitar resposta sem contexto."
+    )
+  end
+
+  def recent_unreadable_media_note_exists?
+    @conversation.messages
+                 .where(private: true, sender: @assistant)
+                 .where('created_at > ?', 30.minutes.ago)
+                 .where('content LIKE ?', 'IA pausada: não foi possível transcrever ou analisar a mídia%')
+                 .exists?
+  end
+
   def handle_error(error)
     log_error(error)
+    @handoff_trigger = 'provider_failure'
     process_action('handoff') if conversation_pending?
     true
   end
@@ -363,7 +593,7 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
     normalized = ActiveSupport::Inflector.transliterate(latest_message).downcase
 
     response_text = if greeting_message?(normalized)
-                      'Olá! Aqui é a Dra. Paula Matos, do Coimbra & Ruas. Como posso te ajudar hoje?'
+                      'Olá! Sou a Dra. Letícia, advogada responsável pelo atendimento inicial da Dra. Paula Matos. Como posso ajudar você hoje?'
                     elsif normalized.include?('planejamento') || normalized.include?('como funciona')
                       'Claro. O planejamento previdenciário ajuda a conferir CNIS, contribuições e o melhor momento antes de qualquer pedido no INSS. Para começarmos, me diga sua idade.'
                     elsif normalized.include?('nao sei') || normalized.include?('nao tenho certeza')
@@ -382,13 +612,6 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
     normalized.match?(/\A(oi|ola|bom dia|boa tarde|boa noite|tudo bem|opa)[\s!.?]*\z/)
   end
 
-  def customer_contact_handoff!
-    return false unless Crm::SavedContactCustomerClassifier.customer_contact?(@conversation.contact)
-
-    mark_conversation_human_only!('Contato classificado como cliente; atendimento por IA desativado.')
-    true
-  end
-
   def public_human_response_after_latest_incoming?
     latest_incoming = latest_public_incoming_message
     return false if latest_incoming.blank?
@@ -401,7 +624,7 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
     return false if human_reply.blank?
     return false if ai_manually_resumed_after?(human_reply)
 
-    mark_conversation_human_only!('Atendimento humano detectado; IA pausada automaticamente.')
+    mark_conversation_human_only!(trigger: 'human_message')
     true
   end
 
@@ -410,7 +633,7 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
     return false if latest_human.blank?
     return false if ai_manually_resumed_after?(latest_human)
 
-    mark_conversation_human_only!('Atendimento humano detectado; IA pausada automaticamente.')
+    mark_conversation_human_only!(trigger: 'human_message')
     true
   end
 
@@ -462,21 +685,27 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
 
   def ai_manually_resumed_after?(latest_human)
     state = @conversation.captain_conversation_state
-    return false if state.blank? || state.human_controlled?
-    return false unless state.handoff_reason == 'IA retomada manualmente'
-
-    state.updated_at > latest_human.created_at
+    state&.manually_resumed_after?(latest_human.created_at) || false
   end
 
   def mark_human_attending!
-    mark_conversation_human_only!('Atendimento humano detectado; IA pausada automaticamente.')
+    mark_conversation_human_only!(trigger: 'human_message')
     true
   end
 
-  def mark_conversation_human_only!(reason)
-    state = @conversation.captain_conversation_state || CaptainConversationState.for_conversation!(@conversation)
-    state.apply_ai_mode!(mode: 'human_only', reason: reason, actor: nil)
+  def mark_conversation_human_only!(trigger:, reason: nil)
+    decision = Captain::HandoffPolicy.evaluate(trigger: trigger, reason: reason)
+    return false unless decision[:handoff]
+
+    state = CaptainConversationState.for_conversation!(@conversation)
+    state.apply_ai_mode!(
+      mode: 'human_only',
+      reason: decision[:reason],
+      reason_code: decision[:reason_code],
+      actor: nil
+    )
     @conversation.bot_handoff! if @conversation.pending? || @conversation.snoozed?
+    true
   end
 
   def ai_response_paused?
@@ -488,7 +717,7 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
   end
 
   def ensure_captain_state!
-    state = @conversation.captain_conversation_state || CaptainConversationState.for_conversation!(@conversation)
+    state = CaptainConversationState.for_conversation!(@conversation)
     state.captain_assistant ||= @assistant
     state.ai_mode = inbox.captain_inbox.ai_mode if inbox.captain_inbox&.ai_mode.present? && state.ai_mode.blank?
     state.save! if state.new_record? || state.changed?
@@ -503,10 +732,16 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
   end
 
   def mark_ai_handoff!
-    state = @conversation.captain_conversation_state || CaptainConversationState.for_conversation!(@conversation)
+    trigger = @handoff_trigger.presence || 'assistant_request'
+    decision = Captain::HandoffPolicy.evaluate(
+      trigger: trigger,
+      reason: @response&.dig('reasoning').presence
+    )
+    state = CaptainConversationState.for_conversation!(@conversation)
     state.apply_ai_mode!(
       mode: 'human_only',
-      reason: @response&.dig('reasoning').presence || 'Handoff solicitado pela IA',
+      reason: decision[:reason],
+      reason_code: decision[:reason_code],
       actor: nil
     )
   end
@@ -595,13 +830,24 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
   end
 
   def acquire_response_generation_lock
-    Redis::Alfred.set(response_generation_lock_key, true, nx: true, ex: RESPONSE_GENERATION_LOCK_TTL.to_i).tap do |locked|
+    @response_generation_lock_token = SecureRandom.uuid
+    Redis::Alfred.set(
+      response_generation_lock_key,
+      @response_generation_lock_token,
+      nx: true,
+      ex: RESPONSE_GENERATION_LOCK_TTL.to_i
+    ).tap do |locked|
       Rails.logger.info("[CAPTAIN][ResponseBuilderJob] Response already being generated for conversation #{@conversation.id}") unless locked
     end
   end
 
   def release_response_generation_lock
-    Redis::Alfred.delete(response_generation_lock_key)
+    return if @response_generation_lock_token.blank?
+
+    Redis::Alfred.delete_if_value(
+      response_generation_lock_key,
+      @response_generation_lock_token
+    )
   end
 
   def response_generation_lock_key

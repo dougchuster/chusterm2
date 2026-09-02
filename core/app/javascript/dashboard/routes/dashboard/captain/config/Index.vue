@@ -17,8 +17,8 @@ const ASSISTANT_FEATURES = [
   },
   {
     key: 'feature_memory',
-    label: 'Memoria persistente',
-    description: 'Mantem contexto resumido entre interacoes da conversa.',
+    label: 'Memória persistente',
+    description: 'Mantém contexto resumido entre interações da conversa.',
   },
   {
     key: 'feature_contact_attributes',
@@ -27,13 +27,13 @@ const ASSISTANT_FEATURES = [
   },
   {
     key: 'feature_citation',
-    label: 'Citacoes de fonte',
-    description: 'Inclui referencias quando a resposta usa conhecimento.',
+    label: 'Citações de fonte',
+    description: 'Inclui referências quando a resposta usa conhecimento.',
   },
 ];
 
 const AI_MODES = [
-  { key: 'auto', label: 'Automatico' },
+  { key: 'auto', label: 'Automático' },
   { key: 'supervised', label: 'Supervisionado' },
   { key: 'paused', label: 'Pausado' },
   { key: 'human_only', label: 'Somente humano' },
@@ -41,8 +41,6 @@ const AI_MODES = [
 
 const HANDOFF_STRATEGIES = [
   { key: 'human_request', label: 'Pedido humano' },
-  { key: 'human_request_or_score', label: 'Pedido ou score' },
-  { key: 'score_threshold', label: 'Limite de score' },
   { key: 'manual_only', label: 'Manual' },
 ];
 
@@ -66,11 +64,11 @@ const INVENTORY_ROUTES = {
 const INVENTORY_LABELS = {
   faqs: 'FAQs',
   documents: 'Documentos',
-  scenarios: 'Cenarios',
+  scenarios: 'Cenários',
   playbooks: 'Playbooks',
   tools: 'Ferramentas',
   campaigns: 'Campanhas',
-  conversation_memory: 'Memoria',
+  conversation_memory: 'Memória',
   flows: 'Fluxos',
 };
 
@@ -366,10 +364,10 @@ onMounted(fetchConfig);
         >
           <div class="min-w-0">
             <h1 class="text-xl font-medium text-n-slate-12">
-              Configuracoes existentes no backend
+              Configurações existentes no backend
             </h1>
             <p class="mt-1 max-w-3xl text-sm text-n-slate-11">
-              Uma tela para operar o agente sem alternar entre muitas paginas.
+              Uma tela para operar o agente sem alternar entre muitas páginas.
             </p>
           </div>
           <Button
@@ -388,7 +386,7 @@ onMounted(fetchConfig);
                 Identidade e comportamento
               </h2>
               <p class="text-sm text-n-slate-11">
-                Nome, contexto principal e mensagens padrao do atendimento.
+                Nome, contexto principal e mensagens padrão do atendimento.
               </p>
             </div>
 
@@ -402,7 +400,7 @@ onMounted(fetchConfig);
                 />
               </label>
               <label class="flex flex-col gap-1 text-sm">
-                <span class="font-medium text-n-slate-12">Produto ou area</span>
+                <span class="font-medium text-n-slate-12">Produto ou área</span>
                 <input
                   v-model="assistantForm.product_name"
                   class="h-10 rounded-md border border-n-weak bg-n-alpha-1 px-3 text-n-slate-12"
@@ -412,7 +410,7 @@ onMounted(fetchConfig);
             </div>
 
             <label class="flex flex-col gap-1 text-sm">
-              <span class="font-medium text-n-slate-12">Descricao</span>
+              <span class="font-medium text-n-slate-12">Descrição</span>
               <input
                 v-model="assistantForm.description"
                 class="h-10 rounded-md border border-n-weak bg-n-alpha-1 px-3 text-n-slate-12"
@@ -421,7 +419,7 @@ onMounted(fetchConfig);
             </label>
 
             <label class="flex flex-col gap-1 text-sm">
-              <span class="font-medium text-n-slate-12">Instrucoes</span>
+              <span class="font-medium text-n-slate-12">Instruções</span>
               <textarea
                 v-model="assistantForm.instructions"
                 class="min-h-44 rounded-md border border-n-weak bg-n-alpha-1 p-3 text-n-slate-12"
@@ -463,7 +461,7 @@ onMounted(fetchConfig);
                 Recursos do agente
               </h2>
               <p class="text-sm text-n-slate-11">
-                Flags internas que controlam memoria, RAG e contexto do CRM.
+                Flags internas que controlam memória, RAG e contexto do CRM.
               </p>
             </div>
 
@@ -481,14 +479,14 @@ onMounted(fetchConfig);
                 <span class="block font-medium text-n-slate-12">
                   {{ feature.label }}
                 </span>
-                <span class="block text-n-slate-10">
+                <span class="block text-n-slate-11">
                   {{ feature.description }}
                 </span>
               </span>
             </label>
 
             <div class="rounded-md bg-n-alpha-1 p-3 text-sm text-n-slate-11">
-              Ferramentas disponiveis para o agente:
+              Ferramentas disponíveis para o agente:
               <span class="font-semibold text-n-slate-12">
                 {{ payload.assistant.available_tools_count }}
               </span>
@@ -548,7 +546,7 @@ onMounted(fetchConfig);
                   v-model="assistantForm[field[0]]"
                   class="h-10 rounded-md border border-n-weak bg-n-alpha-1 px-3 text-n-slate-12"
                 >
-                  <option value="">Padrao da conta</option>
+                  <option value="">Padrão da conta</option>
                   <option
                     v-for="model in allModelOptions"
                     :key="model.id"
@@ -656,6 +654,7 @@ onMounted(fetchConfig);
                 </label>
                 <select
                   v-model="accountModelForm[feature.key]"
+                  :aria-label="`Modelo para ${feature.key}`"
                   class="h-10 rounded-md border border-n-weak bg-n-solid-1 px-3 text-sm text-n-slate-12"
                 >
                   <option
@@ -682,6 +681,7 @@ onMounted(fetchConfig);
             </div>
             <textarea
               v-model="guardrailsText"
+              aria-label="Guardrails do agente"
               class="min-h-52 rounded-md border border-n-weak bg-n-alpha-1 p-3 text-sm text-n-slate-12"
             />
           </div>
@@ -698,6 +698,7 @@ onMounted(fetchConfig);
             </div>
             <textarea
               v-model="responseGuidelinesText"
+              aria-label="Diretrizes de resposta do agente"
               class="min-h-52 rounded-md border border-n-weak bg-n-alpha-1 p-3 text-sm text-n-slate-12"
             />
           </div>
@@ -798,7 +799,7 @@ onMounted(fetchConfig);
                   />
                 </label>
                 <label class="flex flex-col gap-1 text-sm">
-                  <span class="font-medium text-n-slate-12">Espera max.</span>
+                  <span class="font-medium text-n-slate-12">Espera máx.</span>
                   <input
                     v-model.number="inbox.response_max_wait_seconds"
                     class="h-10 rounded-md border border-n-weak bg-n-solid-1 px-3 text-n-slate-12"
@@ -814,7 +815,7 @@ onMounted(fetchConfig);
         <section class="flex flex-col gap-4">
           <div>
             <h2 class="text-base font-medium text-n-slate-12">
-              Inventario do backend
+              Inventário do backend
             </h2>
             <p class="text-sm text-n-slate-11">
               Tudo que ja existe para este agente, com atalhos para editar nos

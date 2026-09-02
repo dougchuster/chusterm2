@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_05_21_000001) do
+ActiveRecord::Schema[7.2].define(version: 2026_08_28_000006) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -131,7 +131,6 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_21_000001) do
     t.bigint "account_id"
     t.integer "bot_type", default: 0
     t.jsonb "bot_config", default: {}
-    t.string "secret"
     t.index ["account_id"], name: "index_agent_bots_on_account_id"
   end
 
@@ -261,30 +260,6 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_21_000001) do
     t.index ["account_id"], name: "index_automation_rules_on_account_id"
   end
 
-  create_table "calls", force: :cascade do |t|
-    t.bigint "account_id", null: false
-    t.bigint "inbox_id", null: false
-    t.bigint "conversation_id", null: false
-    t.bigint "contact_id", null: false
-    t.bigint "message_id"
-    t.bigint "accepted_by_agent_id"
-    t.string "provider_call_id", null: false
-    t.integer "provider", default: 0, null: false
-    t.integer "direction", null: false
-    t.string "status", default: "ringing", null: false
-    t.datetime "started_at"
-    t.integer "duration_seconds"
-    t.string "end_reason"
-    t.jsonb "meta", default: {}
-    t.text "transcript"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["account_id", "contact_id"], name: "index_calls_on_account_id_and_contact_id"
-    t.index ["account_id", "conversation_id"], name: "index_calls_on_account_id_and_conversation_id"
-    t.index ["message_id"], name: "index_calls_on_message_id"
-    t.index ["provider", "provider_call_id"], name: "index_calls_on_provider_and_provider_call_id", unique: true
-  end
-
   create_table "campaign_delivery_events", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.bigint "campaign_id", null: false
@@ -359,7 +334,6 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_21_000001) do
     t.datetime "updated_at", null: false
     t.integer "status", default: 1, null: false
     t.string "documentable_type"
-    t.boolean "edited", default: false, null: false
     t.index ["account_id"], name: "index_captain_assistant_responses_on_account_id"
     t.index ["assistant_id"], name: "index_captain_assistant_responses_on_assistant_id"
     t.index ["documentable_id", "documentable_type"], name: "idx_cap_asst_resp_on_documentable"
@@ -398,14 +372,23 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_21_000001) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "captain_flow_id"
+    t.string "resume_source"
+    t.datetime "resumed_at"
+    t.bigint "resumed_by_id"
+    t.string "handoff_reason_code"
+    t.bigint "context_summary_upto_message_id"
+    t.datetime "analysis_notice_sent_at"
     t.index ["account_id"], name: "index_captain_conversation_states_on_account_id"
     t.index ["ai_mode"], name: "index_captain_conversation_states_on_ai_mode"
+    t.index ["analysis_notice_sent_at"], name: "index_captain_conversation_states_on_analysis_notice_sent_at"
     t.index ["captain_assistant_id"], name: "index_captain_conversation_states_on_captain_assistant_id"
     t.index ["captain_flow_id"], name: "index_captain_conversation_states_on_captain_flow_id"
     t.index ["contact_id"], name: "index_captain_conversation_states_on_contact_id"
     t.index ["conversation_id"], name: "index_captain_conversation_states_on_conversation_id", unique: true
     t.index ["crm_deal_id"], name: "index_captain_conversation_states_on_crm_deal_id"
     t.index ["handoff_by_id"], name: "index_captain_conversation_states_on_handoff_by_id"
+    t.index ["handoff_reason_code"], name: "index_captain_conversation_states_on_handoff_reason_code"
+    t.index ["resumed_by_id"], name: "index_captain_conversation_states_on_resumed_by_id"
   end
 
   create_table "captain_custom_tools", force: :cascade do |t|
@@ -457,13 +440,13 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_21_000001) do
     t.datetime "updated_at", null: false
     t.integer "status", default: 0, null: false
     t.jsonb "metadata", default: {}
-    t.integer "sync_status"
-    t.datetime "last_synced_at"
-    t.datetime "last_sync_attempted_at"
-    t.index ["account_id", "sync_status"], name: "index_captain_documents_on_account_id_and_sync_status"
+    t.string "sync_step"
+    t.string "last_sync_error_code"
+    t.string "content_fingerprint"
     t.index ["account_id"], name: "index_captain_documents_on_account_id"
     t.index ["assistant_id", "external_link"], name: "index_captain_documents_on_assistant_id_and_external_link", unique: true
     t.index ["assistant_id"], name: "index_captain_documents_on_assistant_id"
+    t.index ["content_fingerprint"], name: "index_captain_documents_on_content_fingerprint"
     t.index ["status"], name: "index_captain_documents_on_status"
   end
 
@@ -524,7 +507,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_21_000001) do
     t.boolean "enabled", default: true, null: false
     t.boolean "auto_reply_enabled", default: true, null: false
     t.string "ai_mode", default: "auto", null: false
-    t.string "handoff_strategy", default: "human_request_or_score", null: false
+    t.string "handoff_strategy", default: "human_request", null: false
     t.jsonb "routing_config", default: {}, null: false
     t.index ["ai_mode"], name: "index_captain_inboxes_on_ai_mode"
     t.index ["captain_assistant_id", "inbox_id"], name: "index_captain_inboxes_on_captain_assistant_id_and_inbox_id", unique: true
@@ -599,7 +582,6 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_21_000001) do
     t.string "hmac_token"
     t.boolean "hmac_mandatory", default: false
     t.jsonb "additional_attributes", default: {}
-    t.string "secret"
     t.index ["hmac_token"], name: "index_channel_api_on_hmac_token", unique: true
     t.index ["identifier"], name: "index_channel_api_on_identifier", unique: true
   end
@@ -987,6 +969,23 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_21_000001) do
     t.index ["crm_pipeline_stage_id"], name: "idx_crm_automation_rules_pipeline_stage_id"
   end
 
+  create_table "crm_board_views", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "user_id", null: false
+    t.string "name", null: false
+    t.jsonb "filters", default: {}, null: false
+    t.string "group_by", default: "stage", null: false
+    t.string "sort"
+    t.boolean "is_shared", default: false, null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "position"], name: "index_crm_board_views_on_account_and_position"
+    t.index ["account_id", "user_id", "name"], name: "index_crm_board_views_unique_name_per_user", unique: true
+    t.index ["account_id"], name: "index_crm_board_views_on_account_id"
+    t.index ["user_id"], name: "index_crm_board_views_on_user_id"
+  end
+
   create_table "crm_cadence_enrollments", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.bigint "crm_cadence_id", null: false
@@ -1097,11 +1096,15 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_21_000001) do
     t.text "disposition_note"
     t.datetime "disposed_at"
     t.datetime "archived_at"
+    t.decimal "position", precision: 20, scale: 10
+    t.datetime "stage_entered_at"
+    t.index ["account_id", "crm_pipeline_id", "contact_id"], name: "idx_crm_deals_open_contact_pipeline_unique", unique: true, where: "(((status)::text = 'open'::text) AND (contact_id IS NOT NULL))"
     t.index ["account_id"], name: "index_crm_deals_on_account_id"
     t.index ["archived_at"], name: "index_crm_deals_on_archived_at"
     t.index ["contact_id"], name: "index_crm_deals_on_contact_id"
     t.index ["conversation_id"], name: "index_crm_deals_on_conversation_id"
     t.index ["crm_pipeline_id", "crm_pipeline_stage_id"], name: "index_crm_deals_on_crm_pipeline_id_and_crm_pipeline_stage_id"
+    t.index ["crm_pipeline_stage_id", "position"], name: "index_crm_deals_on_stage_and_position"
     t.index ["data_retention_until"], name: "index_crm_deals_on_data_retention_until"
     t.index ["disposition_reason"], name: "index_crm_deals_on_disposition_reason"
     t.index ["inbox_id"], name: "index_crm_deals_on_inbox_id"
@@ -1195,6 +1198,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_21_000001) do
     t.datetime "archived_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "wip_limit"
     t.index ["account_id"], name: "index_crm_pipeline_stages_on_account_id"
     t.index ["crm_pipeline_id", "slug"], name: "index_crm_pipeline_stages_on_crm_pipeline_id_and_slug", unique: true
     t.index ["crm_pipeline_id"], name: "index_crm_pipeline_stages_on_crm_pipeline_id"
@@ -1295,11 +1299,11 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_21_000001) do
     t.string "data_type", null: false
     t.integer "status", default: 0, null: false
     t.text "processing_errors"
-    t.jsonb "metadata", default: {}, null: false
     t.integer "total_records"
     t.integer "processed_records"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "metadata", default: {}, null: false
     t.index ["account_id"], name: "index_data_imports_on_account_id"
   end
 
@@ -1847,6 +1851,29 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_21_000001) do
     t.index ["account_id", "url"], name: "index_webhooks_on_account_id_and_url", unique: true
   end
 
+  create_table "whatsapp_embedded_onboardings", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "user_id"
+    t.bigint "inbox_id"
+    t.bigint "channel_whatsapp_id"
+    t.string "status", default: "not_connected", null: false
+    t.string "business_id"
+    t.string "waba_id"
+    t.string "phone_number_id"
+    t.string "flow_type"
+    t.jsonb "metadata", default: {}
+    t.text "last_error"
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "waba_id", "phone_number_id"], name: "idx_wa_onboarding_account_waba_phone"
+    t.index ["account_id"], name: "index_whatsapp_embedded_onboardings_on_account_id"
+    t.index ["inbox_id"], name: "index_whatsapp_embedded_onboardings_on_inbox_id"
+    t.index ["status"], name: "index_whatsapp_embedded_onboardings_on_status"
+    t.index ["user_id"], name: "index_whatsapp_embedded_onboardings_on_user_id"
+    t.index ["waba_id"], name: "index_whatsapp_embedded_onboardings_on_waba_id"
+  end
+
   create_table "working_hours", force: :cascade do |t|
     t.bigint "inbox_id"
     t.bigint "account_id"
@@ -1892,6 +1919,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_21_000001) do
   add_foreign_key "contacts", "users", column: "crm_owner_id", on_delete: :nullify
   add_foreign_key "crm_automation_rules", "accounts"
   add_foreign_key "crm_automation_rules", "crm_pipeline_stages"
+  add_foreign_key "crm_board_views", "accounts"
+  add_foreign_key "crm_board_views", "users"
   add_foreign_key "crm_cadence_enrollments", "accounts"
   add_foreign_key "crm_cadence_enrollments", "crm_cadences"
   add_foreign_key "crm_cadence_enrollments", "crm_deals"
@@ -1911,6 +1940,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_21_000001) do
   add_foreign_key "evolution_webhook_events", "evolution_instances"
   add_foreign_key "evolution_webhook_events", "inboxes"
   add_foreign_key "inboxes", "portals"
+  add_foreign_key "whatsapp_embedded_onboardings", "accounts"
+  add_foreign_key "whatsapp_embedded_onboardings", "inboxes"
+  add_foreign_key "whatsapp_embedded_onboardings", "users"
   create_trigger("accounts_after_insert_row_tr", :generated => true, :compatibility => 1).
       on("accounts").
       after(:insert).

@@ -1,4 +1,4 @@
-﻿<script>
+<script>
 import UserMessage from 'widget/components/UserMessage.vue';
 import AgentMessageBubble from 'widget/components/AgentMessageBubble.vue';
 import MessageReplyButton from 'widget/components/MessageReplyButton.vue';

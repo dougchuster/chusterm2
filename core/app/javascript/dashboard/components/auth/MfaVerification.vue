@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import axios from 'axios';
 import { ref, computed, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';

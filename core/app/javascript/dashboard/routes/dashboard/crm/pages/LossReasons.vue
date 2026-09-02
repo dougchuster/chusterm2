@@ -1,7 +1,17 @@
-<!-- eslint-disable vue/no-bare-strings-in-template, @intlify/vue-i18n/no-raw-text -->
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import CrmAPI from '../../../../api/crm';
+import {
+  DsBadge,
+  DsButton,
+  DsCard,
+  DsInput,
+  DsSkeleton,
+} from 'dashboard/design-system/components';
+import { DsPageHeader } from 'dashboard/design-system/templates';
+
+const { t } = useI18n();
 
 const lossReasons = ref([]);
 const loading = ref(false);
@@ -28,148 +38,84 @@ onMounted(loadReasons);
 </script>
 
 <template>
-  <main class="crm-loss-reasons">
-    <header class="crm-loss-reasons__header">
-      <div>
-        <p>Configuração CRM</p>
-        <h1>Motivos de Perda</h1>
-        <span>Padronize os motivos usados para fechar leads perdidos.</span>
+  <section
+    class="flex min-h-0 w-full min-w-0 flex-1 flex-col bg-ui-canvas text-ui-text"
+    :aria-busy="loading || undefined"
+  >
+    <DsPageHeader
+      :title="t('CRM.LOSS_REASONS.TITLE')"
+      :breadcrumbs="[
+        { label: t('CRM.LOSS_REASONS.BREADCRUMB') },
+        { label: t('CRM.LOSS_REASONS.TITLE') },
+      ]"
+    />
+
+    <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4 sm:p-6">
+      <DsCard as="section" aria-labelledby="loss-reasons-form-title">
+        <h2
+          id="loss-reasons-form-title"
+          class="m-0 font-manrope text-ui-label font-semibold text-ui-text"
+        >
+          {{ t('CRM.LOSS_REASONS.TITLE') }}
+        </h2>
+        <p class="m-0 mt-1 text-ui-body-sm text-ui-text-muted">
+          {{ t('CRM.LOSS_REASONS.SUBTITLE') }}
+        </p>
+        <form
+          class="mt-4 flex flex-col gap-2 sm:flex-row"
+          @submit.prevent="addReason"
+        >
+          <DsInput
+            v-model="newReason"
+            type="text"
+            :label="t('CRM.LOSS_REASONS.TITLE')"
+            hide-label
+            :placeholder="t('CRM.LOSS_REASONS.PLACEHOLDER')"
+            class="min-w-0 flex-1"
+          />
+          <DsButton
+            type="submit"
+            variant="primary"
+            :label="t('CRM.LOSS_REASONS.ADD')"
+            :disabled="!newReason.trim()"
+          />
+        </form>
+      </DsCard>
+
+      <div
+        v-if="loading"
+        role="status"
+        :aria-label="t('CRM.LOSS_REASONS.LOADING')"
+        class="flex flex-col gap-2"
+      >
+        <span class="sr-only">{{ t('CRM.LOSS_REASONS.LOADING') }}</span>
+        <DsSkeleton v-for="row in 3" :key="row" shape="block" class="h-12" />
       </div>
-    </header>
 
-    <section class="crm-loss-reasons__form">
-      <input
-        v-model="newReason"
-        type="text"
-        placeholder="Novo motivo de perda..."
-        @keyup.enter="addReason"
-      />
-      <button @click="addReason">Adicionar</button>
-    </section>
-
-    <div v-if="loading" class="crm-loss-reasons__state">Carregando...</div>
-    <ul v-else class="crm-loss-reasons__list">
-      <li v-for="reason in lossReasons" :key="reason.id">
-        <span>{{ reason.name }}</span>
-        <small v-if="reason.legal_area">{{ reason.legal_area }}</small>
-      </li>
-    </ul>
-  </main>
+      <DsCard
+        v-else-if="lossReasons.length"
+        as="section"
+        padding="none"
+        :aria-label="t('CRM.LOSS_REASONS.TITLE')"
+      >
+        <ul class="m-0 flex list-none flex-col divide-y divide-ui-border-subtle p-0">
+          <li
+            v-for="reason in lossReasons"
+            :key="reason.id"
+            class="flex min-h-11 min-w-0 items-center justify-between gap-4 px-4 py-2"
+          >
+            <span class="truncate text-ui-body-sm text-ui-text">
+              {{ reason.name }}
+            </span>
+            <DsBadge
+              v-if="reason.legal_area"
+              variant="neutral"
+              :label="reason.legal_area"
+              class="shrink-0"
+            />
+          </li>
+        </ul>
+      </DsCard>
+    </div>
+  </section>
 </template>
-
-<style scoped>
-.crm-loss-reasons {
-  display: flex;
-  width: 100%;
-  min-width: 0;
-  min-height: 100%;
-  flex-direction: column;
-  gap: 1rem;
-  overflow-x: hidden;
-  padding: clamp(1rem, 2vw, 1.5rem);
-  color: rgb(var(--slate-12));
-}
-
-.crm-loss-reasons__header,
-.crm-loss-reasons__form,
-.crm-loss-reasons__list li,
-.crm-loss-reasons__state {
-  border: 1px solid rgb(var(--slate-4));
-  border-radius: 8px;
-  background: rgb(var(--slate-1));
-}
-
-.crm-loss-reasons__header {
-  padding: 1rem;
-}
-
-.crm-loss-reasons__header p {
-  margin: 0 0 0.25rem;
-  color: rgb(var(--brand-9));
-  font-size: 0.75rem;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.crm-loss-reasons__header h1 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 800;
-}
-
-.crm-loss-reasons__header span {
-  display: block;
-  margin-top: 0.25rem;
-  color: rgb(var(--slate-10));
-  font-size: 0.875rem;
-}
-
-.crm-loss-reasons__form {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.75rem;
-  padding: 1rem;
-}
-
-.crm-loss-reasons__form input {
-  min-width: 0;
-  height: 2.5rem;
-  border: 1px solid rgb(var(--slate-5));
-  border-radius: 8px;
-  padding: 0 0.75rem;
-  color: rgb(var(--slate-12));
-  background: rgb(var(--slate-2));
-  outline: none;
-}
-
-.crm-loss-reasons__form button {
-  min-height: 2.5rem;
-  border-radius: 8px;
-  padding: 0 1rem;
-  color: white;
-  font-size: 0.875rem;
-  font-weight: 800;
-  background: rgb(var(--brand-9));
-}
-
-.crm-loss-reasons__state {
-  padding: 2rem;
-  color: rgb(var(--slate-10));
-  text-align: center;
-}
-
-.crm-loss-reasons__list {
-  display: grid;
-  gap: 0.5rem;
-  padding: 0;
-  margin: 0;
-  list-style: none;
-}
-
-.crm-loss-reasons__list li {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.85rem 1rem;
-  font-size: 0.875rem;
-}
-
-.crm-loss-reasons__list span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.crm-loss-reasons__list small {
-  flex-shrink: 0;
-  color: rgb(var(--slate-9));
-}
-
-@media (max-width: 640px) {
-  .crm-loss-reasons__form {
-    grid-template-columns: 1fr;
-  }
-}
-</style>

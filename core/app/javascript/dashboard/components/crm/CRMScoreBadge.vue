@@ -51,7 +51,7 @@ const tierConfig = computed(() => {
     qualificado: {
       label: 'Qualificado',
       bg: 'bg-green-100 dark:bg-green-950',
-      text: 'text-green-700 dark:text-green-300',
+      text: 'text-green-900 dark:text-green-200',
       border: 'border-green-200 dark:border-green-900',
       pulse: false,
       icon: 'i-lucide-star',

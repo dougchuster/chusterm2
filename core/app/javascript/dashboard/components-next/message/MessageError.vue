@@ -25,19 +25,22 @@ const canRetry = computed(() => {
 </script>
 
 <template>
-  <div class="text-xs text-n-ruby-11 flex items-center gap-1.5">
+  <div class="flex items-center gap-1.5 text-xs text-ds-state-danger">
     <span>{{ t('CHAT_LIST.FAILED_TO_SEND') }}</span>
-    <div class="relative group">
-      <div
-        class="bg-n-alpha-2 rounded-md size-5 grid place-content-center cursor-pointer"
+    <div class="group relative">
+      <button
+        type="button"
+        :aria-label="error"
+        class="grid size-6 place-content-center rounded-md bg-ds-state-danger-soft outline-none transition-colors hover:bg-ds-state-danger-soft/70 focus-visible:ring-2 focus-visible:ring-ds-border-focus"
       >
         <Icon
           icon="i-lucide-alert-triangle"
-          class="text-n-ruby-11 size-[14px]"
+          class="size-3.5 text-ds-state-danger"
         />
-      </div>
+      </button>
       <div
-        class="absolute bg-n-alpha-3 px-4 py-3 border rounded-xl border-n-strong text-n-slate-12 bottom-6 w-52 text-xs backdrop-blur-[100px] shadow-[0px_0px_24px_0px_rgba(0,0,0,0.12)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all break-all"
+        role="tooltip"
+        class="invisible absolute bottom-7 z-20 w-56 break-words rounded-xl bg-ds-bg-elevated px-4 py-3 text-xs text-ds-fg-default opacity-0 shadow-[var(--ds-shadow-lg)] ring-1 ring-ds-border-subtle transition-all group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
         :class="{
           'ltr:left-0 rtl:right-0': orientation === ORIENTATION.LEFT,
           'ltr:right-0 rtl:left-0': orientation === ORIENTATION.RIGHT,
@@ -49,11 +52,12 @@ const canRetry = computed(() => {
     <button
       v-if="canRetry"
       type="button"
+      :aria-label="t('CHAT_LIST.SEARCH.RETRY')"
       :disabled="status !== MESSAGE_STATUS.FAILED"
-      class="bg-n-alpha-2 rounded-md size-5 grid place-content-center cursor-pointer"
+      class="grid size-6 place-content-center rounded-md bg-ds-state-danger-soft outline-none transition-colors hover:bg-ds-state-danger-soft/70 focus-visible:ring-2 focus-visible:ring-ds-border-focus disabled:cursor-not-allowed disabled:opacity-50"
       @click="emit('retry')"
     >
-      <Icon icon="i-lucide-refresh-ccw" class="text-n-ruby-11 size-[14px]" />
+      <Icon icon="i-lucide-refresh-ccw" class="size-3.5 text-ds-state-danger" />
     </button>
   </div>
 </template>

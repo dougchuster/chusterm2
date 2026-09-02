@@ -27,7 +27,7 @@ class Crm::HealthCheckJob < ApplicationJob
   end
 
   def create_attention_activity(account, result)
-    return if recent_attention_activity?(account)
+    return if pending_attention_activity?(account)
 
     account.crm_activities.create!(
       kind: 'revisao_juridica',
@@ -39,10 +39,9 @@ class Crm::HealthCheckJob < ApplicationJob
     )
   end
 
-  def recent_attention_activity?(account)
+  def pending_attention_activity?(account)
     account.crm_activities.pending
            .where(kind: 'revisao_juridica', title: ALERT_TITLE, created_by_type: 'system')
-           .where('created_at > ?', 24.hours.ago)
            .exists?
   end
 
@@ -51,6 +50,8 @@ class Crm::HealthCheckJob < ApplicationJob
       "Status: #{result[:status]}",
       "Leads quentes sem responsavel: #{result.dig(:deals, :hot_leads_without_owner)}",
       "Labels sistemicas no menu: #{result.dig(:labels, :system_visible_on_sidebar)}",
+      "Audios com falha de transcricao: #{result.dig(:media, :audio_failed)}",
+      "Midias com falha de entendimento: #{result.dig(:media, :media_failed)}",
       "Midias paradas: #{result.dig(:media, :stale_processing)}"
     ].join("\n")
   end

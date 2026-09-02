@@ -52,13 +52,13 @@ onMounted(() => {
   >
     <template #default="{ item, selected }">
       <span
-        class="max-w-full inline-flex items-center gap-0.5 min-w-0 mb-0 text-sm font-medium text-n-slate-12 group-hover:text-n-brand truncate"
+        class="mb-0 inline-flex min-w-0 max-w-full items-center gap-0.5 truncate text-sm font-medium text-ds-fg-default group-hover:text-ds-accent"
       >
         {{ item.emoji }}
         <p
           class="relative mb-0 truncate bottom-px"
           :class="{
-            'text-n-brand': selected,
+            'text-ds-accent': selected,
             'font-normal': !selected,
           }"
         >

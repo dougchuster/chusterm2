@@ -1,13 +1,26 @@
 import type { FastifyPluginAsync } from 'fastify'
-import { z } from 'zod'
-import { llm, LLM_MAX_TOKENS, LLM_MODEL, isLlmConfigured } from '../llm/client.js'
 import {
+  DR_PAULA_MATOS_LLM_MODEL,
+  llm,
+  LLM_MAX_TOKENS,
+  isLlmConfigured,
+} from '../llm/client.js'
+import {
+  DR_LETICIA_NEW_LEAD_CLOSING_FACT,
+  DR_LETICIA_PUBLIC_INTRO,
   DR_PAULA_MATOS_SLUG,
+  buildAgentAttachmentContext,
+  buildDrLeticiaPriorityResponse,
   buildDrPaulaFallbackResponse,
   buildDrPaulaMessages,
   buildMemorySummary,
   buildPrivateTriageNote,
+  drLeticiaResponseIncludesNewLeadClosing,
+  drPaulaResponsesAreNearDuplicates,
+  ensureDrLeticiaNewLeadClosing,
   extractPrevidenciarioTriage,
+  normalizeDrPaulaResponse,
+  redactCredentialsFromText,
   retrieveDrPaulaKnowledge,
   scorePrevidenciarioLead,
   type AgentMessage,
@@ -17,32 +30,34 @@ import {
   getAgentConversationMemory,
   upsertAgentConversationMemory,
 } from '../agents/memory.js'
+import {
+  AgentBotPayloadSchema,
+  CONTACT_RELATIONSHIP_FACT,
+  attachmentOnlyMessageContent,
+  buildUnreadableAttachmentResponse,
+  isWebhookAuthorized,
+  normalizeAgentAttachments,
+  normalizeText,
+  resolveContactRelationship,
+  shouldPauseForHumanIntervention,
+  type NormalizedAgentAttachment,
+} from './agentContract.js'
 
 const CHATWOOT_BASE_URL = (process.env.CHATWOOT_BASE_URL ?? 'http://core:3000').replace(/\/$/, '')
 const CHATWOOT_BOT_TOKEN = process.env.CHATWOOT_BOT_TOKEN ?? ''
 
-const AgentBotPayloadSchema = z.object({
-  event: z.string(),
-  content: z.string().nullish(),
-  message_type: z.string().optional(),
-  content_type: z.string().optional(),
-  conversation: z.object({
-    id: z.number(),
-    account_id: z.number(),
-  }),
-  sender: z
-    .object({
-      name: z.string().optional(),
-      type: z.string().optional(),
-    })
-    .optional(),
-})
+// SEC-02: segredo compartilhado obrigatório no webhook. Configurar o mesmo
+// valor em ORCHESTRATOR_WEBHOOK_SECRET e na URL do agent_bot no Chatwoot
+// (header x-webhook-secret ou query ?token=).
+const WEBHOOK_SECRET = process.env.ORCHESTRATOR_WEBHOOK_SECRET ?? ''
 
 interface ChatMessage {
+  id?: number
   role: 'user' | 'assistant'
   content: string
   senderType?: string
   contentAttributes?: Record<string, unknown>
+  attachments?: NormalizedAgentAttachment[]
 }
 
 const HUMAN_INTERVENTION_STATUS = 'human_intervention_requested'
@@ -52,21 +67,23 @@ const PAUSED_AUTOMATION_STATUSES = new Set([
   HUMAN_TAKEOVER_STATUS,
 ])
 const AUTOMATION_SOURCE = 'orchestrator'
+// Serialize messages from the same conversation instead of discarding the
+// second webhook while an LLM call is running. Each request waits for the
+// previous one and then reloads the complete, current Chatwoot history.
+const activeConversations = new Map<string, Promise<void>>()
+const recentWebhookEvents = new Map<string, number>()
+const WEBHOOK_EVENT_TTL_MS = 10 * 60 * 1000
 
-function normalizeText(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .trim()
-}
-
-function isDrPaulaOpening(content: string): boolean {
+function isKnownAgentOpening(content: string): boolean {
   const normalized = normalizeText(content)
   return (
-    normalized.includes('aqui e a dra paula matos') &&
-    normalized.includes('como posso te ajudar hoje')
+    (normalized.includes('sou a dra. leticia') ||
+      normalized.includes('sou a dra leticia') ||
+      normalized.includes('assistente de atendimento da equipe da dra. paula matos') ||
+      normalized.includes('aqui e a dra paula matos')) &&
+    (normalized.includes('atendimento inicial da dra. paula matos') ||
+      normalized.includes('como posso ajudar voce hoje') ||
+      normalized.includes('como posso te ajudar hoje'))
   )
 }
 
@@ -75,22 +92,8 @@ function isAgentGeneratedMessage(message: ChatMessage): boolean {
     message.senderType === 'agent_bot' ||
     message.contentAttributes?.generated_by === AUTOMATION_SOURCE ||
     message.contentAttributes?.chusterm_agent === DR_PAULA_MATOS_SLUG ||
-    isDrPaulaOpening(message.content)
+    isKnownAgentOpening(message.content)
   )
-}
-
-function shouldPauseForHumanIntervention(text: string): boolean {
-  const normalized = normalizeText(text)
-  const mentionsAutomation =
-    /\b(ia|inteligencia artificial|robo|bot|automat[a-z]*)\b/.test(normalized)
-  const asksToStop =
-    /\b(para|pare|parar|pause|pausa|pausar|assumir|humano|atendente|respondi|digitando)\b/.test(
-      normalized,
-    ) ||
-    normalized.includes('sem ia') ||
-    normalized.includes('ao mesmo tempo')
-
-  return mentionsAutomation && asksToStop
 }
 
 function lastOutgoingMessage(messages: ChatMessage[]): ChatMessage | undefined {
@@ -106,11 +109,41 @@ function responseWasAlreadySent(
   messages: ChatMessage[],
   responseText: string,
 ): boolean {
-  const normalizedResponse = normalizeText(responseText)
   return messages
     .filter((message) => message.role === 'assistant')
-    .slice(-4)
-    .some((message) => normalizeText(message.content) === normalizedResponse)
+    .slice(-6)
+    .some((message) =>
+      drPaulaResponsesAreNearDuplicates(message.content, responseText),
+    )
+}
+
+function latestOutgoingMessageId(messages: ChatMessage[]): number | undefined {
+  const ids = messages
+    .filter((message) => message.role === 'assistant' && message.id !== undefined)
+    .map((message) => message.id as number)
+  return ids.length > 0 ? Math.max(...ids) : undefined
+}
+
+function hasNewOutgoingMessage(
+  previousMessages: ChatMessage[],
+  latestMessages: ChatMessage[],
+): boolean {
+  const previousId = latestOutgoingMessageId(previousMessages)
+  const latestId = latestOutgoingMessageId(latestMessages)
+  if (latestId !== undefined) {
+    return previousId === undefined || latestId > previousId
+  }
+
+  const previous = lastOutgoingMessage(previousMessages)
+  const latest = lastOutgoingMessage(latestMessages)
+  return Boolean(latest && (!previous || latest.content !== previous.content))
+}
+
+function latestIncomingMessageId(messages: ChatMessage[]): number | undefined {
+  const ids = messages
+    .filter((message) => message.role === 'user' && message.id !== undefined)
+    .map((message) => message.id as number)
+  return ids.length > 0 ? Math.max(...ids) : undefined
 }
 
 async function markConversationPaused(input: {
@@ -134,7 +167,7 @@ async function markConversationPaused(input: {
     factsJson: input.memory?.factsJson as Record<string, unknown> | undefined,
     triageJson: (input.memory?.triageJson || {}) as Record<string, unknown>,
     scoreJson: (input.memory?.scoreJson || {}) as Record<string, unknown>,
-    lastUserMessage: input.lastUserMessage,
+    lastUserMessage: redactCredentialsFromText(input.lastUserMessage),
     messageCount: input.messageCount,
     status: input.status,
   })
@@ -146,49 +179,81 @@ function asStoredTriage(value: unknown): Partial<PrevidenciarioTriageSnapshot> |
     : null
 }
 
+function asStoredFacts(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {}
+}
+
+// BUG-02: falha ao obter o histórico deve ABORTAR o processamento (as guardas
+// de takeover humano e dedupe dependem dele). Erro aqui vira HistoryUnavailableError,
+// nunca um array vazio silencioso.
+export class HistoryUnavailableError extends Error {}
+
+function historyRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {}
+}
+
+export function chatMessageFromHistoryPayload(value: unknown): ChatMessage | null {
+  const message = historyRecord(value)
+  if (message.private === true) return null
+
+  const role =
+    message.message_type === 0 || message.message_type === 'incoming'
+      ? ('user' as const)
+      : message.message_type === 1 || message.message_type === 'outgoing'
+        ? ('assistant' as const)
+        : null
+  if (!role) return null
+
+  const attachments = normalizeAgentAttachments(message.attachments)
+  const rawContent = typeof message.content === 'string' ? message.content.trim() : ''
+  if (!rawContent && attachments.length === 0) return null
+
+  const sender = historyRecord(message.sender)
+  const contentAttributes = historyRecord(message.content_attributes)
+  return {
+    id: typeof message.id === 'number' ? message.id : undefined,
+    role,
+    content: rawContent || attachmentOnlyMessageContent(attachments),
+    senderType: typeof sender.type === 'string' ? sender.type : undefined,
+    contentAttributes:
+      Object.keys(contentAttributes).length > 0 ? contentAttributes : undefined,
+    attachments: attachments.length > 0 ? attachments : undefined,
+  }
+}
+
 async function fetchConversationHistory(
   accountId: number,
   conversationId: number,
 ): Promise<ChatMessage[]> {
-  if (!CHATWOOT_BOT_TOKEN) return []
+  if (!CHATWOOT_BOT_TOKEN) {
+    throw new HistoryUnavailableError('CHATWOOT_BOT_TOKEN is not configured')
+  }
   try {
     const url = `${CHATWOOT_BASE_URL}/api/v1/accounts/${accountId}/conversations/${conversationId}/messages`
     const resp = await fetch(url, {
       headers: { api_access_token: CHATWOOT_BOT_TOKEN },
       signal: AbortSignal.timeout(10_000),
     })
-    if (!resp.ok) return []
+    if (!resp.ok) {
+      throw new HistoryUnavailableError(`Chatwoot history request failed with status ${resp.status}`)
+    }
 
     const data = (await resp.json()) as { payload?: unknown[] }
     const messages = data?.payload ?? []
 
-    return (messages as Record<string, unknown>[])
-      .filter(
-        (m) =>
-          (m.message_type === 0 || m.message_type === 1) &&
-          m.content_type === 'text' &&
-          m.private !== true &&
-          typeof m.content === 'string' &&
-          (m.content as string).trim().length > 0,
-      )
+    return messages
+      .map(chatMessageFromHistoryPayload)
+      .filter((message): message is ChatMessage => Boolean(message))
       .slice(-12)
-      .map((m) => ({
-        role: m.message_type === 0 ? ('user' as const) : ('assistant' as const),
-        content: (m.content as string).trim(),
-        senderType:
-          typeof (m.sender as Record<string, unknown> | undefined)?.type ===
-          'string'
-            ? ((m.sender as Record<string, unknown>).type as string)
-            : undefined,
-        contentAttributes:
-          m.content_attributes &&
-          typeof m.content_attributes === 'object' &&
-          !Array.isArray(m.content_attributes)
-            ? (m.content_attributes as Record<string, unknown>)
-            : undefined,
-      }))
-  } catch {
-    return []
+  } catch (error: unknown) {
+    if (error instanceof HistoryUnavailableError) throw error
+    throw new HistoryUnavailableError(
+      error instanceof Error ? error.message : 'Unexpected error fetching history',
+    )
   }
 }
 
@@ -223,8 +288,25 @@ async function postReply(
   }
 }
 
-const agentRoute: FastifyPluginAsync = async (fastify) => {
+export interface AgentRouteOptions {
+  webhookSecret?: string
+}
+
+const agentRoute: FastifyPluginAsync<AgentRouteOptions> = async (fastify, options) => {
+  const webhookSecret = options.webhookSecret ?? WEBHOOK_SECRET
+
   fastify.post('/agent/message', async (request, reply) => {
+    if (
+      !isWebhookAuthorized(
+        request.headers as Record<string, unknown>,
+        request.query,
+        webhookSecret,
+      )
+    ) {
+      request.log.warn('Rejected /agent/message call without valid webhook secret')
+      return reply.status(401).send({ error: 'UNAUTHORIZED' })
+    }
+
     const result = AgentBotPayloadSchema.safeParse(request.body)
     if (!result.success) {
       return reply.status(400).send({ error: 'INVALID_PAYLOAD' })
@@ -236,28 +318,103 @@ const agentRoute: FastifyPluginAsync = async (fastify) => {
       return reply.status(200).send({ ok: true, skipped: true })
     }
 
-    const userMessage = payload.content?.trim()
-    if (!userMessage) {
+    const webhookAttachments = normalizeAgentAttachments(payload.attachments)
+    const userMessage =
+      payload.content?.trim() ||
+      (webhookAttachments.length > 0
+        ? attachmentOnlyMessageContent(webhookAttachments)
+        : '')
+    if (!userMessage && webhookAttachments.length === 0) {
       return reply.status(200).send({ ok: true, skipped: 'empty_content' })
     }
 
     const { conversation } = payload
-    const { account_id: accountId, id: conversationId } = conversation
+    const { id: conversationId } = conversation
+    const accountId = conversation.account_id ?? payload.account?.id
+    if (accountId === undefined) {
+      return reply.status(400).send({ error: 'INVALID_PAYLOAD' })
+    }
+    const conversationKey = `${accountId}:${conversationId}`
+    const webhookEventKey =
+      payload.id === undefined ? undefined : `${accountId}:${payload.id}`
 
-    const history = await fetchConversationHistory(accountId, conversationId)
+    if (webhookEventKey) {
+      const now = Date.now()
+      for (const [key, seenAt] of recentWebhookEvents) {
+        if (now - seenAt > WEBHOOK_EVENT_TTL_MS) recentWebhookEvents.delete(key)
+      }
+      if (recentWebhookEvents.has(webhookEventKey)) {
+        return reply.status(200).send({
+          ok: true,
+          skipped: 'duplicate_webhook_event',
+        })
+      }
+      recentWebhookEvents.set(webhookEventKey, now)
+    }
 
-    const messages: ChatMessage[] = []
-    const lastMsg = history[history.length - 1]
-    const alreadyIncluded =
-      lastMsg?.role === 'user' && lastMsg.content === userMessage
+    const previousConversation = activeConversations.get(conversationKey)
+    let releaseConversation!: () => void
+    const currentConversation = new Promise<void>((resolve) => {
+      releaseConversation = resolve
+    })
+    const queueTail = (previousConversation ?? Promise.resolve())
+      .catch(() => undefined)
+      .then(() => currentConversation)
+    activeConversations.set(conversationKey, queueTail)
 
-    messages.push(...history)
-    if (!alreadyIncluded) {
-      messages.push({ role: 'user', content: userMessage })
+    if (previousConversation) {
+      request.log.info(
+        `[AGENT] Mensagem enfileirada enquanto a conversa ${conversationId} estava em processamento`,
+      )
+      await previousConversation.catch(() => undefined)
     }
 
     try {
-      const memory = await getAgentConversationMemory({
+      let history: ChatMessage[]
+      try {
+        history = await fetchConversationHistory(accountId, conversationId)
+      } catch (error: unknown) {
+        // BUG-02: sem histórico não há como checar takeover humano/dedupe —
+        // abortar com 503 e deixar o Chatwoot reentregar o webhook.
+        request.log.warn(
+          { err: error, accountId, conversationId },
+          'History unavailable; aborting to avoid replying over a human',
+        )
+        return reply.status(503).send({ error: 'HISTORY_UNAVAILABLE' })
+      }
+
+      const messages: ChatMessage[] = []
+      const lastMsg = history[history.length - 1]
+      const alreadyIncluded =
+        payload.id !== undefined
+          ? lastMsg?.role === 'user' && lastMsg.id === payload.id
+          : lastMsg?.role === 'user' && lastMsg.content === userMessage
+
+      messages.push(...history)
+      if (alreadyIncluded && lastMsg && webhookAttachments.length > 0) {
+        lastMsg.attachments = webhookAttachments
+      }
+      if (!alreadyIncluded) {
+        messages.push({
+          id: payload.id,
+          role: 'user',
+          content: userMessage,
+          attachments:
+            webhookAttachments.length > 0 ? webhookAttachments : undefined,
+        })
+      }
+      const currentIncoming = [...messages]
+        .reverse()
+        .find((message) => message.role === 'user')
+      const currentAttachments =
+        webhookAttachments.length > 0
+          ? webhookAttachments
+          : currentIncoming?.attachments ?? []
+      const contextIncomingId =
+        latestIncomingMessageId(messages) ?? payload.id
+
+      try {
+        const memory = await getAgentConversationMemory({
         accountId,
         conversationId: String(conversationId),
         profileSlug: DR_PAULA_MATOS_SLUG,
@@ -312,8 +469,12 @@ const agentRoute: FastifyPluginAsync = async (fastify) => {
         })
       }
 
+      const attachmentEvidence = buildAgentAttachmentContext(currentAttachments)
       const triage = extractPrevidenciarioTriage({
-        text: messages.map((m) => `${m.role}: ${m.content}`).join('\n'),
+        // The stored snapshot already represents previous customer evidence.
+        // Applying only the newest turn lets corrections such as "não sou MEI"
+        // override an older positive mention instead of re-adding it.
+        text: [userMessage, attachmentEvidence].filter(Boolean).join('\n'),
         previous: asStoredTriage(memory?.triageJson),
       })
       const score = scorePrevidenciarioLead({
@@ -321,9 +482,33 @@ const agentRoute: FastifyPluginAsync = async (fastify) => {
         latestMessage: userMessage,
         messageCount: nextMessageCount,
       })
-      const memorySummary = buildMemorySummary(triage, score)
-      const retrievedDocuments = retrieveDrPaulaKnowledge(`${userMessage}\n${memorySummary}`)
-      const status = score.handoff.recommended ? 'handoff_recommended' : 'active'
+      const storedFacts = asStoredFacts(memory?.factsJson)
+      const contactRelationship = resolveContactRelationship(
+        payload,
+        storedFacts[CONTACT_RELATIONSHIP_FACT],
+      )
+      const relationshipSummary =
+        contactRelationship === 'existing_customer'
+          ? 'Relacionamento CRM: cliente existente; nunca usar o aviso de lead novo.'
+          : contactRelationship === 'new_lead'
+            ? 'Relacionamento CRM: lead novo.'
+            : 'Relacionamento CRM: n\u00e3o confirmado; n\u00e3o presumir lead novo.'
+      const memorySummary = `${buildMemorySummary(triage, score)}\n${relationshipSummary}`
+      const retrievedDocuments = retrieveDrPaulaKnowledge(
+        `${userMessage}\n${attachmentEvidence}\n${memorySummary}`,
+      )
+      const status = score.review.recommended ? 'review_recommended' : 'active'
+      const closingAlreadySent =
+        storedFacts[DR_LETICIA_NEW_LEAD_CLOSING_FACT] === true
+      const isNewLead =
+        !closingAlreadySent && contactRelationship === 'new_lead'
+      const factsWithSources = {
+        ...storedFacts,
+        sources: retrievedDocuments.map((doc) => doc.id),
+        ...(contactRelationship === 'unknown'
+          ? {}
+          : { [CONTACT_RELATIONSHIP_FACT]: contactRelationship }),
+      }
 
       await upsertAgentConversationMemory({
         accountId,
@@ -331,17 +516,31 @@ const agentRoute: FastifyPluginAsync = async (fastify) => {
         profileSlug: DR_PAULA_MATOS_SLUG,
         senderName: payload.sender?.name ?? null,
         summary: memorySummary,
-        factsJson: { sources: retrievedDocuments.map((doc) => doc.id) },
+        factsJson: factsWithSources,
         triageJson: triage as unknown as Record<string, unknown>,
         scoreJson: score as unknown as Record<string, unknown>,
-        lastUserMessage: userMessage,
+        lastUserMessage: redactCredentialsFromText(userMessage),
         messageCount: nextMessageCount,
         status,
       })
 
       let responseText: string | undefined
+      const unreadableAttachmentResponse =
+        buildUnreadableAttachmentResponse(currentAttachments)
+      const historyHasPublicIdentity = messages.some(
+        (message) =>
+          message.role === 'assistant' &&
+          /\bdra\.? leticia\b/u.test(normalizeText(message.content)),
+      )
+      const priorityResponse =
+        unreadableAttachmentResponse && !historyHasPublicIdentity
+          ? `${DR_LETICIA_PUBLIC_INTRO} ${unreadableAttachmentResponse}`
+          : unreadableAttachmentResponse ??
+            buildDrLeticiaPriorityResponse(messages as AgentMessage[])
 
-      if (isLlmConfigured()) {
+      if (priorityResponse) {
+        responseText = normalizeDrPaulaResponse(priorityResponse) ?? undefined
+      } else if (isLlmConfigured()) {
         const agentMessages = buildDrPaulaMessages({
           conversation: messages as AgentMessage[],
           memorySummary,
@@ -350,17 +549,51 @@ const agentRoute: FastifyPluginAsync = async (fastify) => {
           retrievedDocuments,
         })
 
+        const modelParameters = DR_PAULA_MATOS_LLM_MODEL.includes(
+          'claude-sonnet-5',
+        )
+          ? {}
+          : { temperature: 0.35 }
         const completion = await llm.chat.completions.create({
-          model: LLM_MODEL,
+          model: DR_PAULA_MATOS_LLM_MODEL,
           messages: agentMessages,
-          max_tokens: Math.min(900, LLM_MAX_TOKENS),
-          temperature: 0.35,
+          // Reasoning-capable models account for internal reasoning inside the
+          // completion budget. A 700-token ceiling produced truncated public
+          // answers before the short visible response was complete.
+          max_tokens: Math.min(2048, LLM_MAX_TOKENS),
+          ...modelParameters,
         })
 
-        responseText = completion.choices[0]?.message?.content?.trim()
+        const rawResponse = completion.choices[0]?.message?.content?.trim()
+        responseText = rawResponse
+          ? normalizeDrPaulaResponse(rawResponse) ?? undefined
+          : undefined
+        if (rawResponse && !responseText) {
+          request.log.warn(
+            {
+              accountId,
+              conversationId,
+              finishReason: completion.choices[0]?.finish_reason,
+            },
+            '[AGENT] Provider output rejected by public response validator',
+          )
+          responseText = normalizeDrPaulaResponse(
+            buildDrPaulaFallbackResponse({
+              triage,
+              retrievedDocuments,
+              conversation: messages as AgentMessage[],
+            }),
+          ) ?? undefined
+        }
       } else {
         request.log.warn('[AGENT] LLM_API_KEY not configured; using deterministic response')
-        responseText = buildDrPaulaFallbackResponse({ triage, retrievedDocuments })
+        responseText = normalizeDrPaulaResponse(
+          buildDrPaulaFallbackResponse({
+            triage,
+            retrievedDocuments,
+            conversation: messages as AgentMessage[],
+          }),
+        ) ?? undefined
       }
 
       if (!responseText) {
@@ -368,10 +601,73 @@ const agentRoute: FastifyPluginAsync = async (fastify) => {
         return reply.status(200).send({ ok: false, reason: 'empty_agent_response' })
       }
 
+      responseText = ensureDrLeticiaNewLeadClosing(responseText, {
+        conversation: messages as AgentMessage[],
+        closingAlreadySent,
+        isNewLead,
+      })
+      const closingSentNow =
+        !closingAlreadySent &&
+        drLeticiaResponseIncludesNewLeadClosing(responseText)
+
       if (responseWasAlreadySent(messages, responseText)) {
         request.log.info(
-          `[AGENT] Resposta duplicada bloqueada na conversa ${conversationId}: ${responseText.slice(0, 100)}`,
+          `[AGENT] Resposta duplicada bloqueada na conversa ${conversationId}`,
         )
+        return reply.status(200).send({
+          ok: true,
+          skipped: 'duplicate_response',
+        })
+      }
+
+      // Captain (Rails) and the Orchestrator can be enabled on the same inbox.
+      // Re-read immediately before posting: if either engine already answered
+      // while this model was generating, this route yields instead of sending a
+      // second public message for the same customer turn.
+      let latestHistory: ChatMessage[]
+      try {
+        latestHistory = await fetchConversationHistory(accountId, conversationId)
+      } catch (error: unknown) {
+        request.log.warn(
+          { err: error, accountId, conversationId },
+          'Final history check unavailable; aborting public reply',
+        )
+        return reply.status(503).send({ error: 'HISTORY_UNAVAILABLE' })
+      }
+
+      if (hasNewOutgoingMessage(history, latestHistory)) {
+        request.log.info(
+          `[AGENT] Outra resposta já foi criada na conversa ${conversationId}`,
+        )
+        return reply.status(200).send({
+          ok: true,
+          skipped: 'reply_already_created',
+        })
+      }
+      const finalIncomingId = latestIncomingMessageId(latestHistory)
+      if (
+        contextIncomingId !== undefined &&
+        finalIncomingId !== undefined &&
+        finalIncomingId > contextIncomingId
+      ) {
+        request.log.info(
+          `[AGENT] Resposta antiga descartada; chegou nova mensagem na conversa ${conversationId}`,
+        )
+        return reply.status(200).send({
+          ok: true,
+          skipped: 'newer_incoming_exists',
+        })
+      }
+      if (activeConversations.get(conversationKey) !== queueTail) {
+        request.log.info(
+          `[AGENT] Resposta antiga descartada; há nova mensagem enfileirada na conversa ${conversationId}`,
+        )
+        return reply.status(200).send({
+          ok: true,
+          skipped: 'newer_message_queued',
+        })
+      }
+      if (responseWasAlreadySent(latestHistory, responseText)) {
         return reply.status(200).send({
           ok: true,
           skipped: 'duplicate_response',
@@ -385,7 +681,26 @@ const agentRoute: FastifyPluginAsync = async (fastify) => {
         },
       })
 
-      if (score.handoff.recommended && memory?.status !== 'handoff_recommended') {
+      if (closingSentNow) {
+        await upsertAgentConversationMemory({
+          accountId,
+          conversationId: String(conversationId),
+          profileSlug: DR_PAULA_MATOS_SLUG,
+          senderName: payload.sender?.name ?? null,
+          summary: memorySummary,
+          factsJson: {
+            ...factsWithSources,
+            [DR_LETICIA_NEW_LEAD_CLOSING_FACT]: true,
+          },
+          triageJson: triage as unknown as Record<string, unknown>,
+          scoreJson: score as unknown as Record<string, unknown>,
+          lastUserMessage: redactCredentialsFromText(userMessage),
+          messageCount: nextMessageCount,
+          status,
+        })
+      }
+
+      if (score.review.recommended && memory?.status !== 'review_recommended') {
         await postReply(
           accountId,
           conversationId,
@@ -395,17 +710,27 @@ const agentRoute: FastifyPluginAsync = async (fastify) => {
       }
 
       request.log.info(
-        `[AGENT] Dra. Paula respondeu conversa ${conversationId} score=${score.total}: ${responseText.slice(0, 100)}`,
+        `[AGENT] Dra. Letícia respondeu conversa ${conversationId} score=${score.total}`,
       )
       return reply.status(200).send({
         ok: true,
         agent: DR_PAULA_MATOS_SLUG,
         score: score.total,
         handoffRecommended: score.handoff.recommended,
+        reviewRecommended: score.review.recommended,
       })
-    } catch (err) {
-      request.log.error({ err }, '[AGENT] Falha ao gerar ou enviar resposta')
-      return reply.status(500).send({ error: 'AGENT_ERROR' })
+      } catch (err) {
+        request.log.error({ err }, '[AGENT] Falha ao gerar ou enviar resposta')
+        return reply.status(500).send({ error: 'AGENT_ERROR' })
+      }
+    } finally {
+      if (webhookEventKey && reply.statusCode >= 500) {
+        recentWebhookEvents.delete(webhookEventKey)
+      }
+      releaseConversation()
+      if (activeConversations.get(conversationKey) === queueTail) {
+        activeConversations.delete(conversationKey)
+      }
     }
   })
 }

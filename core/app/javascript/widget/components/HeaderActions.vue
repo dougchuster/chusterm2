@@ -1,4 +1,4 @@
-﻿<script>
+<script>
 import { mapGetters } from 'vuex';
 import { IFrameHelper, RNHelper } from 'widget/helpers/utils';
 import { popoutChatWindow } from '../helpers/popoutHelper';

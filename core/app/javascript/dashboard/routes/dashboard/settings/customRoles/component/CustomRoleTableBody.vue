@@ -35,7 +35,9 @@ const getFormattedPermissions = role => {
   >
     <template #default>
       <BaseTableCell>
-        <span class="block truncate text-[0.96rem] font-semibold tracking-[0.01em] text-n-slate-12">
+        <span
+          class="block truncate text-[0.96rem] font-semibold tracking-[0.01em] text-n-slate-12"
+        >
           {{ customRole.name }}
         </span>
       </BaseTableCell>
@@ -53,7 +55,9 @@ const getFormattedPermissions = role => {
       </BaseTableCell>
 
       <BaseTableCell align="end" class="w-24">
-        <div class="flex justify-end gap-2 rounded-full border border-n-alpha-1 bg-n-alpha-1/40 px-2 py-1.5">
+        <div
+          class="flex justify-end gap-2 rounded-full border border-n-alpha-1 bg-n-alpha-1/40 px-2 py-1.5"
+        >
           <Button
             v-tooltip.top="$t('CUSTOM_ROLE.EDIT.BUTTON_TEXT')"
             icon="i-woot-edit-pen"

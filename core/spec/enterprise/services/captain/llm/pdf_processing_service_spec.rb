@@ -3,56 +3,48 @@ require 'rails_helper'
 RSpec.describe Captain::Llm::PdfProcessingService do
   let(:document) { create(:captain_document) }
   let(:service) { described_class.new(document) }
+  let(:blob) do
+    instance_double(
+      ActiveStorage::Blob,
+      byte_size: 1024,
+      checksum: 'pdf-checksum',
+      content_type: 'application/pdf'
+    )
+  end
+  let(:pdf_file) { double('pdf_file', blob: blob) } # rubocop:disable RSpec/VerifiedDoubles
 
   before do
-    # Mock OpenAI configuration
-    installation_config = instance_double(InstallationConfig, value: 'test-api-key')
-    allow(InstallationConfig).to receive(:find_by!)
-      .with(name: 'CAPTAIN_OPEN_AI_API_KEY')
-      .and_return(installation_config)
+    allow(document).to receive(:pdf_file).and_return(pdf_file)
+    allow(Llm::MediaConfig).to receive(:media_configured?).and_return(true)
   end
 
   describe '#process' do
-    context 'when document already has OpenAI file ID' do
-      before do
-        allow(document).to receive(:openai_file_id).and_return('existing-file-id')
-      end
+    it 'keeps an existing readiness marker' do
+      allow(document).to receive(:openai_file_id).and_return('openrouter-inline:existing')
 
-      it 'skips upload' do
-        expect(document).not_to receive(:store_openai_file_id)
-        service.process
-      end
+      expect(document).not_to receive(:store_openai_file_id)
+      service.process
     end
 
-    context 'when uploading PDF to OpenAI' do
-      let(:mock_client) { instance_double(OpenAI::Client) }
-      let(:pdf_content) { 'PDF content' }
-      let(:blob_double) { instance_double(ActiveStorage::Blob) }
-      let(:pdf_file) { instance_double(ActiveStorage::Attachment) }
+    it 'stores a local OpenRouter inline marker without uploading to a vendor files API' do
+      allow(document).to receive(:openai_file_id).and_return(nil)
 
-      before do
-        allow(document).to receive(:openai_file_id).and_return(nil)
-        allow(document).to receive(:pdf_file).and_return(pdf_file)
-        allow(pdf_file).to receive(:blob).and_return(blob_double)
-        allow(blob_double).to receive(:open).and_yield(StringIO.new(pdf_content))
+      expect(document).to receive(:store_openai_file_id).with('openrouter-inline:pdf-checksum')
+      service.process
+    end
 
-        allow(OpenAI::Client).to receive(:new).and_return(mock_client)
-        # Use a simple double for OpenAI::Files as it may not be loaded
-        files_api = double('files_api') # rubocop:disable RSpec/VerifiedDoubles
-        allow(files_api).to receive(:upload).and_return({ 'id' => 'file-abc123' })
-        allow(mock_client).to receive(:files).and_return(files_api)
-      end
+    it 'replaces a legacy vendor file id with the OpenRouter inline marker' do
+      allow(document).to receive(:openai_file_id).and_return('file-old-provider')
 
-      it 'uploads PDF and stores file ID' do
-        expect(document).to receive(:store_openai_file_id).with('file-abc123')
-        service.process
-      end
+      expect(document).to receive(:store_openai_file_id).with('openrouter-inline:pdf-checksum')
+      service.process
+    end
 
-      it 'raises error when upload fails' do
-        allow(mock_client.files).to receive(:upload).and_return({ 'id' => nil })
+    it 'rejects documents above the inline processing limit' do
+      allow(document).to receive(:openai_file_id).and_return(nil)
+      allow(blob).to receive(:byte_size).and_return(Llm::OpenRouterMultimodalService::MAX_INLINE_BYTES + 1)
 
-        expect { service.process }.to raise_error(CustomExceptions::Pdf::UploadError)
-      end
+      expect { service.process }.to raise_error(CustomExceptions::Pdf::UploadError)
     end
   end
 end

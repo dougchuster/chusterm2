@@ -18,17 +18,17 @@ const LABEL_KEYS = {
 };
 
 const ICON_MAP = {
-  [VOICE_CALL_STATUS.IN_PROGRESS]: 'i-ph-phone-call',
-  [VOICE_CALL_STATUS.NO_ANSWER]: 'i-ph-phone-x',
-  [VOICE_CALL_STATUS.FAILED]: 'i-ph-phone-x',
+  [VOICE_CALL_STATUS.IN_PROGRESS]: 'i-lucide-phone-call',
+  [VOICE_CALL_STATUS.NO_ANSWER]: 'i-lucide-phone-off',
+  [VOICE_CALL_STATUS.FAILED]: 'i-lucide-phone-off',
 };
 
 const COLOR_MAP = {
-  [VOICE_CALL_STATUS.IN_PROGRESS]: 'text-n-teal-9',
-  [VOICE_CALL_STATUS.RINGING]: 'text-n-teal-9',
-  [VOICE_CALL_STATUS.COMPLETED]: 'text-n-slate-11',
-  [VOICE_CALL_STATUS.NO_ANSWER]: 'text-n-ruby-9',
-  [VOICE_CALL_STATUS.FAILED]: 'text-n-ruby-9',
+  [VOICE_CALL_STATUS.IN_PROGRESS]: 'text-ds-state-success',
+  [VOICE_CALL_STATUS.RINGING]: 'text-ds-state-success',
+  [VOICE_CALL_STATUS.COMPLETED]: 'text-ds-fg-subtle',
+  [VOICE_CALL_STATUS.NO_ANSWER]: 'text-ds-state-danger',
+  [VOICE_CALL_STATUS.FAILED]: 'text-ds-state-danger',
 };
 
 const isOutbound = computed(
@@ -52,17 +52,19 @@ const labelKey = computed(() => {
 
 const iconName = computed(() => {
   if (ICON_MAP[props.status]) return ICON_MAP[props.status];
-  return isOutbound.value ? 'i-ph-phone-outgoing' : 'i-ph-phone-incoming';
+  return isOutbound.value
+    ? 'i-lucide-phone-outgoing'
+    : 'i-lucide-phone-incoming';
 });
 
 const statusColor = computed(
-  () => COLOR_MAP[props.status] || 'text-n-slate-11'
+  () => COLOR_MAP[props.status] || 'text-ds-fg-subtle'
 );
 </script>
 
 <template>
   <div
-    class="my-0 mx-2 leading-6 h-6 flex-1 min-w-0 text-sm overflow-hidden text-ellipsis whitespace-nowrap"
+    class="mx-2 my-0 h-6 min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-sm leading-6"
     :class="messagePreviewClass"
   >
     <Icon

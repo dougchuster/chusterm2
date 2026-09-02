@@ -1,7 +1,7 @@
 class ConversationFinder
   attr_reader :current_user, :current_account, :params
 
-  DEFAULT_STATUS = 'all'.freeze
+  DEFAULT_STATUS = 'open'.freeze
   SORT_OPTIONS = {
     'last_activity_at_asc' => %w[sort_on_last_activity_at asc],
     'last_activity_at_desc' => %w[sort_on_last_activity_at desc],
@@ -80,7 +80,7 @@ class ConversationFinder
     set_assignee_type
 
     find_all_conversations
-    filter_by_status unless params[:q]
+    filter_by_status if params[:status].present? || params[:q].blank?
     filter_by_team
     filter_by_labels
     filter_by_query
@@ -88,7 +88,7 @@ class ConversationFinder
   end
 
   def set_inboxes
-    @inbox_ids = if params[:inbox_id]
+    @inbox_ids = if params[:inbox_id].present? && params[:inbox_id].to_s != 'all'
                    @current_user.assigned_inboxes.where(id: params[:inbox_id])
                  else
                    @current_user.assigned_inboxes.pluck(:id)
@@ -149,13 +149,9 @@ class ConversationFinder
   end
 
   def filter_by_query
-    return unless params[:q]
+    return if params[:q].blank?
 
-    allowed_message_types = [Message.message_types[:incoming], Message.message_types[:outgoing]]
-    @conversations = conversations.joins(:messages).where('messages.content ILIKE :search', search: "%#{params[:q]}%")
-                                  .where(messages: { message_type: allowed_message_types }).includes(:messages)
-                                  .where('messages.content ILIKE :search', search: "%#{params[:q]}%")
-                                  .where(messages: { message_type: allowed_message_types })
+    @conversations = Conversations::TextSearchService.new(@conversations, params[:q]).perform
   end
 
   def filter_by_status

@@ -6,7 +6,12 @@ class Api::V1::Accounts::Crm::PipelineStagesController < Api::V1::Accounts::Crm:
     authorize @pipeline, :index?
 
     @stages = @pipeline.crm_pipeline_stages.active.ordered
-    render json: @stages.map { |s| serialize_stage(s) }
+    # Princípio 11 (Kommo "Automatize"): automação visível onde acontece —
+    # contagem agregada de regras ativas por etapa (1 query)
+    automation_counts = CrmAutomationRule.active
+                                         .where(crm_pipeline_stage_id: @stages.map(&:id))
+                                         .group(:crm_pipeline_stage_id).count
+    render json: @stages.map { |s| serialize_stage(s, automations_count: automation_counts.fetch(s.id, 0)) }
   end
 
   def create
@@ -110,7 +115,7 @@ class Api::V1::Accounts::Crm::PipelineStagesController < Api::V1::Accounts::Crm:
   end
 
   def stage_params
-    params.require(:stage).permit(:name, :slug, :position, :probability_pct, :expected_duration_hours, :color, required_fields: {})
+    params.require(:stage).permit(:wip_limit, :name, :slug, :position, :probability_pct, :expected_duration_hours, :color, required_fields: {})
   end
 
   def stage_create_params
@@ -123,7 +128,7 @@ class Api::V1::Accounts::Crm::PipelineStagesController < Api::V1::Accounts::Crm:
     (@pipeline.crm_pipeline_stages.maximum(:position) || -1) + 1
   end
 
-  def serialize_stage(stage)
+  def serialize_stage(stage, automations_count: nil)
     {
       id: stage.id,
       pipeline_id: stage.crm_pipeline_id,
@@ -132,8 +137,10 @@ class Api::V1::Accounts::Crm::PipelineStagesController < Api::V1::Accounts::Crm:
       position: stage.position,
       probability_pct: stage.probability_pct,
       expected_duration_hours: stage.expected_duration_hours,
+      wip_limit: stage.wip_limit,
       color: stage.color,
-      required_fields: stage.required_fields
+      required_fields: stage.required_fields,
+      active_automations_count: automations_count || CrmAutomationRule.active.for_stage(stage.id).count
     }
   end
 

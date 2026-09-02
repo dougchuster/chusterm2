@@ -25,81 +25,54 @@ const count = computed(() =>
 
 <template>
   <component
-    :is="to ? 'router-link' : 'div'"
-    class="sidebar-group-header flex items-center gap-2.5 px-3 py-1.5 rounded-lg min-h-9 min-w-0 transition-colors duration-150 no-underline border-0"
-    role="button"
+    :is="to ? 'router-link' : 'button'"
+    class="group/sidebar-menu-item flex min-h-11 min-w-0 items-center gap-2.5 rounded-xl border-0 px-3 py-2 font-inter no-underline transition duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-shell-focus"
+    :type="to ? undefined : 'button'"
     draggable="false"
     :to="to"
     :title="label"
-    :class="{
-      'is-current': isActive && !hasActiveChild,
-      'has-current-child': hasActiveChild,
-      'is-idle': !isActive && !hasActiveChild,
-    }"
+    :aria-current="isActive && !hasActiveChild ? 'page' : undefined"
+    :aria-expanded="expandable ? isExpanded : undefined"
+    :class="[
+      isActive && !hasActiveChild
+        ? 'bg-ds-shell-active text-ds-shell-fg shadow-sm shadow-ds-shell-accent/10'
+        : '',
+      hasActiveChild ? 'bg-ds-shell-panel-strong text-ds-shell-fg' : '',
+      !isActive && !hasActiveChild
+        ? 'text-ds-shell-muted hover:bg-ds-shell-hover hover:text-ds-shell-fg'
+        : '',
+    ]"
     @click.stop="emit('toggle')"
   >
-    <div v-if="icon" class="relative flex items-center gap-2">
-      <Icon v-if="icon" :icon="icon" class="size-[18px] flex-shrink-0" />
+    <div
+      v-if="icon"
+      class="relative grid size-5 flex-shrink-0 place-content-center"
+    >
+      <Icon :icon="icon" class="size-[18px]" aria-hidden="true" />
       <span
         v-if="showBadge"
-        class="size-2 -top-px ltr:-right-px rtl:-left-px bg-n-brand absolute rounded-full border border-n-solid-2"
+        class="absolute -top-0.5 size-2 rounded-full bg-ds-shell-secondary ring-2 ring-ds-shell-canvas ltr:-right-0.5 rtl:-left-0.5"
+        aria-hidden="true"
       />
     </div>
-    <div class="flex items-center gap-1.5 flex-grow min-w-0 flex-1">
-      <span class="truncate text-[0.875rem] leading-5 font-medium">
+    <div class="flex min-w-0 flex-1 flex-grow items-center gap-1.5">
+      <span class="truncate text-[0.875rem] font-medium leading-5">
         {{ label }}
       </span>
       <span
         v-if="dynamicCount && !expandable"
-        class="sidebar-group-header__count text-xs font-medium text-center flex-shrink-0"
-        :class="{
-          'text-n-slate-12': isActive,
-          'text-n-slate-10': !isActive,
-        }"
+        class="min-w-5 flex-shrink-0 rounded-md bg-ds-shell-panel-strong px-1.5 py-0.5 text-center text-[0.6875rem] font-semibold leading-4"
+        :class="isActive ? 'text-ds-shell-accent' : 'text-ds-shell-muted'"
       >
         {{ count }}
       </span>
     </div>
     <span
       v-if="expandable"
-      class="size-3.5 flex-shrink-0 opacity-60 transition-colors group-hover/sidebar-menu-item:opacity-100"
+      class="size-4 flex-shrink-0 opacity-60 transition duration-150 group-hover/sidebar-menu-item:opacity-100"
       :class="isExpanded ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
+      aria-hidden="true"
       @click.stop="emit('toggle')"
     />
   </component>
 </template>
-
-<style scoped>
-.sidebar-group-header {
-  color: rgb(var(--slate-11));
-  text-decoration: none;
-  border: none;
-}
-
-.sidebar-group-header.is-idle:hover {
-  background: rgb(var(--surface-active));
-  color: rgb(var(--slate-12));
-}
-
-.sidebar-group-header.has-current-child {
-  color: rgb(var(--slate-12));
-}
-
-.sidebar-group-header.is-current {
-  color: rgb(var(--blue-11));
-  background: rgb(var(--blue-2));
-}
-
-.dark .sidebar-group-header.is-current {
-  background: rgb(var(--blue-2) / 0.42);
-}
-
-.sidebar-group-header__count {
-  min-width: 1.25rem;
-  padding: 0.1rem 0.4rem;
-  border-radius: 6px;
-  background: rgb(var(--slate-3) / 0.5);
-  font-size: 0.7rem;
-  line-height: 1rem;
-}
-</style>

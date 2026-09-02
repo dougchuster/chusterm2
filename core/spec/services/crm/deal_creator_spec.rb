@@ -8,6 +8,7 @@ RSpec.describe Crm::DealCreator do
   let(:inbox) { create(:channel_whatsapp, sync_templates: false, validate_provider_config: false, account: account).inbox }
   let(:contact_inbox) { create(:contact_inbox, contact: contact, inbox: inbox, source_id: contact.phone_number.delete('+')) }
   let(:conversation) { create(:conversation, account: account, inbox: inbox, contact: contact, contact_inbox: contact_inbox) }
+  let(:next_conversation) { create(:conversation, account: account, inbox: inbox, contact: contact, contact_inbox: contact_inbox) }
 
   before do
     allow(Crm::AuditLogger).to receive(:log)
@@ -46,6 +47,30 @@ RSpec.describe Crm::DealCreator do
     expect(second.id).to eq(first.id)
     expect(second.reload.conversation_id).to eq(conversation.id)
     expect(second.inbox_id).to eq(inbox.id)
+  end
+
+  it 'clears stale Captain state links when the reused deal moves to a new conversation' do
+    deal = described_class.new(
+      account: account,
+      params: base_params,
+      actor: nil
+    ).perform
+    old_state = CaptainConversationState.create!(
+      account: account,
+      conversation: conversation,
+      contact: contact,
+      crm_deal: deal
+    )
+
+    reused = described_class.new(
+      account: account,
+      params: base_params.merge(conversation_id: next_conversation.id),
+      actor: nil
+    ).perform
+
+    expect(reused.id).to eq(deal.id)
+    expect(reused.reload.conversation_id).to eq(next_conversation.id)
+    expect(old_state.reload.crm_deal_id).to be_nil
   end
 
   private

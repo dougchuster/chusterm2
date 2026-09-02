@@ -1,4 +1,4 @@
-﻿import { actions } from '../../agent';
+import { actions } from '../../agent';
 import { agents } from './data';
 import { getFromCache, setCache } from 'shared/helpers/cache';
 import { getAvailableAgents } from 'widget/api/agent';

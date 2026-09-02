@@ -53,6 +53,10 @@ export default {
       type: String,
       default: undefined,
     },
+    popoutReplyBox: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: ['setReplyMode', 'togglePopout', 'executeCopilotAction'],
   setup(props, { emit }) {
@@ -66,14 +70,6 @@ export default {
     const handleNoteClick = () => {
       setReplyMode(REPLY_EDITOR_MODES.NOTE);
     };
-    const handleModeToggle = () => {
-      const newMode =
-        props.mode === REPLY_EDITOR_MODES.REPLY
-          ? REPLY_EDITOR_MODES.NOTE
-          : REPLY_EDITOR_MODES.REPLY;
-      setReplyMode(newMode);
-    };
-
     const { captainTasksEnabled } = useCaptain();
     const showCopilotMenu = ref(false);
 
@@ -110,7 +106,7 @@ export default {
     useKeyboardEvents(keyboardEvents);
 
     return {
-      handleModeToggle,
+      setReplyMode,
       handleReplyClick,
       handleNoteClick,
       REPLY_EDITOR_MODES,
@@ -122,18 +118,10 @@ export default {
     };
   },
   computed: {
-    replyButtonClass() {
-      return {
-        'is-active': this.mode === REPLY_EDITOR_MODES.REPLY,
-      };
-    },
-    noteButtonClass() {
-      return {
-        'is-active': this.mode === REPLY_EDITOR_MODES.NOTE,
-      };
-    },
     charLengthClass() {
-      return this.charactersRemaining < 0 ? 'text-n-ruby-9' : 'text-n-slate-11';
+      return this.charactersRemaining < 0
+        ? 'text-ds-state-danger'
+        : 'text-ds-fg-muted';
     },
     characterLengthWarning() {
       return this.charactersRemaining < 0
@@ -145,33 +133,37 @@ export default {
 </script>
 
 <template>
-  <div
-    class="flex justify-between gap-2 h-[3.25rem] items-center ltr:pl-3 ltr:pr-2 rtl:pr-3 rtl:pl-2"
-  >
+  <div class="flex min-h-11 items-center justify-between gap-2 px-2.5 py-1.5">
     <EditorModeToggle
       :mode="mode"
       :disabled="disabled"
       :is-reply-restricted="isReplyRestricted"
-      @toggle-mode="handleModeToggle"
+      @set-mode="setReplyMode"
     />
-    <div class="flex items-center mx-4 my-0">
-      <div v-if="isMessageLengthReachingThreshold" class="text-xs">
+    <div class="flex min-w-0 flex-1 items-center justify-end">
+      <div
+        v-if="isMessageLengthReachingThreshold"
+        role="status"
+        aria-live="polite"
+        class="truncate text-xs"
+      >
         <span :class="charLengthClass">
           {{ characterLengthWarning }}
         </span>
       </div>
     </div>
-    <div v-if="captainTasksEnabled" class="flex items-center gap-2">
-      <div class="relative">
+    <div class="flex shrink-0 items-center gap-1">
+      <div v-if="captainTasksEnabled" class="relative">
         <NextButton
-          ghost
+          v-tooltip.top-end="$t('CONVERSATION.SIDEBAR.COPILOT')"
+          type="button"
+          :variant="showCopilotMenu ? 'faded' : 'ghost'"
+          color="tertiary"
           :disabled="disabled || isEditorDisabled"
-          :class="{
-            'text-n-violet-9 hover:enabled:!bg-n-violet-3': !showCopilotMenu,
-            'text-n-violet-9 bg-n-violet-3': showCopilotMenu,
-          }"
           sm
-          icon="i-ph-sparkle-fill"
+          icon="i-lucide-sparkles"
+          :aria-label="$t('CONVERSATION.SIDEBAR.COPILOT')"
+          :aria-pressed="showCopilotMenu"
           @click="toggleCopilotMenu"
         />
         <CopilotMenuBar
@@ -185,10 +177,22 @@ export default {
         />
       </div>
       <NextButton
-        ghost
-        class="text-n-slate-11"
+        v-tooltip.top-end="
+          popoutReplyBox
+            ? $t('CONVERSATION.REPLYBOX.COLLAPSE_EDITOR')
+            : $t('CONVERSATION.REPLYBOX.EXPAND_EDITOR')
+        "
+        type="button"
+        variant="ghost"
+        color="slate"
         sm
-        icon="i-lucide-maximize-2"
+        :icon="popoutReplyBox ? 'i-lucide-minimize-2' : 'i-lucide-maximize-2'"
+        :aria-label="
+          popoutReplyBox
+            ? $t('CONVERSATION.REPLYBOX.COLLAPSE_EDITOR')
+            : $t('CONVERSATION.REPLYBOX.EXPAND_EDITOR')
+        "
+        :aria-pressed="popoutReplyBox"
         @click="$emit('togglePopout')"
       />
     </div>

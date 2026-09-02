@@ -1,4 +1,4 @@
-﻿import { computed } from 'vue';
+import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useMapGetter, useStore } from './store';
 import { useConfig } from './useConfig';

@@ -18,6 +18,8 @@ RSpec.describe Conversations::EventDataPresenter do
           hmac_verified: conversation.contact_inbox.hmac_verified
         },
         id: conversation.display_id,
+        display_id: conversation.display_id,
+        database_id: conversation.id,
         messages: [],
         labels: [],
         inbox_id: conversation.inbox_id,

@@ -19,6 +19,7 @@ import {
 
 import { Virtualizer } from 'virtua/vue';
 import ChatListHeader from './ChatListHeader.vue';
+import ConversationListSearch from './ConversationListSearch.vue';
 import Dialog from 'dashboard/components-next/dialog/Dialog.vue';
 import ConversationFilter from 'next/filter/ConversationFilter.vue';
 import SaveCustomView from 'next/filter/SaveCustomView.vue';
@@ -44,8 +45,6 @@ import {
 } from 'dashboard/composables/useTransformKeys';
 import { useEmitter } from 'dashboard/composables/emitter';
 import { useConversationRequiredAttributes } from 'dashboard/composables/useConversationRequiredAttributes';
-
-import { emitter } from 'shared/helpers/mitt';
 
 import wootConstants from 'dashboard/constants/globals';
 import advancedFilterOptions from './widgets/conversation/advancedFilterItems';
@@ -101,6 +100,9 @@ const showAddFoldersModal = ref(false);
 const showDeleteFoldersModal = ref(false);
 const isContextMenuOpen = ref(false);
 const appliedFilter = ref([]);
+const searchInput = ref('');
+const searchQuery = ref('');
+const conversationSearchError = ref(false);
 const advancedFilterTypes = ref(
   advancedFilterOptions.map(filter => ({
     ...filter,
@@ -160,6 +162,8 @@ const hasAppliedFilters = computed(() => {
   return appliedFilters.value.length !== 0;
 });
 
+const isSearchActive = computed(() => Boolean(searchQuery.value));
+
 const activeFolder = computed(() => {
   if (props.foldersId) {
     const activeView = folders.value.filter(
@@ -192,6 +196,16 @@ const userPermissions = computed(() => {
   return getUserPermissions(currentUser.value, currentAccountId.value);
 });
 
+const getAssigneeTabShortName = key => {
+  if (key === wootConstants.ASSIGNEE_TYPE.ME) {
+    return t('CHAT_LIST.ASSIGNEE_TYPE_TABS_SHORT.me');
+  }
+  if (key === wootConstants.ASSIGNEE_TYPE.UNASSIGNED) {
+    return t('CHAT_LIST.ASSIGNEE_TYPE_TABS_SHORT.unassigned');
+  }
+  return t('CHAT_LIST.ASSIGNEE_TYPE_TABS_SHORT.all');
+};
+
 const assigneeTabItems = computed(() => {
   return filterItemsByPermission(
     ASSIGNEE_TYPE_TAB_PERMISSIONS,
@@ -200,6 +214,7 @@ const assigneeTabItems = computed(() => {
   ).map(({ key, count: countKey }) => ({
     key,
     name: t(`CHAT_LIST.ASSIGNEE_TYPE_TABS.${key}`),
+    shortName: getAssigneeTabShortName(key),
     count: conversationStats.value[countKey] || 0,
   }));
 });
@@ -289,6 +304,7 @@ const conversationFilters = computed(() => {
     labels: props.label ? [props.label] : undefined,
     teamId: props.teamId || undefined,
     conversationType: props.conversationType || undefined,
+    q: searchQuery.value || undefined,
   };
 });
 
@@ -375,6 +391,19 @@ const uniqueInboxes = computed(() => {
 });
 
 // ---------------------- Methods -----------------------
+function emitConversationLoaded() {
+  emit('conversationLoad');
+}
+
+function handleConversationFetchResult(succeeded) {
+  if (succeeded === false && isSearchActive.value) {
+    conversationSearchError.value = true;
+  } else if (succeeded === true) {
+    conversationSearchError.value = false;
+  }
+  emitConversationLoaded();
+}
+
 function setFiltersFromUISettings() {
   const { conversations_filter_by: filterBy = {} } = uiSettings.value;
   const { status, order_by: orderBy } = filterBy;
@@ -389,10 +418,6 @@ function setFiltersFromUISettings() {
     : wootConstants.SORT_BY_TYPE.LAST_ACTIVITY_AT_DESC;
 }
 
-function emitConversationLoaded() {
-  emit('conversationLoad');
-}
-
 function fetchFilteredConversations(payload) {
   payload = useSnakeCase(payload);
   let page = currentFiltersPage.value + 1;
@@ -400,8 +425,9 @@ function fetchFilteredConversations(payload) {
     .dispatch('fetchFilteredConversations', {
       queryData: filterQueryGenerator(payload),
       page,
+      q: searchQuery.value || undefined,
     })
-    .then(emitConversationLoaded);
+    .then(handleConversationFetchResult);
 
   showAdvancedFilters.value = false;
 }
@@ -413,8 +439,9 @@ function fetchSavedFilteredConversations(payload) {
     .dispatch('fetchFilteredConversations', {
       queryData: payload,
       page,
+      q: searchQuery.value || undefined,
     })
-    .then(emitConversationLoaded);
+    .then(handleConversationFetchResult);
 }
 
 function onApplyFilter(payload) {
@@ -568,14 +595,19 @@ function onToggleAdvanceFiltersModal() {
 
 function fetchConversations() {
   store.dispatch('updateChatListFilters', conversationFilters.value);
-  store.dispatch('fetchAllConversations').then(emitConversationLoaded);
+  return store
+    .dispatch('fetchAllConversations')
+    .then(handleConversationFetchResult);
 }
 
 function resetAndFetchData() {
   appliedFilter.value = [];
   resetBulkActions();
   store.dispatch('conversationPage/reset');
-  store.dispatch('emptyAllConversations');
+  store.dispatch('emptyAllConversations', {
+    preserveSelected: isSearchActive.value,
+    searchActive: isSearchActive.value,
+  });
   store.dispatch('clearConversationFilters');
   if (hasActiveFolders.value) {
     const payload = activeFolder.value.query;
@@ -587,8 +619,59 @@ function resetAndFetchData() {
   fetchConversations();
 }
 
+function refreshConversationSearch(query) {
+  if (searchQuery.value === query) return;
+
+  searchQuery.value = query;
+  conversationSearchError.value = false;
+  resetBulkActions();
+  store.dispatch('conversationPage/reset');
+  store.dispatch('emptyAllConversations', {
+    preserveSelected: true,
+    searchActive: Boolean(query),
+  });
+
+  if (hasActiveFolders.value) {
+    fetchSavedFilteredConversations(activeFolder.value.query);
+    return;
+  }
+
+  if (hasAppliedFilters.value) {
+    fetchFilteredConversations(appliedFilters.value);
+    return;
+  }
+
+  fetchConversations();
+}
+
+function retryConversationSearch() {
+  conversationSearchError.value = false;
+  resetBulkActions();
+  store.dispatch('conversationPage/reset');
+  store.dispatch('emptyAllConversations', {
+    preserveSelected: true,
+    searchActive: true,
+  });
+
+  if (hasActiveFolders.value) {
+    fetchSavedFilteredConversations(activeFolder.value.query);
+    return;
+  }
+
+  if (hasAppliedFilters.value) {
+    fetchFilteredConversations(appliedFilters.value);
+    return;
+  }
+
+  fetchConversations();
+}
+
 function loadMoreConversations() {
-  if (hasCurrentPageEndReached.value || chatListLoading.value) {
+  if (
+    hasCurrentPageEndReached.value ||
+    chatListLoading.value ||
+    conversationSearchError.value
+  ) {
     return;
   }
 
@@ -613,8 +696,11 @@ const intersectionObserverOptions = computed(() => ({
 function updateAssigneeTab(selectedTab) {
   if (activeAssigneeTab.value !== selectedTab) {
     resetBulkActions();
-    emitter.emit('clearSearchInput');
     activeAssigneeTab.value = selectedTab;
+    if (isSearchActive.value) {
+      resetAndFetchData();
+      return;
+    }
     if (!currentPage.value) {
       fetchConversations();
     }
@@ -810,7 +896,7 @@ function toggleSelectAll(check) {
 }
 
 useEmitter('fetch_conversation_stats', () => {
-  if (hasAppliedFiltersOrActiveFolders.value) return;
+  if (hasAppliedFiltersOrActiveFolders.value || isSearchActive.value) return;
   store.dispatch('conversationStats/get', conversationFilters.value);
 });
 
@@ -909,10 +995,12 @@ watch(conversationFilters, (newVal, oldVal) => {
 
 <template>
   <div
-    class="chat-list-shell flex flex-col flex-shrink-0 conversations-list-wrap bg-n-surface-1"
+    class="chat-list-shell conversations-list-wrap flex flex-shrink-0 flex-col border-ds-border-subtle bg-ds-bg-surface ltr:border-r rtl:border-l"
     :class="[
       { hidden: !showConversationList },
-      isOnExpandedLayout ? 'basis-full' : 'w-full sm:w-[380px] 2xl:w-[420px]',
+      isOnExpandedLayout
+        ? 'basis-full'
+        : 'w-full sm:w-[360px] xl:w-[380px] 3xl:w-[420px]',
     ]"
   >
     <slot />
@@ -929,6 +1017,12 @@ watch(conversationFilters, (newVal, oldVal) => {
       @filters-modal="onToggleAdvanceFiltersModal"
       @reset-filters="resetAndFetchData"
       @basic-filter-change="onBasicFilterChange"
+    />
+
+    <ConversationListSearch
+      v-model="searchInput"
+      :loading="chatListLoading && isSearchActive"
+      @search="refreshConversationSearch"
     />
 
     <TeleportWithDirection
@@ -956,15 +1050,40 @@ watch(conversationFilters, (newVal, oldVal) => {
       v-if="!hasAppliedFiltersOrActiveFolders"
       :items="assigneeTabItems"
       :active-tab="activeAssigneeTab"
-      is-compact
       @chat-tab-change="updateAssigneeTab"
     />
 
-    <p
-      v-if="!chatListLoading && !conversationList.length"
-      class="flex justify-center items-center p-4 text-center text-sm text-n-slate-11"
+    <div
+      v-if="isSearchActive && conversationSearchError"
+      role="alert"
+      class="mx-3 mb-3 flex items-start gap-2.5 rounded-xl bg-ds-state-danger-soft p-3 text-ds-state-danger"
     >
-      {{ $t('CHAT_LIST.LIST.404') }}
+      <span
+        class="i-lucide-cloud-off mt-0.5 size-4 shrink-0"
+        aria-hidden="true"
+      />
+      <div class="min-w-0 flex-1">
+        <p class="m-0 text-sm font-medium">
+          {{ $t('CHAT_LIST.SEARCH.ERROR') }}
+        </p>
+        <button
+          type="button"
+          class="mt-1 rounded text-xs font-semibold underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
+          @click="retryConversationSearch"
+        >
+          {{ $t('CHAT_LIST.SEARCH.RETRY') }}
+        </button>
+      </div>
+    </div>
+    <p
+      v-else-if="!chatListLoading && !conversationList.length"
+      class="flex items-center justify-center p-4 text-center text-sm text-ds-fg-muted"
+    >
+      {{
+        isSearchActive
+          ? $t('SEARCH.EMPTY_STATE_FULL', { query: searchQuery })
+          : $t('CHAT_LIST.LIST.404')
+      }}
     </p>
     <ConversationBulkActions
       v-if="selectedConversations.length"
@@ -1003,11 +1122,11 @@ watch(conversationFilters, (newVal, oldVal) => {
         />
       </Virtualizer>
       <div v-if="chatListLoading" class="flex justify-center my-4">
-        <Spinner class="text-n-brand" />
+        <Spinner class="text-ds-accent" />
       </div>
       <p
         v-else-if="showEndOfListMessage"
-        class="p-4 text-center text-n-slate-11"
+        class="p-4 text-center text-sm text-ds-fg-muted"
       >
         {{ $t('CHAT_LIST.EOF') }}
       </p>

@@ -1,436 +1,656 @@
-<!-- eslint-disable vue/no-bare-strings-in-template, @intlify/vue-i18n/no-raw-text, vue/prefer-separate-static-class -->
+<!-- eslint-disable vue/no-bare-strings-in-template, @intlify/vue-i18n/no-raw-text -->
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import CaptainConversationStateAPI from 'dashboard/api/captain/conversationState';
-import SelectMenu from 'dashboard/components-next/selectmenu/SelectMenu.vue';
 import NextButton from 'dashboard/components-next/button/Button.vue';
 
 const props = defineProps({
-  conversationId: { type: [Number, String], required: true },
+  conversationDisplayId: { type: [Number, String], required: true },
 });
 
 const route = useRoute();
 const accountId = computed(() => route.params.accountId);
+const copy = {
+  ariaLabel: 'Controle inteligente do Capitão',
+  eyebrow: 'Capitão · controle da conversa',
+  team: 'Equipe',
+  ai: 'IA',
+  loading: 'Sincronizando contexto da conversa…',
+  relationship: 'Relacionamento',
+  qualification: 'Qualificação',
+  confidenceSuffix: '% de confiança · ver evidências',
+  scoreUnit: '/ 100',
+  relationshipNotice:
+    'A classificação ajuda a personalizar o atendimento, mas nunca transfere a conversa sozinha.',
+  nextAction: 'Próxima melhor ação',
+  nextActionFallback: 'Revisar dados do atendimento.',
+  openDeal: 'Abrir negócio no CRM',
+  documentsPrefix: 'Docs:',
+  scoreWhy: 'Por que este score?',
+  interventionContext: 'Contexto para intervenção humana',
+  protectedService: 'Atendimento protegido contra respostas concorrentes',
+  controlNotice:
+    'Score e identificação de Lead/Cliente orientam a equipe, mas não mudam o controle da conversa automaticamente.',
+  updating: 'Atualizando controle…',
+  saveReason: 'Salvar contexto',
+  reasonSaved: 'Contexto sincronizado',
+  reasonUnsaved: 'Alterações ainda não salvas',
+  reasonPlaceholder:
+    'Ex.: cliente pediu especialista, prazo crítico ou equipe assumiu',
+};
 
 const modes = [
-  { id: 'auto', label: 'IA ativa' },
-  { id: 'supervised', label: 'IA supervisionada' },
-  { id: 'paused', label: 'IA pausada' },
-  { id: 'human_only', label: 'Humano assumiu' },
+  {
+    id: 'auto',
+    label: 'IA ativa',
+    description: 'O Capitão responde e mantém a memória.',
+    icon: 'i-lucide-sparkles',
+  },
+  {
+    id: 'supervised',
+    label: 'Supervisionada',
+    description: 'A IA prepara o atendimento para revisão.',
+    icon: 'i-lucide-scan-eye',
+  },
+  {
+    id: 'paused',
+    label: 'IA pausada',
+    description: 'Nenhuma resposta automática será enviada.',
+    icon: 'i-lucide-pause',
+  },
+  {
+    id: 'human_only',
+    label: 'Humano no controle',
+    description: 'A conversa está sob responsabilidade da equipe.',
+    icon: 'i-lucide-user-round-check',
+  },
 ];
-
-const copy = {
-  title: 'Capitão',
-  human: 'Humano',
-  ai: 'IA',
-  loading: 'Carregando...',
-  serviceMode: 'Modo de atendimento',
-  interventionReason: 'Motivo da intervenção',
-  scorePrefix: 'Score atual:',
-  pointsSuffix: 'pts',
-  flow: 'Fluxo:',
-  deal: 'Deal vinculado:',
-  nextAction: 'Próxima ação',
-  legalArea: 'Área:',
-  documents: 'Docs:',
-  owner: 'Responsável:',
-  viewDeal: 'Ver deal',
-  scoreDetails: 'Ver detalhes do score',
-  reason: 'Motivo:',
-  summary: 'Gerar resumo',
-  featureSoon: 'Funcionalidade em breve',
-};
 
 const state = ref(null);
 const loading = ref(false);
 const saving = ref(false);
 const error = ref('');
 const reason = ref('');
+const persistedReason = ref('');
 const isScoreExpanded = ref(false);
+const isRelationshipExpanded = ref(false);
+let conversationVersion = 0;
 
 const currentMode = computed(() => state.value?.ai_mode || 'auto');
-const modeLabel = computed(
-  () => modes.find(mode => mode.id === currentMode.value)?.label || 'IA ativa'
-);
-const modeOptions = computed(() =>
-  modes.map(mode => ({ label: mode.label, value: mode.id }))
+const currentModeDefinition = computed(
+  () => modes.find(mode => mode.id === currentMode.value) || modes[0]
 );
 const humanControlled = computed(() =>
   ['paused', 'human_only'].includes(currentMode.value)
 );
-const controlBadgeLabel = computed(() =>
-  humanControlled.value ? copy.human : copy.ai
+const isReasonDirty = computed(() => reason.value !== persistedReason.value);
+const statusTone = computed(() => {
+  if (currentMode.value === 'human_only') {
+    return 'bg-ds-state-info-soft text-ds-state-info';
+  }
+  if (currentMode.value === 'paused') {
+    return 'bg-ds-state-warning-soft text-ds-state-warning';
+  }
+  if (currentMode.value === 'supervised') {
+    return 'bg-ds-accent-soft text-ds-accent';
+  }
+  return 'bg-ds-state-success-soft text-ds-state-success';
+});
+const scoreValue = computed(() => Number(state.value?.score_total || 0));
+const scoreLabel = computed(
+  () => state.value?.score_classification || 'Sem classificação'
 );
-const scoreValueLabel = computed(
-  () => `${state.value?.score_total || 0}${copy.pointsSuffix}`
+const scoreTone = computed(() => {
+  if (scoreValue.value >= 80) {
+    return 'bg-ds-state-success-soft text-ds-state-success';
+  }
+  if (scoreValue.value >= 60) {
+    return 'bg-ds-state-info-soft text-ds-state-info';
+  }
+  if (scoreValue.value >= 40) {
+    return 'bg-ds-state-warning-soft text-ds-state-warning';
+  }
+  return 'bg-ds-bg-hover text-ds-fg-muted';
+});
+const relationship = computed(() => state.value?.relationship || {});
+const relationshipLabel = computed(
+  () => relationship.value.label || 'Não identificado'
 );
-const scoreClassificationLabel = computed(() =>
-  state.value?.score_classification
-    ? `- ${state.value.score_classification}`
-    : ''
+const relationshipConfidence = computed(() =>
+  Math.round(Number(relationship.value.confidence || 0) * 100)
 );
-const currentNodeLabel = computed(() =>
-  state.value?.current_node_id ? `(${state.value.current_node_id})` : ''
-);
-const dealIdLabel = computed(() =>
-  state.value?.crm_deal_id ? `#${state.value.crm_deal_id}` : ''
-);
-const hasCrmDealDetails = computed(
+const relationshipEvidence = computed(() => relationship.value.evidence || []);
+const scoreFactorEntries = computed(() => {
+  const factors = state.value?.score_factors;
+  if (!factors || typeof factors !== 'object') return [];
+  return Object.entries(factors)
+    .map(([key, data]) => ({
+      key,
+      score: Number(data?.score || 0),
+      maxScore: Number(data?.max_score || 0),
+      evidence: data?.evidence || '',
+    }))
+    .filter(item => item.evidence);
+});
+const hasCrmContext = computed(
   () =>
+    state.value?.crm_deal_id ||
     state.value?.crm_deal_next_best_action ||
     state.value?.crm_deal_legal_area ||
     state.value?.crm_deal_documents_status ||
     state.value?.crm_deal_owner_name
 );
-
-const handoffAt = computed(() => {
-  if (!state.value?.handoff_at) return null;
-  return new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(state.value.handoff_at));
-});
-
-const handoffInitials = computed(() => {
-  const name = state.value?.handoff_by_name;
-  if (!name) return '?';
-  return name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map(part => part[0].toUpperCase())
-    .join('');
-});
-
-const scoreFactorEntries = computed(() => {
-  const factors = state.value?.score_factors;
-  if (!factors || typeof factors !== 'object') return [];
-  return Object.entries(factors)
-    .filter(([, data]) => Number(data?.score || 0) > 0)
-    .map(([key, data]) => ({ key, evidence: data?.evidence || '' }))
-    .filter(item => item.evidence);
-});
-
-function generateSummary() {
-  error.value = copy.featureSoon;
-}
-
 const crmDealUrl = computed(() => {
   if (!state.value?.crm_deal_id || !accountId.value) return '';
   return `/app/accounts/${accountId.value}/crm?deal_id=${state.value.crm_deal_id}`;
 });
+const handoffAt = computed(() => {
+  if (!state.value?.handoff_at) return '';
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(state.value.handoff_at));
+});
+const handoffMetadata = computed(() =>
+  [state.value?.handoff_by_name || 'Sistema', handoffAt.value]
+    .filter(Boolean)
+    .join(' · ')
+);
+const scoreFactorValue = item => `${item.score}/${item.maxScore}`;
 
-async function loadState() {
-  if (!props.conversationId) return;
-  loading.value = true;
+function isCurrentConversation(conversationDisplayId, version) {
+  return (
+    version === conversationVersion &&
+    String(conversationDisplayId) === String(props.conversationDisplayId)
+  );
+}
+
+function responseMatchesConversation(data, conversationDisplayId) {
+  return (
+    data?.conversation_display_id === undefined ||
+    String(data.conversation_display_id) === String(conversationDisplayId)
+  );
+}
+
+function applyServerState(data) {
+  const serverReason = data.handoff_reason || '';
+  state.value = data;
+  reason.value = serverReason;
+  persistedReason.value = serverReason;
+}
+
+function resetConversationState() {
+  state.value = null;
+  reason.value = '';
+  persistedReason.value = '';
   error.value = '';
+  loading.value = false;
+  saving.value = false;
+  isScoreExpanded.value = false;
+  isRelationshipExpanded.value = false;
+}
 
-  try {
-    const { data } = await CaptainConversationStateAPI.show(
-      props.conversationId
-    );
-    state.value = data;
-    reason.value = data.handoff_reason || '';
-  } catch (e) {
-    const status = e?.response?.status;
-    if (status === 404) {
-      error.value = 'Nenhum controle de IA encontrado para esta conversa.';
-    } else if (status === 401 || status === 403) {
-      error.value = 'Sem permissão para acessar o controle da IA.';
-    } else {
-      error.value =
-        e?.response?.data?.message ||
-        e?.message ||
-        'Não foi possível carregar o controle da IA.';
-    }
-  } finally {
-    loading.value = false;
+function setLoadError(requestError) {
+  const status = requestError?.response?.status;
+  if (status === 404) {
+    error.value = 'Nenhum controle de IA foi encontrado nesta conversa.';
+  } else if (status === 401 || status === 403) {
+    error.value = 'Você não tem permissão para controlar a IA.';
+  } else {
+    error.value = 'Não foi possível carregar o controle da IA.';
   }
 }
 
-async function saveMode(mode) {
-  if (!props.conversationId || saving.value) return;
+async function loadState(conversationDisplayId, version) {
+  if (!conversationDisplayId) return;
+
+  try {
+    const { data } = await CaptainConversationStateAPI.show(
+      conversationDisplayId
+    );
+    if (
+      !isCurrentConversation(conversationDisplayId, version) ||
+      !responseMatchesConversation(data, conversationDisplayId)
+    ) {
+      return;
+    }
+    applyServerState(data);
+  } catch (requestError) {
+    if (!isCurrentConversation(conversationDisplayId, version)) return;
+    setLoadError(requestError);
+  } finally {
+    if (isCurrentConversation(conversationDisplayId, version)) {
+      loading.value = false;
+    }
+  }
+}
+
+async function saveState(changes) {
+  const conversationDisplayId = props.conversationDisplayId;
+  const version = conversationVersion;
+  if (!conversationDisplayId || !state.value || loading.value || saving.value) {
+    return;
+  }
+
+  const reasonAtRequest = reason.value;
   saving.value = true;
   error.value = '';
 
   try {
     const { data } = await CaptainConversationStateAPI.update(
-      props.conversationId,
+      conversationDisplayId,
       {
-        ai_mode: mode,
-        handoff_reason: reason.value,
+        ...changes,
+        handoff_reason: reasonAtRequest,
       }
     );
-    state.value = data;
-    reason.value = data.handoff_reason || '';
-  } catch (e) {
+    if (
+      !isCurrentConversation(conversationDisplayId, version) ||
+      !responseMatchesConversation(data, conversationDisplayId)
+    ) {
+      return;
+    }
+    applyServerState(data);
+  } catch (requestError) {
+    if (!isCurrentConversation(conversationDisplayId, version)) return;
     error.value =
-      e?.response?.data?.message ||
+      requestError?.response?.data?.error ||
       'Não foi possível atualizar o controle da IA.';
   } finally {
-    saving.value = false;
+    if (isCurrentConversation(conversationDisplayId, version)) {
+      saving.value = false;
+    }
   }
 }
 
-watch(() => props.conversationId, loadState, { immediate: true });
+function saveMode(mode) {
+  return saveState({ ai_mode: mode });
+}
+
+function saveReason() {
+  if (isReasonDirty.value) {
+    saveState({});
+  }
+}
+
+watch(
+  () => props.conversationDisplayId,
+  conversationDisplayId => {
+    conversationVersion += 1;
+    const version = conversationVersion;
+    resetConversationState();
+    if (!conversationDisplayId) return;
+    loading.value = true;
+    loadState(conversationDisplayId, version);
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
-  <div class="rounded-lg border border-n-weak bg-n-slate-1 p-3 shadow-sm">
-    <div class="mb-3 flex items-center justify-between gap-2">
-      <div>
-        <h3
-          class="text-xs font-semibold uppercase tracking-wide text-n-slate-11"
+  <section
+    class="overflow-hidden rounded-2xl bg-ds-bg-surface text-ds-fg-default shadow-md"
+    :aria-label="copy.ariaLabel"
+    :aria-busy="loading || saving"
+  >
+    <header class="bg-ds-bg-sunken px-4 py-4">
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex min-w-0 items-center gap-3">
+          <span
+            class="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-ds-accent-soft text-ds-accent"
+            aria-hidden="true"
+          >
+            <span class="i-lucide-sparkles size-5" />
+          </span>
+          <div class="min-w-0">
+            <p
+              class="m-0 text-[10px] font-semibold uppercase tracking-[0.2em] text-ds-fg-subtle"
+            >
+              {{ copy.eyebrow }}
+            </p>
+            <h3
+              class="m-0 mt-1 truncate font-manrope text-base font-semibold text-ds-fg-default"
+            >
+              {{ currentModeDefinition.label }}
+            </h3>
+          </div>
+        </div>
+        <span
+          class="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold"
+          :class="statusTone"
         >
-          {{ copy.title }}
-        </h3>
-        <p class="text-xs text-n-slate-10">{{ modeLabel }}</p>
+          <span class="size-1.5 rounded-full bg-current" aria-hidden="true" />
+          {{ humanControlled ? copy.team : copy.ai }}
+        </span>
       </div>
-      <span
-        class="rounded-full px-2 py-0.5 text-xs font-medium"
-        :class="
-          humanControlled
-            ? 'bg-n-ruby-3 text-n-ruby-11'
-            : 'bg-n-teal-3 text-n-teal-11'
-        "
-      >
-        {{ controlBadgeLabel }}
-      </span>
-    </div>
+      <p class="m-0 mt-3 text-xs leading-5 text-ds-fg-muted">
+        {{ currentModeDefinition.description }}
+      </p>
+    </header>
 
-    <div v-if="loading" class="text-xs text-n-slate-10">
+    <div
+      v-if="loading"
+      class="flex items-center gap-2 px-4 py-8 text-sm text-ds-fg-muted"
+      role="status"
+      aria-live="polite"
+    >
+      <span
+        class="i-lucide-loader-circle size-4 animate-spin"
+        aria-hidden="true"
+      />
       {{ copy.loading }}
     </div>
-    <div v-else class="space-y-3">
-      <div class="flex flex-col gap-1.5 text-xs text-n-slate-11">
-        <span>{{ copy.serviceMode }}</span>
-        <div
-          class="w-full min-w-0"
-          :class="{ 'pointer-events-none opacity-60': saving }"
-        >
-          <SelectMenu
-            :model-value="currentMode"
-            :options="modeOptions"
-            :label="modeLabel"
-            sub-menu-position="bottom"
-            class="captain-mode-menu w-full"
-            @update:model-value="saveMode"
-          />
-        </div>
-      </div>
 
-      <label class="flex flex-col gap-1 text-xs text-n-slate-11">
-        {{ copy.interventionReason }}
-        <textarea
-          v-model="reason"
+    <div v-else-if="state" class="space-y-4 p-4">
+      <div class="grid grid-cols-2 gap-2">
+        <button
+          v-for="mode in modes"
+          :key="mode.id"
+          type="button"
+          class="group flex min-h-14 items-center gap-2.5 rounded-xl px-3 py-2 text-left transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus disabled:cursor-not-allowed disabled:opacity-60"
+          :class="
+            currentMode === mode.id
+              ? 'bg-ds-accent text-ds-fg-on-accent shadow-sm'
+              : 'bg-ds-bg-sunken text-ds-fg-muted hover:bg-ds-bg-hover hover:text-ds-fg-default'
+          "
+          :aria-pressed="currentMode === mode.id"
+          :aria-label="`${mode.label}. ${mode.description}`"
           :disabled="saving"
-          rows="2"
-          class="resize-none rounded-lg border border-n-weak bg-n-alpha-black2 px-2 py-1.5 text-sm text-n-slate-12 outline-none"
-          placeholder="Ex.: cliente pediu humano, caso sensível, dúvida jurídica específica"
-        />
-      </label>
-
-      <div class="flex flex-wrap gap-1">
-        <NextButton
-          label="Humano assumiu"
-          size="xs"
-          color="ruby"
-          variant="solid"
-          :disabled="saving || currentMode === 'human_only'"
-          @click="saveMode('human_only')"
-        />
-        <NextButton
-          label="Pausar IA"
-          size="xs"
-          color="ruby"
-          variant="faded"
-          :disabled="saving || humanControlled"
-          @click="saveMode('paused')"
-        />
-        <NextButton
-          label="Retomar IA"
-          size="xs"
-          color="teal"
-          variant="faded"
-          :disabled="saving || currentMode === 'auto'"
-          @click="saveMode('auto')"
-        />
-      </div>
-
-      <div
-        v-if="state"
-        class="rounded bg-n-alpha-2 p-2 text-xs text-n-slate-10 space-y-0.5"
-      >
-        <div class="flex flex-wrap gap-1">
-          <span>{{ copy.scorePrefix }}</span>
-          <span>{{ scoreValueLabel }}</span>
-          <span v-if="scoreClassificationLabel">
-            {{ scoreClassificationLabel }}
-          </span>
-        </div>
-        <div v-if="state.captain_flow_name" class="flex items-center gap-1">
-          <span class="i-lucide-git-branch-plus size-3" />
-          <span>{{ copy.flow }}</span>
-          <span>{{ state.captain_flow_name }}</span>
-          <span v-if="state.current_node_id" class="text-n-slate-9">
-            {{ currentNodeLabel }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Deal link when CRM deal is associated -->
-      <div
-        v-if="state?.crm_deal_id"
-        class="flex items-center gap-2 rounded border border-n-weak bg-n-alpha-2 p-2 text-xs"
-      >
-        <span class="i-lucide-briefcase size-3.5 text-n-teal-11" />
-        <span class="flex flex-1 gap-1 truncate text-n-slate-11">
-          <span>{{ copy.deal }}</span>
-          <span class="font-medium text-n-slate-12">{{ dealIdLabel }}</span>
-        </span>
-        <a
-          v-if="crmDealUrl"
-          :href="crmDealUrl"
-          class="shrink-0 rounded bg-n-teal-3 px-2 py-0.5 text-[10px] font-medium text-n-teal-11 hover:bg-n-teal-4"
+          @click="saveMode(mode.id)"
         >
-          {{ copy.viewDeal }}
-        </a>
+          <span class="size-4 shrink-0" :class="mode.icon" aria-hidden="true" />
+          <span class="text-xs font-semibold leading-4">{{ mode.label }}</span>
+        </button>
       </div>
 
-      <div
-        v-if="hasCrmDealDetails"
-        class="rounded-lg border border-n-weak bg-n-alpha-2 p-2 text-xs text-n-slate-11"
-      >
-        <div v-if="state.crm_deal_next_best_action" class="mb-2">
-          <div
-            class="mb-1 flex items-center gap-1 font-semibold text-n-slate-12"
-          >
-            <span class="i-lucide-list-checks size-3.5 text-n-teal-11" />
-            <span>{{ copy.nextAction }}</span>
-          </div>
-          <p class="m-0 leading-5">{{ state.crm_deal_next_best_action }}</p>
-        </div>
-        <div class="grid grid-cols-1 gap-1 text-n-slate-10">
-          <div v-if="state.crm_deal_legal_area" class="flex gap-1">
-            <span>{{ copy.legalArea }}</span>
-            <span class="text-n-slate-12">{{ state.crm_deal_legal_area }}</span>
-          </div>
-          <div v-if="state.crm_deal_documents_status" class="flex gap-1">
-            <span>{{ copy.documents }}</span>
-            <span class="text-n-slate-12">
-              {{ state.crm_deal_documents_status }}
+      <div class="grid grid-cols-2 gap-2">
+        <article class="rounded-xl bg-ds-bg-sunken p-3">
+          <div class="flex items-center justify-between gap-2">
+            <span
+              class="text-[10px] font-semibold uppercase tracking-widest text-ds-fg-subtle"
+            >
+              {{ copy.relationship }}
             </span>
+            <span
+              class="i-lucide-badge-check size-3.5 text-ds-state-success"
+              aria-hidden="true"
+            />
           </div>
-          <div v-if="state.crm_deal_owner_name" class="flex gap-1">
-            <span>{{ copy.owner }}</span>
-            <span class="text-n-slate-12">{{ state.crm_deal_owner_name }}</span>
+          <p
+            class="m-0 mt-2 font-manrope text-base font-semibold text-ds-fg-default"
+          >
+            {{ relationshipLabel }}
+          </p>
+          <button
+            type="button"
+            class="mt-1 inline-flex min-h-10 w-full items-center rounded-lg text-left text-[11px] text-ds-fg-subtle transition-colors hover:text-ds-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
+            :aria-expanded="isRelationshipExpanded"
+            :aria-controls="`captain-relationship-${conversationDisplayId}`"
+            @click="isRelationshipExpanded = !isRelationshipExpanded"
+          >
+            {{ relationshipConfidence }}{{ copy.confidenceSuffix }}
+          </button>
+        </article>
+
+        <article class="rounded-xl bg-ds-bg-sunken p-3">
+          <div class="flex items-center justify-between gap-2">
+            <span
+              class="text-[10px] font-semibold uppercase tracking-widest text-ds-fg-subtle"
+            >
+              {{ copy.qualification }}
+            </span>
+            <span
+              class="i-lucide-gauge size-3.5 text-ds-accent"
+              aria-hidden="true"
+            />
           </div>
-        </div>
+          <div class="mt-2 flex items-baseline gap-1.5">
+            <strong class="font-manrope text-2xl text-ds-fg-default">{{
+              scoreValue
+            }}</strong>
+            <span class="text-[10px] text-ds-fg-subtle">{{
+              copy.scoreUnit
+            }}</span>
+          </div>
+          <span
+            class="mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold"
+            :class="scoreTone"
+          >
+            {{ scoreLabel }}
+          </span>
+        </article>
       </div>
 
       <div
-        v-if="state && state.score_factors && scoreFactorEntries.length > 0"
-        class="rounded-lg border border-n-weak"
+        v-if="isRelationshipExpanded"
+        :id="`captain-relationship-${conversationDisplayId}`"
+        class="rounded-xl bg-ds-bg-hover px-3 py-2.5 text-xs text-ds-fg-muted"
       >
+        <p
+          v-for="item in relationshipEvidence"
+          :key="item.code"
+          class="m-0 flex gap-2 py-1 leading-5"
+        >
+          <span
+            class="i-lucide-check-circle-2 mt-1 size-3 shrink-0 text-ds-state-success"
+            aria-hidden="true"
+          />
+          {{ item.description }}
+        </p>
+        <p class="m-0 mt-2 text-[11px] text-ds-fg-subtle">
+          {{ copy.relationshipNotice }}
+        </p>
+      </div>
+
+      <article v-if="hasCrmContext" class="rounded-xl bg-ds-bg-sunken p-3">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex min-w-0 items-center gap-2">
+            <span
+              class="i-lucide-briefcase-business size-4 shrink-0 text-ds-accent"
+              aria-hidden="true"
+            />
+            <div class="min-w-0">
+              <p
+                class="m-0 text-[10px] uppercase tracking-widest text-ds-fg-subtle"
+              >
+                {{ copy.nextAction }}
+              </p>
+              <p
+                class="m-0 mt-1 text-xs font-medium leading-5 text-ds-fg-default"
+              >
+                {{ state.crm_deal_next_best_action || copy.nextActionFallback }}
+              </p>
+            </div>
+          </div>
+          <a
+            v-if="crmDealUrl"
+            :href="crmDealUrl"
+            class="flex size-10 shrink-0 items-center justify-center rounded-full bg-ds-accent text-ds-fg-on-accent transition-colors hover:bg-ds-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
+            :aria-label="copy.openDeal"
+          >
+            <span class="i-lucide-arrow-up-right size-4" aria-hidden="true" />
+          </a>
+        </div>
+        <div class="mt-3 flex flex-wrap gap-1.5 text-[10px] text-ds-fg-muted">
+          <span
+            v-if="state.crm_deal_legal_area"
+            class="rounded-full bg-ds-bg-surface px-2 py-1"
+          >
+            {{ state.crm_deal_legal_area }}
+          </span>
+          <span
+            v-if="state.crm_deal_documents_status"
+            class="rounded-full bg-ds-bg-surface px-2 py-1"
+          >
+            {{ copy.documentsPrefix }} {{ state.crm_deal_documents_status }}
+          </span>
+          <span
+            v-if="state.crm_deal_owner_name"
+            class="rounded-full bg-ds-bg-surface px-2 py-1"
+          >
+            {{ state.crm_deal_owner_name }}
+          </span>
+        </div>
+      </article>
+
+      <div v-if="scoreFactorEntries.length" class="rounded-xl bg-ds-bg-sunken">
         <button
           type="button"
-          class="flex w-full items-center justify-between px-3 py-2 text-xs font-medium text-n-slate-11 hover:bg-n-alpha-2"
+          class="flex min-h-11 w-full items-center justify-between gap-2 rounded-xl px-3 py-3 text-left text-xs font-semibold text-ds-fg-default transition-colors hover:bg-ds-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
+          :aria-expanded="isScoreExpanded"
+          :aria-controls="`captain-score-${conversationDisplayId}`"
           @click="isScoreExpanded = !isScoreExpanded"
         >
-          <span>{{ copy.scoreDetails }}</span>
+          <span class="flex items-center gap-2">
+            <span
+              class="i-lucide-list-checks size-4 text-ds-accent"
+              aria-hidden="true"
+            />
+            {{ copy.scoreWhy }}
+          </span>
           <span
-            class="size-4 text-n-slate-10"
+            class="size-4 text-ds-fg-subtle"
             :class="
               isScoreExpanded ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'
             "
+            aria-hidden="true"
           />
         </button>
-        <div v-show="isScoreExpanded" class="space-y-1 px-3 pb-3 pt-1">
-          <p
+        <div
+          v-show="isScoreExpanded"
+          :id="`captain-score-${conversationDisplayId}`"
+          class="space-y-2 px-3 pb-3"
+        >
+          <div
             v-for="item in scoreFactorEntries"
             :key="item.key"
-            class="m-0 text-xs leading-5 text-n-slate-11"
+            class="rounded-lg bg-ds-bg-surface p-2.5"
           >
-            {{ item.evidence }}
-          </p>
+            <div class="flex items-center justify-between gap-2 text-[11px]">
+              <span class="font-semibold text-ds-fg-default">{{
+                item.key
+              }}</span>
+              <span class="text-ds-accent">{{ scoreFactorValue(item) }}</span>
+            </div>
+            <p class="m-0 mt-1 text-[11px] leading-4 text-ds-fg-subtle">
+              {{ item.evidence }}
+            </p>
+          </div>
         </div>
       </div>
 
-      <div v-if="humanControlled && state" class="space-y-2">
-        <div
-          v-if="handoffAt || state.handoff_by_name"
-          class="rounded-lg border border-n-weak bg-n-alpha-2 p-2 text-xs"
+      <label class="block">
+        <span
+          class="text-[10px] font-semibold uppercase tracking-widest text-ds-fg-subtle"
         >
-          <p v-if="handoffAt" class="m-0 text-n-slate-10">{{ handoffAt }}</p>
-          <div
-            v-if="state.handoff_by_name"
-            class="mt-1.5 flex items-center gap-2"
-          >
-            <img
-              v-if="state.handoff_by_avatar"
-              :src="state.handoff_by_avatar"
-              :alt="state.handoff_by_name"
-              class="size-5 shrink-0 rounded-full object-cover"
-              @error="event => (event.target.style.display = 'none')"
-            />
-            <span
-              v-else
-              class="flex size-5 shrink-0 items-center justify-center rounded-full bg-n-ruby-3 text-[10px] font-semibold text-n-ruby-11"
-            >
-              {{ handoffInitials }}
-            </span>
-            <span class="text-n-slate-12">{{ state.handoff_by_name }}</span>
-          </div>
-        </div>
-
-        <div
-          v-if="state.handoff_reason"
-          class="rounded border border-n-weak bg-n-alpha-2 p-2 text-xs text-n-slate-11"
-        >
-          <span class="font-semibold text-n-slate-12">{{ copy.reason }}</span>
-          {{ state.handoff_reason }}
-        </div>
-
+          {{ copy.interventionContext }}
+        </span>
         <textarea
-          v-if="state.context_summary"
-          :value="state.context_summary"
-          readonly
-          rows="3"
-          class="w-full resize-none rounded-lg border border-n-weak bg-n-alpha-2 px-2 py-1.5 text-xs text-n-slate-11 outline-none"
+          v-model="reason"
+          :disabled="saving"
+          :aria-describedby="`captain-reason-status-${conversationDisplayId}`"
+          rows="2"
+          class="mt-2 w-full resize-none rounded-xl bg-ds-bg-sunken px-3 py-2.5 text-xs leading-5 text-ds-fg-default outline-none ring-1 ring-inset ring-ds-border placeholder:text-ds-fg-subtle focus:ring-2 focus:ring-ds-border-focus disabled:cursor-not-allowed disabled:opacity-60"
+          :placeholder="copy.reasonPlaceholder"
+          data-testid="captain-reason"
         />
+      </label>
 
-        <button
-          v-if="!state.context_summary"
-          type="button"
-          class="rounded-md border border-n-weak bg-n-alpha-2 px-2 py-1 text-xs text-n-slate-12 hover:bg-n-alpha-3"
-          @click="generateSummary"
+      <div class="flex items-center justify-between gap-3">
+        <p
+          :id="`captain-reason-status-${conversationDisplayId}`"
+          class="m-0 text-[11px]"
+          :class="isReasonDirty ? 'text-ds-state-warning' : 'text-ds-fg-subtle'"
+          role="status"
+          aria-live="polite"
+          data-testid="captain-reason-status"
         >
-          {{ copy.summary }}
+          {{ isReasonDirty ? copy.reasonUnsaved : copy.reasonSaved }}
+        </p>
+        <button
+          type="button"
+          class="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-xl bg-ds-accent px-3 text-xs font-semibold text-ds-fg-on-accent transition-colors hover:bg-ds-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus disabled:cursor-not-allowed disabled:opacity-50"
+          :aria-label="copy.saveReason"
+          :disabled="saving || !isReasonDirty"
+          data-testid="captain-save-reason"
+          @click="saveReason"
+        >
+          <span class="i-lucide-save size-4" aria-hidden="true" />
+          {{ copy.saveReason }}
         </button>
       </div>
 
-      <div v-if="error" class="text-xs text-n-ruby-10">{{ error }}</div>
+      <div
+        v-if="humanControlled && state"
+        class="rounded-xl bg-ds-state-info-soft p-3 text-xs text-ds-state-info"
+      >
+        <p class="m-0 flex items-center gap-2 font-semibold">
+          <span class="i-lucide-shield-check size-4" aria-hidden="true" />
+          {{ copy.protectedService }}
+        </p>
+        <p v-if="state.handoff_reason" class="m-0 mt-2 leading-5">
+          {{ state.handoff_reason }}
+        </p>
+        <p
+          v-if="handoffAt || state.handoff_by_name"
+          class="m-0 mt-1 text-[11px] opacity-80"
+        >
+          {{ handoffMetadata }}
+        </p>
+      </div>
+
+      <div
+        class="rounded-xl bg-ds-bg-hover p-3 text-[11px] leading-5 text-ds-fg-muted"
+      >
+        <span
+          class="i-lucide-info mr-1 inline-block size-3.5 align-text-bottom text-ds-accent"
+          aria-hidden="true"
+        />
+        {{ copy.controlNotice }}
+      </div>
+
+      <div
+        v-if="saving"
+        class="flex items-center gap-2 text-xs text-ds-fg-muted"
+        role="status"
+        aria-live="polite"
+      >
+        <span
+          class="i-lucide-loader-circle size-3.5 animate-spin"
+          aria-hidden="true"
+        />
+        {{ copy.updating }}
+      </div>
+      <div
+        v-if="error"
+        role="alert"
+        aria-live="assertive"
+        class="rounded-xl bg-ds-state-danger-soft px-3 py-2 text-xs text-ds-state-danger"
+      >
+        {{ error }}
+      </div>
+
+      <NextButton
+        v-if="humanControlled"
+        label="Retomar atendimento com IA"
+        icon="i-lucide-play"
+        size="sm"
+        class="w-full"
+        :disabled="saving"
+        @click="saveMode('auto')"
+      />
     </div>
-  </div>
+
+    <div
+      v-else
+      class="m-4 rounded-xl bg-ds-state-danger-soft px-3 py-3 text-xs text-ds-state-danger"
+      role="alert"
+      aria-live="assertive"
+    >
+      {{ error }}
+    </div>
+  </section>
 </template>
-
-<style scoped>
-.captain-mode-menu :deep(> button) {
-  width: 100%;
-  max-width: none;
-  justify-content: space-between;
-  border: 1px solid rgb(var(--slate-6));
-  background: rgb(var(--slate-2));
-  color: rgb(var(--slate-12));
-}
-
-.captain-mode-menu :deep(> div) {
-  width: 100%;
-  max-width: none;
-  background: rgb(var(--slate-2));
-}
-</style>

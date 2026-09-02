@@ -1,11 +1,10 @@
 <script setup>
-import { computed, useTemplateRef } from 'vue';
+import { computed, nextTick, ref, useId, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useElementSize, useWindowSize } from '@vueuse/core';
+import { useWindowSize } from '@vueuse/core';
 import { useMapGetter } from 'dashboard/composables/store';
 import { REPLY_EDITOR_MODES } from 'dashboard/components/widgets/WootWriter/constants';
 import { useCaptain } from 'dashboard/composables/useCaptain';
-import Button from 'dashboard/components-next/button/Button.vue';
 import DropdownBody from 'next/dropdown-menu/base/DropdownBody.vue';
 
 import Icon from 'next/icon/Icon.vue';
@@ -58,7 +57,7 @@ const menuItems = computed(() => {
         'INTEGRATION_SETTINGS.OPEN_AI.REPLY_OPTIONS.IMPROVE_REPLY_SELECTION'
       ),
       key: 'improve_selection',
-      icon: 'i-fluent-pen-sparkle-24-regular',
+      icon: 'i-lucide-wand-sparkles',
     });
   } else if (
     props.conversationId &&
@@ -68,7 +67,7 @@ const menuItems = computed(() => {
     items.push({
       label: t('INTEGRATION_SETTINGS.OPEN_AI.REPLY_OPTIONS.IMPROVE_REPLY'),
       key: 'improve',
-      icon: 'i-fluent-pen-sparkle-24-regular',
+      icon: 'i-lucide-wand-sparkles',
     });
   }
 
@@ -79,7 +78,7 @@ const menuItems = computed(() => {
           'INTEGRATION_SETTINGS.OPEN_AI.REPLY_OPTIONS.CHANGE_TONE.TITLE'
         ),
         key: 'change_tone',
-        icon: 'i-fluent-sound-wave-circle-sparkle-24-regular',
+        icon: 'i-lucide-audio-waveform',
         subMenuItems: [
           {
             label: t(
@@ -116,7 +115,7 @@ const menuItems = computed(() => {
       {
         label: t('INTEGRATION_SETTINGS.OPEN_AI.REPLY_OPTIONS.GRAMMAR'),
         key: 'fix_spelling_grammar',
-        icon: 'i-fluent-flow-sparkle-24-regular',
+        icon: 'i-lucide-spell-check-2',
       }
     );
   }
@@ -129,7 +128,7 @@ const generalMenuItems = computed(() => {
     items.push({
       label: t('INTEGRATION_SETTINGS.OPEN_AI.REPLY_OPTIONS.SUGGESTION'),
       key: 'reply_suggestion',
-      icon: 'i-fluent-chat-sparkle-16-regular',
+      icon: 'i-lucide-message-square-reply',
     });
   }
 
@@ -140,27 +139,35 @@ const generalMenuItems = computed(() => {
     items.push({
       label: t('INTEGRATION_SETTINGS.OPEN_AI.REPLY_OPTIONS.SUMMARIZE'),
       key: 'summarize',
-      icon: 'i-fluent-text-bullet-list-square-sparkle-32-regular',
+      icon: 'i-lucide-list-collapse',
     });
   }
 
   items.push({
     label: t('INTEGRATION_SETTINGS.OPEN_AI.REPLY_OPTIONS.ASK_COPILOT'),
     key: 'ask_copilot',
-    icon: 'i-fluent-circle-sparkle-24-regular',
+    icon: 'i-lucide-sparkles',
   });
 
   return items;
 });
 
 const menuRef = useTemplateRef('menuRef');
-const { height: menuHeight } = useElementSize(menuRef);
 const { width: windowWidth } = useWindowSize();
+const menuId = useId();
+const openSubmenuKey = ref(null);
+const isCompactViewport = computed(
+  () => (windowWidth.value ?? window.innerWidth) < 520
+);
 
 // Smart submenu positioning based on available space
 const submenuPosition = computed(() => {
+  if (isCompactViewport.value) {
+    return 'top-full mt-1 left-0 right-auto w-full min-w-0';
+  }
+
   const el = menuRef.value?.$el;
-  if (!el) return 'ltr:right-full rtl:left-full';
+  if (!el) return 'top-0 ltr:right-full rtl:left-full';
 
   const { left, right } = el.getBoundingClientRect();
   const SUBMENU_WIDTH = 200;
@@ -170,113 +177,235 @@ const submenuPosition = computed(() => {
   // Prefer right, fallback to side with more space
   const showRight = spaceRight >= SUBMENU_WIDTH || spaceRight >= spaceLeft;
 
-  return showRight ? 'left-full' : 'right-full';
+  return showRight ? 'top-0 left-full' : 'top-0 right-full';
 });
 
-// Computed style for selection menu positioning (only dynamic top offset)
-const selectionMenuStyle = computed(() => {
-  // Dynamically calculate offset based on actual menu height + 10px gap
-  const dynamicOffset = menuHeight.value > 0 ? menuHeight.value + 10 : 60;
+const selectionMenuClasses = computed(() =>
+  props.hasSelection && props.isEditorMenuPopover
+    ? '[left:var(--selection-left)] [top:var(--selection-top)] translate-y-[calc(-100%-0.625rem)] rtl:left-auto rtl:[right:var(--selection-right)]'
+    : ''
+);
 
-  return {
-    top: `calc(var(--selection-top) - ${dynamicOffset}px)`,
-  };
-});
+const submenuId = key => `${menuId}-${key}-submenu`;
+const submenuTriggerId = key => `${menuId}-${key}-trigger`;
+const isSubmenuOpen = key => openSubmenuKey.value === key;
+
+const getMenuRoot = () => menuRef.value?.$el ?? menuRef.value;
+
+const getTopLevelItems = () =>
+  Array.from(getMenuRoot()?.querySelectorAll('[data-copilot-top-level]') ?? []);
+
+const getSubmenuItems = key =>
+  Array.from(
+    getMenuRoot()
+      ?.querySelector(`[data-copilot-submenu="${key}"]`)
+      ?.querySelectorAll('[role="menuitem"]') ?? []
+  );
+
+const openSubmenu = key => {
+  openSubmenuKey.value = key;
+};
+
+const focusSubmenuItem = async (key, index = 0) => {
+  openSubmenu(key);
+  await nextTick();
+
+  const items = getSubmenuItems(key);
+  if (!items.length) return;
+
+  const normalizedIndex = (index + items.length) % items.length;
+  items[normalizedIndex].focus();
+};
+
+const closeSubmenu = async ({
+  key = openSubmenuKey.value,
+  restoreFocus,
+} = {}) => {
+  openSubmenuKey.value = null;
+  if (!restoreFocus || !key) return;
+
+  await nextTick();
+  getMenuRoot()?.querySelector(`[data-copilot-key="${key}"]`)?.focus();
+};
+
+const focusTopLevelItem = (currentTarget, offset) => {
+  const items = getTopLevelItems();
+  const currentIndex = items.indexOf(currentTarget);
+  if (currentIndex < 0 || !items.length) return;
+
+  const nextIndex = (currentIndex + offset + items.length) % items.length;
+  items[nextIndex].focus();
+};
 
 const handleMenuItemClick = item => {
-  // For items with submenus, do nothing on click (hover will show submenu)
-  if (!item.subMenuItems) {
-    emit('executeCopilotAction', item.key);
+  if (item.subMenuItems) {
+    openSubmenu(item.key);
+    return;
+  }
+
+  closeSubmenu();
+  emit('executeCopilotAction', item.key);
+};
+
+const handleSubMenuItemClick = subItem => {
+  closeSubmenu();
+  emit('executeCopilotAction', subItem.key);
+};
+
+const handleTopLevelKeydown = (event, item) => {
+  if (
+    item.subMenuItems &&
+    ['Enter', ' ', 'Spacebar', 'ArrowRight'].includes(event.key)
+  ) {
+    event.preventDefault();
+    focusSubmenuItem(item.key);
+    return;
+  }
+
+  if (event.key === 'ArrowDown') {
+    event.preventDefault();
+    focusTopLevelItem(event.currentTarget, 1);
+  } else if (event.key === 'ArrowUp') {
+    event.preventDefault();
+    focusTopLevelItem(event.currentTarget, -1);
+  } else if (event.key === 'Home') {
+    event.preventDefault();
+    getTopLevelItems()[0]?.focus();
+  } else if (event.key === 'End') {
+    event.preventDefault();
+    getTopLevelItems().at(-1)?.focus();
+  } else if (event.key === 'Escape' && isSubmenuOpen(item.key)) {
+    event.preventDefault();
+    closeSubmenu();
   }
 };
 
-const handleSubMenuItemClick = (parentItem, subItem) => {
-  emit('executeCopilotAction', subItem.key);
+const handleSubmenuKeydown = (event, parentItem) => {
+  const items = getSubmenuItems(parentItem.key);
+  const currentIndex = items.indexOf(event.currentTarget);
+
+  if (event.key === 'ArrowDown') {
+    event.preventDefault();
+    items[(currentIndex + 1) % items.length]?.focus();
+  } else if (event.key === 'ArrowUp') {
+    event.preventDefault();
+    items[(currentIndex - 1 + items.length) % items.length]?.focus();
+  } else if (event.key === 'Home') {
+    event.preventDefault();
+    items[0]?.focus();
+  } else if (event.key === 'End') {
+    event.preventDefault();
+    items.at(-1)?.focus();
+  } else if (['Escape', 'ArrowLeft'].includes(event.key)) {
+    event.preventDefault();
+    closeSubmenu({ key: parentItem.key, restoreFocus: true });
+  }
+};
+
+const handlePointerEnter = (event, key) => {
+  if (event.pointerType === 'mouse') openSubmenu(key);
+};
+
+const handlePointerLeave = event => {
+  if (!event.currentTarget.contains(document.activeElement)) closeSubmenu();
+};
+
+const handleFocusOut = event => {
+  if (!event.currentTarget.contains(event.relatedTarget)) closeSubmenu();
 };
 </script>
 
 <template>
   <DropdownBody
     ref="menuRef"
-    class="min-w-56 [&>ul]:gap-3 z-50 [&>ul]:px-4 [&>ul]:py-3.5"
-    :class="{ 'selection-menu': hasSelection && isEditorMenuPopover }"
-    :style="hasSelection && isEditorMenuPopover ? selectionMenuStyle : {}"
+    role="menu"
+    class="z-50 w-[min(14rem,calc(100vw-1rem))] min-w-0 font-sans text-ds-fg-default sm:min-w-56 [&>ul]:gap-1 [&>ul]:border-0 [&>ul]:bg-ds-bg-elevated [&>ul]:p-2 [&>ul]:shadow-xl [&>ul]:ring-1 [&>ul]:ring-ds-border-subtle"
+    :class="selectionMenuClasses"
   >
-    <div v-if="menuItems.length > 0" class="flex flex-col items-start gap-2.5">
-      <div
+    <template v-if="menuItems.length > 0">
+      <li
         v-for="item in menuItems"
         :key="item.key"
-        class="w-full relative group/submenu"
+        role="none"
+        class="group/submenu relative w-full focus-within:z-20"
+        @pointerenter="handlePointerEnter($event, item.key)"
+        @pointerleave="handlePointerLeave"
+        @focusout="handleFocusOut"
       >
-        <Button
-          :label="item.label"
-          :icon="item.icon"
-          slate
-          link
-          sm
-          class="hover:!no-underline text-n-slate-12 font-normal text-xs w-full !justify-start"
+        <button
+          :id="submenuTriggerId(item.key)"
+          type="button"
+          role="menuitem"
+          :data-copilot-key="item.key"
+          data-copilot-top-level
+          class="reset-base flex min-h-10 w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm font-medium text-ds-fg-muted outline-none transition-colors hover:bg-ds-bg-hover hover:text-ds-fg-default focus-visible:bg-ds-bg-hover focus-visible:text-ds-fg-default focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ds-border-focus"
+          :aria-haspopup="item.subMenuItems ? 'menu' : undefined"
+          :aria-expanded="
+            item.subMenuItems ? isSubmenuOpen(item.key) : undefined
+          "
+          :aria-controls="item.subMenuItems ? submenuId(item.key) : undefined"
           @click="handleMenuItemClick(item)"
+          @keydown="handleTopLevelKeydown($event, item)"
         >
-          <template v-if="item.subMenuItems" #default>
-            <div class="flex items-center gap-1 justify-between w-full">
-              <span class="min-w-0 truncate">{{ item.label }}</span>
-              <Icon
-                icon="i-lucide-chevron-right"
-                class="text-n-slate-10 size-3"
-              />
-            </div>
-          </template>
-        </Button>
+          <Icon :icon="item.icon" class="size-4 shrink-0 text-ds-accent" />
+          <span class="min-w-0 flex-1 truncate">{{ item.label }}</span>
+          <Icon
+            v-if="item.subMenuItems"
+            icon="i-lucide-chevron-right"
+            class="size-4 shrink-0 text-ds-fg-subtle transition-transform"
+            :class="isSubmenuOpen(item.key) ? 'rotate-90' : 'rtl:rotate-180'"
+          />
+        </button>
 
-        <!-- Hover Submenu -->
         <DropdownBody
-          v-if="item.subMenuItems"
-          class="group-hover/submenu:block hidden [&>ul]:gap-2 [&>ul]:px-3 [&>ul]:py-2.5 [&>ul]:dark:!border-n-strong max-h-[15rem] min-w-32 z-10 top-0"
+          v-if="item.subMenuItems && isSubmenuOpen(item.key)"
+          :id="submenuId(item.key)"
+          role="menu"
+          :aria-labelledby="submenuTriggerId(item.key)"
+          :data-copilot-submenu="item.key"
+          strong
+          class="z-20 max-h-60 min-w-48 [&>ul]:gap-1 [&>ul]:border-0 [&>ul]:bg-ds-bg-elevated [&>ul]:p-2 [&>ul]:shadow-xl [&>ul]:ring-1 [&>ul]:ring-ds-border-subtle"
           :class="submenuPosition"
         >
-          <Button
+          <li
             v-for="subItem in item.subMenuItems"
             :key="subItem.key + subItem.label"
-            :label="subItem.label"
-            slate
-            link
-            sm
-            class="hover:!no-underline text-n-slate-12 font-normal text-xs w-full !justify-start mb-1"
-            @click="handleSubMenuItemClick(item, subItem)"
-          />
+            role="none"
+          >
+            <button
+              type="button"
+              role="menuitem"
+              class="reset-base flex min-h-10 w-full items-center rounded-lg px-2.5 py-2 text-left text-sm font-medium text-ds-fg-muted outline-none transition-colors hover:bg-ds-bg-hover hover:text-ds-fg-default focus-visible:bg-ds-bg-hover focus-visible:text-ds-fg-default focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ds-border-focus"
+              @click="handleSubMenuItemClick(subItem)"
+              @keydown="handleSubmenuKeydown($event, item)"
+            >
+              <span class="min-w-0 truncate">{{ subItem.label }}</span>
+            </button>
+          </li>
         </DropdownBody>
-      </div>
-    </div>
+      </li>
+    </template>
 
-    <div v-if="menuItems.length > 0" class="h-px w-full bg-n-strong" />
+    <li
+      v-if="menuItems.length > 0"
+      role="separator"
+      aria-orientation="horizontal"
+      class="my-1 h-px w-full bg-ds-border-subtle"
+    />
 
-    <div class="flex flex-col items-start gap-3">
-      <Button
-        v-for="(item, index) in generalMenuItems"
-        :key="index"
-        :label="item.label"
-        :icon="item.icon"
-        slate
-        link
-        sm
-        class="hover:!no-underline text-n-slate-12 font-normal text-xs w-full !justify-start"
+    <li v-for="item in generalMenuItems" :key="item.key" role="none">
+      <button
+        type="button"
+        role="menuitem"
+        :data-copilot-key="item.key"
+        data-copilot-top-level
+        class="reset-base flex min-h-10 w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm font-medium text-ds-fg-muted outline-none transition-colors hover:bg-ds-bg-hover hover:text-ds-fg-default focus-visible:bg-ds-bg-hover focus-visible:text-ds-fg-default focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ds-border-focus"
         @click="handleMenuItemClick(item)"
-      />
-    </div>
+        @keydown="handleTopLevelKeydown($event, item)"
+      >
+        <Icon :icon="item.icon" class="size-4 shrink-0 text-ds-accent" />
+        <span class="min-w-0 truncate">{{ item.label }}</span>
+      </button>
+    </li>
   </DropdownBody>
 </template>
-
-<style scoped lang="scss">
-.selection-menu {
-  position: absolute !important;
-
-  // Default/LTR: position from left
-  left: var(--selection-left);
-
-  // RTL: position from right instead
-  [dir='rtl'] & {
-    left: auto;
-    right: var(--selection-right);
-  }
-}
-</style>

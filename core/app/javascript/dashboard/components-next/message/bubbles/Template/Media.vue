@@ -9,9 +9,13 @@ defineProps({
 
 <template>
   <div
-    class="bg-n-alpha-2 text-n-slate-12 rounded-xl flex flex-col gap-2.5 p-3 max-w-80"
+    class="flex max-w-80 flex-col gap-2.5 rounded-xl bg-ds-bg-sunken p-3 text-ds-fg-default ring-1 ring-inset ring-ds-border-subtle"
   >
-    <img :src="message.image_url" class="max-h-44 rounded-lg w-full" />
+    <img
+      alt=""
+      :src="message.image_url"
+      class="max-h-44 w-full rounded-lg object-cover"
+    />
     <span
       v-dompurify-html="message.content"
       class="prose prose-bubble font-medium text-sm"

@@ -1,4 +1,4 @@
-﻿<script>
+<script>
 import { ref } from 'vue';
 import { useUISettings } from 'dashboard/composables/useUISettings';
 import { useKeyboardEvents } from 'dashboard/composables/useKeyboardEvents';
@@ -56,6 +56,10 @@ export default {
     toggleEmojiPicker: {
       type: Function,
       default: () => {},
+    },
+    showEmojiPicker: {
+      type: Boolean,
+      default: false,
     },
     toggleAudioRecorder: {
       type: Function,
@@ -236,14 +240,24 @@ export default {
       switch (this.recordingAudioState) {
         // playing paused recording stopped inactive destroyed
         case 'playing':
-          return 'i-ph-pause';
+          return 'i-lucide-pause';
         case 'paused':
-          return 'i-ph-play';
+          return 'i-lucide-play';
         case 'stopped':
-          return 'i-ph-play';
+          return 'i-lucide-play';
         default:
-          return 'i-ph-stop';
+          return 'i-lucide-square';
       }
+    },
+    audioRecorderTooltip() {
+      return this.isRecordingAudio
+        ? this.$t('CONVERSATION.REPLYBOX.STOP_AUDIO_RECORDING')
+        : this.$t('CONVERSATION.REPLYBOX.START_AUDIO_RECORDING');
+    },
+    audioPlaybackTooltip() {
+      return ['paused', 'stopped'].includes(this.recordingAudioState)
+        ? this.$t('CONVERSATION.REPLYBOX.PLAY_AUDIO')
+        : this.$t('CONVERSATION.REPLYBOX.PAUSE_AUDIO');
     },
     showMessageSignatureButton() {
       if (this.isEditorDisabled) return false;
@@ -288,21 +302,28 @@ export default {
 </script>
 
 <template>
-  <div class="flex justify-between p-3" :class="wrapClass">
-    <div class="left-wrap">
+  <div
+    class="flex flex-wrap items-center justify-between gap-2 px-3 pb-3 pt-2"
+    :class="wrapClass"
+  >
+    <div class="flex min-w-0 flex-1 flex-wrap items-center gap-1">
       <NextButton
         v-if="!isEditorDisabled"
         v-tooltip.top-end="$t('CONVERSATION.REPLYBOX.TIP_EMOJI_ICON')"
-        icon="i-ph-smiley-sticker"
-        slate
-        faded
+        type="button"
+        icon="i-lucide-smile"
+        color="slate"
+        :variant="showEmojiPicker ? 'solid' : 'faded'"
         sm
+        :aria-label="$t('CONVERSATION.REPLYBOX.TIP_EMOJI_ICON')"
+        :aria-pressed="showEmojiPicker"
         @click="toggleEmojiPicker"
       />
       <FileUpload
         v-if="showAttachButton"
         ref="uploadRef"
         v-tooltip.top-end="$t('CONVERSATION.REPLYBOX.TIP_ATTACH_ICON')"
+        class="group/file-upload"
         input-id="conversationAttachment"
         :size="4096 * 4096"
         :accept="allowedFileTypes"
@@ -318,65 +339,84 @@ export default {
         <NextButton
           v-if="showAttachButton"
           v-tooltip.top-end="$t('CONVERSATION.REPLYBOX.TIP_ATTACH_ICON')"
-          icon="i-ph-paperclip"
-          slate
-          faded
+          type="button"
+          icon="i-lucide-paperclip"
+          color="slate"
+          variant="faded"
           sm
+          class="transition-colors group-hover/file-upload:bg-ds-bg-hover"
+          :aria-label="$t('CONVERSATION.REPLYBOX.TIP_ATTACH_ICON')"
         />
       </FileUpload>
       <NextButton
         v-if="showAudioRecorderButton"
-        v-tooltip.top-end="$t('CONVERSATION.REPLYBOX.TIP_AUDIORECORDER_ICON')"
-        :icon="!isRecordingAudio ? 'i-ph-microphone' : 'i-ph-microphone-slash'"
-        slate
-        faded
+        v-tooltip.top-end="audioRecorderTooltip"
+        type="button"
+        :icon="!isRecordingAudio ? 'i-lucide-mic' : 'i-lucide-mic-off'"
+        color="slate"
+        :variant="isRecordingAudio ? 'solid' : 'faded'"
         sm
+        :aria-label="audioRecorderTooltip"
+        :aria-pressed="isRecordingAudio"
         @click="toggleAudioRecorder"
       />
       <NextButton
         v-if="showAudioPlayStopButton"
+        v-tooltip.top-end="audioPlaybackTooltip"
+        type="button"
         :icon="audioRecorderPlayStopIcon"
-        slate
-        faded
+        color="slate"
+        variant="faded"
         sm
         :label="recordingAudioDurationText"
+        :aria-label="audioPlaybackTooltip"
+        :aria-pressed="recordingAudioState === 'playing'"
         @click="toggleAudioRecorderPlayPause"
       />
       <NextButton
         v-if="showMessageSignatureButton"
         v-tooltip.top-end="signatureToggleTooltip"
-        icon="i-ph-signature"
-        slate
-        faded
+        type="button"
+        icon="i-lucide-signature"
+        color="slate"
+        :variant="sendWithSignature ? 'solid' : 'faded'"
         sm
+        :aria-label="signatureToggleTooltip"
+        :aria-pressed="sendWithSignature"
         @click="toggleMessageSignature"
       />
       <NextButton
         v-if="showQuotedReplyToggle"
         v-tooltip.top-end="quotedReplyToggleTooltip"
-        icon="i-ph-quotes"
+        type="button"
+        icon="i-lucide-quote"
         :variant="quotedReplyEnabled ? 'solid' : 'faded'"
         color="slate"
         sm
+        :aria-label="quotedReplyToggleTooltip"
         :aria-pressed="quotedReplyEnabled"
         @click="$emit('toggleQuotedReply')"
       />
       <NextButton
         v-if="enableWhatsAppTemplates"
         v-tooltip.top-end="$t('CONVERSATION.FOOTER.WHATSAPP_TEMPLATES')"
+        type="button"
         icon="i-ph-whatsapp-logo"
-        slate
-        faded
+        color="slate"
+        variant="faded"
         sm
+        :aria-label="$t('CONVERSATION.FOOTER.WHATSAPP_TEMPLATES')"
         @click="$emit('selectWhatsappTemplate')"
       />
       <NextButton
         v-if="enableContentTemplates"
-        v-tooltip.top-end="'Content Templates'"
-        icon="i-ph-whatsapp-logo"
-        slate
-        faded
+        v-tooltip.top-end="$t('CONTENT_TEMPLATES.MODAL.TITLE')"
+        type="button"
+        icon="i-lucide-file-text"
+        color="slate"
+        variant="faded"
         sm
+        :aria-label="$t('CONTENT_TEMPLATES.MODAL.TITLE')"
         @click="$emit('selectContentTemplate')"
       />
       <VideoCallButton
@@ -390,10 +430,10 @@ export default {
       <transition name="modal-fade">
         <div
           v-show="uploadRef && uploadRef.dropActive"
-          class="flex fixed top-0 right-0 bottom-0 left-0 z-20 flex-col gap-2 justify-center items-center w-full h-full text-n-slate-12 bg-modal-backdrop-light dark:bg-modal-backdrop-dark"
+          class="fixed inset-0 z-20 flex h-full w-full flex-col items-center justify-center gap-2 bg-ds-bg-canvas/85 text-ds-fg-default backdrop-blur-sm"
         >
-          <fluent-icon icon="cloud-backup" size="40" />
-          <h4 class="text-2xl break-words text-n-slate-12">
+          <span class="i-lucide-cloud-upload size-10" aria-hidden="true" />
+          <h4 class="break-words font-manrope text-2xl text-ds-fg-default">
             {{ $t('CONVERSATION.REPLYBOX.DRAG_DROP') }}
           </h4>
         </div>
@@ -401,14 +441,16 @@ export default {
       <NextButton
         v-if="enableInsertArticleInReply"
         v-tooltip.top-end="$t('HELP_CENTER.ARTICLE_SEARCH.OPEN_ARTICLE_SEARCH')"
-        icon="i-ph-article-ny-times"
-        slate
-        faded
+        type="button"
+        icon="i-lucide-book-open-text"
+        color="slate"
+        variant="faded"
         sm
+        :aria-label="$t('HELP_CENTER.ARTICLE_SEARCH.OPEN_ARTICLE_SEARCH')"
         @click="toggleInsertArticle"
       />
     </div>
-    <div class="right-wrap">
+    <div class="flex shrink-0 ltr:ml-auto rtl:mr-auto">
       <NextButton
         :label="sendButtonText"
         type="submit"
@@ -421,23 +463,3 @@ export default {
     </div>
   </div>
 </template>
-
-<style lang="scss" scoped>
-.left-wrap {
-  @apply items-center flex gap-2;
-}
-
-.right-wrap {
-  @apply flex;
-}
-
-:deep() .file-uploads {
-  label {
-    @apply cursor-pointer;
-  }
-
-  &:hover button {
-    @apply enabled:bg-n-slate-9/20;
-  }
-}
-</style>

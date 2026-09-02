@@ -1,4 +1,4 @@
-﻿<script>
+<script>
 import { debounce } from '@ChusteRM/utils';
 import { useAlert } from 'dashboard/composables';
 import { mapGetters } from 'vuex';

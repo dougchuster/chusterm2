@@ -4,13 +4,7 @@ assistant = Captain::Assistant.find_by(id: 4)
 raise 'Captain assistant id=4 not found' unless assistant
 
 InstallationConfig.where(name: 'CAPTAIN_EMBEDDING_MODEL').first_or_initialize.tap do |config|
-  config.value = LlmConstants::DEFAULT_GEMINI_EMBEDDING_MODEL
-  config.locked = false
-  config.save!
-end
-
-InstallationConfig.where(name: 'CAPTAIN_EMBEDDING_ENDPOINT').first_or_initialize.tap do |config|
-  config.value = 'https://generativelanguage.googleapis.com/v1beta'
+  config.value = LlmConstants::DEFAULT_EMBEDDING_MODEL
   config.locked = false
   config.save!
 end

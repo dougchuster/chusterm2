@@ -46,16 +46,18 @@ onMounted(() => {
       ref="textareaRef"
       v-model="message"
       :placeholder="$t('CAPTAIN.COPILOT.SEND_MESSAGE')"
-      class="w-full reset-base bg-n-alpha-3 ltr:pl-4 ltr:pr-12 rtl:pl-12 rtl:pr-4 py-3 text-sm border border-n-weak rounded-lg focus:outline-0 focus:outline-none focus:ring-2 focus:ring-n-blue-11 focus:border-n-blue-11 resize-none overflow-hidden max-h-[200px] mb-0 text-n-slate-12"
+      class="reset-base mb-0 max-h-[200px] w-full resize-none overflow-hidden rounded-xl border border-ds-border-subtle bg-ds-bg-surface py-3 text-sm text-ds-fg-default outline-none placeholder:text-ds-fg-subtle focus:border-ds-border-focus focus:ring-2 focus:ring-ds-border-focus/30 ltr:pl-4 ltr:pr-12 rtl:pl-12 rtl:pr-4"
       rows="1"
       @input="handleInput"
       @keydown.enter.exact="handleEnterKey"
     />
     <button
-      class="absolute ltr:right-1 rtl:left-1 top-1/2 -translate-y-1/2 h-9 w-10 flex items-center justify-center text-n-slate-11 hover:text-n-blue-11"
+      :aria-label="$t('CAPTAIN.COPILOT.SEND_MESSAGE')"
+      :disabled="!message.trim()"
+      class="absolute top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-lg text-ds-fg-muted transition-colors hover:bg-ds-bg-hover hover:text-ds-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus disabled:cursor-not-allowed disabled:opacity-40 ltr:right-1 rtl:left-1"
       type="submit"
     >
-      <i class="i-ph-arrow-up" />
+      <i class="i-lucide-arrow-up size-4" aria-hidden="true" />
     </button>
   </form>
 </template>

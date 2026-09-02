@@ -1,4 +1,4 @@
-﻿export const conversationData = {
+export const conversationData = {
   meta: {
     sender: {
       additional_attributes: {

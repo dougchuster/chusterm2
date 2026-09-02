@@ -1,4 +1,6 @@
 class CrmPipeline < ApplicationRecord
+  include AccountAssociationScoped
+
   belongs_to :account
   belongs_to :inbox, optional: true
   has_many :crm_pipeline_stages, -> { order(position: :asc) }, dependent: :destroy
@@ -7,6 +9,7 @@ class CrmPipeline < ApplicationRecord
   before_validation :ensure_slug
 
   validates :account, :name, :slug, presence: true
+  validates_same_account_for :inbox
   validates :slug, uniqueness: { scope: :account_id }
   validates :inbox_id, uniqueness: { scope: :account_id }, allow_nil: true
 

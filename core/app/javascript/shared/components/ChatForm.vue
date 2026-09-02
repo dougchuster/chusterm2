@@ -1,4 +1,4 @@
-﻿<script>
+<script>
 import { mapGetters } from 'vuex';
 import { getContrastingTextColor } from '@ChusteRM/utils';
 

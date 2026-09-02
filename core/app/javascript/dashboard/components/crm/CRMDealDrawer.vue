@@ -1,17 +1,24 @@
 <!-- eslint-disable vue/no-bare-strings-in-template, @intlify/vue-i18n/no-raw-text, vue/prefer-separate-static-class, vue/html-closing-bracket-newline -->
 <script setup>
-import { reactive, ref, watch } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
+import {
+  CRM_OPTIONS_FALLBACK,
+  fetchCrmOptions,
+} from 'dashboard/helper/crmOptions';
 import { useRoute, useRouter } from 'vue-router';
 import CrmAPI from '../../api/crm';
+import CRMConfirmDialog from 'dashboard/components/crm/CRMConfirmDialog.vue';
 import CRMActivityList from './CRMActivityList.vue';
 import CRMLegalAreaBadge from './CRMLegalAreaBadge.vue';
 import CRMNextActionBox from './CRMNextActionBox.vue';
+import CRMDealOutcomeControl from './CRMDealOutcomeControl.vue';
 import CRMScoreAudit from './CRMScoreAudit.vue';
 import CRMScoreBadge from './CRMScoreBadge.vue';
 import CRMTimeline from './CRMTimeline.vue';
 
 const props = defineProps({
   dealId: { type: [Number, String], required: true },
+  lossReasons: { type: Array, default: () => [] },
 });
 
 const emit = defineEmits(['saved', 'dealDeleted']);
@@ -22,10 +29,18 @@ const route = useRoute();
 const loading = ref(false);
 const saving = ref(false);
 const deleting = ref(false);
+const outcomeSaving = ref(false);
+// UX-03: dialog de confirmação compartilhado (substitui window.confirm)
+const confirmDialog = ref(null);
 const error = ref('');
 const deal = ref(null);
 const activeTab = ref('dados');
 const valueEstimate = ref('');
+const fetchedLossReasons = ref([]);
+
+const availableLossReasons = computed(() =>
+  props.lossReasons.length ? props.lossReasons : fetchedLossReasons.value
+);
 
 const form = reactive({
   title: '',
@@ -48,25 +63,35 @@ const form = reactive({
   next_best_action: '',
 });
 
-const areaOptions = [
-  ['trabalhista', 'Trabalhista'],
-  ['previdenciario', 'Previdenciário'],
-  ['civel', 'Cível'],
-  ['familia', 'Família'],
-  ['consumidor', 'Consumidor'],
-  ['empresarial', 'Empresarial'],
-  ['tributario', 'Tributário'],
-  ['imobiliario', 'Imobiliário'],
-  ['criminal', 'Criminal'],
-  ['outro', 'Outro'],
-];
+// UX-05: listas de domínio da fonte única, preservando as chaves históricas
+// usadas pela triagem e pelos registros existentes.
+const crmOptions = ref(CRM_OPTIONS_FALLBACK);
 
-const urgencyOptions = [
-  ['baixa', '🟢 Baixa'],
-  ['media', '🟡 Média'],
-  ['alta', '🟠 Alta'],
-  ['critica', '🔴 Crítica'],
-];
+const areaOptions = computed(() =>
+  crmOptions.value.legal_areas.map(({ value, label }) => [value, label])
+);
+
+const urgencyOptions = computed(() =>
+  crmOptions.value.urgency_levels.map(({ value, label }) => [value, label])
+);
+
+onMounted(() => {
+  fetchCrmOptions().then(options => {
+    crmOptions.value = options;
+  });
+  if (!props.lossReasons.length) {
+    CrmAPI.getLossReasons()
+      .then(response => {
+        const payload = response?.data ?? response;
+        fetchedLossReasons.value = Array.isArray(payload)
+          ? payload
+          : payload?.data || [];
+      })
+      .catch(() => {
+        fetchedLossReasons.value = [];
+      });
+  }
+});
 
 const operationalStatusOptions = [
   ['active', 'Lead ativo'],
@@ -222,12 +247,64 @@ async function saveDeal() {
   }
 }
 
+async function markWon() {
+  if (!props.dealId) return;
+  outcomeSaving.value = true;
+  error.value = '';
+  try {
+    const { data } = await CrmAPI.markDealWon(props.dealId);
+    assignForm(data);
+    emit('saved', data);
+  } catch (e) {
+    error.value =
+      e?.response?.data?.error || 'Não foi possível marcar como ganho.';
+  } finally {
+    outcomeSaving.value = false;
+  }
+}
+
+async function markLost({ lossReasonId, note }) {
+  if (!props.dealId) return;
+  outcomeSaving.value = true;
+  error.value = '';
+  try {
+    const { data } = await CrmAPI.markDealLost(
+      props.dealId,
+      lossReasonId,
+      note
+    );
+    assignForm(data);
+    emit('saved', data);
+  } catch (e) {
+    error.value =
+      e?.response?.data?.error || 'Não foi possível marcar como perdido.';
+  } finally {
+    outcomeSaving.value = false;
+  }
+}
+
+async function reopenDeal() {
+  if (!props.dealId) return;
+  outcomeSaving.value = true;
+  error.value = '';
+  try {
+    const { data } = await CrmAPI.reopenDeal(props.dealId);
+    assignForm(data);
+    emit('saved', data);
+  } catch (e) {
+    error.value = e?.response?.data?.error || 'Não foi possível reabrir.';
+  } finally {
+    outcomeSaving.value = false;
+  }
+}
+
 async function deleteDeal() {
   if (!props.dealId || !deal.value) return;
-  // eslint-disable-next-line no-alert
-  const confirmed = window.confirm(
-    `Tem certeza que deseja excluir "${deal.value.title || 'este atendimento'}"?\nEssa ação não pode ser desfeita.`
-  );
+  const confirmed = await confirmDialog.value?.confirm({
+    title: 'Excluir atendimento',
+    description: `Tem certeza que deseja excluir "${deal.value.title || 'este atendimento'}"? Essa ação não pode ser desfeita.`,
+    confirmLabel: 'Excluir',
+  });
   if (!confirmed) return;
   deleting.value = true;
   error.value = '';
@@ -322,10 +399,20 @@ watch(
           <span class="rounded-full bg-n-slate-2 px-2 py-1 text-n-slate-11">
             {{ deal?.stage?.name || 'Sem etapa' }}
           </span>
-          <span class="rounded-full bg-n-slate-2 px-2 py-1 text-n-slate-11">
-            {{ deal?.status || 'open' }}
-          </span>
         </div>
+        <CRMDealOutcomeControl
+          v-if="deal"
+          class="mt-3"
+          :status="deal.status"
+          :loss-reasons="availableLossReasons"
+          :loss-reason-id="deal.crm_loss_reason_id"
+          :loss-reason-name="deal.loss_reason?.name"
+          :loss-note="deal.lost_reason_note"
+          :busy="outcomeSaving"
+          @mark-won="markWon"
+          @mark-lost="markLost"
+          @reopen="reopenDeal"
+        />
       </header>
 
       <div class="flex border-b border-n-weak px-5">
@@ -680,5 +767,7 @@ watch(
         />
       </main>
     </div>
+
+    <CRMConfirmDialog ref="confirmDialog" />
   </woot-modal>
 </template>

@@ -1,10 +1,13 @@
 ﻿class Captain::Tools::HandoffTool < Captain::Tools::BasePublicTool
-  description 'Hand off the conversation to a human agent when unable to assist further'
+  HANDOFF_REJECTED = 'Handoff not performed: the customer did not explicitly request a human attendant or Dra. Paula'.freeze
+
+  description 'Hand off only when the customer explicitly requests a human attendant or Dra. Paula'
   param :reason, type: 'string', desc: 'The reason why handoff is needed (optional)', required: false
 
   def perform(tool_context, reason: nil)
     conversation = find_conversation(tool_context.state)
     return 'Conversation not found' unless conversation
+    return HANDOFF_REJECTED unless explicit_customer_handoff_request?(conversation)
 
     # Log the handoff with reason
     log_tool_usage('tool_handoff', {
@@ -17,11 +20,15 @@
 
     "Conversation handed off to human support team#{" (Reason: #{reason})" if reason}"
   rescue StandardError => e
-    ChusteRMExceptionTracker.new(e).capture_exception
+    ::ChusteRMExceptionTracker.new(e).capture_exception
     'Failed to handoff conversation'
   end
 
   private
+
+  def explicit_customer_handoff_request?(conversation)
+    Captain::Conversation::HumanHandoffRequestService.requested_in_conversation?(conversation)
+  end
 
   def trigger_handoff(conversation, reason)
     create_public_handoff_message(conversation)

@@ -71,7 +71,7 @@ const pageInfo = computed(() => {
 
 <template>
   <div
-    class="flex justify-between h-[3.375rem] w-full border-t border-n-weak mx-auto bg-n-surface-1 py-3 px-6 items-center before:absolute before:inset-x-0 before:-top-4 before:bg-gradient-to-t before:from-n-surface-1 before:from-0% before:to-transparent before:h-4 before:pointer-events-none"
+    class="mx-auto flex h-[3.375rem] w-full items-center justify-between border-t border-n-weak bg-n-surface-1 px-3 py-3 sm:px-6"
   >
     <div class="flex items-center gap-3">
       <span class="min-w-0 text-body-main line-clamp-1 text-n-slate-11">
@@ -81,6 +81,7 @@ const pageInfo = computed(() => {
     <div class="flex items-center gap-2">
       <Button
         icon="i-lucide-chevrons-left"
+        :aria-label="t('PAGINATION_FOOTER.FIRST_PAGE')"
         variant="ghost"
         size="sm"
         color="slate"
@@ -90,6 +91,7 @@ const pageInfo = computed(() => {
       />
       <Button
         icon="i-lucide-chevron-left"
+        :aria-label="t('PAGINATION_FOOTER.PREVIOUS_PAGE')"
         variant="ghost"
         color="slate"
         size="sm"
@@ -109,6 +111,7 @@ const pageInfo = computed(() => {
       </div>
       <Button
         icon="i-lucide-chevron-right"
+        :aria-label="t('PAGINATION_FOOTER.NEXT_PAGE')"
         variant="ghost"
         color="slate"
         size="sm"
@@ -118,6 +121,7 @@ const pageInfo = computed(() => {
       />
       <Button
         icon="i-lucide-chevrons-right"
+        :aria-label="t('PAGINATION_FOOTER.LAST_PAGE')"
         variant="ghost"
         color="slate"
         size="sm"

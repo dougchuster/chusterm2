@@ -92,6 +92,24 @@ describe Conversations::FilterService do
         expect(result[:conversations][0][:id]).to eq conversation.id
       end
 
+      it 'combines text search with the configured filters' do
+        create(:message, account: account, conversation: en_conversation_1, content: 'documento previdenciário exclusivo')
+        create(:message, account: account, conversation: en_conversation_2, content: 'outra conversa')
+        params[:q] = 'previdenciário exclusivo'
+        params[:payload] = [{
+          attribute_key: 'status',
+          filter_operator: 'equal_to',
+          values: ['pending'],
+          query_operator: nil,
+          custom_attribute_type: ''
+        }.with_indifferent_access]
+
+        result = filter_service.new(params, user_1, account).perform
+
+        expect(result[:conversations]).to contain_exactly(en_conversation_1)
+        expect(result[:count][:all_count]).to eq(1)
+      end
+
       it 'filter conversations by multiple priority values' do
         high_priority = create(:conversation, account: account, inbox: inbox, assignee: user_1, priority: :high)
         urgent_priority = create(:conversation, account: account, inbox: inbox, assignee: user_1, priority: :urgent)

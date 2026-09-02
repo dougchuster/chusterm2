@@ -95,9 +95,12 @@ class Whatsapp::IncomingMessageBaseService
   end
 
   def create_contact_messages(message)
-    message['contacts'].each do |contact|
-      # Pass source_id from parent message since contact objects don't have :id
-      create_message(contact, source_id: message[:id])
+    message['contacts'].each_with_index do |contact, index|
+      # A single provider event may contain several shared contacts. Preserve
+      # the provider ID on the first message for webhook deduplication and use
+      # deterministic child IDs for the remaining messages.
+      source_id = index.zero? ? message[:id] : "#{message[:id]}:contact:#{index}"
+      create_message(contact, source_id: source_id)
       attach_contact(contact)
       @message.save!
     end

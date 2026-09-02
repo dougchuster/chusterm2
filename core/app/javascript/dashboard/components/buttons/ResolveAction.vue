@@ -174,7 +174,9 @@ useEmitter(CMD_RESOLVE_CONVERSATION, onCmdResolveConversation);
   <div class="flex relative justify-end items-center resolve-actions">
     <ButtonGroup
       class="flex-shrink-0 rounded-lg shadow outline-1 outline"
-      :class="!showOpenButton ? 'outline-n-container' : 'outline-transparent'"
+      :class="
+        !showOpenButton ? 'outline-ds-border-subtle' : 'outline-transparent'
+      "
     >
       <Button
         v-if="isOpen"
@@ -209,6 +211,9 @@ useEmitter(CMD_RESOLVE_CONVERSATION, onCmdResolveConversation);
         v-if="showAdditionalActions"
         ref="arrowDownButtonRef"
         icon="i-lucide-chevron-down"
+        :aria-label="t('CONVERSATION.HEADER.MORE_ACTIONS')"
+        aria-haspopup="menu"
+        :aria-expanded="showActionsDropdown"
         :disabled="isLoading"
         size="sm"
         no-animation
@@ -221,7 +226,8 @@ useEmitter(CMD_RESOLVE_CONVERSATION, onCmdResolveConversation);
     <div
       v-if="showActionsDropdown"
       v-on-clickaway="closeDropdown"
-      class="border rounded-lg shadow-lg border-n-strong dark:border-n-strong box-content p-2 w-fit z-10 bg-n-alpha-3 backdrop-blur-[100px] absolute block left-auto top-full mt-0.5 start-0 xl:start-auto xl:end-0 max-w-[12.5rem] min-w-[9.75rem] [&_ul>li]:mb-0"
+      class="absolute left-auto top-full z-10 mt-0.5 box-content block w-fit min-w-[9.75rem] max-w-[12.5rem] rounded-lg border border-ds-border-strong bg-ds-bg-elevated/95 p-2 shadow-lg backdrop-blur-xl start-0 xl:start-auto xl:end-0 [&_ul>li]:mb-0"
+      role="menu"
     >
       <WootDropdownMenu class="mb-0">
         <WootDropdownItem v-if="!isPending">

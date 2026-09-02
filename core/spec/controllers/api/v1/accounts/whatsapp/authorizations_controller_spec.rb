@@ -95,6 +95,7 @@ RSpec.describe 'WhatsApp Authorization API', type: :request do
 
           expect(Whatsapp::EmbeddedSignupService).to receive(:new).with(
             account: account,
+            user: agent,
             params: {
               code: 'test_code',
               business_id: 'test_business_id',
@@ -126,6 +127,7 @@ RSpec.describe 'WhatsApp Authorization API', type: :request do
 
           expect(Whatsapp::EmbeddedSignupService).to receive(:new).with(
             account: account,
+            user: agent,
             params: {
               code: 'test_code',
               business_id: 'test_business_id',
@@ -171,7 +173,7 @@ RSpec.describe 'WhatsApp Authorization API', type: :request do
         it 'logs error when service fails' do
           allow(Whatsapp::EmbeddedSignupService).to receive(:new).and_raise(StandardError, 'Service error')
 
-          expect(Rails.logger).to receive(:error).with(/\[WHATSAPP AUTHORIZATION\] Embedded signup error: Service error/)
+          expect(Rails.logger).to receive(:error).with(/\[WHATSAPP AUTHORIZATION\] StandardError: Service error/)
           expect(Rails.logger).to receive(:error).with(/authorizations_controller/)
 
           post "/api/v1/accounts/#{account.id}/whatsapp/authorization",
@@ -305,6 +307,7 @@ RSpec.describe 'WhatsApp Authorization API', type: :request do
           embedded_signup_service = instance_double(Whatsapp::EmbeddedSignupService)
           allow(Whatsapp::EmbeddedSignupService).to receive(:new).with(
             account: account,
+            user: administrator,
             params: {
               code: 'auth_code_123',
               business_id: 'business_123',
@@ -331,6 +334,7 @@ RSpec.describe 'WhatsApp Authorization API', type: :request do
           embedded_signup_service = instance_double(Whatsapp::EmbeddedSignupService)
           allow(Whatsapp::EmbeddedSignupService).to receive(:new).with(
             account: account,
+            user: administrator,
             params: {
               code: 'auth_code_123',
               business_id: 'business_123',
@@ -357,6 +361,7 @@ RSpec.describe 'WhatsApp Authorization API', type: :request do
           embedded_signup_service = instance_double(Whatsapp::EmbeddedSignupService)
           allow(Whatsapp::EmbeddedSignupService).to receive(:new).with(
             account: account,
+            user: administrator,
             params: {
               code: 'auth_code_123',
               business_id: 'business_123',
@@ -463,6 +468,7 @@ RSpec.describe 'WhatsApp Authorization API', type: :request do
         embedded_signup_service = instance_double(Whatsapp::EmbeddedSignupService)
         allow(Whatsapp::EmbeddedSignupService).to receive(:new).with(
           account: account,
+          user: agent,
           params: {
             code: 'test',
             business_id: 'test',

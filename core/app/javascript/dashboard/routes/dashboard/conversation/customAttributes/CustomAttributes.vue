@@ -251,8 +251,8 @@ onMounted(() => {
 });
 
 const evenClass = [
-  '[&>*:nth-child(odd)]:!bg-n-surface-1 [&>*:nth-child(even)]:!bg-n-slate-1',
-  'dark:[&>*:nth-child(odd)]:!bg-n-surface-2 dark:[&>*:nth-child(even)]:!bg-n-surface-1',
+  '[&>*:nth-child(odd)]:bg-ds-bg-surface',
+  '[&>*:nth-child(even)]:bg-ds-bg-sunken',
 ];
 </script>
 
@@ -262,7 +262,7 @@ const evenClass = [
       :list="displayedElements"
       :disabled="!showAllAttributes"
       animation="200"
-      ghost-class="ghost"
+      ghost-class="opacity-50"
       handle=".drag-handle"
       item-key="key"
       class="last:rounded-b-lg"
@@ -272,11 +272,10 @@ const evenClass = [
     >
       <template #item="{ element }">
         <div
-          class="drag-handle relative border-b border-n-weak/50 dark:border-n-weak/90"
+          class="drag-handle relative border-b border-ds-border-subtle"
           :class="{
             'cursor-grab': showAllAttributes,
-            'last:border-transparent dark:last:border-transparent':
-              combinedElements.length <= 5,
+            'last:border-transparent': combinedElements.length <= 5,
           }"
         >
           <template v-if="element.type === 'static_attribute'">
@@ -307,7 +306,7 @@ const evenClass = [
 
     <p
       v-if="!displayedElements.length && emptyStateMessage"
-      class="p-3 text-center"
+      class="p-3 text-center text-sm text-ds-fg-muted"
     >
       {{ emptyStateMessage }}
     </p>
@@ -325,9 +324,3 @@ const evenClass = [
     </div>
   </div>
 </template>
-
-<style lang="scss" scoped>
-.ghost {
-  @apply opacity-50 bg-n-slate-3 dark:bg-n-slate-9;
-}
-</style>

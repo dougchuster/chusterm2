@@ -40,7 +40,8 @@ export default {
 <template>
   <select
     v-model="activeValue"
-    class="w-32 h-6 py-0 pl-2 pr-6 mx-1 my-0 text-xs border border-solid bg-n-slate-3 dark:bg-n-solid-3 border-n-weak dark:border-n-weak text-n-slate-12"
+    :aria-label="type"
+    class="mx-1 my-0 h-7 w-32 rounded-lg border border-ds-border-subtle bg-ds-bg-sunken py-0 pl-2 pr-7 text-xs font-medium text-ds-fg-default outline-none transition-shadow focus:border-ds-border-focus focus:ring-2 focus:ring-ds-border-focus/30"
     @change="onTabChange()"
   >
     <option v-for="value in items" :key="value" :value="value">

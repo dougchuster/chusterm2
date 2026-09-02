@@ -6,21 +6,20 @@ RSpec.describe BillingHelper do
     let(:account) { create(:account, custom_attributes: { 'plan_name' => 'Hacker' }) }
 
     before do
-      create(:installation_config, {
-               name: 'ChusteRM_CLOUD_PLANS',
-               value: [
-                 {
-                   'name' => 'Hacker',
-                   'product_id' => ['plan_id'],
-                   'price_ids' => ['price_1']
-                 },
-                 {
-                   'name' => 'Startups',
-                   'product_id' => ['plan_id_2'],
-                   'price_ids' => ['price_2']
-                 }
-               ]
-             })
+      InstallationConfig.find_or_initialize_by(name: 'ChusteRM_CLOUD_PLANS').update!(
+        value: [
+          {
+            'name' => 'Hacker',
+            'product_id' => ['plan_id'],
+            'price_ids' => ['price_1']
+          },
+          {
+            'name' => 'Startups',
+            'product_id' => ['plan_id_2'],
+            'price_ids' => ['price_2']
+          }
+        ]
+      )
     end
 
     it 'counts only the conversations created this month' do

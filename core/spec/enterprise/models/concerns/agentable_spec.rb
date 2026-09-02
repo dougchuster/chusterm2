@@ -54,11 +54,25 @@ RSpec.describe Concerns::Agentable do
       dummy_instance.agent
     end
 
-    it 'converts nil temperature to 0.0' do
+    it 'preserves nil temperature so the provider default can be omitted' do
       dummy_instance.temperature = nil
 
       expect(Agents::Agent).to receive(:new).with(
-        hash_including(temperature: 0.0)
+        hash_including(temperature: nil)
+      )
+
+      dummy_instance.agent
+    end
+
+    it 'omits configured temperature for Sonnet 5' do
+      allow(mock_installation_config).to receive(:value).and_return('anthropic/claude-sonnet-5')
+
+      expect(Agents::Agent).to receive(:new).with(
+        hash_including(
+          model: 'anthropic/claude-sonnet-5',
+          temperature: nil,
+          response_schema: Captain::ResponseSchema
+        )
       )
 
       dummy_instance.agent
@@ -144,6 +158,12 @@ RSpec.describe Concerns::Agentable do
       )
 
       dummy_instance.agent_instructions(context_double)
+    end
+
+    it 'relies on native strict structured output for Sonnet 5' do
+      allow(mock_installation_config).to receive(:value).and_return('anthropic/claude-sonnet-5')
+
+      expect(dummy_instance.agent_instructions).to eq('rendered_template')
     end
   end
 

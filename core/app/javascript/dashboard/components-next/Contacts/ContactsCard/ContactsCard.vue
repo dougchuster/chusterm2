@@ -284,6 +284,11 @@ const handleAvatarHover = isHovered => {
         </div>
         <Button
           icon="i-lucide-chevron-down"
+          :aria-label="
+            isExpanded
+              ? t('CONTACTS_LAYOUT.CARD.COLLAPSE')
+              : t('CONTACTS_LAYOUT.CARD.EXPAND')
+          "
           variant="ghost"
           color="slate"
           size="xs"

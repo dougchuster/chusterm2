@@ -32,7 +32,7 @@ const filterLabels = {
   searchPlaceholder: 'Título, mensagem ou público',
   status: 'Status',
   channel: 'Canal',
-  period: 'Periodo',
+  period: 'Período',
   audience: 'Lista/segmento',
   noResults: 'Nenhuma campanha encontrada com estes filtros.',
 };
@@ -62,8 +62,8 @@ const statusSelectOptions = computed(() => withAllOption(statusOptions.value));
 
 const periodOptions = [
   { value: 'today', label: 'Hoje' },
-  { value: 'next_7_days', label: 'Proximos 7 dias' },
-  { value: 'last_30_days', label: 'Ultimos 30 dias' },
+  { value: 'next_7_days', label: 'Próximos 7 dias' },
+  { value: 'last_30_days', label: 'Últimos 30 dias' },
   { value: 'future', label: 'Futuras' },
 ];
 

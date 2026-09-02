@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { ref, computed, onBeforeMount } from 'vue';
 import { useStore } from 'vuex';
 import SignupForm from './components/Signup/Form.vue';

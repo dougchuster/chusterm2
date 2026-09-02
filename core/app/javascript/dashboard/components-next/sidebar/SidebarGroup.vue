@@ -54,9 +54,16 @@ const hasChildren = computed(
 // Use shared popover state - only one popover can be open at a time
 const isPopoverOpen = computed(() => activePopover.value === props.name);
 const triggerRef = ref(null);
+const collapsedPopoverRef = ref(null);
 const triggerRect = ref({ top: 0, left: 0, bottom: 0, right: 0 });
+const popoverId = computed(
+  () =>
+    `sidebar-collapsed-${String(props.name)
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]+/g, '-')}`
+);
 
-const openPopover = () => {
+const openPopover = async ({ focusFirst = false } = {}) => {
   if (triggerRef.value) {
     const rect = triggerRef.value.getBoundingClientRect();
     triggerRect.value = {
@@ -67,11 +74,21 @@ const openPopover = () => {
     };
   }
   setActivePopover(props.name);
+
+  if (focusFirst) {
+    await nextTick();
+    collapsedPopoverRef.value?.focusFirstItem();
+  }
 };
 
-const closePopover = () => {
+const closePopover = async ({ restoreFocus = false } = {}) => {
   if (activePopover.value === props.name) {
     closeActivePopover();
+  }
+
+  if (restoreFocus) {
+    await nextTick();
+    triggerRef.value?.focus();
   }
 };
 
@@ -101,12 +118,9 @@ const handleWindowBlur = () => {
 
 const accessibleItems = computed(() => {
   if (!hasChildren.value) return [];
-  return props.children.filter(child => {
-    // If a item has no link, it means it's just a subgroup header
-    // So we don't need to check for permissions here, because there's nothing to
-    // access here anyway
-    return child.to && isAllowed(child.to);
-  });
+  return navigableChildren.value.filter(
+    child => child.to && isAllowed(child.to)
+  );
 });
 
 const hasTargetQuery = to => Object.keys(to?.query || {}).length > 0;
@@ -193,9 +207,37 @@ const hasActiveChild = computed(() => {
 });
 
 const handleCollapsedClick = () => {
-  if (hasChildren.value && hasAccessibleChildren.value) {
-    const firstItem = accessibleItems.value[0];
-    router.push(firstItem.to);
+  if (!hasChildren.value || !hasAccessibleChildren.value) return;
+
+  if (isPopoverOpen.value) {
+    closePopover({ restoreFocus: true });
+    return;
+  }
+
+  openPopover({ focusFirst: true });
+};
+
+const handleCollapsedKeydown = event => {
+  if (!hasChildren.value || !hasAccessibleChildren.value) return;
+
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    event.stopPropagation();
+    handleCollapsedClick();
+    return;
+  }
+
+  if (event.key === 'ArrowRight') {
+    event.preventDefault();
+    event.stopPropagation();
+    openPopover({ focusFirst: true });
+    return;
+  }
+
+  if (event.key === 'Escape' && isPopoverOpen.value) {
+    event.preventDefault();
+    event.stopPropagation();
+    closePopover({ restoreFocus: true });
   }
 };
 
@@ -258,18 +300,27 @@ watch(
           ref="triggerRef"
           :to="to && !hasChildren ? to : undefined"
           type="button"
-          class="sidebar-collapsed-trigger flex items-center justify-center size-11 rounded-xl transition-colors duration-150"
-          :class="{
-            'is-current': isActive || hasActiveChild,
-            'is-idle': !isActive && !hasActiveChild,
-          }"
+          class="flex size-11 items-center justify-center rounded-xl text-ds-shell-muted transition-colors duration-150 hover:bg-ds-shell-hover hover:text-ds-shell-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-shell-focus"
+          :class="
+            isActive || hasActiveChild
+              ? 'bg-ds-shell-active text-ds-shell-fg'
+              : ''
+          "
           :title="label"
+          :aria-label="label"
+          :aria-current="isActive || hasActiveChild ? 'page' : undefined"
+          :aria-haspopup="hasChildren ? 'menu' : undefined"
+          :aria-expanded="hasChildren ? isPopoverOpen : undefined"
+          :aria-controls="hasChildren ? popoverId : undefined"
           @click="hasChildren ? handleCollapsedClick() : undefined"
+          @keydown="handleCollapsedKeydown"
         >
-          <Icon v-if="icon" :icon="icon" class="size-5" />
+          <Icon v-if="icon" :icon="icon" class="size-5" aria-hidden="true" />
         </component>
         <SidebarCollapsedPopover
           v-if="hasChildren && isPopoverOpen"
+          :id="popoverId"
+          ref="collapsedPopoverRef"
           :label="label"
           :children="children"
           :active-child="activeChild"
@@ -322,20 +373,3 @@ watch(
     </template>
   </Policy>
 </template>
-
-<style>
-.sidebar-collapsed-trigger {
-  border-color: transparent;
-  color: rgb(var(--slate-10));
-}
-
-.sidebar-collapsed-trigger.is-idle:hover {
-  background: rgb(var(--slate-3) / 0.4);
-  color: rgb(var(--slate-12));
-}
-
-.sidebar-collapsed-trigger.is-current {
-  color: rgb(var(--slate-12));
-  background: rgb(var(--slate-3) / 0.5);
-}
-</style>

@@ -26,7 +26,7 @@
     end
     parse_response(response.content)
   rescue RubyLLM::Error => e
-    ChusteRMExceptionTracker.new(e, account: @conversation.account).capture_exception
+    ::ChusteRMExceptionTracker.new(e, account: @conversation.account).capture_exception
     []
   end
 

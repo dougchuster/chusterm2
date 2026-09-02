@@ -198,7 +198,7 @@ class Crm::TriageFromConversation
   end
 
   def sync_captain_state(deal)
-    captain_state = CaptainConversationState.find_by(conversation_id: @conversation.id)
+    captain_state = @account.captain_conversation_states.find_by(conversation_id: @conversation.id)
     return unless captain_state
     return if captain_state.crm_deal_id == deal.id
 

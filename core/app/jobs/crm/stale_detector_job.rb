@@ -57,8 +57,9 @@ class Crm::StaleDetectorJob < ApplicationJob
 
   def pending_stale_activity?(deal)
     deal.crm_activities
-        .where(completed_at: nil, kind: STALE_ACTIVITY_KIND)
-        .where('created_at > ?', 24.hours.ago)
+        .pending
+        .where(kind: STALE_ACTIVITY_KIND, created_by_type: 'system')
+        .where('title LIKE ?', 'Retomar deal parado em "%')
         .exists?
   end
 

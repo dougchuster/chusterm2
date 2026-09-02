@@ -5,19 +5,55 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
   def index
     authorize CrmDeal, :index?
 
-    @deals = filtered_deals(Current.account.crm_deals)
-    @deals = @deals.order(created_at: :desc).includes(:crm_pipeline, :crm_pipeline_stage, :crm_loss_reason, :crm_lead_scores, :crm_activities, :contact, :inbox)
+    scope = filtered_deals(Current.account.crm_deals)
+           .order(Arel.sql(index_order))
+           .includes(*DEAL_INCLUDES)
 
-    total = @deals.count
-    per_page_param = params[:per_page].to_i
-    per_page = per_page_param.positive? ? [per_page_param, 200].min : 50
+    total = scope.count
+    per_page = bounded(params[:per_page], default: 50, max: 200)
     page = [params[:page].to_i, 1].max
-    @deals = @deals.offset((page - 1) * per_page).limit(per_page)
+    deals = scope.offset((page - 1) * per_page).limit(per_page).to_a
 
     render json: {
-      data: @deals.map { |d| serialize_deal(d) },
+      data: serialize_board_deals(deals),
       meta: { total: total, page: page, per_page: per_page, total_pages: (total.to_f / per_page).ceil }
     }
+  end
+
+  # F1.5 do PLANO-KANBAN-CRM-2026.md — o board inteiro numa requisicao.
+  #
+  # Fica no DealsController, e nao no PipelinesController, porque a coluna
+  # devolve **cards**: reusar `serialize_deal` e os mapas agregados aqui custa
+  # zero, e move-los para outro lugar seria um refactor de 300 linhas no
+  # serializador de um sistema em producao. A rota continua sendo
+  # `/crm/pipelines/:pipeline_id/board`, como o plano pede.
+  def board
+    authorize CrmDeal, :index?
+
+    pipeline = Current.account.crm_pipelines.find(params[:pipeline_id] || params[:id])
+    grouping = Crm::BoardGrouping.for(params[:group_by], pipeline: pipeline, account: Current.account)
+    scope = filtered_deals(pipeline.crm_deals)
+    per_column = bounded(params[:per_column], default: 25, max: 100)
+
+    aggregates = column_aggregates(scope, grouping)
+    cards = column_cards(scope, grouping, per_column)
+    serialized = serialize_grouped_cards(cards)
+
+    render json: {
+      pipeline: { id: pipeline.id, name: pipeline.name, slug: pipeline.slug, kind: pipeline.kind },
+      columns: grouping.buckets.map do |bucket|
+        serialize_column(bucket, aggregates[bucket[:id]], serialized[bucket[:id]])
+      end,
+      meta: {
+        per_column: per_column,
+        group_by: grouping.group_by,
+        # O board so oferece arrasto quando ha o que persistir: mover entre
+        # faixas de score nao salva nada, porque score e calculado.
+        movable: grouping.movable?
+      }
+    }
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: 'Pipeline not found' }, status: :not_found
   end
 
   def show
@@ -31,6 +67,8 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
 
     deal = Crm::DealCreator.new(account: Current.account, params: deal_params, actor: Current.user).perform
     render json: serialize_deal(deal), status: :created
+  rescue ActiveRecord::RecordNotFound
+    render_conversation_not_found
   rescue ActiveRecord::RecordInvalid => e
     render json: { error: e.message }, status: :unprocessable_entity
   end
@@ -38,9 +76,12 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
   def update
     authorize @deal, :update?
 
+    attributes = deal_update_params
+    resolve_account_scoped_ids!(attributes, contact_id: :contacts, owner_id: :users, assignee_id: :users)
+    resolve_conversation_id!(attributes)
     before_lgpd = @deal.slice(*CrmDeal::LGPD_FIELDS)
-    @deal.update!(deal_update_params)
-    changes = audited_changes(@deal, deal_update_params.keys)
+    @deal.update!(attributes)
+    changes = audited_changes(@deal, attributes.keys)
     Crm::AuditLogger.log(
       account: Current.account,
       actor: Current.user,
@@ -50,6 +91,8 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
     )
     log_lgpd_update(before_lgpd, @deal) if lgpd_changed?(changes)
     render json: serialize_deal(@deal)
+  rescue ActiveRecord::RecordNotFound
+    render_conversation_not_found
   rescue ActiveRecord::RecordInvalid => e
     render json: { error: e.message }, status: :unprocessable_entity
   end
@@ -66,7 +109,16 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
     authorize @deal, :move?
 
     stage = Current.account.crm_pipeline_stages.find(params[:stage_id])
-    Crm::DealMover.new(deal: @deal, stage_id: stage.id, actor: Current.user).perform
+    # F1.3: o cliente reporta entre quais vizinhos o card caiu; quem calcula a
+    # posicao e o servidor (Crm::DealPositioner), para que dois atendentes
+    # arrastando ao mesmo tempo nao gravem o mesmo numero.
+    Crm::DealMover.new(
+      deal: @deal,
+      stage_id: stage.id,
+      actor: Current.user,
+      before_id: params[:before_id],
+      after_id: params[:after_id]
+    ).perform
     render json: serialize_deal(@deal.reload)
   rescue ActiveRecord::RecordNotFound
     render json: { error: 'Stage not found' }, status: :not_found
@@ -84,8 +136,14 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
   def mark_lost
     authorize @deal, :mark_lost?
 
+    loss_reason = Current.account.crm_loss_reasons.active.find_by(id: params[:loss_reason_id])
+    return render(
+      json: { error: 'Selecione um motivo de perda válido.' },
+      status: :unprocessable_entity
+    ) unless loss_reason
+
     @deal.mark_lost!(
-      loss_reason_id: params[:loss_reason_id],
+      loss_reason_id: loss_reason.id,
       note: params[:note],
       actor: Current.user
     )
@@ -129,6 +187,8 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
   def bulk_action
     authorize CrmDeal, bulk_destroy_requested? ? :destroy? : :update?
 
+    return render json: { error: 'Ação em lote inválida.' }, status: :unprocessable_entity if requested_bulk_action.blank?
+
     deals = bulk_deals_scope
     requested_count = select_all_requested? ? deals.count : Array(params[:deal_ids]).compact_blank.size
     return render json: { error: 'Nenhum lead selecionado.' }, status: :unprocessable_entity if requested_count.zero?
@@ -150,7 +210,7 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
 
     orphan_deals = Current.account.crm_deals
                          .where.not(conversation_id: nil)
-                         .where.not(conversation_id: Conversation.select(:id))
+                         .where.not(conversation_id: Current.account.conversations.select(:id))
 
     count = orphan_deals.count
     if count.zero?
@@ -172,22 +232,163 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
     render json: { message: "#{count} deal(s) orfao(s) removido(s).", purged: count }
   end
 
+  # PERF-04: export roda em job (não segura worker Puma); o link chega por email.
   def export
     authorize CrmDeal, :export?
 
-    @deals = filtered_deals(Current.account.crm_deals)
-             .order(created_at: :desc)
-             .includes(:crm_pipeline_stage, :crm_loss_reason, :contact)
+    Crm::DealsExportJob.perform_later(Current.account.id, Current.user.id, export_filter_params)
 
-    filename = "crm_deals_#{Date.today.iso8601}.csv"
-    csv_content = build_csv(@deals)
-
-    send_data csv_content,
-              type: 'text/csv; charset=utf-8',
-              disposition: "attachment; filename=\"#{filename}\""
+    render json: {
+      message: 'Exportação em processamento. Você receberá um email com o link para download.'
+    }, status: :accepted
   end
 
   private
+
+  DEAL_INCLUDES = [
+    :crm_pipeline, :crm_pipeline_stage, :crm_loss_reason, :crm_lead_scores,
+    :contact, :inbox, :conversation
+  ].freeze
+
+  # A coluna ordena por `position`; quem o backfill da F1.2 ainda nao alcancou
+  # cai no fim, que e onde o board ja o mostrava.
+  BOARD_ORDER = 'crm_deals.position ASC NULLS LAST, crm_deals.created_at DESC'.freeze
+
+  # F1.6 do PLANO-KANBAN-CRM-2026.md — rolar dentro da coluna.
+  #
+  # O board (F1.5) manda os primeiros 25 de cada coluna; o resto vem por aqui.
+  # Sem `order=board`, a pagina 2 volta a ordenar por data e devolve cards que a
+  # coluna ja mostrou — medido: pedir a pagina 2 de uma coluna de 30 devolvia
+  # cinco cards repetidos da pagina 1.
+  #
+  # O padrao continua sendo o mais recente primeiro: `AllLeads`, a exportacao e a
+  # query string existente dependem disso, e trocar o padrao nao e trabalho desta
+  # fase. Ordenacao desconhecida cai no padrao em vez de derrubar a requisicao.
+  INDEX_ORDERS = {
+    'board' => BOARD_ORDER,
+    'recent' => 'crm_deals.created_at DESC'
+  }.freeze
+
+  def index_order
+    INDEX_ORDERS.fetch(params[:order].to_s, INDEX_ORDERS.fetch('recent'))
+  end
+
+  def bounded(value, default:, max:)
+    parsed = value.to_i
+    parsed.positive? ? [parsed, max].min : default
+  end
+
+  # PERF-01: os quatro mapas agregados que o card precisa, numa query cada, em
+  # vez de uma por negocio. Extraido do `index` para servir tambem ao `board`.
+  def serialize_board_deals(deals)
+    return [] if deals.blank?
+
+    ids = deals.map(&:id)
+    pending_counts = CrmActivity.pending.where(crm_deal_id: ids).group(:crm_deal_id).count
+    stale_ids = CrmActivity.pending
+                           .where(crm_deal_id: ids, kind: 'follow_up', created_by_type: 'system')
+                           .distinct.pluck(:crm_deal_id).to_set
+    next_due = CrmActivity.pending
+                          .where(crm_deal_id: ids).where.not(due_at: nil)
+                          .group(:crm_deal_id).minimum(:due_at)
+    ai_states = Current.account.captain_conversation_states
+                              .where(conversation_id: deals.filter_map(&:conversation_id))
+                              .index_by(&:conversation_id)
+
+    deals.map do |deal|
+      serialize_deal(
+        deal,
+        pending_activities_count: pending_counts.fetch(deal.id, 0),
+        is_stale: stale_ids.include?(deal.id),
+        next_activity_due_at: next_due[deal.id],
+        ai_state: ai_states[deal.conversation_id]
+      )
+    end
+  end
+
+  # Uma query para todas as colunas, qualquer que seja o agrupamento (F2.8).
+  #
+  # `count` acompanha os cards que a coluna mostra, para o cabecalho nao mentir.
+  # Mas **WIP e idade sao so dos negocios abertos**, e isso nao e detalhe:
+  # `mark_won!`/`mark_lost!` nao tiram o card da etapa, entao um negocio ganho ha
+  # tres meses continua morando em "Qualificado". Conta-lo como trabalho em
+  # andamento faz o teto de WIP disparar sozinho e o tempo medio virar ficcao.
+  def column_aggregates(scope, grouping)
+    key = Arel.sql(grouping.key_sql)
+
+    scope.group(key)
+         .pluck(
+           key,
+           Arel.sql('COUNT(*)'),
+           Arel.sql("COUNT(*) FILTER (WHERE crm_deals.status = 'open')"),
+           Arel.sql('COALESCE(SUM(value_estimate_cents), 0)'),
+           Arel.sql(
+             'AVG(EXTRACT(EPOCH FROM (NOW() - COALESCE(stage_entered_at, crm_deals.created_at))) / 86400.0) ' \
+             "FILTER (WHERE crm_deals.status = 'open')"
+           )
+         )
+         .to_h do |bucket, count, open_count, sum, avg|
+           [bucket.to_s, { count: count, open_count: open_count, sum: sum, avg: avg }]
+         end
+  end
+
+  # Duas etapas de proposito. A primeira pega **so os ids** de cada coluna. A
+  # segunda carrega todos os cards do board de uma vez.
+  #
+  # Fazer `.includes(*DEAL_INCLUDES)` dentro do laco por coluna parecia "uma
+  # query por coluna", mas cada preload dispara uma query propria — medido: 35
+  # queries por requisicao contra 23 assim.
+  def column_cards(scope, grouping, per_column)
+    ids_by_bucket = grouping.buckets.index_by { |bucket| bucket[:id] }.transform_values do |bucket|
+      scope.where("#{grouping.key_sql} = ?", bucket[:id])
+           .order(Arel.sql(BOARD_ORDER))
+           .limit(per_column)
+           .pluck(:id)
+    end
+
+    loaded = CrmDeal.where(id: ids_by_bucket.values.flatten)
+                    .includes(*DEAL_INCLUDES)
+                    .index_by(&:id)
+
+    ids_by_bucket.transform_values { |ids| ids.filter_map { |id| loaded[id] } }
+  end
+
+  # Serializa uma vez so, e devolve agrupado pela coluna a que cada card
+  # pertence — o serializador nao sabe de agrupamento.
+  def serialize_grouped_cards(cards_by_bucket)
+    flat = cards_by_bucket.values.flatten
+    serialized = serialize_board_deals(flat).index_by { |card| card[:id] }
+
+    cards_by_bucket.transform_values do |deals|
+      deals.filter_map { |deal| serialized[deal.id] }
+    end
+  end
+
+  # A coluna fala a mesma lingua qualquer que seja o agrupamento: o
+  # `CRMBoardColumn` do front nao muda. Cor, teto de WIP e prazo so existem
+  # quando a coluna e uma etapa — nas outras vem nulos, e o cabecalho
+  # simplesmente nao os desenha.
+  def serialize_column(bucket, aggregate, cards)
+    count = aggregate&.fetch(:count) || 0
+    open_count = aggregate&.fetch(:open_count) || 0
+
+    {
+      id: bucket[:id],
+      # Nulo em qualquer agrupamento que nao seja por etapa: e o que impede o
+      # front de tentar mover ou paginar uma coluna que nao e uma etapa.
+      stage_id: bucket[:stage_id],
+      name: bucket[:name],
+      color: bucket[:color],
+      expected_duration_hours: bucket[:expected_duration_hours],
+      count: count,
+      open_count: open_count,
+      sum_value_cents: aggregate ? aggregate.fetch(:sum).to_i : 0,
+      avg_days_in_stage: aggregate&.fetch(:avg)&.to_f&.round(2),
+      wip_limit: bucket[:wip_limit],
+      over_wip: bucket[:wip_limit].present? && open_count > bucket[:wip_limit],
+      deals: cards || []
+    }
+  end
 
   def deal
     @deal = Current.account.crm_deals.find(params[:id])
@@ -214,7 +415,8 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
                   custom_fields: {}, attribution: {})
   end
 
-  def serialize_deal(deal, detailed: false)
+  def serialize_deal(deal, detailed: false, pending_activities_count: nil, is_stale: nil, next_activity_due_at: :not_loaded, ai_state: :not_loaded)
+    ai_state = deal.conversation&.captain_conversation_state if ai_state == :not_loaded
     avatar_url = contact_avatar_url(deal.contact)
 
     base = {
@@ -227,6 +429,9 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
       source: deal.source,
       source_detail: deal.source_detail,
       operational_status: deal.operational_status,
+      crm_loss_reason_id: deal.crm_loss_reason_id,
+      loss_reason: deal.crm_loss_reason ? { id: deal.crm_loss_reason.id, name: deal.crm_loss_reason.name, slug: deal.crm_loss_reason.slug } : nil,
+      lost_reason_note: deal.lost_reason_note,
       disposition_reason: deal.disposition_reason,
       disposition_note: deal.disposition_note,
       disposed_at: deal.disposed_at,
@@ -261,11 +466,19 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
       conversation_display_id: deal.conversation&.display_id,
       owner_id: deal.owner_id,
       assignee_id: deal.assignee_id,
+      position: deal.position,
+      # F1.5: nulo significa "nunca se moveu", e a data de criacao e a resposta
+      # certa para o rotting. Quem consome resolve o COALESCE.
+      stage_entered_at: deal.stage_entered_at || deal.created_at,
       closed_at: deal.closed_at,
       created_at: deal.created_at,
       updated_at: deal.updated_at,
       stage: deal.crm_pipeline_stage ? { id: deal.crm_pipeline_stage.id, name: deal.crm_pipeline_stage.name, slug: deal.crm_pipeline_stage.slug } : nil,
-      pending_activities_count: deal.crm_activities.pending.count,
+      pending_activities_count: pending_activities_count || deal.crm_activities.pending.count,
+      is_stale: is_stale.nil? ? deal.crm_activities.pending.where(kind: 'follow_up', created_by_type: 'system').exists? : is_stale,
+      next_activity_due_at: next_activity_due_at == :not_loaded ? deal.crm_activities.pending.where.not(due_at: nil).minimum(:due_at) : next_activity_due_at,
+      captain_ai_mode: ai_state&.ai_mode,
+      captain_handoff_reason_code: ai_state&.handoff_reason_code,
       latest_score: serialize_lead_score(latest_lead_score_for(deal))
     }
     if detailed
@@ -523,7 +736,7 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
         payload: { source: params[:source], source_detail: params[:source_detail] }
       )
     when 'assign_owner'
-      owner_id = params[:owner_id].presence
+      owner_id = params[:owner_id].present? ? Current.account.users.find(params[:owner_id]).id : nil
       deal.update!(owner_id: owner_id, assignee_id: owner_id)
       deal.contact&.update!(crm_owner_id: owner_id, crm_owner_source: 'manual', crm_owner_assigned_at: Time.current)
       Crm::AuditLogger.log(
@@ -549,44 +762,41 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
     end
   end
 
-  def filtered_deals(scope, filters = params)
-    urgency = filters[:urgency].presence || filters[:urgency_level]
-
-    scope = scope.by_pipeline(filters[:pipeline_id]) if filters[:pipeline_id].present?
-    scope = scope.by_stage(filters[:stage_id]) if filters[:stage_id].present?
-    scope = scope.by_legal_area(filters[:legal_area]) if filters[:legal_area].present?
-    scope = scope.where(status: filters[:status]) if filters[:status].present?
-    scope = scope.where(operational_status: filters[:operational_status]) if filters[:operational_status].present?
-    scope = scope.where(source: filters[:source]) if filters[:source].present?
-    scope = scope.where(disposition_reason: filters[:disposition_reason]) if filters[:disposition_reason].present?
-    scope = scope.where(conversation_id: filters[:conversation_id]) if filters[:conversation_id].present?
-    scope = scope.where(contact_id: filters[:contact_id]) if filters[:contact_id].present?
-    scope = scope.where(inbox_id: filters[:inbox_id]) if filters[:inbox_id].present?
-    scope = scope.where(urgency_level: urgency) if urgency.present?
-    scope = filter_by_owner(scope, filters)
-    scope = scope.where('score_total >= ?', filters[:score_min].to_i) if filters[:score_min].present?
-    scope = scope.where('score_total <= ?', filters[:score_max].to_i) if filters[:score_max].present?
-    scope = filter_by_search(scope, filters[:search]) if filters[:search].present?
-    scope
+  # PERF-04: lógica de filtro extraída para reuso pelo Crm::DealsExportJob.
+  #
+  # F1.4: a allowlist mora no serviço, que é quem sabe quais chaves existem e
+  # quais aceitam lista. O controller manter a própria cópia foi o que fez a
+  # exportação descartar filtros em silêncio.
+  def filtered_deals(scope, filters = filter_params)
+    Crm::DealFilterService.new(scope: scope, filters: filters, account: Current.account).perform
   end
 
-  def filter_by_owner(scope, filters)
-    return scope if filters[:owner_id].blank?
+  def filter_params
+    Crm::DealFilterService.permitted_filters(params)
+  end
 
-    filters[:owner_id].to_s == '__unassigned' ? scope.where(owner_id: nil) : scope.where(owner_id: filters[:owner_id])
+  # A exportação usa exatamente os mesmos critérios do board: quem filtrou a
+  # tela espera exportar aquilo, não o pipeline inteiro.
+  def export_filter_params
+    filter_params
   end
 
   def bulk_deals_scope
-    return filtered_deals(Current.account.crm_deals, params[:filters] || {}) if select_all_requested?
+    selected = Crm::DealFilterService.permitted_filters(params[:filters])
+    return filtered_deals(Current.account.crm_deals, selected) if select_all_requested?
 
     Current.account.crm_deals.where(id: Array(params[:deal_ids]).compact_blank)
   end
 
+  # BUG-04: sem fallback para params[:action] (que no Rails é o nome da action
+  # da rota, 'bulk_action') — só aceita ação explícita e dentro da whitelist.
+  ALLOWED_BULK_ACTIONS = %w[move archive discard mark_base_client update_source
+                            assign_owner apply_label destroy delete purge].freeze
+
   def requested_bulk_action
-    request.request_parameters['bulk_action'].presence ||
-      request.request_parameters['action'].presence ||
-      params[:bulk_action].presence ||
-      params[:action].to_s
+    requested = request.request_parameters['bulk_action'].presence || params[:bulk_action].presence
+    requested = requested.to_s
+    ALLOWED_BULK_ACTIONS.include?(requested) ? requested : nil
   end
 
   def bulk_destroy_requested?
@@ -620,29 +830,6 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
     )
   end
 
-  def filter_by_search(scope, search)
-    query = search.to_s.downcase.strip
-    digits = query.gsub(/\D/, '')
-    like_query = "%#{ActiveRecord::Base.sanitize_sql_like(query)}%"
-    like_digits = "%#{ActiveRecord::Base.sanitize_sql_like(digits)}%"
-
-    conditions = [
-      'LOWER(crm_deals.title) LIKE :query',
-      'LOWER(contacts.name) LIKE :query',
-      'LOWER(contacts.email) LIKE :query'
-    ]
-
-    if digits.present?
-      conditions << "regexp_replace(COALESCE(contacts.phone_number, ''), '[^0-9]', '', 'g') LIKE :digits"
-    end
-
-    scope.left_joins(:contact).where(
-      conditions.join(' OR '),
-      query: like_query,
-      digits: like_digits
-    )
-  end
-
   def audited_changes(record, keys)
     keys.map(&:to_s).each_with_object({}) do |key, changes|
       next unless record.saved_changes.key?(key)
@@ -669,54 +856,5 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
         after: deal.slice(*CrmDeal::LGPD_FIELDS)
       }
     )
-  end
-  def build_csv(deals)
-    require 'csv'
-
-    headers = [
-      'ID', 'Título', 'Status', 'Área Jurídica', 'Tipo de Caso',
-      'Urgência', 'Score', 'Classificação', 'Valor Estimado (R$)',
-      'Probabilidade (%)', 'Etapa', 'Base LGPD', 'Consentimento',
-      'Canal Consentimento', 'Coleta Consentimento', 'Retenção Até',
-      'Resumo', 'Próxima Ação', 'Contato ID', 'Conversa ID',
-      'Motivo Perda', 'Criado Em', 'Atualizado Em'
-    ]
-
-    CSV.generate(headers: true, col_sep: ',', encoding: 'UTF-8') do |csv|
-      csv << headers
-      deals.each do |deal|
-        csv << [
-          deal.id,
-          csv_value(deal.title),
-          deal.status,
-          deal.legal_area,
-          deal.case_type,
-          deal.urgency_level,
-          deal.score_total,
-          deal.score_classification,
-          (deal.value_estimate_cents.to_f / 100).round(2),
-          deal.probability_pct,
-          deal.crm_pipeline_stage&.name,
-          deal.lgpd_basis,
-          deal.consent_status,
-          deal.consent_channel,
-          deal.consent_collected_at&.iso8601,
-          deal.data_retention_until&.iso8601,
-          csv_value(deal.summary),
-          csv_value(deal.next_best_action),
-          deal.contact_id,
-          deal.conversation_id,
-          deal.crm_loss_reason&.name,
-          deal.created_at.iso8601,
-          deal.updated_at.iso8601
-        ]
-      end
-    end
-  end
-
-  def csv_value(text)
-    return '' if text.blank?
-    # Remove line breaks that would break CSV rows
-    text.to_s.gsub(/[\r\n]+/, ' ').strip
   end
 end

@@ -9,10 +9,20 @@ RSpec.describe Captain::Tools::HandoffTool, type: :model do
   let(:contact) { create(:contact, account: account) }
   let(:conversation) { create(:conversation, account: account, inbox: inbox, contact: contact) }
   let(:tool_context) { Struct.new(:state).new({ conversation: { id: conversation.id } }) }
+  let!(:incoming_message) do
+    create(
+      :message,
+      conversation: conversation,
+      account: account,
+      inbox: inbox,
+      message_type: :incoming,
+      content: 'Quero falar com um atendente humano.'
+    )
+  end
 
   describe '#description' do
     it 'returns the correct description' do
-      expect(tool.description).to eq('Hand off the conversation to a human agent when unable to assist further')
+      expect(tool.description).to eq('Hand off only when the customer explicitly requests a human attendant or Dra. Paula')
     end
   end
 
@@ -35,7 +45,7 @@ RSpec.describe Captain::Tools::HandoffTool, type: :model do
           expect do
             result = tool.perform(tool_context, reason: reason)
             expect(result).to eq("Conversation handed off to human support team (Reason: #{reason})")
-          end.to change(Message, :count).by(1)
+          end.to change(Message, :count).by(2)
         end
 
         it 'creates message with correct attributes' do
@@ -43,13 +53,16 @@ RSpec.describe Captain::Tools::HandoffTool, type: :model do
           tool.perform(tool_context, reason: reason)
 
           created_message = Message.last
-          expect(created_message.content).to eq(reason)
-          expect(created_message.message_type).to eq('outgoing')
-          expect(created_message.private).to be true
-          expect(created_message.sender).to eq(assistant)
-          expect(created_message.account).to eq(account)
-          expect(created_message.inbox).to eq(inbox)
-          expect(created_message.conversation).to eq(conversation)
+          expect(created_message.content).to start_with('Handoff para atendimento humano')
+          expect(created_message.content).to include("Motivo: #{reason}")
+          expect(created_message).to have_attributes(
+            message_type: 'outgoing',
+            private: true,
+            sender: assistant,
+            account: account,
+            inbox: inbox,
+            conversation: conversation
+          )
         end
 
         it 'triggers bot handoff on conversation' do
@@ -93,10 +106,10 @@ RSpec.describe Captain::Tools::HandoffTool, type: :model do
           expect do
             result = tool.perform(tool_context)
             expect(result).to eq('Conversation handed off to human support team')
-          end.to change(Message, :count).by(1)
+          end.to change(Message, :count).by(2)
 
           created_message = Message.last
-          expect(created_message.content).to be_nil
+          expect(created_message.content).to start_with('Handoff para atendimento humano')
         end
 
         it 'logs tool usage with default reason' do
@@ -106,6 +119,42 @@ RSpec.describe Captain::Tools::HandoffTool, type: :model do
           )
 
           tool.perform(tool_context)
+        end
+      end
+
+      context 'when the customer did not explicitly request a human' do
+        before do
+          incoming_message.update!(content: 'Uma advogada pediu meu CNIS e preciso saber como conseguir.')
+        end
+
+        it 'rejects the tool call without messages or bot handoff' do
+          found_conversation = Conversation.find(conversation.id)
+          scoped_conversations = Conversation.where(account_id: assistant.account_id)
+          allow(Conversation).to receive(:where).with(account_id: assistant.account_id).and_return(scoped_conversations)
+          allow(scoped_conversations).to receive(:find_by).with(id: conversation.id).and_return(found_conversation)
+          expect(found_conversation).not_to receive(:bot_handoff!)
+
+          expect do
+            expect(tool.perform(tool_context, reason: 'Modelo pediu handoff')).to eq(described_class::HANDOFF_REJECTED)
+          end.not_to change(Message, :count)
+        end
+      end
+
+      context 'when the customer explicitly asks for Dra. Paula' do
+        before do
+          incoming_message.update!(content: 'Gostaria de falar diretamente com a Dra. Paula.')
+          create(
+            :message,
+            conversation: conversation,
+            account: account,
+            inbox: inbox,
+            message_type: :incoming,
+            content: 'É urgente.'
+          )
+        end
+
+        it 'preserves the explicit handoff path across the current multi-message burst' do
+          expect(tool.perform(tool_context, reason: 'Pedido da cliente')).to include('Conversation handed off')
         end
       end
 

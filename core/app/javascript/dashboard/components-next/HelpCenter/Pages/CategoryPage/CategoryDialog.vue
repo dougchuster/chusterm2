@@ -90,7 +90,7 @@ const handleCategory = async formData => {
 
 <template>
   <div
-    class="w-[25rem] absolute top-10 ltr:right-0 rtl:left-0 bg-n-alpha-3 backdrop-blur-[100px] p-6 rounded-xl border border-n-weak shadow-md flex flex-col gap-6"
+    class="absolute top-10 flex max-h-[calc(100vh-6rem)] w-[25rem] max-w-[calc(100vw-2rem)] flex-col gap-6 overflow-y-auto rounded-xl border border-n-weak bg-n-solid-2 p-4 shadow-md sm:p-6 ltr:right-0 rtl:left-0"
   >
     <h3 class="text-base font-medium text-n-slate-12">
       {{

@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { ref, computed } from 'vue';
 import { debounce } from '@ChusteRM/utils';
 import { picoSearch } from '@scmmishra/pico-search';

@@ -298,6 +298,9 @@ onMounted(() => {
           slate
           faded
           icon="i-lucide-download"
+          :aria-label="
+            t('OVERVIEW_REPORTS.CONVERSATION_HEATMAP.DOWNLOAD_REPORT')
+          "
           class="rounded-md group-hover:bg-n-alpha-2"
           @click="downloadHeatmapData"
         />

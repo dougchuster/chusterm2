@@ -213,7 +213,7 @@ class Api::V1::Accounts::Captain::ScoreSettingsController < Api::V1::Accounts::B
       'memory_enabled' => true,
       'triage_enabled' => true,
       'classification_enabled' => true,
-      'auto_move_on_score' => true,
+      'auto_move_on_score' => false,
       'weights' => Crm::LeadScoreCalculator::DEFAULT_WEIGHTS,
       'classification_thresholds' => CrmScoreClassification::DEFAULT_THRESHOLDS,
       'stage_mapping' => Crm::LeadScoreCalculator::DEFAULT_STAGE_MAPPING,

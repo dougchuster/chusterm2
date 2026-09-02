@@ -1,14 +1,14 @@
 <script setup>
-import { h, ref, computed, onMounted, onUnmounted } from 'vue';
+import { h, ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { provideSidebarContext, useSidebarResize } from './provider';
 import { useAccount } from 'dashboard/composables/useAccount';
 import { useMapGetter } from 'dashboard/composables/store';
 import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import { useSidebarKeyboardShortcuts } from './useSidebarKeyboardShortcuts';
-import { vOnClickOutside } from '@vueuse/components';
 import { FEATURE_FLAGS } from 'dashboard/featureFlags';
 import { useWindowSize, useEventListener } from '@vueuse/core';
+import { useRoute } from 'vue-router';
 import CrmAPI from 'dashboard/api/crm';
 
 import SidebarGroup from './SidebarGroup.vue';
@@ -37,6 +37,9 @@ const emit = defineEmits([
 const { accountScopedRoute, isOnChusteRMCloud } = useAccount();
 const store = useStore();
 const { t } = useI18n();
+const route = useRoute();
+const productName = 'ChusteRM';
+const commandShortcut = '⌘ K';
 
 const isACustomBrandedInstance = useMapGetter(
   'globalConfig/isACustomBrandedInstance'
@@ -45,6 +48,15 @@ const isRTL = useMapGetter('accounts/isRTL');
 
 const { width: windowWidth } = useWindowSize();
 const isMobile = computed(() => windowWidth.value < 768);
+
+watch(
+  () => route.fullPath,
+  () => {
+    if (isMobile.value && props.isMobileSidebarOpen) {
+      emit('closeMobileSidebar');
+    }
+  }
+);
 
 const accountId = useMapGetter('getCurrentAccountId');
 const isFeatureEnabledonAccount = useMapGetter(
@@ -81,6 +93,8 @@ const {
   saveWidth,
   snapToCollapsed,
   snapToExpanded,
+  MIN_WIDTH,
+  MAX_WIDTH,
   COLLAPSED_THRESHOLD,
 } = useSidebarResize();
 
@@ -146,6 +160,28 @@ const onResizeHandleDoubleClick = () => {
   else snapToCollapsed();
 };
 
+const onResizeHandleKeydown = event => {
+  const step = event.shiftKey ? 32 : 8;
+  const direction = isRTL.value ? -1 : 1;
+  const widthChange = {
+    ArrowLeft: -step * direction,
+    ArrowRight: step * direction,
+  }[event.key];
+
+  if (widthChange) {
+    event.preventDefault();
+    setSidebarWidth(sidebarWidth.value + widthChange);
+    saveWidth();
+    return;
+  }
+
+  if (event.key === 'Home' || event.key === 'End') {
+    event.preventDefault();
+    setSidebarWidth(event.key === 'Home' ? MIN_WIDTH : MAX_WIDTH);
+    saveWidth();
+  }
+};
+
 const toggleSidebarCollapsed = () => {
   if (isCollapsed.value) {
     snapToExpanded();
@@ -165,6 +201,25 @@ const collapseToggleIcon = computed(() => {
 const collapseToggleLabel = computed(() =>
   isEffectivelyCollapsed.value ? 'Expandir menu' : 'Recolher menu'
 );
+
+const headerActionIcon = computed(() =>
+  isMobile.value ? 'i-lucide-x' : collapseToggleIcon.value
+);
+
+const headerActionLabel = computed(() =>
+  isMobile.value
+    ? t('HELP_CENTER.EDIT_HEADER.CLOSE_SIDEBAR')
+    : collapseToggleLabel.value
+);
+
+const handleHeaderAction = () => {
+  if (isMobile.value) {
+    emit('closeMobileSidebar');
+    return;
+  }
+
+  toggleSidebarCollapsed();
+};
 
 // Support both mouse and touch events
 useEventListener(document, 'mousemove', onResizeMove);
@@ -229,11 +284,6 @@ const crmPipelineMenuItems = computed(() =>
     to: accountScopedRoute('crm_dashboard', {}, { pipeline_id: pipeline.id }),
   }))
 );
-
-const closeMobileSidebar = () => {
-  if (!props.isMobileSidebarOpen) return;
-  emit('closeMobileSidebar');
-};
 
 const newReportRoutes = () => [
   {
@@ -874,15 +924,18 @@ const menuItems = computed(() => {
 </script>
 
 <template>
+  <button
+    v-if="isMobileSidebarOpen"
+    type="button"
+    class="fixed inset-0 z-30 hidden bg-ds-shell-canvas/60 backdrop-blur-sm max-md:block"
+    :aria-label="t('HELP_CENTER.EDIT_HEADER.CLOSE_SIDEBAR')"
+    @click="emit('closeMobileSidebar')"
+  />
   <aside
-    v-on-click-outside="[
-      closeMobileSidebar,
-      { ignore: ['#mobile-sidebar-launcher'] },
-    ]"
-    class="sidebar-shell bg-[rgb(var(--bg-surface))] flex flex-col text-sm pb-px fixed top-0 ltr:left-0 rtl:right-0 h-full z-40 w-[260px] md:w-auto md:relative md:flex-shrink-0 md:ltr:translate-x-0 md:rtl:translate-x-0"
+    class="fixed top-0 z-40 flex h-full w-[260px] flex-col bg-ds-shell-canvas pb-px font-inter text-sm text-ds-shell-fg ltr:left-0 rtl:right-0 md:relative md:w-auto md:flex-shrink-0 md:ltr:translate-x-0 md:rtl:translate-x-0"
     :class="[
       {
-        'shadow-lg md:shadow-none': isMobileSidebarOpen,
+        'shadow-2xl shadow-black/30 md:shadow-none': isMobileSidebarOpen,
         'ltr:-translate-x-full rtl:translate-x-full': !isMobileSidebarOpen,
         'transition-transform duration-200 ease-out md:transition-[width]':
           !isResizing,
@@ -892,10 +945,10 @@ const menuItems = computed(() => {
   >
     <section
       class="grid"
-      :class="isEffectivelyCollapsed ? 'mt-3 mb-6 gap-4' : 'mt-1 mb-4 gap-2'"
+      :class="isEffectivelyCollapsed ? 'mb-5 mt-3 gap-4' : 'mb-4 mt-3 gap-3'"
     >
       <div
-        class="flex gap-2 items-center min-w-0"
+        class="flex min-w-0 items-center gap-2.5"
         :class="{
           'justify-center px-1': isEffectivelyCollapsed,
           'px-3': !isEffectivelyCollapsed,
@@ -909,24 +962,38 @@ const menuItems = computed(() => {
         </template>
         <template v-else>
           <div
-            class="grid flex-shrink-0 place-content-center size-8 rounded-xl"
+            class="grid size-10 flex-shrink-0 place-content-center rounded-2xl bg-gradient-to-br from-ds-shell-accent/25 via-ds-shell-panel-strong to-ds-shell-panel shadow-lg shadow-black/20 ring-1 ring-inset ring-ds-shell-accent/25"
           >
-            <Logo class="size-5" />
+            <Logo class="size-6" />
           </div>
-          <SidebarAccountSwitcher
-            class="flex-grow -mx-1 min-w-0"
-            @show-create-account-modal="emit('showCreateAccountModal')"
-          />
+          <div class="min-w-0 flex-1">
+            <p
+              class="m-0 truncate font-manrope text-[0.95rem] font-bold leading-5 tracking-[-0.02em] text-ds-shell-fg"
+            >
+              {{ productName }}
+            </p>
+            <p
+              class="m-0 truncate text-[0.6rem] font-semibold uppercase leading-4 tracking-[0.16em] text-ds-shell-muted"
+            >
+              {{ t('SIDEBAR.PRODUCT_SCOPE') }}
+            </p>
+          </div>
           <button
             type="button"
-            class="sidebar-toggle flex flex-shrink-0 items-center justify-center rounded-xl"
-            :title="collapseToggleLabel"
-            :aria-label="collapseToggleLabel"
-            @click="toggleSidebarCollapsed"
+            class="flex size-10 flex-shrink-0 items-center justify-center rounded-xl bg-ds-shell-panel text-ds-shell-muted ring-1 ring-inset ring-ds-shell-border transition duration-150 hover:bg-ds-shell-hover hover:text-ds-shell-fg hover:ring-ds-shell-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-shell-focus"
+            :title="headerActionLabel"
+            :aria-label="headerActionLabel"
+            @click="handleHeaderAction"
           >
-            <span :class="collapseToggleIcon" class="size-4" />
+            <span :class="headerActionIcon" class="size-4" aria-hidden="true" />
           </button>
         </template>
+      </div>
+      <div v-if="!isEffectivelyCollapsed" class="px-3">
+        <SidebarAccountSwitcher
+          class="min-w-0"
+          @show-create-account-modal="emit('showCreateAccountModal')"
+        />
       </div>
       <div
         class="flex gap-2"
@@ -935,27 +1002,36 @@ const menuItems = computed(() => {
         <RouterLink
           v-if="!isEffectivelyCollapsed"
           :to="{ name: 'search' }"
-          class="sidebar-search flex gap-3 items-center px-3 py-2 w-full rounded-xl transition-all duration-150 ease-out"
+          class="flex min-h-11 w-full items-center gap-3 rounded-xl bg-ds-shell-panel px-3 py-2 text-ds-shell-fg ring-1 ring-inset ring-ds-shell-border transition duration-150 ease-out hover:bg-ds-shell-hover hover:ring-ds-shell-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-shell-focus"
         >
-          <span class="flex-shrink-0 i-lucide-search size-5 text-n-slate-10" />
           <span
-            class="flex-grow text-start text-[0.95rem] font-medium text-n-slate-10"
+            class="i-lucide-search size-4 flex-shrink-0 text-ds-shell-muted"
+            aria-hidden="true"
+          />
+          <span
+            class="flex-grow text-start text-[0.82rem] font-medium text-ds-shell-muted"
           >
             {{ t('COMBOBOX.SEARCH_PLACEHOLDER') }}
           </span>
+          <kbd
+            class="hidden rounded-md bg-ds-shell-hover px-1.5 py-0.5 text-[0.62rem] font-semibold text-ds-shell-muted min-[1120px]:inline"
+          >
+            {{ commandShortcut }}
+          </kbd>
         </RouterLink>
         <RouterLink
           v-else
           :to="{ name: 'search' }"
-          class="sidebar-search flex items-center justify-center size-10 rounded-xl transition-all duration-150 ease-out hover:bg-n-alpha-2 dark:hover:bg-n-slate-3/40"
+          class="flex size-11 items-center justify-center rounded-xl bg-ds-shell-panel text-ds-shell-muted ring-1 ring-inset ring-ds-shell-border transition duration-150 ease-out hover:bg-ds-shell-hover hover:text-ds-shell-fg hover:ring-ds-shell-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-shell-focus"
           :title="t('COMBOBOX.SEARCH_PLACEHOLDER')"
+          :aria-label="t('COMBOBOX.SEARCH_PLACEHOLDER')"
         >
-          <span class="i-lucide-search size-5 text-n-slate-11" />
+          <span class="i-lucide-search size-5" aria-hidden="true" />
         </RouterLink>
         <button
           v-if="isEffectivelyCollapsed"
           type="button"
-          class="sidebar-toggle flex items-center justify-center rounded-xl"
+          class="flex size-11 items-center justify-center rounded-xl bg-ds-shell-panel text-ds-shell-muted ring-1 ring-inset ring-ds-shell-border transition duration-150 hover:bg-ds-shell-hover hover:text-ds-shell-fg hover:ring-ds-shell-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-shell-focus"
           :title="collapseToggleLabel"
           :aria-label="collapseToggleLabel"
           @click="toggleSidebarCollapsed"
@@ -965,11 +1041,12 @@ const menuItems = computed(() => {
       </div>
     </section>
     <nav
-      class="sidebar-nav grid overflow-y-scroll flex-grow pb-6 no-scrollbar min-w-0"
+      class="grid min-w-0 flex-grow gap-0.5 overflow-y-scroll pb-6 no-scrollbar"
+      :aria-label="productName"
       :class="isEffectivelyCollapsed ? 'px-1' : 'px-2'"
     >
       <ul
-        class="flex flex-col gap-1.5 m-0 list-none min-w-0"
+        class="m-0 flex min-w-0 list-none flex-col gap-1"
         :class="{ 'items-center': isEffectivelyCollapsed }"
       >
         <SidebarGroup
@@ -983,7 +1060,7 @@ const menuItems = computed(() => {
       class="flex relative flex-col flex-shrink-0 gap-1 justify-between items-center"
     >
       <div
-        class="pointer-events-none absolute inset-x-0 -top-[1.938rem] h-8 bg-gradient-to-t from-n-background to-transparent"
+        class="pointer-events-none absolute inset-x-0 -top-8 h-8 bg-gradient-to-t from-ds-shell-canvas to-transparent"
       />
       <SidebarChangelogCard
         v-if="
@@ -1000,7 +1077,7 @@ const menuItems = computed(() => {
         "
       />
       <div
-        class="sidebar-footer px-2 py-2.5 flex-shrink-0 flex w-full z-50 gap-2 items-center"
+        class="z-50 flex w-full flex-shrink-0 items-center gap-2 bg-ds-shell-canvas px-2 py-2.5"
         :class="isEffectivelyCollapsed ? 'justify-center' : 'justify-between'"
       >
         <SidebarProfileMenu
@@ -1011,63 +1088,22 @@ const menuItems = computed(() => {
     </section>
     <!-- Resize Handle (desktop only) -->
     <div
-      class="sidebar-resize-handle hidden md:block absolute top-0 h-full w-2 cursor-col-resize z-40 ltr:right-0 rtl:left-0 group"
+      class="group absolute top-0 z-40 hidden h-full w-2 cursor-col-resize focus-visible:outline-none md:block ltr:right-0 rtl:left-0"
+      role="separator"
+      aria-orientation="vertical"
+      tabindex="0"
+      :aria-valuemin="MIN_WIDTH"
+      :aria-valuemax="MAX_WIDTH"
+      :aria-valuenow="Math.round(sidebarWidth)"
       @mousedown="onResizeStart"
       @touchstart="onResizeStart"
       @dblclick="onResizeHandleDoubleClick"
+      @keydown="onResizeHandleKeydown"
     >
       <div
-        class="sidebar-resize-handle__line absolute top-0 h-full w-px ltr:right-0 rtl:left-0 bg-transparent group-hover:bg-n-slate-7/40 transition-colors"
-        :class="{ 'bg-n-slate-7/60': isResizing }"
+        class="absolute top-0 h-full w-px bg-transparent transition-colors group-hover:bg-ds-shell-accent/35 group-focus-visible:bg-ds-shell-focus ltr:right-0 rtl:left-0"
+        :class="{ 'bg-ds-shell-accent/55': isResizing }"
       />
     </div>
   </aside>
 </template>
-
-<style scoped>
-.sidebar-shell {
-  background: rgb(var(--slate-1));
-}
-
-.sidebar-search {
-  min-height: 2.75rem;
-  background: rgb(var(--surface-2));
-  border: 1px solid rgb(var(--border-weak));
-  color: rgb(var(--slate-12));
-}
-
-.sidebar-search:hover {
-  background: rgb(var(--surface-active));
-  color: rgb(var(--slate-12));
-}
-
-.sidebar-toggle {
-  width: 2.25rem;
-  height: 2.25rem;
-  border: 1px solid rgb(var(--border-weak));
-  background: rgb(var(--surface-2));
-  color: rgb(var(--slate-11));
-  transition:
-    background 0.15s ease,
-    color 0.15s ease,
-    border-color 0.15s ease;
-}
-
-.sidebar-toggle:hover {
-  border-color: rgb(var(--border-strong));
-  background: rgb(var(--surface-active));
-  color: rgb(var(--slate-12));
-}
-
-.sidebar-nav {
-  gap: 0.125rem;
-}
-
-.sidebar-footer {
-  background: rgb(var(--slate-1));
-}
-
-.sidebar-resize-handle__line {
-  background: transparent;
-}
-</style>

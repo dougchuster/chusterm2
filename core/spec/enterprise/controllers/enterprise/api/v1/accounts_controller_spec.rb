@@ -122,8 +122,8 @@ RSpec.describe 'Enterprise Billing APIs', type: :request do
 
     context 'when it is an authenticated user' do
       before do
-        InstallationConfig.where(name: 'DEPLOYMENT_ENV').first_or_create(value: 'cloud')
-        InstallationConfig.where(name: 'ChusteRM_CLOUD_PLANS').first_or_create(value: [{ 'name': 'Hacker' }])
+        InstallationConfig.find_or_initialize_by(name: 'DEPLOYMENT_ENV').update!(value: 'cloud')
+        InstallationConfig.find_or_initialize_by(name: 'ChusteRM_CLOUD_PLANS').update!(value: [{ 'name': 'Hacker' }])
       end
 
       context 'when it is an agent' do
@@ -158,8 +158,8 @@ RSpec.describe 'Enterprise Billing APIs', type: :request do
         before do
           create(:conversation, account: account)
           create(:channel_api, account: account)
-          InstallationConfig.where(name: 'DEPLOYMENT_ENV').first_or_create(value: 'cloud')
-          InstallationConfig.where(name: 'ChusteRM_CLOUD_PLANS').first_or_create(value: [{ 'name': 'Hacker' }])
+          InstallationConfig.find_or_initialize_by(name: 'DEPLOYMENT_ENV').update!(value: 'cloud')
+          InstallationConfig.find_or_initialize_by(name: 'ChusteRM_CLOUD_PLANS').update!(value: [{ 'name': 'Hacker' }])
         end
 
         it 'returns the limits if the plan is default' do
@@ -252,10 +252,18 @@ RSpec.describe 'Enterprise Billing APIs', type: :request do
     let(:stripe_invoice) { Struct.new(:id).new('inv_test123') }
 
     before do
-      create(:installation_config, name: 'ChusteRM_CLOUD_PLANS', value: [
-               { 'name' => 'Hacker', 'product_id' => ['prod_hacker'], 'price_ids' => ['price_hacker'] },
-               { 'name' => 'Business', 'product_id' => ['prod_business'], 'price_ids' => ['price_business'] }
-             ])
+      InstallationConfig.find_or_initialize_by(name: 'ChusteRM_CLOUD_PLANS').update!(value: [
+                                                                                       {
+                                                                                         'name' => 'Hacker',
+                                                                                         'product_id' => ['prod_hacker'],
+                                                                                         'price_ids' => ['price_hacker']
+                                                                                       },
+                                                                                       {
+                                                                                         'name' => 'Business',
+                                                                                         'product_id' => ['prod_business'],
+                                                                                         'price_ids' => ['price_business']
+                                                                                       }
+                                                                                     ])
     end
 
     it 'returns unauthorized for unauthenticated user' do
@@ -339,8 +347,7 @@ RSpec.describe 'Enterprise Billing APIs', type: :request do
 
       context 'when deployment environment is not cloud' do
         before do
-          # Set deployment environment to something other than cloud
-          InstallationConfig.where(name: 'DEPLOYMENT_ENV').first_or_create(value: 'self_hosted')
+          allow(ChusteRMApp).to receive(:ChusteRM_cloud?).and_return(false)
         end
 
         it 'returns not found' do
@@ -356,8 +363,7 @@ RSpec.describe 'Enterprise Billing APIs', type: :request do
 
       context 'when it is an admin' do
         before do
-          # Create the installation config for cloud environment
-          InstallationConfig.where(name: 'DEPLOYMENT_ENV').first_or_initialize.update!(value: 'cloud')
+          allow(ChusteRMApp).to receive(:ChusteRM_cloud?).and_return(true)
         end
 
         it 'marks the account for deletion when action is delete' do

@@ -13,18 +13,21 @@ defineProps({
 });
 
 const showGallery = ref(false);
+const galleryAriaLabel = 'Abrir vídeo';
 
 const { filteredCurrentChatAttachments } = useMessageContext();
 </script>
 
 <template>
-  <div
-    class="size-[72px] overflow-hidden contain-content rounded-xl cursor-pointer relative group"
+  <button
+    type="button"
+    :aria-label="galleryAriaLabel"
+    class="group relative size-[72px] overflow-hidden rounded-xl outline-none ring-1 ring-inset ring-ds-border-subtle transition-shadow focus-visible:ring-2 focus-visible:ring-ds-border-focus"
     @click="showGallery = true"
   >
     <video
       :src="attachment.dataUrl"
-      class="w-full h-full object-cover"
+      class="size-full object-cover"
       muted
       playsInline
     />
@@ -32,15 +35,12 @@ const { filteredCurrentChatAttachments } = useMessageContext();
       class="absolute w-full h-full inset-0 p-1 flex items-center justify-center"
     >
       <div
-        class="size-7 bg-n-slate-1/60 backdrop-blur-sm rounded-full overflow-hidden shadow-[0_5px_15px_rgba(0,0,0,0.4)]"
+        class="grid size-8 place-content-center overflow-hidden rounded-full bg-ds-bg-canvas/75 text-ds-fg-default shadow-[var(--ds-shadow-md)] backdrop-blur-sm"
       >
-        <Icon
-          icon="i-teenyicons-play-small-solid"
-          class="size-7 text-n-slate-12/80 backdrop-blur"
-        />
+        <Icon icon="i-lucide-play" class="size-4" />
       </div>
     </div>
-  </div>
+  </button>
   <GalleryView
     v-if="showGallery"
     v-model:show="showGallery"

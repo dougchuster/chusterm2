@@ -178,6 +178,7 @@ const deliveryStatsSummary = computed(() => {
     <div class="flex items-center justify-end w-20 gap-2">
       <Button
         v-if="isLiveChatType"
+        :aria-label="t('CAMPAIGN.LIVE_CHAT.EDIT.TITLE')"
         variant="faded"
         size="sm"
         color="slate"
@@ -185,6 +186,7 @@ const deliveryStatsSummary = computed(() => {
         @click="emit('edit')"
       />
       <Button
+        :aria-label="t('CAMPAIGN.CONFIRM_DELETE.TITLE')"
         variant="faded"
         color="ruby"
         size="sm"

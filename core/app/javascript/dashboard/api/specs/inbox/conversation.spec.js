@@ -47,6 +47,7 @@ describe('#ConversationAPI', () => {
         labels: [],
         teamId: 1,
         updatedWithin: 20,
+        q: 'douglas',
       });
       expect(axiosMock.get).toHaveBeenCalledWith('/api/v1/conversations', {
         params: {
@@ -57,25 +58,9 @@ describe('#ConversationAPI', () => {
           page: 1,
           labels: [],
           updated_within: 20,
+          q: 'douglas',
         },
       });
-    });
-
-    it('#search', () => {
-      conversationAPI.search({
-        q: 'leads',
-        page: 1,
-      });
-
-      expect(axiosMock.get).toHaveBeenCalledWith(
-        '/api/v1/conversations/search',
-        {
-          params: {
-            q: 'leads',
-            page: 1,
-          },
-        }
-      );
     });
 
     it('#toggleStatus', () => {
@@ -191,6 +176,7 @@ describe('#ConversationAPI', () => {
     it('#filter', () => {
       const payload = {
         page: 1,
+        q: 'previdenciário',
         queryData: {
           payload: [
             {
@@ -218,7 +204,7 @@ describe('#ConversationAPI', () => {
       expect(axiosMock.post).toHaveBeenCalledWith(
         '/api/v1/conversations/filter',
         payload.queryData,
-        { params: { page: payload.page } }
+        { params: { page: payload.page, q: payload.q } }
       );
     });
 

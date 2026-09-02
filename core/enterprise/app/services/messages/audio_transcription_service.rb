@@ -1,8 +1,6 @@
 class Messages::AudioTranscriptionService
   include Integrations::LlmInstrumentation
 
-  WHISPER_MODEL = 'whisper-1'.freeze
-
   attr_reader :attachment, :message, :account
 
   def initialize(attachment)
@@ -23,11 +21,17 @@ class Messages::AudioTranscriptionService
     transcriptions = transcribe_audio
     return mark_failed('empty_audio_transcription_result') if transcriptions.blank?
 
-    Rails.logger.info "Audio transcription successful: #{transcriptions}"
+    Rails.logger.info(
+      "[AudioTranscription] Completed attachment=#{attachment.id} model=#{transcription_model} characters=#{transcriptions.length}"
+    )
     { success: true, transcriptions: transcriptions }
   rescue Faraday::UnauthorizedError
     Rails.logger.warn('Skipping audio transcription: transcription provider configuration is invalid or disabled (401 Unauthorized).')
     mark_failed('Transcription provider configuration is invalid or disabled (401)')
+  rescue Llm::TransientProviderError => e
+    Rails.logger.warn("[AudioTranscription] Temporary provider failure for attachment #{attachment.id}: #{e.message}")
+    mark_retrying(e.message)
+    raise
   rescue StandardError => e
     Rails.logger.warn("[AudioTranscription] Failed for attachment #{attachment.id}: #{e.message}")
     mark_failed(e.message)
@@ -53,60 +57,14 @@ class Messages::AudioTranscriptionService
     { success: true, transcriptions: attachment.meta['transcribed_text'] }
   end
 
-  def fetch_audio_file
-    blob = attachment.file.blob
-    temp_dir = Rails.root.join('tmp/uploads/audio-transcriptions')
-    FileUtils.mkdir_p(temp_dir)
-    temp_file_name = "#{blob.key}-#{blob.filename}"
-
-    if blob.filename.extension_without_delimiter.blank?
-      extension = extension_from_content_type(blob.content_type)
-      temp_file_name = "#{temp_file_name}.#{extension}" if extension.present?
-    end
-
-    temp_file_path = File.join(temp_dir, temp_file_name)
-
-    File.open(temp_file_path, 'wb') do |file|
-      blob.open do |blob_file|
-        IO.copy_stream(blob_file, file)
-      end
-    end
-
-    temp_file_path
-  end
-
   def transcribe_audio
     transcribed_text = attachment.meta&.[]('transcribed_text') || ''
     return transcribed_text if transcribed_text.present?
 
-    transcribed_text = if Llm::MediaConfig.transcription_gemini?
-                         Llm::GeminiMultimodalService.new(purpose: :transcription).transcribe_audio(attachment)
-                       else
-                         transcribe_via_whisper
-                       end
+    transcribed_text = Llm::OpenRouterMultimodalService.new(purpose: :transcription).transcribe_audio(attachment)
 
     update_transcription(transcribed_text)
     transcribed_text
-  end
-
-  def transcribe_via_whisper
-    temp_file_path = fetch_audio_file
-    transcribed_text = nil
-
-    File.open(temp_file_path, 'rb') do |file|
-      response = client.audio.transcribe(
-        parameters: {
-          model: transcription_model,
-          file: file,
-          temperature: 0.4
-        }
-      )
-      transcribed_text = response['text']
-    end
-
-    transcribed_text
-  ensure
-    FileUtils.rm_f(temp_file_path) if temp_file_path.present?
   end
 
   def instrumentation_params(file_path)
@@ -135,27 +93,8 @@ class Messages::AudioTranscriptionService
     message.reindex
   end
 
-  def extension_from_content_type(content_type)
-    subtype = content_type.to_s.downcase.split(';').first.to_s.split('/').last.to_s
-    return if subtype.blank?
-
-    {
-      'x-m4a' => 'm4a',
-      'x-wav' => 'wav',
-      'x-mp3' => 'mp3'
-    }.fetch(subtype, subtype)
-  end
-
-  def client
-    @client ||= OpenAI::Client.new(
-      access_token: Llm::MediaConfig.transcription_api_key,
-      uri_base: Llm::MediaConfig.transcription_endpoint,
-      log_errors: Rails.env.development?
-    )
-  end
-
   def transcription_model
-    Llm::MediaConfig.transcription_model.presence || WHISPER_MODEL
+    Llm::MediaConfig.transcription_model
   end
 
   def mark_skipped(reason)
@@ -168,6 +107,12 @@ class Messages::AudioTranscriptionService
     update_meta(media_understanding_status: 'failed', media_understanding_error: reason.to_s.truncate(500))
     notify_message_update
     { error: reason }
+  end
+
+  def mark_retrying(reason)
+    update_meta(media_understanding_status: 'processing', media_understanding_error: "transient_provider_retry: #{reason}".truncate(500))
+    notify_message_update
+    { error: reason, retrying: true }
   end
 
   def update_meta(values)

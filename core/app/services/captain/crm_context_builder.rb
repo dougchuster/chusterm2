@@ -26,6 +26,8 @@ class Captain::CrmContextBuilder
   def contact_context
     return if @contact.blank?
 
+    relationship = Crm::ContactRelationshipClassifier.new(@contact).perform
+
     {
       id: @contact.id,
       name: @contact.name,
@@ -33,6 +35,7 @@ class Captain::CrmContextBuilder
       phone_number: @contact.phone_number,
       relationship_status: @contact.respond_to?(:crm_relationship_status) ? @contact.crm_relationship_status : @contact.contact_type,
       lifecycle_stage: @contact.respond_to?(:crm_lifecycle_stage) ? @contact.crm_lifecycle_stage : nil,
+      relationship_assessment: relationship,
       crm_owner: user_context(@contact.try(:crm_owner)),
       source_list: @contact.additional_attributes&.dig('source_list'),
       legal_area: @contact.additional_attributes&.dig('legal_area'),

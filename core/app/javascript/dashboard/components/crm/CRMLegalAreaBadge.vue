@@ -1,23 +1,19 @@
 <!-- eslint-disable vue/prefer-separate-static-class -->
 <script setup>
 import { computed } from 'vue';
+import { LEGAL_AREA_LABELS } from 'dashboard/helper/crmOptions';
 
 const props = defineProps({
   area: { type: String, default: '' },
   compact: { type: Boolean, default: false },
 });
 
-const AREA_LABELS = {
-  trabalhista: 'Trabalhista',
-  previdenciario: 'Previdenciário',
-  civel: 'Cível',
-  familia: 'Família',
-  consumidor: 'Consumidor',
-  empresarial: 'Empresarial',
-  tributario: 'Tributário',
-  imobiliario: 'Imobiliário',
-  criminal: 'Criminal',
-  outro: 'Outro',
+// O domínio histórico usa civel/criminal/outro. Os aliases abaixo mantêm
+// compatibilidade com valores gravados durante a execução do plano descartado.
+const AREA_ALIASES = {
+  civil: 'civel',
+  penal: 'criminal',
+  outros: 'outro',
 };
 
 const AREA_COLORS = {
@@ -41,9 +37,12 @@ const AREA_COLORS = {
     'border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-200',
 };
 
-const normalizedArea = computed(() => String(props.area || '').toLowerCase());
+const normalizedArea = computed(() => {
+  const raw = String(props.area || '').toLowerCase();
+  return AREA_ALIASES[raw] || raw;
+});
 const label = computed(
-  () => AREA_LABELS[normalizedArea.value] || props.area || 'Sem área'
+  () => LEGAL_AREA_LABELS[normalizedArea.value] || props.area || 'Sem área'
 );
 const colorClass = computed(
   () =>

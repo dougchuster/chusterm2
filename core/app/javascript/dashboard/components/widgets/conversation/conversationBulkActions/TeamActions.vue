@@ -1,17 +1,12 @@
 <script>
 import { mapGetters } from 'vuex';
-import NextButton from 'dashboard/components-next/button/Button.vue';
 
 export default {
-  components: {
-    NextButton,
-  },
   emits: ['assignTeam', 'close'],
 
   data() {
     return {
       query: '',
-      selectedteams: [],
     };
   },
   computed: {
@@ -25,9 +20,52 @@ export default {
       ];
     },
   },
+  mounted() {
+    this.$nextTick(() => this.$refs.searchInput?.focus());
+  },
   methods: {
     assignTeam(key) {
       this.$emit('assignTeam', key);
+    },
+    teamDisplayName(team) {
+      return team.id === 0 ? this.$t('BULK_ACTION.TEAMS.NONE') : team.name;
+    },
+    focusTeamOption(event) {
+      const options = Array.from(
+        this.$el.querySelectorAll('[data-team-option]')
+      );
+      if (!options.length) return;
+
+      const activeIndex = options.indexOf(document.activeElement);
+      let nextIndex;
+
+      if (event.key === 'Home') {
+        nextIndex = 0;
+      } else if (event.key === 'End') {
+        nextIndex = options.length - 1;
+      } else if (event.key === 'ArrowDown') {
+        nextIndex = activeIndex < 0 ? 0 : (activeIndex + 1) % options.length;
+      } else {
+        nextIndex =
+          activeIndex < 0
+            ? options.length - 1
+            : (activeIndex - 1 + options.length) % options.length;
+      }
+
+      event.preventDefault();
+      options[nextIndex].focus();
+    },
+    onPanelKeydown(event) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        this.onClose();
+        return;
+      }
+
+      if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+        this.focusTeamOption(event);
+      }
     },
     onClose() {
       this.$emit('close');
@@ -37,109 +75,79 @@ export default {
 </script>
 
 <template>
-  <div v-on-clickaway="onClose" class="bulk-action__teams">
-    <div class="triangle">
-      <svg height="12" viewBox="0 0 24 12" width="24">
-        <path d="M20 12l-8-8-12 12" fill-rule="evenodd" stroke-width="1px" />
-      </svg>
+  <div
+    v-on-clickaway="onClose"
+    class="absolute top-12 z-20 flex w-[min(17rem,calc(100vw-1rem))] origin-top-right flex-col overflow-hidden rounded-xl bg-ds-bg-elevated/95 text-ds-fg-default shadow-[var(--ds-shadow-lg)] ring-1 ring-ds-border-subtle backdrop-blur-xl ltr:right-2 rtl:left-2"
+    role="dialog"
+    :aria-label="$t('BULK_ACTION.TEAMS.TEAM_SELECT_LABEL')"
+    @keydown="onPanelKeydown"
+  >
+    <span
+      class="absolute -top-1.5 z-10 size-3 rotate-45 border-l border-t border-ds-border-subtle bg-ds-bg-elevated ltr:right-[var(--triangle-position)] rtl:left-[var(--triangle-position)]"
+      aria-hidden="true"
+    />
+    <div
+      class="flex min-h-11 items-center justify-between border-b border-ds-border-subtle px-3 py-2"
+    >
+      <span class="text-sm font-semibold text-ds-fg-default">
+        {{ $t('BULK_ACTION.TEAMS.TEAM_SELECT_LABEL') }}
+      </span>
+      <button
+        type="button"
+        class="inline-flex size-8 items-center justify-center rounded-lg text-ds-fg-muted transition-colors hover:bg-ds-bg-hover hover:text-ds-fg-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
+        :aria-label="$t('GENERAL.CLOSE')"
+        @click="onClose"
+      >
+        <span class="i-lucide-x size-4" aria-hidden="true" />
+      </button>
     </div>
-    <div class="flex items-center justify-between header">
-      <span>{{ $t('BULK_ACTION.TEAMS.TEAM_SELECT_LABEL') }}</span>
-      <NextButton ghost xs slate icon="i-lucide-x" @click="onClose" />
-    </div>
-    <div class="container">
-      <div class="team__list-container">
-        <ul>
-          <li class="search-container">
-            <div
-              class="flex items-center justify-between h-8 gap-2 agent-list-search"
+    <div class="max-h-72 overflow-y-auto">
+      <ul
+        class="m-0 list-none p-1.5"
+        role="listbox"
+        :aria-label="$t('BULK_ACTION.TEAMS.TEAM_SELECT_LABEL')"
+      >
+        <li
+          class="sticky top-0 z-20 bg-ds-bg-elevated/95 p-1 backdrop-blur-sm"
+          role="none"
+        >
+          <div class="relative flex items-center">
+            <span
+              class="i-lucide-search pointer-events-none absolute size-4 text-ds-fg-subtle ltr:left-3 rtl:right-3"
+              aria-hidden="true"
+            />
+            <input
+              ref="searchInput"
+              v-model="query"
+              type="search"
+              :placeholder="$t('BULK_ACTION.SEARCH_INPUT_PLACEHOLDER')"
+              :aria-label="$t('BULK_ACTION.SEARCH_INPUT_PLACEHOLDER')"
+              class="reset-base mb-0 h-9 w-full rounded-lg border border-ds-border-subtle bg-ds-bg-sunken py-2 text-sm text-ds-fg-default outline-none placeholder:text-ds-fg-subtle focus:border-ds-border-focus focus:ring-2 focus:ring-ds-border-focus/30 ltr:pl-9 ltr:pr-3 rtl:pl-3 rtl:pr-9"
+            />
+          </div>
+        </li>
+        <template v-if="filteredTeams.length">
+          <li v-for="team in filteredTeams" :key="team.id" role="none">
+            <button
+              type="button"
+              role="option"
+              data-team-option
+              class="flex min-h-10 w-full items-center rounded-lg px-2.5 py-2 text-left text-sm text-ds-fg-default transition-colors hover:bg-ds-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ds-border-focus"
+              :aria-selected="false"
+              @click="assignTeam(team)"
             >
-              <fluent-icon icon="search" class="search-icon" size="16" />
-              <input
-                v-model="query"
-                type="search"
-                :placeholder="$t('BULK_ACTION.SEARCH_INPUT_PLACEHOLDER')"
-                class="reset-base !outline-0 !text-sm agent--search_input"
-              />
-            </div>
-          </li>
-          <template v-if="filteredTeams.length">
-            <li v-for="team in filteredTeams" :key="team.id">
-              <div class="team__list-item" @click="assignTeam(team)">
-                <span class="my-0 ltr:ml-2 rtl:mr-2 text-n-slate-12">
-                  {{ team.name }}
-                </span>
-              </div>
-            </li>
-          </template>
-          <li v-else>
-            <div class="team__list-item">
-              <span class="my-0 ltr:ml-2 rtl:mr-2 text-n-slate-12">
-                {{ $t('BULK_ACTION.TEAMS.NO_TEAMS_AVAILABLE') }}
+              <span class="min-w-0 truncate">
+                {{ teamDisplayName(team) }}
               </span>
-            </div>
+            </button>
           </li>
-        </ul>
-      </div>
+        </template>
+        <li v-else class="p-3 text-center" role="none">
+          <p class="m-0 text-sm text-ds-fg-muted">
+            {{ $t('BULK_ACTION.TEAMS.NO_TEAMS_AVAILABLE') }}
+          </p>
+        </li>
+      </ul>
     </div>
   </div>
 </template>
-
-<style scoped lang="scss">
-.bulk-action__teams {
-  @apply max-w-[75%] absolute ltr:right-2 rtl:left-2 top-12 origin-top-right w-auto z-20 min-w-[15rem] bg-n-alpha-3 backdrop-blur-[100px] border-n-weak rounded-lg border border-solid shadow-md;
-  .header {
-    @apply p-2.5;
-
-    span {
-      @apply text-sm font-medium;
-    }
-  }
-
-  .container {
-    @apply overflow-y-auto max-h-[15rem];
-    .team__list-container {
-      @apply h-full;
-    }
-    .agent-list-search {
-      @apply py-0 px-2.5 bg-n-alpha-black2 border border-solid border-n-strong rounded-md;
-      .search-icon {
-        @apply text-n-slate-10;
-      }
-
-      .agent--search_input {
-        @apply border-0 text-xs m-0 dark:bg-transparent bg-transparent w-full h-[unset];
-      }
-    }
-  }
-  .triangle {
-    @apply block z-10 absolute text-left -top-3 ltr:right-[--triangle-position] rtl:left-[--triangle-position];
-
-    svg path {
-      @apply fill-n-alpha-3 backdrop-blur-[100px]  stroke-n-weak;
-    }
-  }
-}
-ul {
-  @apply m-0 list-none;
-
-  li {
-    &:last-child {
-      .agent-list-item {
-        @apply last:rounded-b-lg;
-      }
-    }
-  }
-}
-
-.team__list-item {
-  @apply flex items-center p-2.5 cursor-pointer hover:bg-n-slate-3 dark:hover:bg-n-solid-3;
-  span {
-    @apply text-sm;
-  }
-}
-
-.search-container {
-  @apply py-0 px-2.5 sticky top-0 z-20 bg-n-alpha-3 backdrop-blur-[100px];
-}
-</style>

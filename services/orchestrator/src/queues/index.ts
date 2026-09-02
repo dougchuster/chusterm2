@@ -11,10 +11,14 @@ function parseRedisConnection(redisUrl: string) {
   }
 }
 
-const redisUrl =
-  process.env.ORCHESTRATOR_REDIS_URL ?? 'redis://:chusterm_redis_pass@localhost:6382/2'
+// SEC-04: nunca senha default em código. Em produção a URL é obrigatória;
+// em dev cai num Redis local sem senha.
+const redisUrl = process.env.ORCHESTRATOR_REDIS_URL
+if (!redisUrl && process.env.NODE_ENV === 'production') {
+  throw new Error('ORCHESTRATOR_REDIS_URL must be set in production')
+}
 
-const connection = parseRedisConnection(redisUrl)
+const connection = parseRedisConnection(redisUrl ?? 'redis://localhost:6382/2')
 
 /**
  * BullMQ queue for async (fire-and-forget) skill execution.

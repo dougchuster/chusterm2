@@ -1,4 +1,4 @@
-﻿import { shallowMount } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 import configMixin from '../configMixin';
 import { reactive } from 'vue';
 

@@ -112,6 +112,7 @@ class Whatsapp::EmbeddedSignupService
   def validate_parameters!
     errors = []
     errors << 'code ou session_key' if @code.blank? && @session_key.blank?
+    errors << 'business_id' if @business_id.blank?
     errors << 'waba_id' if @waba_id.blank?
     raise ArgumentError, "Parâmetros obrigatórios ausentes: #{errors.join(', ')}" if errors.any?
   end

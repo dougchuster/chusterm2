@@ -190,7 +190,7 @@ RSpec.describe ReplyMailbox do
       end
 
       it 'find channel with in message source id stated in in_reply_to' do
-        conversation_1.messages.new(source_id: '0CB459E0-0336-41DA-BC88-E6E28C697DDB@chusterm.com', account_id: account.id, message_type: 'incoming',
+        conversation_1.messages.new(source_id: '0CB459E0-0336-41DA-BC88-E6E28C697DDB@chatwoot.com', account_id: account.id, message_type: 'incoming',
                                     inbox_id: email_channel.inbox.id).save!
         described_class.receive in_reply_to_email
         expect(conversation_1.messages.last.content).to eq("Let's talk about these images:")
@@ -213,7 +213,7 @@ RSpec.describe ReplyMailbox do
           <<~BODY.chomp
             Yes, I am providing you step how to reproduce this issue
 
-            On Thu, Aug 19, 2021 at 2:07 PM Tejaswini from Email sender test < tejaswini@chusterm.com> wrote:
+            On Thu, Aug 19, 2021 at 2:07 PM Tejaswini from Email sender test < tejaswini@chatwoot.com> wrote:
 
             > Any update on this?
             >
@@ -234,7 +234,7 @@ RSpec.describe ReplyMailbox do
           <<~BODY.chomp
             Yes, I am providing you step how to reproduce this issue
 
-            On Thu, Aug 19, 2021 at 2:07 PM Tejaswini from Email sender test < tejaswini@chusterm.com> wrote:
+            On Thu, Aug 19, 2021 at 2:07 PM Tejaswini from Email sender test < tejaswini@chatwoot.com> wrote:
 
             > Any update on this?
             >
@@ -414,8 +414,8 @@ RSpec.describe ReplyMailbox do
       end
 
       it 'creates contact with proper email address' do
-        expect(support_in_reply_to_mail.mail['reply_to'].try(:value)).to eq('Sony Mathew <sony@chusterm.com>')
-        expect(conversation.contact.email).to eq('sony@chusterm.com')
+        expect(support_in_reply_to_mail.mail['reply_to'].try(:value)).to eq('Sony Mathew <sony@chatwoot.com>')
+        expect(conversation.contact.email).to eq('sony@chatwoot.com')
       end
     end
 
@@ -537,7 +537,7 @@ RSpec.describe ReplyMailbox do
 
       before do
         # this email is hardcoded eml fixture file that's why we are updating this
-        channel_email.email = 'support@chusterm.com'
+        channel_email.email = 'support@chatwoot.com'
         channel_email.save!
       end
 
@@ -624,7 +624,7 @@ RSpec.describe ReplyMailbox do
 
             We are providing you platform from here you can sell paid posts on your website.
 
-            ChusteRM | CS team | [C](https://d33wubrfki0l68.cloudfront.net/973467c532160fd8b940300a43fa85fa2d060307/dc9a0/static/brand-73f58cdefae282ae74cebfa74c1d7003.svg)
+            Chatwoot | CS team | [C](https://d33wubrfki0l68.cloudfront.net/973467c532160fd8b940300a43fa85fa2d060307/dc9a0/static/brand-73f58cdefae282ae74cebfa74c1d7003.svg)
 
             Skype: live:.cid.something
 

@@ -40,9 +40,6 @@ export default {
     lastActivityTime() {
       return shortTimestamp(this.lastActivityAtTimeAgo);
     },
-    createdAtTime() {
-      return shortTimestamp(this.createdAtTimeAgo);
-    },
     createdAt() {
       const createdTimeDiff = Date.now() - this.createdAtTimestamp * 1000;
       const isBeforeAMonth = createdTimeDiff > DAY_IN_MILLI_SECONDS * 30;
@@ -67,8 +64,7 @@ export default {
           )} ${dateFormat(this.lastActivityTimestamp)}`;
     },
     tooltipText() {
-      return `${this.createdAt}
-              ${this.lastActivity}`;
+      return `${this.createdAt}\n${this.lastActivity}`;
     },
   },
   watch: {
@@ -120,13 +116,16 @@ export default {
 </script>
 
 <template>
-  <div
+  <time
     v-tooltip.top="{
       content: tooltipText,
       delay: { show: 1000, hide: 0 },
     }"
-    class="ml-auto leading-4 text-xxs text-n-slate-10 hover:text-n-slate-11"
+    :title="tooltipText"
+    class="ml-auto shrink-0 whitespace-nowrap rounded leading-4 text-xxs text-ds-fg-muted outline-none transition-colors hover:text-ds-fg-default focus-visible:ring-2 focus-visible:ring-ds-border-focus"
+    tabindex="0"
   >
-    <span>{{ `${createdAtTime} • ${lastActivityTime}` }}</span>
-  </div>
+    <span class="sr-only">{{ tooltipText }}</span>
+    <span aria-hidden="true">{{ lastActivityTime }}</span>
+  </time>
 </template>

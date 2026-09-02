@@ -71,37 +71,43 @@ const refreshTemplates = async () => {
 
 <template>
   <div class="w-full">
-    <div class="flex gap-2 mb-2.5">
+    <div class="mb-2.5 flex gap-2">
       <div
-        class="flex flex-1 gap-1 items-center px-2.5 py-0 rounded-lg bg-n-alpha-black2 outline outline-1 outline-n-weak hover:outline-n-slate-6 dark:hover:outline-n-slate-6 focus-within:outline-n-brand dark:focus-within:outline-n-brand"
+        class="flex flex-1 items-center gap-1 rounded-lg border border-ds-border-subtle bg-ds-bg-surface px-2.5 transition-colors hover:border-ds-border-strong focus-within:border-ds-border-focus focus-within:ring-2 focus-within:ring-ds-border-focus/30"
       >
-        <fluent-icon icon="search" class="text-n-slate-12" size="16" />
+        <span
+          class="i-lucide-search size-4 text-ds-fg-subtle"
+          aria-hidden="true"
+        />
         <input
           v-model="query"
           type="search"
           :placeholder="t('WHATSAPP_TEMPLATES.PICKER.SEARCH_PLACEHOLDER')"
-          class="reset-base w-full h-9 bg-transparent text-n-slate-12 !text-sm !outline-0"
+          class="reset-base h-9 w-full bg-transparent !text-sm text-ds-fg-default !outline-0 placeholder:text-ds-fg-subtle"
         />
       </div>
       <button
         :disabled="isRefreshing"
-        class="flex justify-center items-center w-9 h-9 rounded-lg bg-n-alpha-black2 outline outline-1 outline-n-weak hover:outline-n-slate-6 dark:hover:outline-n-slate-6 hover:bg-n-alpha-2 dark:hover:bg-n-solid-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        :aria-label="t('WHATSAPP_TEMPLATES.PICKER.REFRESH_BUTTON')"
+        class="flex size-9 items-center justify-center rounded-lg border border-ds-border-subtle bg-ds-bg-surface text-ds-fg-muted transition-colors hover:bg-ds-bg-hover hover:text-ds-fg-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus disabled:cursor-not-allowed disabled:opacity-50"
         :title="t('WHATSAPP_TEMPLATES.PICKER.REFRESH_BUTTON')"
+        type="button"
         @click="refreshTemplates"
       >
         <Icon
           icon="i-lucide-refresh-ccw"
-          class="text-n-slate-12 size-4"
+          class="size-4"
           :class="{ 'animate-spin': isRefreshing }"
         />
       </button>
     </div>
     <div
-      class="bg-n-background outline-n-container outline outline-1 rounded-lg max-h-[18.75rem] overflow-y-auto p-2.5"
+      class="max-h-[18.75rem] overflow-y-auto rounded-xl bg-ds-bg-sunken p-2.5 ring-1 ring-ds-border-subtle"
     >
       <div v-for="(template, i) in filteredTemplateMessages" :key="template.id">
         <button
-          class="block p-2.5 w-full text-left rounded-lg cursor-pointer hover:bg-n-alpha-2 dark:hover:bg-n-solid-2"
+          class="block w-full cursor-pointer rounded-lg p-2.5 text-left text-ds-fg-default transition-colors hover:bg-ds-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
+          type="button"
           @click="emit('onSelect', template)"
         >
           <div>
@@ -110,26 +116,27 @@ const refreshTemplates = async () => {
                 {{ template.name }}
               </p>
               <span
-                class="inline-block px-2 py-1 text-xs leading-none rounded-lg cursor-default bg-n-slate-3 text-n-slate-12"
+                class="inline-block cursor-default rounded-lg bg-ds-bg-active px-2 py-1 text-xs leading-none text-ds-fg-muted"
               >
-                {{ t('WHATSAPP_TEMPLATES.PICKER.LABELS.LANGUAGE') }}:
-                {{ template.language }}
+                {{
+                  `${t('WHATSAPP_TEMPLATES.PICKER.LABELS.LANGUAGE')}: ${template.language}`
+                }}
               </span>
             </div>
             <!-- Header -->
             <div v-if="getTemplateHeader(template)" class="mb-3">
-              <p class="text-xs font-medium text-n-slate-11">
+              <p class="text-xs font-medium text-ds-fg-muted">
                 {{ t('WHATSAPP_TEMPLATES.PICKER.HEADER') || 'HEADER' }}
               </p>
               <div
                 v-if="getTemplateHeader(template).format === 'TEXT'"
-                class="text-sm label-body"
+                class="font-mono text-sm"
               >
                 {{ getTemplateHeader(template).text }}
               </div>
               <div
                 v-else-if="hasMediaContent(template)"
-                class="text-sm italic text-n-slate-11"
+                class="text-sm italic text-ds-fg-muted"
               >
                 {{
                   t('WHATSAPP_TEMPLATES.PICKER.MEDIA_CONTENT', {
@@ -142,32 +149,32 @@ const refreshTemplates = async () => {
 
             <!-- Body -->
             <div>
-              <p class="text-xs font-medium text-n-slate-11">
+              <p class="text-xs font-medium text-ds-fg-muted">
                 {{ t('WHATSAPP_TEMPLATES.PICKER.BODY') || 'BODY' }}
               </p>
-              <p class="text-sm label-body">{{ getTemplateBody(template) }}</p>
+              <p class="font-mono text-sm">{{ getTemplateBody(template) }}</p>
             </div>
 
             <!-- Footer -->
             <div v-if="getTemplateFooter(template)" class="mt-3">
-              <p class="text-xs font-medium text-n-slate-11">
+              <p class="text-xs font-medium text-ds-fg-muted">
                 {{ t('WHATSAPP_TEMPLATES.PICKER.FOOTER') || 'FOOTER' }}
               </p>
-              <p class="text-sm label-body">
+              <p class="font-mono text-sm">
                 {{ getTemplateFooter(template).text }}
               </p>
             </div>
 
             <!-- Buttons -->
             <div v-if="getTemplateButtons(template)" class="mt-3">
-              <p class="text-xs font-medium text-n-slate-11">
+              <p class="text-xs font-medium text-ds-fg-muted">
                 {{ t('WHATSAPP_TEMPLATES.PICKER.BUTTONS') || 'BUTTONS' }}
               </p>
               <div class="flex flex-wrap gap-1 mt-1">
                 <span
                   v-for="button in getTemplateButtons(template).buttons"
                   :key="button.text"
-                  class="px-2 py-1 text-xs rounded bg-n-slate-3 text-n-slate-12"
+                  class="rounded bg-ds-bg-active px-2 py-1 text-xs text-ds-fg-muted"
                 >
                   {{ button.text }}
                 </span>
@@ -175,7 +182,7 @@ const refreshTemplates = async () => {
             </div>
 
             <div class="mt-3">
-              <p class="text-xs font-medium text-n-slate-11">
+              <p class="text-xs font-medium text-ds-fg-muted">
                 {{ t('WHATSAPP_TEMPLATES.PICKER.CATEGORY') || 'CATEGORY' }}
               </p>
               <p class="text-sm">{{ template.category }}</p>
@@ -185,7 +192,7 @@ const refreshTemplates = async () => {
         <hr
           v-if="i != filteredTemplateMessages.length - 1"
           :key="`hr-${i}`"
-          class="border-b border-solid border-n-weak my-2.5 mx-auto max-w-[95%]"
+          class="mx-auto my-2.5 max-w-[95%] border-b border-solid border-ds-border-subtle"
         />
       </div>
       <div v-if="!filteredTemplateMessages.length" class="py-8 text-center">
@@ -196,7 +203,7 @@ const refreshTemplates = async () => {
           </p>
         </div>
         <div v-else-if="!whatsAppTemplateMessages.length" class="space-y-4">
-          <p class="text-n-slate-11">
+          <p class="text-ds-fg-muted">
             {{ t('WHATSAPP_TEMPLATES.PICKER.NO_TEMPLATES_AVAILABLE') }}
           </p>
         </div>
@@ -204,9 +211,3 @@ const refreshTemplates = async () => {
     </div>
   </div>
 </template>
-
-<style scoped lang="scss">
-.label-body {
-  font-family: monospace;
-}
-</style>

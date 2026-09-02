@@ -32,6 +32,11 @@ module Events::Types
   CONVERSATION_TYPING_OFF = 'conversation.typing_off'
   CONVERSATION_MENTIONED = 'conversation.mentioned'
 
+  # crm deal events (PERF-02: realtime no Kanban)
+  CRM_DEAL_CREATED = 'crm_deal.created'
+  CRM_DEAL_UPDATED = 'crm_deal.updated'
+  CRM_DEAL_DELETED = 'crm_deal.deleted'
+
   # message events
   MESSAGE_CREATED = 'message.created'
   FIRST_REPLY_CREATED = 'first.reply.created'

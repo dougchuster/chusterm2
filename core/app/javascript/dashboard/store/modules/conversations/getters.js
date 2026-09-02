@@ -14,12 +14,18 @@ export const getSelectedChatConversation = ({
 }) =>
   allConversations.filter(conversation => conversation.id === selectedChatId);
 
+const isInActiveSearch = (searchResultIds, conversationId) => {
+  return (
+    !Array.isArray(searchResultIds) || searchResultIds.includes(conversationId)
+  );
+};
+
 const getters = {
   getAllConversations: ({ allConversations, chatSortFilter: sortKey }) => {
     return allConversations.sort((a, b) => sortComparator(a, b, sortKey));
   },
   getFilteredConversations: (
-    { allConversations, chatSortFilter, appliedFilters },
+    { allConversations, chatSortFilter, appliedFilters, searchResultIds },
     _,
     __,
     rootGetters
@@ -33,6 +39,8 @@ const getters = {
 
     return allConversations
       .filter(conversation => {
+        if (!isInActiveSearch(searchResultIds, conversation.id)) return false;
+
         const matchesFilterResult = matchesFilters(
           conversation,
           appliedFilters
@@ -76,6 +84,10 @@ const getters = {
     const currentUserID = rootGetters.getCurrentUser?.id;
 
     return _state.allConversations.filter(conversation => {
+      if (!isInActiveSearch(_state.searchResultIds, conversation.id)) {
+        return false;
+      }
+
       const { assignee } = conversation.meta;
       const isAssignedToMe = assignee && assignee.id === currentUserID;
       const shouldFilter = applyPageFilters(conversation, activeFilters);
@@ -97,6 +109,10 @@ const getters = {
   },
   getUnAssignedChats: _state => activeFilters => {
     return _state.allConversations.filter(conversation => {
+      if (!isInActiveSearch(_state.searchResultIds, conversation.id)) {
+        return false;
+      }
+
       const isUnAssigned = !conversation.meta.assignee;
       const shouldFilter = applyPageFilters(conversation, activeFilters);
       return isUnAssigned && shouldFilter;
@@ -111,6 +127,10 @@ const getters = {
     const userRole = getUserRole(currentUser, currentAccountId);
 
     return _state.allConversations.filter(conversation => {
+      if (!isInActiveSearch(_state.searchResultIds, conversation.id)) {
+        return false;
+      }
+
       const shouldFilter = applyPageFilters(conversation, activeFilters);
       const allowedForRole = applyRoleFilter(
         conversation,

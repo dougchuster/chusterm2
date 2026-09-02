@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { ref, computed, onMounted, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAlert } from 'dashboard/composables';
@@ -29,6 +29,16 @@ const show = defineModel('show', { type: Boolean, default: false });
 
 const { t } = useI18n();
 const getters = useStoreGetters();
+
+const galleryActionLabels = {
+  zoomIn: 'Ampliar imagem',
+  zoomOut: 'Reduzir imagem',
+  rotateLeft: 'Girar para a esquerda',
+  rotateRight: 'Girar para a direita',
+  previous: 'Anexo anterior',
+  next: 'Próximo anexo',
+  media: 'Mídia da conversa',
+};
 
 const ALLOWED_FILE_TYPES = {
   IMAGE: 'image',
@@ -175,16 +185,16 @@ onMounted(() => {
       :on-close="onClose"
     >
       <div
-        class="bg-n-background flex flex-col h-[inherit] w-[inherit] overflow-hidden select-none"
+        class="flex h-[inherit] w-[inherit] select-none flex-col overflow-hidden bg-ds-bg-canvas text-ds-fg-default"
         @click="onClose"
       >
         <header
-          class="z-10 flex items-center justify-between w-full h-16 px-6 py-2 bg-n-background border-b border-n-weak"
+          class="z-10 flex min-h-16 w-full items-center justify-end gap-2 bg-ds-bg-elevated/95 px-2 py-2 shadow-[var(--ds-shadow-xs)] backdrop-blur sm:justify-between sm:px-6"
           @click.stop
         >
           <div
             v-if="senderDetails"
-            class="flex items-center min-w-[15rem] shrink-0"
+            class="hidden min-w-0 items-center sm:flex sm:min-w-[15rem] sm:shrink-0"
           >
             <Avatar
               v-if="senderDetails.avatar"
@@ -197,13 +207,13 @@ onMounted(() => {
             <div class="flex flex-col ml-2 rtl:ml-0 rtl:mr-2 overflow-hidden">
               <h3 class="text-base leading-5 m-0 font-medium">
                 <span
-                  class="overflow-hidden text-n-slate-12 whitespace-nowrap text-ellipsis"
+                  class="overflow-hidden text-ellipsis whitespace-nowrap font-manrope text-ds-fg-default"
                 >
                   {{ senderDetails.name }}
                 </span>
               </h3>
               <span
-                class="text-xs text-n-slate-11 whitespace-nowrap text-ellipsis"
+                class="text-ellipsis whitespace-nowrap text-xs text-ds-fg-muted"
               >
                 {{ readableTime }}
               </span>
@@ -211,60 +221,85 @@ onMounted(() => {
           </div>
 
           <div
-            class="flex-1 mx-2 px-2 truncate text-sm font-medium text-center text-n-slate-12"
+            class="mx-2 hidden flex-1 truncate px-2 text-center text-sm font-medium text-ds-fg-default lg:block"
           >
             <span v-dompurify-html="fileNameFromDataUrl" class="truncate" />
           </div>
 
-          <div class="flex items-center gap-2 ml-2 shrink-0">
+          <div class="ml-2 flex shrink-0 items-center gap-1">
             <NextButton
               v-if="isImage"
+              type="button"
+              :aria-label="galleryActionLabels.zoomIn"
               icon="i-lucide-zoom-in"
-              slate
-              ghost
+              color="primary"
+              variant="ghost"
+              size="sm"
               @click="onZoom(0.1)"
             />
             <NextButton
               v-if="isImage"
+              type="button"
+              :aria-label="galleryActionLabels.zoomOut"
               icon="i-lucide-zoom-out"
-              slate
-              ghost
+              color="primary"
+              variant="ghost"
+              size="sm"
               @click="onZoom(-0.1)"
             />
             <NextButton
               v-if="isImage"
+              type="button"
+              :aria-label="galleryActionLabels.rotateLeft"
               icon="i-lucide-rotate-ccw"
-              slate
-              ghost
+              color="primary"
+              variant="ghost"
+              size="sm"
               @click="onRotate('counter-clockwise')"
             />
             <NextButton
               v-if="isImage"
+              type="button"
+              :aria-label="galleryActionLabels.rotateRight"
               icon="i-lucide-rotate-cw"
-              slate
-              ghost
+              color="primary"
+              variant="ghost"
+              size="sm"
               @click="onRotate('clockwise')"
             />
             <NextButton
+              type="button"
+              :aria-label="t('CONVERSATION.DOWNLOAD')"
               icon="i-lucide-download"
-              slate
-              ghost
+              color="primary"
+              variant="ghost"
+              size="sm"
               :is-loading="isDownloading"
               :disabled="isDownloading"
               @click="onClickDownload"
             />
-            <NextButton icon="i-lucide-x" slate ghost @click="onClose" />
+            <NextButton
+              type="button"
+              :aria-label="t('GENERAL.CLOSE')"
+              icon="i-lucide-x"
+              color="primary"
+              variant="ghost"
+              size="sm"
+              @click="onClose"
+            />
           </div>
         </header>
 
         <main class="flex items-stretch flex-1 h-full overflow-hidden">
-          <div class="flex items-center justify-center w-16 shrink-0">
+          <div class="flex w-12 shrink-0 items-center justify-center sm:w-16">
             <NextButton
               v-if="hasMoreThanOneAttachment"
+              type="button"
+              :aria-label="galleryActionLabels.previous"
               icon="ltr:i-lucide-chevron-left rtl:i-lucide-chevron-right"
               class="z-10"
-              blue
-              faded
+              color="primary"
+              variant="faded"
               lg
               :disabled="activeImageIndex === 0"
               @click.stop="
@@ -293,6 +328,7 @@ onMounted(() => {
                 ref="imageRef"
                 :key="activeAttachment.message_id"
                 :src="activeAttachment.data_url"
+                :alt="fileNameFromDataUrl || galleryActionLabels.media"
                 :style="imageStyle"
                 class="max-h-full max-w-full object-contain duration-100 ease-in-out transform select-none"
                 @click.stop
@@ -307,6 +343,7 @@ onMounted(() => {
               v-if="isVideo"
               :key="activeAttachment.message_id"
               :src="activeAttachment.data_url"
+              :aria-label="fileNameFromDataUrl || galleryActionLabels.media"
               controls
               playsInline
               class="max-h-full max-w-full object-contain"
@@ -316,6 +353,7 @@ onMounted(() => {
             <audio
               v-if="isAudio"
               :key="activeAttachment.message_id"
+              :aria-label="fileNameFromDataUrl || galleryActionLabels.media"
               controls
               class="w-full max-w-md"
               @click.stop
@@ -324,13 +362,15 @@ onMounted(() => {
             </audio>
           </div>
 
-          <div class="flex items-center justify-center w-16 shrink-0">
+          <div class="flex w-12 shrink-0 items-center justify-center sm:w-16">
             <NextButton
               v-if="hasMoreThanOneAttachment"
+              type="button"
+              :aria-label="galleryActionLabels.next"
               icon="ltr:i-lucide-chevron-right rtl:i-lucide-chevron-left"
               class="z-10"
-              blue
-              faded
+              color="primary"
+              variant="faded"
               lg
               :disabled="activeImageIndex === allAttachments.length - 1"
               @click.stop="
@@ -344,10 +384,11 @@ onMounted(() => {
         </main>
 
         <footer
-          class="z-10 flex items-center justify-center h-12 border-t border-n-weak"
+          class="z-10 flex h-12 items-center justify-center bg-ds-bg-elevated/90 shadow-[var(--ds-shadow-xs)]"
         >
           <div
-            class="rounded-md flex items-center justify-center px-3 py-1 bg-n-slate-3 text-n-slate-12 text-sm font-medium"
+            aria-live="polite"
+            class="flex items-center justify-center rounded-full bg-ds-bg-sunken px-3 py-1 text-sm font-medium tabular-nums text-ds-fg-default ring-1 ring-inset ring-ds-border-subtle"
           >
             {{ `${activeImageIndex + 1} / ${allAttachments.length}` }}
           </div>

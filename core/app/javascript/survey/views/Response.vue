@@ -1,4 +1,4 @@
-﻿<script>
+<script>
 import { useAlert } from 'dashboard/composables';
 import Branding from 'shared/components/Branding.vue';
 import Spinner from 'shared/components/Spinner.vue';

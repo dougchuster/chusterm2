@@ -6,6 +6,7 @@ import {
   ref,
   getCurrentInstance,
 } from 'vue';
+import { useI18n } from 'vue-i18n';
 import Icon from 'next/icon/Icon.vue';
 import MediaUnderstandingStatus from 'next/message/MediaUnderstandingStatus.vue';
 import { timeStampAppendedURL } from 'dashboard/helper/URLHelper';
@@ -23,6 +24,8 @@ const { attachment } = defineProps({
     default: true,
   },
 });
+
+const { t } = useI18n();
 
 defineOptions({
   inheritAttrs: false,
@@ -49,6 +52,20 @@ const onLoadedMetadata = () => {
 const playbackSpeedLabel = computed(() => {
   return `${playbackSpeed.value}x`;
 });
+
+const playbackSpeedAriaLabel = computed(
+  () => `Velocidade de reprodução: ${playbackSpeedLabel.value}`
+);
+const muteAriaLabel = computed(() =>
+  isMuted.value ? 'Ativar áudio' : 'Silenciar áudio'
+);
+const playAriaLabel = computed(() => t('CONVERSATION.REPLYBOX.PLAY_AUDIO'));
+const pauseAriaLabel = computed(() => t('CONVERSATION.REPLYBOX.PAUSE_AUDIO'));
+const playPauseAriaLabel = computed(() =>
+  isPlaying.value ? pauseAriaLabel.value : playAriaLabel.value
+);
+const seekAriaLabel = 'Posição do áudio';
+const timeSeparator = '/';
 
 // There maybe a chance that the audioPlayer ref is not available
 // When the onLoadMetadata is called, so we need to set the duration
@@ -139,19 +156,22 @@ const downloadAudio = async () => {
   </audio>
   <div
     v-bind="$attrs"
-    class="rounded-xl w-full gap-2 p-1.5 bg-n-alpha-white flex flex-col items-center border border-n-container shadow-[0px_2px_8px_0px_rgba(94,94,94,0.06)]"
+    class="flex w-full flex-col items-center gap-2 rounded-xl bg-ds-bg-elevated p-2 text-ds-fg-default shadow-[var(--ds-shadow-xs)] ring-1 ring-inset ring-ds-border-subtle"
   >
     <div class="flex gap-1 w-full flex-1 items-center justify-start">
-      <button class="p-0 border-0 size-8" @click="playOrPause">
-        <Icon
-          v-if="isPlaying"
-          class="size-8"
-          icon="i-teenyicons-pause-small-solid"
-        />
-        <Icon v-else class="size-8" icon="i-teenyicons-play-small-solid" />
+      <button
+        type="button"
+        :aria-label="playPauseAriaLabel"
+        :aria-pressed="isPlaying"
+        class="grid size-8 place-content-center rounded-lg text-ds-fg-default outline-none transition-colors hover:bg-ds-bg-hover focus-visible:ring-2 focus-visible:ring-ds-border-focus"
+        @click="playOrPause"
+      >
+        <Icon v-if="isPlaying" class="size-5" icon="i-lucide-pause" />
+        <Icon v-else class="size-5" icon="i-lucide-play" />
       </button>
-      <div class="tabular-nums text-xs">
-        {{ formatTime(currentTime) }} / {{ formatTime(duration) }}
+      <div class="whitespace-nowrap text-xs tabular-nums text-ds-fg-muted">
+        {{ formatTime(currentTime) }} {{ timeSeparator }}
+        {{ formatTime(duration) }}
       </div>
       <div class="flex-1 items-center flex px-2">
         <input
@@ -159,27 +179,35 @@ const downloadAudio = async () => {
           min="0"
           :max="duration"
           :value="currentTime"
-          class="w-full h-1 bg-n-slate-12/40 rounded-lg appearance-none cursor-pointer accent-current"
+          :aria-label="seekAriaLabel"
+          class="h-1 w-full cursor-pointer appearance-none rounded-lg bg-ds-border-strong accent-ds-accent"
           @input="seek"
         />
       </div>
       <button
-        class="border-0 w-10 h-6 grid place-content-center bg-n-alpha-2 hover:bg-alpha-3 rounded-2xl"
+        type="button"
+        :aria-label="playbackSpeedAriaLabel"
+        class="grid h-7 w-11 place-content-center rounded-full bg-ds-bg-sunken text-ds-fg-muted outline-none transition-colors hover:bg-ds-bg-hover hover:text-ds-fg-default focus-visible:ring-2 focus-visible:ring-ds-border-focus"
         @click="changePlaybackSpeed"
       >
-        <span class="text-xs text-n-slate-11 font-medium">
+        <span class="text-xs font-semibold">
           {{ playbackSpeedLabel }}
         </span>
       </button>
       <button
-        class="p-0 border-0 size-8 grid place-content-center"
+        type="button"
+        :aria-label="muteAriaLabel"
+        :aria-pressed="isMuted"
+        class="grid size-8 place-content-center rounded-lg text-ds-fg-muted outline-none transition-colors hover:bg-ds-bg-hover hover:text-ds-fg-default focus-visible:ring-2 focus-visible:ring-ds-border-focus"
         @click="toggleMute"
       >
         <Icon v-if="isMuted" class="size-4" icon="i-lucide-volume-off" />
         <Icon v-else class="size-4" icon="i-lucide-volume-2" />
       </button>
       <button
-        class="p-0 border-0 size-8 grid place-content-center"
+        type="button"
+        :aria-label="$t('CONVERSATION.DOWNLOAD')"
+        class="grid size-8 place-content-center rounded-lg text-ds-fg-muted outline-none transition-colors hover:bg-ds-bg-hover hover:text-ds-fg-default focus-visible:ring-2 focus-visible:ring-ds-border-focus"
         @click="downloadAudio"
       >
         <Icon class="size-4" icon="i-lucide-download" />
@@ -193,7 +221,7 @@ const downloadAudio = async () => {
     />
     <div
       v-if="attachment.transcribedText && showTranscribedText"
-      class="text-n-slate-12 p-3 text-sm bg-n-alpha-1 rounded-lg w-full break-words"
+      class="w-full break-words rounded-lg bg-ds-bg-sunken p-3 text-sm leading-5 text-ds-fg-default"
     >
       {{ attachment.transcribedText }}
     </div>

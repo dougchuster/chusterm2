@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { reactive, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { debounce } from '@ChusteRM/utils';
@@ -52,7 +52,7 @@ onMounted(() => {
 
 <template>
   <div
-    class="flex flex-col absolute w-[25rem] bg-n-alpha-3 outline outline-1 outline-n-container backdrop-blur-[100px] shadow-lg gap-6 rounded-xl p-6"
+    class="absolute flex max-h-[calc(100vh-6rem)] w-[25rem] max-w-[calc(100vw-2rem)] flex-col gap-6 overflow-y-auto rounded-xl border border-n-weak bg-n-solid-2 p-4 shadow-lg sm:p-6"
   >
     <div class="flex items-center justify-between">
       <h3>
@@ -64,6 +64,7 @@ onMounted(() => {
       </h3>
       <Button
         icon="i-lucide-x"
+        :aria-label="t('CONTACT_PANEL.CLOSE_SIDEBAR')"
         size="sm"
         variant="ghost"
         color="slate"

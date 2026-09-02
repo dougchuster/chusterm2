@@ -1,15 +1,26 @@
 # syntax=docker/dockerfile:1
 # ChusteRM Core - Fork do Chatwoot com Evolution API (Baileys) integrada
-FROM chatwoot/chatwoot:latest
+# Keep the fork reproducible and aligned with its locked Ruby/Vite toolchain.
+# Upgrading this digest requires an explicit upstream-compatibility audit.
+ARG CHATWOOT_BASE_IMAGE=chatwoot/chatwoot@sha256:548710d17cd70b40b402eca3fced7325ebac6a3a998f2accb18fbc574393f458
+FROM ${CHATWOOT_BASE_IMAGE}
 
 WORKDIR /app
+
+# Install the locked Ruby runtime instead of silently inheriting the gems from
+# the upstream image. This keeps the container aligned with local tests and CI.
+COPY Gemfile ./Gemfile
+COPY Gemfile.lock ./Gemfile.lock
+RUN apk add --no-cache yaml-dev && \
+    GRPC_RUBY_BUILD_PROCS=2 bundle install --jobs 2 --retry 3
 
 # Use repository package manifests so frontend builds install the rebranded dependencies.
 COPY package.json ./package.json
 COPY pnpm-lock.yaml ./pnpm-lock.yaml
+COPY tailwind.config.js ./tailwind.config.js
+COPY scripts/install_husky.cjs ./scripts/install_husky.cjs
 
 # ChusteRM Theme
-COPY app/javascript/dashboard/assets/css/chusterm-theme.css ./app/javascript/dashboard/assets/css/chusterm-theme.css
 COPY app/javascript/entrypoints/dashboard.js ./app/javascript/entrypoints/dashboard.js
 COPY app/javascript/entrypoints/v3app.js ./app/javascript/entrypoints/v3app.js
 COPY app/javascript/entrypoints/superadmin.js ./app/javascript/entrypoints/superadmin.js
@@ -59,6 +70,12 @@ COPY app/javascript/dashboard/ ./app/javascript/dashboard/
 COPY app/javascript/v3/ ./app/javascript/v3/
 COPY app/javascript/superadmin_pages/ ./app/javascript/superadmin_pages/
 COPY app/javascript/shared/ ./app/javascript/shared/
+COPY app/javascript/widget/ ./app/javascript/widget/
+COPY app/javascript/portal/ ./app/javascript/portal/
+COPY app/javascript/sdk/ ./app/javascript/sdk/
+COPY app/javascript/survey/ ./app/javascript/survey/
+COPY app/javascript/entrypoints/sdk.js ./app/javascript/entrypoints/sdk.js
+COPY app/javascript/entrypoints/widget.js ./app/javascript/entrypoints/widget.js
 COPY app/views/layouts/vueapp.html.erb ./app/views/layouts/vueapp.html.erb
 COPY app/views/evo_manager/ ./app/views/evo_manager/
 COPY theme/ ./theme/
@@ -89,20 +106,32 @@ COPY enterprise/app/models/enterprise/concerns/inbox.rb ./enterprise/app/models/
 COPY enterprise/app/controllers/api/v1/accounts/captain/assistants_controller.rb ./enterprise/app/controllers/api/v1/accounts/captain/assistants_controller.rb
 COPY enterprise/app/controllers/api/v1/accounts/captain/inboxes_controller.rb ./enterprise/app/controllers/api/v1/accounts/captain/inboxes_controller.rb
 COPY enterprise/app/controllers/enterprise/api/v1/accounts_controller.rb ./enterprise/app/controllers/enterprise/api/v1/accounts_controller.rb
+COPY enterprise/app/controllers/enterprise/super_admin/app_configs_controller.rb ./enterprise/app/controllers/enterprise/super_admin/app_configs_controller.rb
 COPY enterprise/app/views/api/v1/accounts/captain/inboxes/ ./enterprise/app/views/api/v1/accounts/captain/inboxes/
+COPY enterprise/app/models/enterprise/concerns/article.rb ./enterprise/app/models/enterprise/concerns/article.rb
 COPY enterprise/app/models/concerns/agentable.rb ./enterprise/app/models/concerns/agentable.rb
 COPY enterprise/lib/captain/prompts/assistant.liquid ./enterprise/lib/captain/prompts/assistant.liquid
+COPY enterprise/lib/captain/response_schema.rb ./enterprise/lib/captain/response_schema.rb
 COPY enterprise/app/jobs/captain/conversation/response_builder_job.rb ./enterprise/app/jobs/captain/conversation/response_builder_job.rb
+COPY lib/redis/alfred.rb ./lib/redis/alfred.rb
 COPY enterprise/app/jobs/captain/inbox_pending_conversations_resolution_job.rb ./enterprise/app/jobs/captain/inbox_pending_conversations_resolution_job.rb
 COPY enterprise/app/services/enterprise/message_templates/hook_execution_service.rb ./enterprise/app/services/enterprise/message_templates/hook_execution_service.rb
 COPY enterprise/app/services/llm/base_ai_service.rb ./enterprise/app/services/llm/base_ai_service.rb
 COPY enterprise/app/services/captain/llm/assistant_chat_service.rb ./enterprise/app/services/captain/llm/assistant_chat_service.rb
 COPY enterprise/app/services/captain/llm/embedding_service.rb ./enterprise/app/services/captain/llm/embedding_service.rb
+COPY enterprise/app/services/captain/llm/pdf_processing_service.rb ./enterprise/app/services/captain/llm/pdf_processing_service.rb
+COPY enterprise/app/services/captain/llm/paginated_faq_generator_service.rb ./enterprise/app/services/captain/llm/paginated_faq_generator_service.rb
+COPY enterprise/app/services/captain/llm/translate_query_service.rb ./enterprise/app/services/captain/llm/translate_query_service.rb
+COPY enterprise/app/services/captain/open_ai_message_builder_service.rb ./enterprise/app/services/captain/open_ai_message_builder_service.rb
 COPY enterprise/app/services/captain/flow_router.rb ./enterprise/app/services/captain/flow_router.rb
 COPY enterprise/app/services/captain/flow_runtime.rb ./enterprise/app/services/captain/flow_runtime.rb
 COPY enterprise/app/services/captain/conversation/response_policy_service.rb ./enterprise/app/services/captain/conversation/response_policy_service.rb
+COPY enterprise/app/jobs/captain/conversation/response_part_job.rb ./enterprise/app/jobs/captain/conversation/response_part_job.rb
+COPY enterprise/lib/captain/prompts/scenario.liquid ./enterprise/lib/captain/prompts/scenario.liquid
 COPY enterprise/app/services/llm/legacy_base_open_ai_service.rb ./enterprise/app/services/llm/legacy_base_open_ai_service.rb
+COPY enterprise/lib/captain/conversation_completion_service.rb ./enterprise/lib/captain/conversation_completion_service.rb
 COPY app/models/installation_config.rb ./app/models/installation_config.rb
+COPY app/controllers/super_admin/app_configs_controller.rb ./app/controllers/super_admin/app_configs_controller.rb
 COPY app/models/concerns/featurable.rb ./app/models/concerns/featurable.rb
 COPY app/controllers/dashboard_controller.rb ./app/controllers/dashboard_controller.rb
 COPY app/controllers/evo_manager_controller.rb ./app/controllers/evo_manager_controller.rb
@@ -114,9 +143,11 @@ COPY lib/chatwoot_hub.rb ./lib/chatwoot_hub.rb
 COPY lib/llm_constants.rb ./lib/llm_constants.rb
 COPY lib/llm/config.rb ./lib/llm/config.rb
 COPY lib/llm/media_config.rb ./lib/llm/media_config.rb
-COPY lib/llm/gemini_multimodal_service.rb ./lib/llm/gemini_multimodal_service.rb
+COPY lib/llm/transient_provider_error.rb ./lib/llm/transient_provider_error.rb
+COPY lib/llm/open_router_multimodal_service.rb ./lib/llm/open_router_multimodal_service.rb
 COPY lib/integrations/llm_base_service.rb ./lib/integrations/llm_base_service.rb
 COPY lib/captain/base_task_service.rb ./lib/captain/base_task_service.rb
+COPY lib/captain/tool_instrumentation.rb ./lib/captain/tool_instrumentation.rb
 COPY lib/filters/filter_keys.yml ./lib/filters/filter_keys.yml
 COPY enterprise/app/jobs/enterprise/internal/check_new_versions_job.rb ./enterprise/app/jobs/enterprise/internal/check_new_versions_job.rb
 COPY enterprise/app/services/internal/reconcile_plan_config_service.rb ./enterprise/app/services/internal/reconcile_plan_config_service.rb
@@ -131,27 +162,42 @@ COPY app/javascript/dashboard/i18n/locale/pt_BR/inboxMgmt.json ./app/javascript/
 # Helpers/constants customizados pelo rebrand ChusteRM (importados pelo dashboard.js)
 COPY app/javascript/dashboard/helper/scriptHelpers.js ./app/javascript/dashboard/helper/scriptHelpers.js
 COPY app/javascript/dashboard/constants/appEvents.js ./app/javascript/dashboard/constants/appEvents.js
+COPY config/initializers/monkey_patches/schema_dumper.rb ./config/initializers/monkey_patches/schema_dumper.rb
+COPY config/initializers/devise_secure_password_compat.rb ./config/initializers/devise_secure_password_compat.rb
+COPY lib/devise/models/password_has_required_content.rb ./lib/devise/models/password_has_required_content.rb
 
 # Instala pnpm via npm global, instala deps e recompila o bundle Vite
 # com os componentes Evolution incluidos.
 # INSTALL_JS_DEPS=true preserva node_modules para o serviço core-vite (hot-reload de dev).
-ARG INSTALL_JS_DEPS=false
-RUN node /usr/local/lib/node_modules/npm/bin/npm-cli.js install -g pnpm@10.2.0 && \
-    pnpm install --no-frozen-lockfile && \
-    SECRET_KEY_BASE=dummy bundle exec rake vite:build RAILS_ENV=production && \
-    if [ "$INSTALL_JS_DEPS" != "true" ]; then rm -rf node_modules; fi
+  ARG INSTALL_JS_DEPS=false
+  RUN node /usr/local/lib/node_modules/npm/bin/npm-cli.js install -g pnpm@10.2.0 && \
+      pnpm install --frozen-lockfile && \
+      rm -rf public/vite tmp/cache/vite /app/public/vite-image && \
+      SECRET_KEY_BASE=dummy bundle exec rake vite:build RAILS_ENV=production && \
+      cp -a public/vite /app/public/vite-image && \
+      if [ "$INSTALL_JS_DEPS" != "true" ]; then rm -rf node_modules; fi
 
 # Evolution API - Ruby backend
+COPY config/initializers/filter_parameter_logging.rb ./config/initializers/filter_parameter_logging.rb
 COPY app/dashboards/account_dashboard.rb ./app/dashboards/account_dashboard.rb
 COPY config/routes.rb ./config/routes.rb
 COPY app/controllers/api/v1/accounts/captain/ ./app/controllers/api/v1/accounts/captain/
 COPY app/controllers/api/v1/accounts/campaigns_controller.rb ./app/controllers/api/v1/accounts/campaigns_controller.rb
+COPY app/controllers/api/v1/accounts/conversations_controller.rb ./app/controllers/api/v1/accounts/conversations_controller.rb
 COPY app/controllers/api/v1/accounts/crm/ ./app/controllers/api/v1/accounts/crm/
+RUN rm -f ./app/controllers/api/v1/accounts/crm_controller.rb
+COPY app/controllers/api/v1/accounts/integrations/linear_controller.rb ./app/controllers/api/v1/accounts/integrations/linear_controller.rb
+COPY app/controllers/public_controller.rb ./app/controllers/public_controller.rb
+COPY app/controllers/super_admin/instance_statuses_controller.rb ./app/controllers/super_admin/instance_statuses_controller.rb
 COPY app/views/api/v1/models/_campaign.json.jbuilder ./app/views/api/v1/models/_campaign.json.jbuilder
 COPY app/views/api/v1/models/_contact.json.jbuilder ./app/views/api/v1/models/_contact.json.jbuilder
 COPY app/views/api/v1/models/_inbox.json.jbuilder ./app/views/api/v1/models/_inbox.json.jbuilder
+COPY app/views/api/v1/models/_conversation.json.jbuilder ./app/views/api/v1/models/_conversation.json.jbuilder
 COPY app/views/api/v1/conversations/partials/_conversation.json.jbuilder ./app/views/api/v1/conversations/partials/_conversation.json.jbuilder
+COPY app/views/api/v1/accounts/search/ ./app/views/api/v1/accounts/search/
+COPY app/views/api/v1/accounts/csat_survey_responses/download.csv.erb ./app/views/api/v1/accounts/csat_survey_responses/download.csv.erb
 COPY app/views/api/v1/accounts/labels/ ./app/views/api/v1/accounts/labels/
+COPY app/views/layouts/portal.html.erb ./app/views/layouts/portal.html.erb
 COPY app/finders/conversation_finder.rb ./app/finders/conversation_finder.rb
 COPY app/finders/message_finder.rb ./app/finders/message_finder.rb
 COPY app/models/account.rb ./app/models/account.rb
@@ -162,7 +208,10 @@ COPY app/models/conversation.rb ./app/models/conversation.rb
 COPY app/models/inbox.rb ./app/models/inbox.rb
 COPY app/models/label.rb ./app/models/label.rb
 COPY app/models/message.rb ./app/models/message.rb
+COPY app/models/user.rb ./app/models/user.rb
 COPY app/models/concerns/crm_score_classification.rb ./app/models/concerns/crm_score_classification.rb
+COPY app/models/concerns/account_association_scoped.rb ./app/models/concerns/account_association_scoped.rb
+COPY app/models/concerns/conversation_account_scoped.rb ./app/models/concerns/conversation_account_scoped.rb
 COPY app/models/captain_conversation_state.rb ./app/models/captain_conversation_state.rb
 COPY app/models/campaign_delivery_event.rb ./app/models/campaign_delivery_event.rb
 COPY app/models/captain/ ./app/models/captain/
@@ -173,14 +222,19 @@ COPY app/jobs/data_import_job.rb ./app/jobs/data_import_job.rb
 COPY app/jobs/account/contacts_export_job.rb ./app/jobs/account/contacts_export_job.rb
 COPY app/jobs/crm/ ./app/jobs/crm/
 COPY app/mailers/campaign_mailer.rb ./app/mailers/campaign_mailer.rb
+# PERF-04: export de deals em job com email de conclusão
+COPY app/mailers/administrator_notifications/account_notification_mailer.rb ./app/mailers/administrator_notifications/account_notification_mailer.rb
+COPY app/views/mailers/administrator_notifications/account_notification_mailer/crm_deals_export_complete.liquid ./app/views/mailers/administrator_notifications/account_notification_mailer/crm_deals_export_complete.liquid
 COPY app/controllers/api/v1/accounts/contacts_controller.rb ./app/controllers/api/v1/accounts/contacts_controller.rb
 COPY app/controllers/api/v1/accounts/labels_controller.rb ./app/controllers/api/v1/accounts/labels_controller.rb
 COPY app/controllers/api/v1/accounts/contact_categories_controller.rb ./app/controllers/api/v1/accounts/contact_categories_controller.rb
 COPY app/services/captain/ ./app/services/captain/
 COPY app/services/campaigns/ ./app/services/campaigns/
+COPY app/services/conversations/ ./app/services/conversations/
 COPY app/services/contacts/sync_attributes.rb ./app/services/contacts/sync_attributes.rb
 COPY app/services/data_import/ ./app/services/data_import/
 COPY app/services/message_templates/hook_execution_service.rb ./app/services/message_templates/hook_execution_service.rb
+COPY app/services/base_refresh_oauth_token_service.rb ./app/services/base_refresh_oauth_token_service.rb
 COPY app/services/crm/ ./app/services/crm/
 COPY app/services/email/ ./app/services/email/
 COPY app/services/sms/oneoff_sms_campaign_service.rb ./app/services/sms/oneoff_sms_campaign_service.rb
@@ -189,6 +243,7 @@ COPY app/services/whatsapp/oneoff_campaign_service.rb ./app/services/whatsapp/on
 COPY app/services/whatsapp/multiple_numbers_error.rb ./app/services/whatsapp/multiple_numbers_error.rb
 COPY app/services/whatsapp/phone_info_service.rb ./app/services/whatsapp/phone_info_service.rb
 COPY app/services/whatsapp/embedded_signup_service.rb ./app/services/whatsapp/embedded_signup_service.rb
+COPY app/services/whatsapp/incoming_message_base_service.rb ./app/services/whatsapp/incoming_message_base_service.rb
 COPY app/services/whatsapp/embedded_signup/ ./app/services/whatsapp/embedded_signup/
 COPY app/controllers/api/v1/accounts/whatsapp/ ./app/controllers/api/v1/accounts/whatsapp/
 COPY app/models/whatsapp_embedded_onboarding.rb ./app/models/whatsapp_embedded_onboarding.rb
@@ -208,10 +263,22 @@ COPY enterprise/app/services/captain/llm/contact_attributes_service.rb ./enterpr
 COPY enterprise/app/services/captain/onboarding/website_analyzer_service.rb ./enterprise/app/services/captain/onboarding/website_analyzer_service.rb
 COPY enterprise/app/services/captain/tools/copilot/get_crm_context_service.rb ./enterprise/app/services/captain/tools/copilot/get_crm_context_service.rb
 COPY enterprise/app/services/captain/assistant/agent_runner_service.rb ./enterprise/app/services/captain/assistant/agent_runner_service.rb
+COPY enterprise/app/services/captain/assistant/initial_message_response_service.rb ./enterprise/app/services/captain/assistant/initial_message_response_service.rb
 COPY enterprise/app/services/captain/assistant/deterministic_crm_actions_service.rb ./enterprise/app/services/captain/assistant/deterministic_crm_actions_service.rb
 COPY enterprise/app/services/captain/conversation/response_policy_service.rb ./enterprise/app/services/captain/conversation/response_policy_service.rb
+COPY enterprise/app/services/captain/conversation/human_handoff_request_service.rb ./enterprise/app/services/captain/conversation/human_handoff_request_service.rb
+COPY enterprise/app/models/enterprise/account/plan_usage_and_limits.rb ./enterprise/app/models/enterprise/account/plan_usage_and_limits.rb
 COPY enterprise/lib/captain/tools/handoff_tool.rb ./enterprise/lib/captain/tools/handoff_tool.rb
+COPY enterprise/lib/captain/tools/faq_lookup_tool.rb ./enterprise/lib/captain/tools/faq_lookup_tool.rb
+COPY config/agents/tools.yml ./config/agents/tools.yml
 COPY app/listeners/crm_captain_triage_listener.rb ./app/listeners/crm_captain_triage_listener.rb
+# PERF-02: eventos crm_deal.* em realtime
+COPY app/listeners/action_cable_listener.rb ./app/listeners/action_cable_listener.rb
+COPY app/presenters/conversations/event_data_presenter.rb ./app/presenters/conversations/event_data_presenter.rb
+COPY lib/events/types.rb ./lib/events/types.rb
+COPY lib/global_config_service.rb ./lib/global_config_service.rb
+COPY lib/qa/ ./lib/qa/
+COPY lib/tasks/qa_fixture.rake ./lib/tasks/qa_fixture.rake
 COPY app/dispatchers/async_dispatcher.rb ./app/dispatchers/async_dispatcher.rb
 COPY app/policies/label_policy.rb ./app/policies/label_policy.rb
 COPY app/policies/contact_policy.rb ./app/policies/contact_policy.rb
@@ -239,6 +306,10 @@ COPY db/migrate/20260507*.rb ./db/migrate/
 COPY db/migrate/20260519*.rb ./db/migrate/
 COPY db/migrate/20260521*.rb ./db/migrate/
 COPY db/migrate/20260522*.rb ./db/migrate/
+COPY db/migrate/20260703*.rb ./db/migrate/
+COPY db/migrate/20260710*.rb ./db/migrate/
+COPY db/migrate/20260722000001_make_captain_handoff_request_driven.rb ./db/migrate/
+COPY db/migrate/20260820*.rb ./db/migrate/
 COPY lib/tasks/crm_labels.rake ./lib/tasks/crm_labels.rake
 COPY lib/tasks/crm_contacts.rake ./lib/tasks/crm_contacts.rake
 COPY lib/tasks/crm_channel_pipelines.rake ./lib/tasks/crm_channel_pipelines.rake
@@ -249,10 +320,10 @@ COPY lib/tasks/captain_dr_paula_matos.rake ./lib/tasks/captain_dr_paula_matos.ra
 COPY db/seeds.rb ./db/seeds.rb
 COPY db/seeds/ ./db/seeds/
 COPY scripts/captain/ ./scripts/captain/
+COPY scripts/security/ ./scripts/security/
 COPY app/models/channel/whatsapp.rb ./app/models/channel/whatsapp.rb
 COPY app/controllers/dashboard_controller.rb ./app/controllers/dashboard_controller.rb
 COPY app/controllers/evo_manager_controller.rb ./app/controllers/evo_manager_controller.rb
-COPY app/controllers/api/v1/accounts/crm_controller.rb ./app/controllers/api/v1/accounts/crm_controller.rb
 COPY app/services/whatsapp/providers/evolution_service.rb ./app/services/whatsapp/providers/evolution_service.rb
 COPY app/services/whatsapp/incoming_message_evolution_service.rb ./app/services/whatsapp/incoming_message_evolution_service.rb
 COPY app/services/evolution/ ./app/services/evolution/

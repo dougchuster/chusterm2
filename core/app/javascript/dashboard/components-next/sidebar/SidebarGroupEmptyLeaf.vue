@@ -6,7 +6,7 @@ const { t } = useI18n();
 
 <template>
   <li
-    class="py-1 pl-3 text-n-slate-10 border rounded-lg border-dashed text-center border-n-alpha-2 text-xs h-8 grid place-content-center select-none pointer-events-none"
+    class="pointer-events-none grid h-8 select-none place-content-center rounded-lg border border-dashed border-ds-shell-border px-3 py-1 text-center text-xs text-ds-shell-muted"
   >
     <slot>{{ t('SIDEBAR.NO_ITEMS') }}</slot>
   </li>

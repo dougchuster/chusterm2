@@ -69,12 +69,58 @@ const position = computed(() => {
 
 onMounted(() => {
   isLocked.value = true;
-  nextTick(() => menuRef.value?.focus());
+  nextTick(() => {
+    const firstMenuItem = menuRef.value?.querySelector(
+      '[role="menuitem"]:not([disabled])'
+    );
+    (firstMenuItem || menuRef.value)?.focus();
+  });
 });
 
 const handleClose = () => {
   isLocked.value = false;
   emit('close');
+};
+
+const handleFocusOut = event => {
+  if (event.currentTarget.contains(event.relatedTarget)) return;
+  handleClose();
+};
+
+const getMenuItems = () =>
+  Array.from(
+    menuRef.value?.querySelectorAll('[role="menuitem"]:not([disabled])') || []
+  );
+
+const handleMenuKeydown = event => {
+  if (event.defaultPrevented) return;
+
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    handleClose();
+    return;
+  }
+
+  const items = getMenuItems();
+  if (!items.length) return;
+
+  const currentIndex = items.indexOf(document.activeElement);
+  let nextIndex;
+
+  if (event.key === 'ArrowDown') {
+    nextIndex = (currentIndex + 1) % items.length;
+  } else if (event.key === 'ArrowUp') {
+    nextIndex = (currentIndex - 1 + items.length) % items.length;
+  } else if (event.key === 'Home') {
+    nextIndex = 0;
+  } else if (event.key === 'End') {
+    nextIndex = items.length - 1;
+  } else {
+    return;
+  }
+
+  event.preventDefault();
+  items[nextIndex]?.focus();
 };
 
 onUnmounted(() => {
@@ -88,8 +134,10 @@ onUnmounted(() => {
       ref="menuRef"
       class="fixed outline-none z-[9999] cursor-pointer"
       :style="position"
-      tabindex="0"
-      @blur="handleClose"
+      role="menu"
+      tabindex="-1"
+      @focusout="handleFocusOut"
+      @keydown="handleMenuKeydown"
     >
       <slot />
     </div>

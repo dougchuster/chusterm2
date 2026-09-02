@@ -1,4 +1,7 @@
 class CrmDeal < ApplicationRecord
+  include Events::Types
+  include AccountAssociationScoped
+
   OPERATIONAL_STATUSES = %w[active base_client converted_client returning_client invalid spam duplicated no_lead archived].freeze
 
   belongs_to :account
@@ -15,6 +18,9 @@ class CrmDeal < ApplicationRecord
   has_many :crm_cadence_enrollments, dependent: :destroy
 
   validates :account, :crm_pipeline, :crm_pipeline_stage, :title, presence: true
+  validates_same_account_for :crm_pipeline, :crm_pipeline_stage, :contact, :conversation, :inbox, :crm_loss_reason
+  validate :stage_belongs_to_pipeline
+  validate :account_memberships_are_valid
   validates :status, inclusion: { in: %w[open won lost archived] }
   validates :operational_status, inclusion: { in: OPERATIONAL_STATUSES }, allow_blank: true
   validates :value_estimate_cents, numericality: { greater_than_or_equal_to: 0, only_integer: true }
@@ -41,9 +47,40 @@ class CrmDeal < ApplicationRecord
 
   after_commit :trigger_lifecycle_recalculation, if: :contact_id
   after_commit :track_campaign_conversion, if: :campaign_conversion_event?
+  before_validation :normalize_legal_area
+
+  # PERF-02: eventos crm_deal.* → ActionCableListener → board em realtime.
+  # Callbacks no modelo (e não nos services) para cobrir todos os caminhos de
+  # escrita: controller, bulk actions, DealMover/DealCreator e jobs.
+  after_create_commit :dispatch_created_event
+  after_update_commit :dispatch_updated_event
+  after_destroy_commit :dispatch_deleted_event
+
+  # Payload leve para o board (o front refaz o fetch para dados completos)
+  def push_event_data
+    {
+      id: id,
+      account_id: account_id,
+      title: title,
+      status: status,
+      operational_status: operational_status,
+      crm_pipeline_id: crm_pipeline_id,
+      crm_pipeline_stage_id: crm_pipeline_stage_id,
+      contact_id: contact_id,
+      conversation_id: conversation_id,
+      owner_id: owner_id,
+      assignee_id: assignee_id,
+      score_total: score_total,
+      # F1.7: sem `position` a outra sessao nao sabe **onde** encaixar o card;
+      # sem `stage_entered_at` nao consegue pintar o rotting sem refazer o fetch.
+      position: position,
+      stage_entered_at: stage_entered_at || created_at,
+      updated_at: updated_at
+    }
+  end
 
   def mark_won!(actor: nil)
-    update!(status: 'won', closed_at: Time.current)
+    update!(status: 'won', closed_at: Time.current, crm_loss_reason_id: nil, lost_reason_note: nil)
     Crm::AuditLogger.log(account: account, actor: actor, action: 'deal_marked_won', target: self)
   end
 
@@ -54,7 +91,8 @@ class CrmDeal < ApplicationRecord
 
   def reopen!(actor: nil)
     update!(status: 'open', closed_at: nil, operational_status: 'active', archived_at: nil,
-            disposed_at: nil, disposition_reason: nil, disposition_note: nil)
+            disposed_at: nil, disposition_reason: nil, disposition_note: nil,
+            crm_loss_reason_id: nil, lost_reason_note: nil)
     Crm::AuditLogger.log(account: account, actor: actor, action: 'deal_reopened', target: self)
   end
 
@@ -99,6 +137,31 @@ class CrmDeal < ApplicationRecord
 
   private
 
+  def stage_belongs_to_pipeline
+    return if crm_pipeline_stage.nil? || crm_pipeline.nil?
+    return if crm_pipeline_stage.crm_pipeline_id == crm_pipeline_id
+
+    errors.add(:crm_pipeline_stage, 'must belong to the selected pipeline')
+  end
+
+  def account_memberships_are_valid
+    return if account.nil?
+
+    validate_account_user(:owner, owner_id)
+    validate_account_user(:assignee, assignee_id)
+    errors.add(:team, 'must belong to the same account') if team_id.present? && !account.teams.exists?(id: team_id)
+  end
+
+  def validate_account_user(attribute, user_id)
+    return if user_id.blank? || account.account_users.exists?(user_id: user_id)
+
+    errors.add(attribute, 'must belong to the same account')
+  end
+
+  def normalize_legal_area
+    self.legal_area = Crm::DomainOptions.canonical_legal_area(legal_area) if legal_area.present?
+  end
+
   def open_status?
     status == 'open'
   end
@@ -126,5 +189,30 @@ class CrmDeal < ApplicationRecord
     )
   rescue StandardError => e
     Rails.logger.warn("[Campaign Tracking] conversion event failed for deal #{id}: #{e.message}")
+  end
+
+  def dispatch_created_event
+    Rails.configuration.dispatcher.dispatch(CRM_DEAL_CREATED, Time.zone.now, deal: self)
+  end
+
+  def dispatch_updated_event
+    # Só os nomes dos atributos alterados: valores podem não ser serializáveis
+    # pelo AsyncDispatcher (ActiveJob) e o front refaz o fetch de qualquer forma.
+    #
+    # F1.7: a etapa anterior é a exceção. Ela é a única informação que o evento
+    # carrega e que o receptor **não tem como descobrir sozinho** — sem ela,
+    # uma sessão que não tinha o card carregado não sabe de qual coluna tirá-lo.
+    Rails.configuration.dispatcher.dispatch(
+      CRM_DEAL_UPDATED, Time.zone.now,
+      deal: self,
+      changed_attributes: previous_changes.keys,
+      previous_stage_id: previous_changes['crm_pipeline_stage_id']&.first
+    )
+  end
+
+  def dispatch_deleted_event
+    # Registro destruído não pode ir para o dispatcher async (GlobalID não
+    # resolve) — payload é um hash puro
+    Rails.configuration.dispatcher.dispatch(CRM_DEAL_DELETED, Time.zone.now, deal_data: push_event_data)
   end
 end

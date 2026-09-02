@@ -18,6 +18,19 @@ describe '/app/login', type: :request do
     end
   end
 
+  context 'with Evolution API server credentials configured' do
+    it 'does not expose server-side credentials in the public dashboard config' do
+      with_modified_env EVOLUTION_API_URL: 'https://evolution.internal', EVOLUTION_API_KEY: 'server-only-secret' do
+        get '/app/login'
+
+        expect(response).to have_http_status(:success)
+        expect(response.body).not_to include('EVOLUTION_API_URL')
+        expect(response.body).not_to include('EVOLUTION_API_KEY')
+        expect(response.body).not_to include('server-only-secret')
+      end
+    end
+  end
+
   context 'with non-HTML format' do
     it 'returns not acceptable for JSON with error message' do
       get '/app/login', headers: { 'Accept' => 'application/json' }

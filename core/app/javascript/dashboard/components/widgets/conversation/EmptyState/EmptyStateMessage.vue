@@ -12,18 +12,14 @@ export default {
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center h-full">
-    <img
-      class="m-4 w-32 hidden dark:block"
-      src="dashboard/assets/images/no-chat-dark.svg"
-      alt="No Chat dark"
-    />
-    <img
-      class="m-4 w-32 block dark:hidden"
-      src="dashboard/assets/images/no-chat.svg"
-      alt="No Chat"
-    />
-    <span class="text-sm text-n-slate-12 font-medium text-center">
+  <div class="flex h-full flex-col items-center justify-center">
+    <div
+      class="m-4 grid size-24 place-items-center rounded-3xl bg-ds-accent-soft text-ds-accent"
+      aria-hidden="true"
+    >
+      <span class="i-lucide-messages-square size-11" />
+    </div>
+    <span class="text-center text-sm font-medium text-ds-fg-default">
       {{ message }}
       <br />
     </span>

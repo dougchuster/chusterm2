@@ -1,4 +1,4 @@
-﻿import fbChannel from '../../channel/fbChannel';
+import fbChannel from '../../channel/fbChannel';
 import ApiClient from '../../ApiClient';
 
 describe('#FBChannel', () => {

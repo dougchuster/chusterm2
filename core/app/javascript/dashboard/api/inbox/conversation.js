@@ -1,51 +1,54 @@
 /* global axios */
 import ApiClient from '../ApiClient';
 
+const buildListParams = ({
+  inboxId,
+  status,
+  assigneeType,
+  page,
+  labels,
+  teamId,
+  conversationType,
+  sortBy,
+  updatedWithin,
+  q,
+}) => {
+  const params = {
+    inbox_id: inboxId,
+    team_id: teamId,
+    status,
+    assignee_type: assigneeType,
+    page,
+    labels,
+    conversation_type: conversationType,
+    sort_by: sortBy,
+    updated_within: updatedWithin,
+    q,
+  };
+  return Object.fromEntries(
+    Object.entries(params).filter(([, value]) => value !== undefined)
+  );
+};
+
 class ConversationApi extends ApiClient {
   constructor() {
     super('conversations', { accountScoped: true });
   }
 
-  get({
-    inboxId,
-    status,
-    assigneeType,
-    page,
-    labels,
-    teamId,
-    conversationType,
-    sortBy,
-    updatedWithin,
-  }) {
+  get(filters) {
     return axios.get(this.url, {
-      params: {
-        inbox_id: inboxId,
-        team_id: teamId,
-        status,
-        assignee_type: assigneeType,
-        page,
-        labels,
-        conversation_type: conversationType,
-        sort_by: sortBy,
-        updated_within: updatedWithin,
-      },
+      params: buildListParams(filters),
     });
   }
 
   filter(payload) {
+    const params = Object.fromEntries(
+      Object.entries({ page: payload.page, q: payload.q }).filter(
+        ([, value]) => value !== undefined
+      )
+    );
     return axios.post(`${this.url}/filter`, payload.queryData, {
-      params: {
-        page: payload.page,
-      },
-    });
-  }
-
-  search({ q }) {
-    return axios.get(`${this.url}/search`, {
-      params: {
-        q,
-        page: 1,
-      },
+      params,
     });
   }
 

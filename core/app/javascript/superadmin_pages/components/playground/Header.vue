@@ -25,7 +25,10 @@ defineProps({
       <svg width="24" height="24"><use xlink:href="#icon-mist-fill" /></svg>
     </div>
     <div class="flex flex-col h-14 justify-center">
-      <h1 id="page-title" class="text-base font-medium text-[rgb(var(--slate-12))]">
+      <h1
+        id="page-title"
+        class="text-base font-medium text-[rgb(var(--slate-12))]"
+      >
         {{ 'Robin AI playground' }}
       </h1>
       <p class="text-sm text-[rgb(var(--slate-11))]">

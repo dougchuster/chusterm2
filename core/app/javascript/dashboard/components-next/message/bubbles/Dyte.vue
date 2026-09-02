@@ -44,23 +44,28 @@ const action = computed(() => ({
 
 <template>
   <BaseAttachmentBubble
-    icon="i-ph-video-camera-fill"
-    icon-bg-color="bg-[#2781F6]"
+    icon="i-lucide-video"
+    icon-bg-color="bg-ds-state-info"
     sender-translation-key="CONVERSATION.SHARED_ATTACHMENT.MEETING"
     :action="action"
   >
-    <div v-if="!sender" class="text-sm truncate text-n-slate-12">
+    <div v-if="!sender" class="truncate text-sm text-ds-fg-default">
       <!-- Added as a fallback, where the sender is not available (Deleted) -->
       <!-- Will show the content, if senderName in BaseAttachment.vue is empty -->
       {{ content }}
     </div>
-    <div v-if="dyteAuthToken" class="video-call--container">
+    <div
+      v-if="dyteAuthToken"
+      class="fixed inset-0 z-[1000] bg-ds-bg-canvas p-1"
+    >
       <iframe
+        class="size-full border-0"
         :src="meetingLink"
         allow="camera;microphone;fullscreen;display-capture;picture-in-picture;clipboard-write;"
       />
       <button
-        class="px-4 py-2 text-sm rounded-lg bg-n-solid-3 mt-3"
+        type="button"
+        class="absolute right-40 top-1 rounded-lg bg-ds-bg-elevated px-4 py-2 text-sm font-medium text-ds-fg-default shadow-[var(--ds-shadow-md)] ring-1 ring-inset ring-ds-border-subtle transition-colors hover:bg-ds-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
         @click="leaveTheRoom"
       >
         {{ $t('INTEGRATION_SETTINGS.DYTE.LEAVE_THE_ROOM') }}
@@ -71,32 +76,3 @@ const action = computed(() => ({
     </div>
   </BaseAttachmentBubble>
 </template>
-
-<style lang="scss">
-.join-call-button {
-  margin: 0.5rem 0;
-}
-
-.video-call--container {
-  position: fixed;
-  bottom: 0;
-  right: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1000;
-  padding: 0.25rem;
-  @apply bg-n-background;
-
-  iframe {
-    width: 100%;
-    height: 100%;
-    border: 0;
-  }
-
-  button {
-    position: absolute;
-    top: 0.25rem;
-    right: 10rem;
-  }
-}
-</style>

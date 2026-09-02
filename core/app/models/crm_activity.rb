@@ -1,4 +1,6 @@
 class CrmActivity < ApplicationRecord
+  include AccountAssociationScoped
+
   belongs_to :account
   belongs_to :crm_deal, optional: true
   belongs_to :contact, optional: true
@@ -11,6 +13,8 @@ class CrmActivity < ApplicationRecord
   PRIORITIES = %w[baixa normal alta critica].freeze
 
   validates :account, :kind, :title, presence: true
+  validates_same_account_for :crm_deal, :contact, :conversation
+  validate :account_memberships_are_valid
   validates :kind, inclusion: { in: KINDS }
   validates :priority, inclusion: { in: PRIORITIES }
 
@@ -23,5 +27,20 @@ class CrmActivity < ApplicationRecord
   def complete!(outcome: nil, actor: nil)
     update!(completed_at: Time.current, outcome: outcome)
     Crm::AuditLogger.log(account: account, actor: actor, action: 'activity_completed', target: self) if crm_deal
+  end
+
+  private
+
+  def account_memberships_are_valid
+    return if account.nil?
+
+    validate_account_user(:owner, owner_id)
+    validate_account_user(:assignee, assignee_id)
+  end
+
+  def validate_account_user(attribute, user_id)
+    return if user_id.blank? || account.account_users.exists?(user_id: user_id)
+
+    errors.add(attribute, 'must belong to the same account')
   end
 end

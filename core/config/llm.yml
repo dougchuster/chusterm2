@@ -1,74 +1,78 @@
 providers:
-  openai:
-    display_name: 'OpenAI'
-  anthropic:
-    display_name: 'Anthropic'
-  gemini:
-    display_name: 'Gemini'
+  openrouter:
+    display_name: 'OpenRouter (gateway único)'
 
 models:
   gpt-4.1:
-    provider: openai
+    provider: openrouter
     display_name: 'GPT-4.1'
     credit_multiplier: 3
   gpt-4.1-mini:
-    provider: openai
+    provider: openrouter
     display_name: 'GPT-4.1 Mini'
     credit_multiplier: 1
   gpt-4.1-nano:
-    provider: openai
+    provider: openrouter
     display_name: 'GPT-4.1 Nano'
     credit_multiplier: 1
   gpt-5.1:
-    provider: openai
+    provider: openrouter
     display_name: 'GPT-5.1'
     credit_multiplier: 2
   gpt-5-mini:
-    provider: openai
+    provider: openrouter
     display_name: 'GPT-5 Mini'
     credit_multiplier: 1
   gpt-5-nano:
-    provider: openai
+    provider: openrouter
     display_name: 'GPT-5 Nano'
     credit_multiplier: 1
   gpt-5.2:
-    provider: openai
+    provider: openrouter
     display_name: 'GPT-5.2'
     credit_multiplier: 3
   claude-haiku-4.5:
-    provider: anthropic
+    provider: openrouter
     display_name: 'Claude Haiku 4.5'
     coming_soon: true
     credit_multiplier: 2
   claude-sonnet-4.5:
-    provider: anthropic
+    provider: openrouter
     display_name: 'Claude Sonnet 4.5'
     coming_soon: true
     credit_multiplier: 3
   claude-sonnet-4-6:
-    provider: anthropic
+    provider: openrouter
     display_name: 'Claude Sonnet 4.6'
     credit_multiplier: 3
+  anthropic/claude-sonnet-5:
+    provider: openrouter
+    display_name: 'Claude Sonnet 5 via OpenRouter'
+    credit_multiplier: 4
+  google/gemini-3.6-flash:
+    provider: openrouter
+    display_name: 'Gemini 3.6 Flash via OpenRouter'
+    credit_multiplier: 2
   gemini-3-flash:
-    provider: gemini
+    provider: openrouter
     display_name: 'Gemini 3 Flash'
     coming_soon: true
     credit_multiplier: 1
   gemini-3-flash-preview:
-    provider: gemini
+    provider: openrouter
     display_name: 'Gemini 3 Flash Preview'
     credit_multiplier: 1
   gemini-3-pro:
-    provider: gemini
+    provider: openrouter
     display_name: 'Gemini 3 Pro'
     coming_soon: true
     credit_multiplier: 3
   whisper-1:
-    provider: openai
+    provider: openrouter
     display_name: 'Whisper'
     credit_multiplier: 1
   text-embedding-3-small:
-    provider: openai
+    provider: openrouter
     display_name: 'Text Embedding 3 Small'
     credit_multiplier: 1
 
@@ -98,6 +102,8 @@ features:
         claude-haiku-4.5,
         claude-sonnet-4.5,
         claude-sonnet-4-6,
+        anthropic/claude-sonnet-5,
+        google/gemini-3.6-flash,
         gemini-3-flash,
         gemini-3-flash-preview,
         gemini-3-pro,

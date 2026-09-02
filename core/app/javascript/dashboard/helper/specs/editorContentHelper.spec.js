@@ -1,4 +1,4 @@
-﻿// Moved from editorHelper.spec.js to editorContentHelper.spec.js
+// Moved from editorHelper.spec.js to editorContentHelper.spec.js
 // the mock of ChusteRM/prosemirror-schema is getting conflicted with other specs
 import { getContentNode } from '../editorHelper';
 import { MessageMarkdownTransformer } from '@ChusteRM/prosemirror-schema';

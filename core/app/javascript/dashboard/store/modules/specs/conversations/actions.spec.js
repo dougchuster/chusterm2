@@ -17,6 +17,7 @@ import { dataReceived } from './testConversationResponse';
 
 const commit = vi.fn();
 const dispatch = vi.fn();
+const statsRefreshCall = ['conversationStats/get', {}, { root: true }];
 global.axios = axios;
 vi.mock('axios');
 
@@ -138,7 +139,7 @@ describe('#actions', () => {
         conversation
       );
       expect(commit.mock.calls).toEqual([]);
-      expect(dispatch.mock.calls).toEqual([]);
+      expect(dispatch.mock.calls).toEqual([statsRefreshCall]);
     });
 
     it('doesnot send mutation if conversation filters are applied', () => {
@@ -158,7 +159,7 @@ describe('#actions', () => {
         conversation
       );
       expect(commit.mock.calls).toEqual([]);
-      expect(dispatch.mock.calls).toEqual([]);
+      expect(dispatch.mock.calls).toEqual([statsRefreshCall]);
     });
 
     it('doesnot send mutation if the view is conversation mentions', () => {
@@ -178,7 +179,7 @@ describe('#actions', () => {
         conversation
       );
       expect(commit.mock.calls).toEqual([]);
-      expect(dispatch.mock.calls).toEqual([]);
+      expect(dispatch.mock.calls).toEqual([statsRefreshCall]);
     });
 
     it('doesnot send mutation if the view is conversation folders', () => {
@@ -198,7 +199,7 @@ describe('#actions', () => {
         conversation
       );
       expect(commit.mock.calls).toEqual([]);
-      expect(dispatch.mock.calls).toEqual([]);
+      expect(dispatch.mock.calls).toEqual([statsRefreshCall]);
     });
 
     it('sends correct mutations', () => {
@@ -221,6 +222,7 @@ describe('#actions', () => {
         [types.ADD_CONVERSATION, conversation],
       ]);
       expect(dispatch.mock.calls).toEqual([
+        statsRefreshCall,
         [
           'contacts/setContact',
           {
@@ -251,6 +253,7 @@ describe('#actions', () => {
         [types.ADD_CONVERSATION, conversation],
       ]);
       expect(dispatch.mock.calls).toEqual([
+        statsRefreshCall,
         [
           'contacts/setContact',
           {
@@ -432,15 +435,66 @@ describe('#actions', () => {
 
   describe('#fetchFilteredConversations', () => {
     it('fetches filtered conversations with a mock commit', async () => {
+      const localCommit = vi.fn();
+      const localDispatch = vi.fn();
       axios.post.mockResolvedValue({
         data: dataReceived,
       });
-      await actions.fetchFilteredConversations({ commit }, dataToSend);
-      expect(commit).toHaveBeenCalledTimes(2);
-      expect(commit.mock.calls).toEqual([
-        ['SET_LIST_LOADING_STATUS'],
-        ['SET_ALL_CONVERSATION', dataReceived.payload],
-      ]);
+      await actions.fetchFilteredConversations(
+        { commit: localCommit, dispatch: localDispatch },
+        dataToSend
+      );
+
+      expect(localCommit).toHaveBeenCalledWith(types.SET_LIST_LOADING_STATUS);
+      expect(localCommit).toHaveBeenCalledWith(
+        types.CLEAR_CONVERSATION_SEARCH_RESULT_IDS
+      );
+      expect(localCommit).toHaveBeenCalledWith(
+        types.SET_ALL_CONVERSATION,
+        dataReceived.payload
+      );
+      expect(localCommit).toHaveBeenCalledWith(types.CLEAR_LIST_LOADING_STATUS);
+    });
+
+    it('tracks full-shape contextual results returned by the list endpoint', async () => {
+      const localCommit = vi.fn();
+      const localDispatch = vi.fn();
+      const filters = { q: 'Douglas', page: 1, status: 'all' };
+      axios.get.mockResolvedValue({
+        data: { data: dataReceived },
+      });
+
+      await actions.fetchAllConversations({
+        commit: localCommit,
+        dispatch: localDispatch,
+        state: { conversationFilters: filters },
+      });
+
+      expect(axios.get).toHaveBeenCalledWith('/api/v1/conversations', {
+        params: filters,
+      });
+      expect(localCommit).toHaveBeenCalledWith(
+        types.SET_CONVERSATION_SEARCH_RESULT_IDS,
+        {
+          conversationIds: dataReceived.payload.map(item => item.id),
+          append: false,
+        }
+      );
+    });
+
+    it('reports a contextual list request failure to the caller', async () => {
+      const localCommit = vi.fn();
+      const localDispatch = vi.fn();
+      axios.get.mockRejectedValueOnce(new Error('network unavailable'));
+
+      const result = await actions.fetchAllConversations({
+        commit: localCommit,
+        dispatch: localDispatch,
+        state: { conversationFilters: { q: 'Douglas', page: 1 } },
+      });
+
+      expect(result).toBe(false);
+      expect(localCommit).toHaveBeenCalledWith(types.CLEAR_LIST_LOADING_STATUS);
     });
   });
 

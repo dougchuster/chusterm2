@@ -7,7 +7,7 @@ export default {
     priority: {
       type: String,
       default: '',
-      validate: value =>
+      validator: value =>
         [...Object.values(CONVERSATION_PRIORITY), ''].includes(value),
     },
   },
@@ -25,6 +25,14 @@ export default {
     isUrgent() {
       return this.priority === CONVERSATION_PRIORITY.URGENT;
     },
+    priorityIcon() {
+      return {
+        [CONVERSATION_PRIORITY.URGENT]: 'i-lucide-flame',
+        [CONVERSATION_PRIORITY.HIGH]: 'i-lucide-signal-high',
+        [CONVERSATION_PRIORITY.MEDIUM]: 'i-lucide-signal-medium',
+        [CONVERSATION_PRIORITY.LOW]: 'i-lucide-signal-low',
+      }[this.priority];
+    },
   },
 };
 </script>
@@ -37,17 +45,13 @@ export default {
       content: tooltipText,
       delay: { show: 1500, hide: 0 },
     }"
-    class="shrink-0 rounded-sm inline-flex items-center justify-center w-3.5 h-3.5"
+    :aria-label="tooltipText"
+    class="inline-flex size-4 shrink-0 items-center justify-center rounded"
     :class="{
-      'bg-n-ruby-4 text-n-ruby-10': isUrgent,
-      'bg-n-slate-4 text-n-slate-11': !isUrgent,
+      'bg-ds-state-danger-soft text-ds-state-danger': isUrgent,
+      'bg-ds-bg-active text-ds-fg-muted': !isUrgent,
     }"
   >
-    <fluent-icon
-      :icon="`priority-${priority.toLowerCase()}`"
-      :size="isUrgent ? 12 : 14"
-      class="flex-shrink-0"
-      view-box="0 0 14 14"
-    />
+    <span class="size-3 shrink-0" :class="[priorityIcon]" aria-hidden="true" />
   </span>
 </template>

@@ -6,7 +6,6 @@ class Captain::InboxPendingConversationsResolutionJob < ApplicationJob
 
   def perform(inbox)
     return if inbox.account.captain_auto_resolve_disabled?
-    return if active_auto_reply_inbox?(inbox)
 
     if evaluate_conversation_completion?(inbox.account)
       perform_with_evaluation(inbox)
@@ -18,10 +17,6 @@ class Captain::InboxPendingConversationsResolutionJob < ApplicationJob
   end
 
   private
-
-  def active_auto_reply_inbox?(inbox)
-    inbox.captain_inbox&.active_for_auto_reply?
-  end
 
   def evaluate_conversation_completion?(account)
     account.feature_enabled?('captain_tasks') && account.captain_auto_resolve_evaluated?
@@ -45,8 +40,10 @@ class Captain::InboxPendingConversationsResolutionJob < ApplicationJob
 
       if evaluation[:complete]
         resolve_conversation(conversation, inbox, evaluation[:reason])
-      else
+      elsif provider_failure?(evaluation) || auto_handoff_on_incomplete?(inbox)
         handoff_conversation(conversation, inbox, evaluation[:reason])
+      else
+        recommend_human_review(conversation, inbox, evaluation[:reason])
       end
     end
   end
@@ -94,6 +91,33 @@ class Captain::InboxPendingConversationsResolutionJob < ApplicationJob
     ) { conversation.bot_handoff! }
     conversation.dispatch_captain_inference_handoff_event
     send_out_of_office_message_if_applicable(conversation.reload)
+  end
+
+  def recommend_human_review(conversation, inbox, reason)
+    note = "Revisão recomendada: #{reason}"
+    create_private_note(conversation, inbox, note) unless recent_private_note?(conversation, note)
+
+    state = CaptainConversationState.for_conversation!(conversation)
+    payload = state.score_payload.to_h.merge(
+      'review_recommended' => true,
+      'review_reason' => reason,
+      'automatic_handoff' => false
+    )
+    state.update!(score_payload: payload)
+  end
+
+  def auto_handoff_on_incomplete?(inbox)
+    ActiveModel::Type::Boolean.new.cast(
+      inbox.captain_inbox&.routing_config&.dig('auto_handoff_on_pending_timeout')
+    )
+  end
+
+  def provider_failure?(evaluation)
+    evaluation[:reason].to_s.match?(/api error|provider|timeout|unavailable|indisponível/i)
+  end
+
+  def recent_private_note?(conversation, content)
+    conversation.messages.where(private: true, content: content).exists?(['created_at > ?', 24.hours.ago])
   end
 
   def send_out_of_office_message_if_applicable(conversation)

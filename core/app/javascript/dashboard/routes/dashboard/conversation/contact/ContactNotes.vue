@@ -98,7 +98,7 @@ watch(
 
 <template>
   <div>
-    <div class="px-4 pt-3 pb-2">
+    <div class="px-4 pb-2 pt-3">
       <NextButton
         ghost
         xs
@@ -111,18 +111,19 @@ watch(
 
     <div
       v-if="isFetchingNotes"
-      class="flex items-center justify-center py-8 text-n-slate-11"
+      class="flex items-center justify-center py-8 text-ds-fg-muted"
+      role="status"
     >
       <Spinner />
     </div>
     <div
       v-else-if="notes.length"
-      class="flex flex-col max-h-[300px] overflow-y-auto"
+      class="flex max-h-[300px] flex-col overflow-y-auto"
     >
       <ContactNoteItem
         v-for="note in notes"
         :key="note.id"
-        class="py-4 last-of-type:border-b-0 px-4"
+        class="border-ds-border-subtle px-4 py-4 last-of-type:border-b-0"
         :note="note"
         :written-by="getWrittenBy(note)"
         allow-delete
@@ -130,7 +131,7 @@ watch(
         @delete="onDelete"
       />
     </div>
-    <p v-else class="px-6 py-6 text-sm leading-6 text-center text-n-slate-11">
+    <p v-else class="px-6 py-6 text-center text-sm leading-6 text-ds-fg-muted">
       {{ t('CONTACTS_LAYOUT.SIDEBAR.NOTES.CONVERSATION_EMPTY_STATE') }}
     </p>
 
@@ -141,7 +142,7 @@ watch(
       class="!items-start [&>div]:!top-12 [&>div]:sticky"
     >
       <div class="flex w-full flex-col gap-6 px-6 py-6">
-        <h3 class="text-lg font-semibold text-n-slate-12">
+        <h3 class="font-manrope text-lg font-semibold text-ds-fg-default">
           {{ t('CONTACTS_LAYOUT.SIDEBAR.NOTES.ADD_NOTE') }}
         </h3>
         <Editor

@@ -9,12 +9,14 @@ import {
   CMD_BULK_ACTION_RESOLVE_CONVERSATION,
 } from 'dashboard/helper/commandbar/events';
 
-import NextButton from 'dashboard/components-next/button/Button.vue';
 import AgentSelector from './AgentSelector.vue';
 import UpdateActions from './UpdateActions.vue';
 import LabelActions from './LabelActions.vue';
 import TeamActions from './TeamActions.vue';
 import CustomSnoozeModal from 'dashboard/components/CustomSnoozeModal.vue';
+
+let bulkActionInstanceId = 0;
+
 export default {
   components: {
     AgentSelector,
@@ -22,7 +24,6 @@ export default {
     LabelActions,
     TeamActions,
     CustomSnoozeModal,
-    NextButton,
   },
   props: {
     conversations: {
@@ -59,13 +60,22 @@ export default {
     'resolveConversations',
   ],
   data() {
+    bulkActionInstanceId += 1;
+    const instanceId = bulkActionInstanceId;
+
     return {
       showAgentsList: false,
       showUpdateActions: false,
       showLabelActions: false,
       showTeamsList: false,
-      popoverPositions: {},
       showCustomTimeSnoozeModal: false,
+      activeTriggerElement: null,
+      menuIds: {
+        labels: `bulk-actions-labels-${instanceId}`,
+        update: `bulk-actions-update-${instanceId}`,
+        agents: `bulk-actions-agents-${instanceId}`,
+        teams: `bulk-actions-teams-${instanceId}`,
+      },
     };
   },
   mounted() {
@@ -139,34 +149,59 @@ export default {
     resolveConversations() {
       this.$emit('resolveConversations');
     },
-    toggleUpdateActions() {
-      this.showUpdateActions = !this.showUpdateActions;
+    setAllMenusClosed() {
+      this.showLabelActions = false;
+      this.showUpdateActions = false;
+      this.showAgentsList = false;
+      this.showTeamsList = false;
     },
-    toggleLabelActions() {
-      this.showLabelActions = !this.showLabelActions;
+    toggleActionMenu(menu, event) {
+      const stateKeys = {
+        labels: 'showLabelActions',
+        update: 'showUpdateActions',
+        agents: 'showAgentsList',
+        teams: 'showTeamsList',
+      };
+      const stateKey = stateKeys[menu];
+      const shouldOpen = stateKey ? !this[stateKey] : false;
+
+      this.setAllMenusClosed();
+
+      if (shouldOpen) {
+        this[stateKey] = true;
+        this.activeTriggerElement = event.currentTarget;
+      } else {
+        this.activeTriggerElement = null;
+      }
     },
-    toggleAgentList() {
-      this.showAgentsList = !this.showAgentsList;
-    },
-    toggleTeamsList() {
-      this.showTeamsList = !this.showTeamsList;
+    closeActionMenus({ restoreFocus = true } = {}) {
+      const trigger = this.activeTriggerElement;
+
+      this.setAllMenusClosed();
+      this.activeTriggerElement = null;
+
+      if (restoreFocus && trigger) {
+        this.$nextTick(() => trigger.focus());
+      }
     },
   },
 };
 </script>
 
 <template>
-  <div class="bulk-action__container">
-    <div class="flex items-center justify-between">
-      <label class="flex items-center justify-between bulk-action__panel">
+  <div
+    class="relative border-b border-ds-border-subtle bg-ds-bg-surface p-3 text-ds-fg-default"
+  >
+    <div class="flex items-center justify-between gap-2">
+      <label class="flex min-w-0 cursor-pointer items-center gap-2">
         <input
           type="checkbox"
-          class="checkbox"
+          class="checkbox m-0 shrink-0 cursor-pointer accent-ds-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
           :checked="allConversationsSelected"
           :indeterminate.prop="!allConversationsSelected"
           @change="selectAll($event)"
         />
-        <span>
+        <span class="truncate text-xs font-medium text-ds-fg-muted">
           {{
             $t('BULK_ACTION.CONVERSATIONS_SELECTED', {
               conversationCount: conversations.length,
@@ -174,82 +209,132 @@ export default {
           }}
         </span>
       </label>
-      <div class="flex items-center gap-1 bulk-action__actions">
-        <NextButton
+      <div class="flex shrink-0 items-center gap-1">
+        <button
           v-tooltip="$t('BULK_ACTION.LABELS.ASSIGN_LABELS')"
-          icon="i-lucide-tags"
-          slate
-          xs
-          faded
-          @click="toggleLabelActions"
-        />
-        <NextButton
+          type="button"
+          class="inline-flex size-8 items-center justify-center rounded-lg text-ds-fg-muted transition-colors hover:bg-ds-bg-hover hover:text-ds-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
+          :aria-label="$t('BULK_ACTION.LABELS.ASSIGN_LABELS')"
+          aria-haspopup="dialog"
+          :aria-expanded="showLabelActions"
+          :aria-controls="menuIds.labels"
+          @click="toggleActionMenu('labels', $event)"
+        >
+          <span class="i-lucide-tags size-4" aria-hidden="true" />
+        </button>
+        <button
           v-tooltip="$t('BULK_ACTION.UPDATE.CHANGE_STATUS')"
-          icon="i-lucide-repeat"
-          slate
-          xs
-          faded
-          @click="toggleUpdateActions"
-        />
-        <NextButton
+          type="button"
+          class="inline-flex size-8 items-center justify-center rounded-lg text-ds-fg-muted transition-colors hover:bg-ds-bg-hover hover:text-ds-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
+          :aria-label="$t('BULK_ACTION.UPDATE.CHANGE_STATUS')"
+          aria-haspopup="menu"
+          :aria-expanded="showUpdateActions"
+          :aria-controls="menuIds.update"
+          @click="toggleActionMenu('update', $event)"
+        >
+          <span class="i-lucide-repeat-2 size-4" aria-hidden="true" />
+        </button>
+        <button
           v-tooltip="$t('BULK_ACTION.ASSIGN_AGENT_TOOLTIP')"
-          icon="i-lucide-user-round-plus"
-          slate
-          xs
-          faded
-          @click="toggleAgentList"
-        />
-        <NextButton
+          type="button"
+          class="inline-flex size-8 items-center justify-center rounded-lg text-ds-fg-muted transition-colors hover:bg-ds-bg-hover hover:text-ds-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
+          :aria-label="$t('BULK_ACTION.ASSIGN_AGENT_TOOLTIP')"
+          aria-haspopup="dialog"
+          :aria-expanded="showAgentsList"
+          :aria-controls="menuIds.agents"
+          @click="toggleActionMenu('agents', $event)"
+        >
+          <span class="i-lucide-user-round-plus size-4" aria-hidden="true" />
+        </button>
+        <button
           v-tooltip="$t('BULK_ACTION.ASSIGN_TEAM_TOOLTIP')"
-          icon="i-lucide-users-round"
-          slate
-          xs
-          faded
-          @click="toggleTeamsList"
-        />
+          type="button"
+          class="inline-flex size-8 items-center justify-center rounded-lg text-ds-fg-muted transition-colors hover:bg-ds-bg-hover hover:text-ds-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
+          :aria-label="$t('BULK_ACTION.ASSIGN_TEAM_TOOLTIP')"
+          aria-haspopup="dialog"
+          :aria-expanded="showTeamsList"
+          :aria-controls="menuIds.teams"
+          @click="toggleActionMenu('teams', $event)"
+        >
+          <span class="i-lucide-users-round size-4" aria-hidden="true" />
+        </button>
       </div>
-      <transition name="popover-animation">
+      <transition
+        enter-active-class="transition duration-150 ease-out"
+        enter-from-class="scale-95 opacity-0"
+        enter-to-class="scale-100 opacity-100"
+        leave-active-class="transition duration-100 ease-in"
+        leave-from-class="scale-100 opacity-100"
+        leave-to-class="scale-95 opacity-0"
+      >
         <LabelActions
           v-if="showLabelActions"
-          class="label-actions-box"
+          :id="menuIds.labels"
+          class="[--triangle-position:5.3125rem]"
           context-scope="conversation"
           @assign="assignLabels"
-          @close="showLabelActions = false"
+          @close="closeActionMenus"
         />
       </transition>
-      <transition name="popover-animation">
+      <transition
+        enter-active-class="transition duration-150 ease-out"
+        enter-from-class="scale-95 opacity-0"
+        enter-to-class="scale-100 opacity-100"
+        leave-active-class="transition duration-100 ease-in"
+        leave-from-class="scale-100 opacity-100"
+        leave-to-class="scale-95 opacity-0"
+      >
         <UpdateActions
           v-if="showUpdateActions"
-          class="update-actions-box"
-          :selected-inboxes="selectedInboxes"
-          :conversation-count="conversations.length"
+          :id="menuIds.update"
+          class="[--triangle-position:3.5rem]"
           :show-resolve="!showResolvedAction"
           :show-reopen="!showOpenAction"
           :show-snooze="!showSnoozedAction"
           @update="updateConversations"
-          @close="showUpdateActions = false"
+          @close="closeActionMenus"
         />
       </transition>
-      <transition name="popover-animation">
+      <transition
+        enter-active-class="transition duration-150 ease-out"
+        enter-from-class="scale-95 opacity-0"
+        enter-to-class="scale-100 opacity-100"
+        leave-active-class="transition duration-100 ease-in"
+        leave-from-class="scale-100 opacity-100"
+        leave-to-class="scale-95 opacity-0"
+      >
         <AgentSelector
           v-if="showAgentsList"
-          class="agent-actions-box"
+          :id="menuIds.agents"
+          class="[--triangle-position:1.75rem]"
           :selected-inboxes="selectedInboxes"
           :conversation-count="conversations.length"
           @select="submit"
-          @close="showAgentsList = false"
+          @close="closeActionMenus"
         />
       </transition>
-      <transition name="popover-animation">
+      <transition
+        enter-active-class="transition duration-150 ease-out"
+        enter-from-class="scale-95 opacity-0"
+        enter-to-class="scale-100 opacity-100"
+        leave-active-class="transition duration-100 ease-in"
+        leave-from-class="scale-100 opacity-100"
+        leave-to-class="scale-95 opacity-0"
+      >
         <TeamActions
           v-if="showTeamsList"
-          class="team-actions-box"
+          :id="menuIds.teams"
+          class="[--triangle-position:0.125rem]"
           @assign-team="assignTeam"
-          @close="showTeamsList = false"
+          @close="closeActionMenus"
         />
       </transition>
     </div>
-    <div v-if="allConversationsSelected" class="bulk-action__alert">
+    <div
+      v-if="allConversationsSelected"
+      class="mt-2 rounded-lg border border-ds-state-warning/25 bg-ds-state-warning-soft px-2 py-1.5 text-xs text-ds-state-warning"
+      role="status"
+    >
       {{ $t('BULK_ACTION.ALL_CONVERSATIONS_SELECTED_ALERT') }}
     </div>
     <woot-modal
@@ -263,63 +348,3 @@ export default {
     </woot-modal>
   </div>
 </template>
-
-<style scoped lang="scss">
-.bulk-action__container {
-  @apply p-3 relative border-b border-solid border-n-strong dark:border-n-weak;
-}
-
-.bulk-action__panel {
-  @apply cursor-pointer;
-
-  span {
-    @apply text-xs my-0 mx-1;
-  }
-
-  input[type='checkbox'] {
-    @apply cursor-pointer m-0;
-  }
-}
-
-.bulk-action__alert {
-  @apply bg-n-amber-3 text-n-amber-12 rounded text-xs mt-2 py-1 px-2 border border-solid border-n-amber-5;
-}
-
-.popover-animation-enter-active,
-.popover-animation-leave-active {
-  transition: transform ease-out 0.1s;
-}
-
-.popover-animation-enter {
-  transform: scale(0.95);
-  @apply opacity-0;
-}
-
-.popover-animation-enter-to {
-  transform: scale(1);
-  @apply opacity-100;
-}
-
-.popover-animation-leave {
-  transform: scale(1);
-  @apply opacity-100;
-}
-
-.popover-animation-leave-to {
-  transform: scale(0.95);
-  @apply opacity-0;
-}
-
-.label-actions-box {
-  --triangle-position: 5.3125rem;
-}
-.update-actions-box {
-  --triangle-position: 3.5rem;
-}
-.agent-actions-box {
-  --triangle-position: 1.75rem;
-}
-.team-actions-box {
-  --triangle-position: 0.125rem;
-}
-</style>

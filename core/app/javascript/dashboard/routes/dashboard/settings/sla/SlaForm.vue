@@ -1,4 +1,4 @@
-﻿<script>
+<script>
 import { mapGetters } from 'vuex';
 import { convertSecondsToTimeUnit } from '@ChusteRM/utils';
 import validations from './validations';

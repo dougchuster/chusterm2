@@ -1,4 +1,4 @@
-﻿<script>
+<script>
 import { mapGetters } from 'vuex';
 import wootConstants from 'dashboard/constants/globals';
 import NextButton from 'dashboard/components-next/button/Button.vue';

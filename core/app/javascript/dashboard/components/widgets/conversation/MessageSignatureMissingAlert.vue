@@ -11,13 +11,16 @@ const openProfileSettings = () => {
 
 <template>
   <div
-    class="my-0 px-1 flex max-h-[8vh] items-baseline justify-between hover:bg-n-slate-1 border border-dashed border-n-weak rounded-sm overflow-auto"
+    role="status"
+    class="my-0 flex max-h-[8vh] items-baseline justify-between overflow-auto rounded-lg bg-ds-state-warning-soft px-2 py-1 text-ds-fg-default ring-1 ring-inset ring-ds-state-warning/25"
   >
     <p class="w-fit !m-0">
       {{ $t('CONVERSATION.FOOTER.MESSAGE_SIGNATURE_NOT_CONFIGURED') }}
 
       <Button
+        type="button"
         link
+        color="primary"
         :label="$t('CONVERSATION.FOOTER.CLICK_HERE')"
         @click="openProfileSettings"
       />

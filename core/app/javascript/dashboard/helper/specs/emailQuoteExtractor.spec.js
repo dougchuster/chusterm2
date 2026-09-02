@@ -1,4 +1,4 @@
-﻿import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { EmailQuoteExtractor } from '../emailQuoteExtractor.js';
 
 const SAMPLE_EMAIL_HTML = `

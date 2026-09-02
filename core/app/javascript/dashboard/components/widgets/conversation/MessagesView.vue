@@ -442,7 +442,9 @@ export default {
 </script>
 
 <template>
-  <div class="flex flex-col justify-between flex-grow h-full min-w-0 m-0">
+  <div
+    class="m-0 flex h-full min-w-0 flex-grow flex-col justify-between bg-ds-bg-surface"
+  >
     <Banner
       v-if="hasDuplicateInstagramInbox"
       color-scheme="alert"
@@ -451,7 +453,8 @@ export default {
     />
     <MessageList
       ref="conversationPanelRef"
-      class="conversation-panel flex-shrink flex-grow basis-px flex flex-col overflow-y-auto relative h-full m-0 pb-4"
+      class="conversation-panel relative m-0 flex h-full flex-grow basis-px flex-col overflow-y-auto pb-4"
+      tabindex="0"
       :current-user-id="currentUserId"
       :first-unread-id="unReadMessages[0]?.id"
       :is-an-email-channel="isAnEmailChannel"
@@ -462,24 +465,24 @@ export default {
       <template #beforeAll>
         <transition name="slide-up">
           <!-- eslint-disable-next-line vue/require-toggle-inside-transition -->
-          <li
-            class="min-h-[4rem] flex flex-shrink-0 flex-grow-0 items-center flex-auto justify-center max-w-full mt-0 mr-0 mb-1 ml-0 relative first:mt-auto last:mb-0"
+          <div
+            class="relative m-0 mb-1 flex min-h-16 max-w-full flex-auto flex-grow-0 flex-shrink-0 items-center justify-center first:mt-auto last:mb-0"
           >
-            <Spinner v-if="shouldShowSpinner" class="text-n-brand" />
-          </li>
+            <Spinner v-if="shouldShowSpinner" class="text-ds-accent" />
+          </div>
         </transition>
       </template>
       <template #unreadBadge>
-        <li
+        <div
           v-show="unreadMessageCount != 0"
-          class="list-none flex justify-center items-center"
+          class="flex list-none items-center justify-center"
         >
           <span
-            class="shadow-lg rounded-full bg-n-brand text-white text-xs font-medium my-2.5 mx-auto px-2.5 py-1.5"
+            class="mx-auto my-2.5 rounded-full bg-ds-accent px-2.5 py-1.5 text-xs font-medium text-ds-fg-on-accent shadow-lg"
           >
             {{ unreadMessageLabel }}
           </span>
-        </li>
+        </div>
       </template>
       <template #after>
         <ConversationLabelSuggestion
@@ -491,24 +494,33 @@ export default {
       </template>
     </MessageList>
     <div
-      class="flex relative flex-col"
-      :class="{
-        'modal-mask': isPopOutReplyBox,
-        'bg-n-surface-1': !isPopOutReplyBox,
-      }"
+      class="relative flex flex-col"
+      :class="
+        isPopOutReplyBox
+          ? [
+              'fixed inset-0 z-[1100] items-center justify-center bg-ds-bg-canvas/85 p-3 backdrop-blur-sm sm:p-6',
+              '[&_.ProseMirror-woot-style]:max-h-[calc(100dvh-12rem)] md:[&_.ProseMirror-woot-style]:max-h-[25rem]',
+              '[&_.reply-box]:w-full [&_.reply-box]:max-w-[75rem] [&_.reply-box]:ring-1 [&_.reply-box]:ring-ds-border md:[&_.reply-box]:w-[70%]',
+              '[&_.reply-box.is-private]:ring-ds-state-warning/30',
+              '[&_.reply-box_.reply-box__top]:relative [&_.reply-box_.reply-box__top]:min-h-[18rem] md:[&_.reply-box_.reply-box__top]:min-h-[27.5rem]',
+              '[&_.reply-box__top_.input]:min-h-[18rem] md:[&_.reply-box__top_.input]:min-h-[27.5rem]',
+              '[&_.emoji-dialog]:absolute [&_.emoji-dialog]:bottom-1 ltr:[&_.emoji-dialog]:left-auto rtl:[&_.emoji-dialog]:right-auto',
+            ]
+          : 'bg-ds-bg-surface'
+      "
     >
       <div
         v-if="isAnyoneTyping"
-        class="absolute flex items-center w-full h-0 -top-7"
+        class="absolute -top-7 flex h-0 w-full items-center"
       >
         <div
-          class="flex py-2 pr-4 pl-5 shadow-md rounded-full bg-white dark:bg-n-solid-3 text-n-slate-11 text-xs font-semibold my-2.5 mx-auto"
+          class="mx-auto my-2.5 flex rounded-full bg-ds-bg-elevated py-2 pl-5 pr-4 text-xs font-semibold text-ds-fg-muted shadow-md ring-1 ring-ds-border-subtle"
         >
           {{ typingUserNames }}
           <img
             class="w-6 ltr:ml-2 rtl:mr-2"
             src="assets/images/typing.gif"
-            alt="Someone is typing"
+            alt=""
           />
         </div>
       </div>
@@ -519,35 +531,3 @@ export default {
     </div>
   </div>
 </template>
-
-<style scoped lang="scss">
-.modal-mask {
-  @apply fixed;
-
-  &:deep() {
-    .ProseMirror-woot-style {
-      @apply max-h-[25rem];
-    }
-
-    .reply-box {
-      @apply border border-n-weak max-w-[75rem] w-[70%];
-
-      &.is-private {
-        @apply dark:border-n-amber-3/30 border-n-amber-12/5;
-      }
-    }
-
-    .reply-box .reply-box__top {
-      @apply relative min-h-[27.5rem];
-    }
-
-    .reply-box__top .input {
-      @apply min-h-[27.5rem];
-    }
-
-    .emoji-dialog {
-      @apply absolute ltr:left-auto rtl:right-auto bottom-1;
-    }
-  }
-}
-</style>

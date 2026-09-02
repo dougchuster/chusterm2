@@ -53,17 +53,25 @@ end
 
 updated_assistants = 0
 target_account_id = ENV.fetch('ACCOUNT_ID', 1).to_i
+dra_leticia_model = ENV['CAPTAIN_DRA_LETICIA_LLM_MODEL'].presence ||
+                    ENV['CAPTAIN_DR_PAULA_LLM_MODEL'].presence ||
+                    'anthropic/claude-sonnet-5'
+dra_leticia_summarizer_model = ENV['CAPTAIN_DRA_LETICIA_SUMMARIZER_MODEL'].presence ||
+                               ENV['CAPTAIN_DR_PAULA_SUMMARIZER_MODEL'].presence ||
+                               'google/gemini-3.7-flash'
 Captain::Assistant.find_each do |assistant|
   next_config = assistant.config.deep_dup
   next_config['llm_provider'] = 'openrouter'
   %w[llm_main_model llm_fallback_model llm_classifier_model llm_summarizer_model].each do |key|
     next_config[key] = normalize_openrouter_model(next_config[key]) if next_config[key].present?
   end
-  if assistant.account_id == target_account_id && assistant.name == 'Dra. Paula Matos'
-    # O modelo principal do atendimento fica no Sonnet 5 por decisao de qualidade;
-    # so o resumidor usa o Gemini Flash, bem mais barato para essa tarefa.
-    next_config['llm_main_model'] = 'anthropic/claude-sonnet-5'
-    next_config['llm_summarizer_model'] = 'google/gemini-3.7-flash'
+  dra_leticia_intake = assistant.config.to_h['profile_key'] == 'dra_leticia_intake' ||
+                       assistant.name.in?(['Dra. Letícia', 'Dra. Paula Matos'])
+  if assistant.account_id == target_account_id && dra_leticia_intake
+    # Mantém Sonnet 5 no atendimento e Gemini 3.7 nos resumos,
+    # independentemente da ordem entre este script e o configurador do perfil.
+    next_config['llm_main_model'] = dra_leticia_model
+    next_config['llm_summarizer_model'] = dra_leticia_summarizer_model
   end
   next if next_config == assistant.config
 
@@ -75,6 +83,8 @@ Llm::Config.reset!
 puts 'OPENROUTER_GATEWAY_CONFIGURED=true'
 puts "OPENROUTER_ENDPOINT=#{OPENROUTER_ENDPOINT}"
 puts "CAPTAIN_MODEL=#{CONFIG_VALUES.fetch('CAPTAIN_OPEN_AI_MODEL')}"
+puts "DRA_LETICIA_MODEL=#{dra_leticia_model}"
+puts "DRA_LETICIA_SUMMARIZER_MODEL=#{dra_leticia_summarizer_model}"
 puts "MEDIA_MODEL=#{CONFIG_VALUES.fetch('CAPTAIN_MEDIA_AI_MODEL')}"
 puts "TRANSCRIPTION_MODEL=#{CONFIG_VALUES.fetch('CAPTAIN_AUDIO_TRANSCRIPTION_MODEL')}"
 puts "EMBEDDING_MODEL=#{CONFIG_VALUES.fetch('CAPTAIN_EMBEDDING_MODEL')}"

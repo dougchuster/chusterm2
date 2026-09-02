@@ -22,6 +22,7 @@ RSpec.describe 'CRM Agenda Events API', type: :request do
     it 'returns CRM activities and the first incoming lead contact in the range' do
       contact = create(:contact, :with_email, :with_phone_number, account: account, name: 'Douglas Chuster')
       conversation = create(:conversation, account: account, contact: contact, assignee: assignee)
+      conversation.update_column(:display_id, conversation.id + 100_000) # rubocop:disable Rails/SkipsModelValidations
       lead_started_at = from_time + 1.day + 9.hours
 
       create(:message, account: account, conversation: conversation, inbox: conversation.inbox,
@@ -54,6 +55,14 @@ RSpec.describe 'CRM Agenda Events API', type: :request do
       expect(sources).to contain_exactly('lead_contact', 'crm_activity')
       expect(response.parsed_body.pluck('event_key')).to include("lead_contact-#{conversation.id}")
       expect(response.parsed_body.pluck('event_key')).not_to include("lead_contact-#{old_conversation.id}")
+      activity_event = response.parsed_body.find { |event| event['source'] == 'crm_activity' }
+      expect(activity_event['conversation']).to include(
+        'id' => conversation.id,
+        'display_id' => conversation.display_id
+      )
+      expect(activity_event.dig('links', 'conversation')).to end_with(
+        "/conversations/#{conversation.display_id}"
+      )
     end
 
     it 'filters events by source and assignee' do

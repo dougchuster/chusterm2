@@ -171,6 +171,25 @@ RSpec.describe 'Conversations API', type: :request do
         expect(response_data.count).to eq(2)
       end
 
+      it 'combines text search with conversation filters' do
+        post "/api/v1/accounts/#{account.id}/conversations/filter",
+             headers: agent.create_new_auth_token,
+             params: {
+               q: 'test1',
+               payload: [{
+                 attribute_key: 'status',
+                 filter_operator: 'equal_to',
+                 values: ['open']
+               }]
+             },
+             as: :json
+
+        expect(response).to have_http_status(:success)
+        response_data = JSON.parse(response.body, symbolize_names: true)
+        expect(response_data[:payload].length).to eq(1)
+        expect(response_data[:payload].first[:display_id]).to be_present
+      end
+
       it 'returns error if the filters contain invalid attributes' do
         post "/api/v1/accounts/#{account.id}/conversations/filter",
              headers: agent.create_new_auth_token,
@@ -231,13 +250,19 @@ RSpec.describe 'Conversations API', type: :request do
       end
 
       it 'shows the conversation if you are an administrator' do
+        conversation.update_column(:display_id, conversation.id + 100_000) # rubocop:disable Rails/SkipsModelValidations
         get "/api/v1/accounts/#{account.id}/conversations/#{conversation.display_id}",
             headers: administrator.create_new_auth_token,
             as: :json
 
         expect(response).to have_http_status(:success)
         expect(response).to conform_schema(200)
-        expect(JSON.parse(response.body, symbolize_names: true)[:id]).to eq(conversation.display_id)
+        payload = JSON.parse(response.body, symbolize_names: true)
+        expect(payload).to include(
+          id: conversation.display_id,
+          display_id: conversation.display_id,
+          database_id: conversation.id
+        )
       end
 
       it 'shows the conversation if you are an agent with access to inbox' do

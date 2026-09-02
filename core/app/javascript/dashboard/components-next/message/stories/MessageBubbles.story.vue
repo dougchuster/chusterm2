@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { ref, reactive, computed } from 'vue';
 import Message from '../Message.vue';
 

@@ -86,9 +86,11 @@ onMounted(() => {
 
 <template>
   <div>
-    <div class="px-4 pt-3 pb-2">
+    <div class="px-4 pb-2 pt-3">
       <NextButton
-        ghost
+        type="button"
+        color="primary"
+        variant="ghost"
         xs
         icon="i-lucide-plus"
         :label="$t('INTEGRATION_SETTINGS.LINEAR.ADD_OR_LINK_BUTTON')"
@@ -96,12 +98,18 @@ onMounted(() => {
       />
     </div>
 
-    <div v-if="isLoading" class="flex justify-center p-8">
-      <Spinner />
+    <div
+      v-if="isLoading"
+      role="status"
+      class="flex justify-center p-8 text-ds-accent"
+    >
+      <Spinner class="text-ds-accent" />
     </div>
 
     <div v-else-if="!hasIssues" class="flex justify-center p-4">
-      <p class="text-sm text-n-slate-11">
+      <p
+        class="w-full rounded-lg bg-ds-bg-sunken px-3 py-4 text-center text-sm text-ds-fg-muted"
+      >
         {{ $t('INTEGRATION_SETTINGS.LINEAR.NO_LINKED_ISSUES') }}
       </p>
     </div>
@@ -110,7 +118,7 @@ onMounted(() => {
       <LinearIssueItem
         v-for="linkedIssue in linkedIssues"
         :key="linkedIssue.id"
-        class="px-4 pt-3 pb-4 border-b border-n-weak last:border-b-0"
+        class="border-b border-ds-border-subtle px-4 pb-4 pt-3 last:border-b-0"
         :linked-issue="linkedIssue"
         @unlink-issue="unlinkIssue"
       />
@@ -120,7 +128,7 @@ onMounted(() => {
       v-model:show="shouldShowCreateModal"
       :on-close="closeCreateModal"
       :close-on-backdrop-click="false"
-      class="!items-start [&>div]:!top-12 [&>div]:sticky"
+      class="items-start [&>div]:sticky [&>div]:top-12"
     >
       <CreateOrLinkIssue
         :conversation="conversation"

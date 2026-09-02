@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 // TODO This is a huge component, we should split this up into separate composables
 // like `useSignature`, `useImageHandling`, `useFileUpload`, `useSpecialContent``
 import {
@@ -840,9 +840,11 @@ useEmitter(BUS_EVENTS.INSERT_INTO_RICH_EDITOR, insertContentIntoEditor);
 <template>
   <div
     ref="editorRoot"
-    class="relative w-full"
+    class="relative w-full [&_.ProseMirror-menubar-wrapper]:flex [&_.ProseMirror-menubar-wrapper]:flex-col [&_.ProseMirror-menubar-wrapper]:gap-3 [&_.ProseMirror-menubar]:relative [&_.ProseMirror-menubar]:flex [&_.ProseMirror-menubar]:!min-h-5 [&_.ProseMirror-menubar]:items-center [&_.ProseMirror-menubar]:gap-4 [&_.ProseMirror-menubar]:bg-transparent [&_.ProseMirror-menubar]:pb-0 [&_.ProseMirror-menubar]:text-ds-fg-muted ltr:[&_.ProseMirror-menubar]:-left-[3px] rtl:[&_.ProseMirror-menubar]:-right-[3px] [&_.ProseMirror-menu-active]:!bg-ds-bg-active [&_.ProseMirror-menuitem]:mr-0 [&_.ProseMirror-menuitem]:flex [&_.ProseMirror-menuitem]:size-4 [&_.ProseMirror-menuitem]:items-center [&_.ProseMirror-menuitem]:justify-center [&_.ProseMirror-icon]:flex [&_.ProseMirror-icon]:size-4 [&_.ProseMirror-icon]:flex-shrink-0 [&_.ProseMirror-icon]:items-center [&_.ProseMirror-icon]:justify-center [&_.ProseMirror-icon_svg]:size-full [&_.ProseMirror-copilot_svg]:fill-ds-accent [&_.ProseMirror-copilot_svg]:text-ds-accent [&_.ProseMirror-copilot_svg]:stroke-none [&_.ProseMirror-menubar:not(:has(*))]:!hidden [&_.ProseMirror-menubar:not(:has(*))]:!min-h-0 [&_.ProseMirror-menubar:not(:has(*))]:!max-h-none [&_.ProseMirror-menubar:not(:has(*))]:!p-0 [&_.ProseMirror-menubar-wrapper>.ProseMirror]:break-words [&_.ProseMirror-menubar-wrapper>.ProseMirror]:p-0 [&_.ProseMirror-menubar-wrapper>.ProseMirror]:text-ds-fg-default [&_.ProseMirror_h1]:text-ds-fg-default [&_.ProseMirror_h2]:text-ds-fg-default [&_.ProseMirror_h3]:text-ds-fg-default [&_.ProseMirror_h4]:text-ds-fg-default [&_.ProseMirror_h5]:text-ds-fg-default [&_.ProseMirror_h6]:text-ds-fg-default [&_.ProseMirror_p]:text-ds-fg-default [&_.ProseMirror_blockquote]:border-ds-border-strong [&_.ProseMirror_blockquote_p]:text-ds-fg-muted [&_.ProseMirror_ol_li]:list-item [&_.ProseMirror_ol_li]:list-decimal [&_.ProseMirror-woot-style]:min-h-20 [&_.ProseMirror-woot-style]:max-h-[7.5rem] [&_.ProseMirror-woot-style]:overflow-auto [&_.prosemirror-tools-node]:py-0 [&_.prosemirror-tools-node]:font-medium [&_.prosemirror-tools-node]:text-ds-fg-default [&:not(.popover-prosemirror-menu)>.copilot-editor-menu]:!top-6 rtl:[&:not(.popover-prosemirror-menu)>.copilot-editor-menu]:!left-auto rtl:[&:not(.popover-prosemirror-menu)>.copilot-editor-menu]:!right-0 [&.popover-prosemirror-menu_.ProseMirror_p:last-child]:!mb-2.5 [&.popover-prosemirror-menu_.ProseMirror-menubar]:hidden [&.popover-prosemirror-menu.has-selection_.ProseMirror-menubar]:absolute [&.popover-prosemirror-menu.has-selection_.ProseMirror-menubar]:z-50 [&.popover-prosemirror-menu.has-selection_.ProseMirror-menubar]:!ml-0 [&.popover-prosemirror-menu.has-selection_.ProseMirror-menubar]:!flex [&.popover-prosemirror-menu.has-selection_.ProseMirror-menubar]:w-fit [&.popover-prosemirror-menu.has-selection_.ProseMirror-menubar]:items-center [&.popover-prosemirror-menu.has-selection_.ProseMirror-menubar]:gap-4 [&.popover-prosemirror-menu.has-selection_.ProseMirror-menubar]:rounded-lg [&.popover-prosemirror-menu.has-selection_.ProseMirror-menubar]:bg-ds-bg-elevated [&.popover-prosemirror-menu.has-selection_.ProseMirror-menubar]:!px-3 [&.popover-prosemirror-menu.has-selection_.ProseMirror-menubar]:!py-1.5 [&.popover-prosemirror-menu.has-selection_.ProseMirror-menubar]:shadow-md [&.popover-prosemirror-menu.has-selection_.ProseMirror-menubar]:ring-1 [&.popover-prosemirror-menu.has-selection_.ProseMirror-menubar]:ring-ds-border-subtle [&.popover-prosemirror-menu.has-selection_.ProseMirror-menubar]:[top:var(--selection-top)] [&.popover-prosemirror-menu.has-selection_.ProseMirror-menubar]:[left:var(--selection-left)] rtl:[&.popover-prosemirror-menu.has-selection_.ProseMirror-menubar]:!left-auto rtl:[&.popover-prosemirror-menu.has-selection_.ProseMirror-menubar]:[right:var(--selection-right)] [&.popover-prosemirror-menu.has-selection_.ProseMirror-menuitem]:mr-0 [&.popover-prosemirror-menu.has-selection_.ProseMirror-menuitem]:flex [&.popover-prosemirror-menu.has-selection_.ProseMirror-menuitem]:size-4 [&.popover-prosemirror-menu.has-selection_.ProseMirror-menuitem]:items-center [&.popover-prosemirror-menu.has-selection_.ProseMirror-icon]:flex-shrink-0 [&.popover-prosemirror-menu.has-selection_.ProseMirror-icon]:p-0.5"
     :class="{
-      'opacity-50 cursor-not-allowed pointer-events-none': disabled,
+      'pointer-events-none cursor-not-allowed opacity-50': disabled,
+      '[&_.prosemirror-mention-node]:bg-ds-state-warning-soft [&_.prosemirror-mention-node]:px-1 [&_.prosemirror-mention-node]:py-0 [&_.prosemirror-mention-node]:font-medium [&_.prosemirror-mention-node]:text-ds-fg-default':
+        isPrivate,
     }"
   >
     <TagAgents
@@ -892,7 +894,7 @@ useEmitter(BUS_EVENTS.INSERT_INTO_RICH_EDITOR, insertContentIntoEditor);
     <div ref="editor" />
     <div
       v-show="isImageNodeSelected && showImageResizeToolbar"
-      class="absolute shadow-md rounded-[6px] flex gap-1 py-1 px-1 bg-n-solid-3 outline outline-1 outline-n-weak text-n-slate-12"
+      class="absolute flex gap-1 rounded-lg bg-ds-bg-elevated p-1 text-ds-fg-default shadow-md ring-1 ring-ds-border-subtle"
       :style="{
         top: toolbarPosition.top,
         left: toolbarPosition.left,
@@ -901,7 +903,8 @@ useEmitter(BUS_EVENTS.INSERT_INTO_RICH_EDITOR, insertContentIntoEditor);
       <button
         v-for="size in sizes"
         :key="size.name"
-        class="text-xs font-medium rounded-[4px] outline outline-1 outline-n-strong px-1.5 py-0.5 hover:bg-n-slate-5"
+        type="button"
+        class="rounded-md px-1.5 py-0.5 text-xs font-medium ring-1 ring-ds-border-strong transition-colors hover:bg-ds-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
         @click="setURLWithQueryAndImageSize(size)"
       >
         {{ size.name }}
@@ -910,199 +913,3 @@ useEmitter(BUS_EVENTS.INSERT_INTO_RICH_EDITOR, insertContentIntoEditor);
     <slot name="footer" />
   </div>
 </template>
-
-<style lang="scss">
-@import '@ChusteRM/prosemirror-schema/src/styles/base.scss';
-
-.ProseMirror-menubar-wrapper {
-  @apply flex flex-col gap-3;
-
-  .ProseMirror-menubar {
-    min-height: 1.25rem !important;
-    @apply items-center gap-4 flex pb-0 bg-transparent text-n-slate-11 relative ltr:-left-[3px] rtl:-right-[3px];
-
-    .ProseMirror-menu-active {
-      @apply bg-n-slate-5 dark:bg-n-solid-3 !important;
-    }
-
-    .ProseMirror-menuitem {
-      @apply mr-0 size-4 flex items-center justify-center;
-
-      .ProseMirror-icon {
-        @apply size-4 flex items-center justify-center flex-shrink-0;
-
-        svg {
-          @apply size-full;
-        }
-      }
-
-      .ProseMirror-copilot svg {
-        @apply fill-n-violet-9 text-n-violet-9 stroke-none;
-      }
-    }
-  }
-
-  .ProseMirror-menubar:not(:has(*)) {
-    max-height: none !important;
-    min-height: 0 !important;
-    padding: 0 !important;
-    display: none !important;
-  }
-
-  > .ProseMirror {
-    @apply p-0 break-words text-n-slate-12;
-
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6,
-    p {
-      @apply text-n-slate-12;
-    }
-
-    blockquote {
-      @apply border-n-slate-7;
-
-      p {
-        @apply text-n-slate-11;
-      }
-    }
-
-    ol li {
-      @apply list-item list-decimal;
-    }
-  }
-}
-
-.ProseMirror-woot-style {
-  @apply overflow-auto min-h-[5rem] max-h-[7.5rem];
-}
-
-.ProseMirror-prompt-backdrop::backdrop {
-  @apply bg-n-alpha-black1 backdrop-blur-[4px];
-}
-
-.ProseMirror-prompt {
-  @apply bg-n-alpha-3 border border-n-strong p-6 shadow-xl rounded-xl w-96 !important;
-
-  h5 {
-    @apply text-n-slate-12 mb-3;
-  }
-
-  .ProseMirror-prompt-buttons {
-    button {
-      @apply h-8 px-3;
-
-      &[type='submit'] {
-        @apply bg-n-brand text-white hover:bg-n-brand/90;
-      }
-
-      &[type='button'] {
-        @apply bg-n-slate-9/10 text-n-slate-12 hover:bg-n-slate-9/20;
-      }
-    }
-  }
-}
-
-.is-private {
-  .prosemirror-mention-node {
-    @apply font-medium bg-n-amber-2/80 dark:bg-n-amber-2/80 text-n-slate-12 py-0 px-1;
-  }
-
-  .ProseMirror-menubar-wrapper {
-    > .ProseMirror {
-      @apply text-n-slate-12;
-
-      p {
-        @apply text-n-slate-12;
-      }
-    }
-  }
-}
-
-.prosemirror-tools-node {
-  @apply font-medium text-n-slate-12 py-0;
-}
-
-.editor-wrap {
-  @apply mb-4;
-}
-
-.message-editor {
-  @apply rounded-lg outline outline-1 outline-n-weak hover:outline-n-slate-6 dark:hover:outline-n-slate-6 bg-n-alpha-black2 py-0 px-1 mb-0;
-}
-
-.editor_warning {
-  @apply outline outline-1 outline-n-ruby-8 dark:outline-n-ruby-8 hover:outline-n-ruby-9 dark:hover:outline-n-ruby-9;
-}
-
-.editor-warning__message {
-  @apply text-n-ruby-9 dark:text-n-ruby-9 font-normal text-sm pt-1 pb-0 px-0;
-}
-
-// Default copilot menu position (non-popover editors like components-next/Editor)
-// When popover-prosemirror-menu is NOT on the wrapper, anchor below the menubar
-:not(.popover-prosemirror-menu) > .copilot-editor-menu {
-  top: 1.5rem !important;
-
-  [dir='rtl'] & {
-    left: auto !important;
-    right: 0 !important;
-  }
-}
-
-// Float editor menu
-.popover-prosemirror-menu {
-  position: relative;
-
-  .ProseMirror p:last-child {
-    margin-bottom: 10px !important;
-  }
-
-  .ProseMirror-menubar {
-    display: none; // Hide by default
-  }
-
-  &.has-selection {
-    // Hide menu completely when it has no items
-    .ProseMirror-menubar:not(:has(*)) {
-      display: none !important;
-    }
-
-    .ProseMirror-menubar {
-      @apply rounded-lg !px-3 !py-1.5 z-50 bg-n-background items-center gap-4 ml-0 mb-0 shadow-md outline outline-1 outline-n-weak;
-      display: flex;
-      width: fit-content !important;
-      position: absolute !important;
-
-      // Default/LTR: position from left
-      top: var(--selection-top);
-      left: var(--selection-left);
-
-      // RTL: position from right instead
-      [dir='rtl'] & {
-        left: auto;
-        right: var(--selection-right);
-      }
-
-      .ProseMirror-menuitem {
-        @apply mr-0 size-4 flex items-center;
-
-        .ProseMirror-icon {
-          @apply p-0.5 flex-shrink-0;
-        }
-
-        .ProseMirror-copilot svg {
-          @apply fill-n-violet-9 text-n-violet-9 stroke-none;
-        }
-      }
-
-      .ProseMirror-menu-active {
-        @apply bg-n-slate-3;
-      }
-    }
-  }
-}
-</style>

@@ -4,14 +4,20 @@ RSpec.describe Captain::Llm::PaginatedFaqGeneratorService do
   let(:document) { create(:captain_document) }
   let(:service) { described_class.new(document, pages_per_chunk: 5) }
   let(:openai_client) { instance_double(OpenAI::Client) }
+  let(:blob) do
+    instance_double(
+      ActiveStorage::Blob,
+      filename: ActiveStorage::Filename.new('beneficio.pdf'),
+      byte_size: 1024,
+      download: '%PDF synthetic content'
+    )
+  end
+  let(:pdf_file) { double('pdf_file', blob: blob) } # rubocop:disable RSpec/VerifiedDoubles
 
   before do
-    # Mock OpenAI configuration
-    installation_config = instance_double(InstallationConfig, value: 'test-api-key')
-    allow(InstallationConfig).to receive(:find_by!)
-      .with(name: 'CAPTAIN_OPEN_AI_API_KEY')
-      .and_return(installation_config)
-
+    allow(document).to receive(:pdf_file).and_return(pdf_file)
+    allow(Llm::Config).to receive(:system_api_key).and_return('test-openrouter-key')
+    allow(Llm::Config).to receive(:openai_endpoint).and_return('https://openrouter.ai/api/v1')
     allow(OpenAI::Client).to receive(:new).and_return(openai_client)
   end
 
@@ -56,7 +62,7 @@ RSpec.describe Captain::Llm::PaginatedFaqGeneratorService do
       end
 
       before do
-        allow(document).to receive(:openai_file_id).and_return('file-123')
+        allow(document).to receive(:openai_file_id).and_return('openrouter-inline:pdf-checksum')
       end
 
       it 'generates FAQs from paginated content' do
@@ -66,6 +72,12 @@ RSpec.describe Captain::Llm::PaginatedFaqGeneratorService do
 
         expect(faqs).to have_attributes(size: 1)
         expect(faqs.first['question']).to eq('What is this document about?')
+        expect(openai_client).to have_received(:chat).with(
+          parameters: hash_including(
+            model: 'google/gemini-2.5-flash',
+            plugins: [{ id: 'file-parser', pdf: { engine: 'mistral-ocr' } }]
+          )
+        ).at_least(:once)
       end
 
       it 'stops when no more content' do

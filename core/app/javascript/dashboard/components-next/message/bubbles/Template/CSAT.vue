@@ -14,15 +14,23 @@ defineProps({
 </script>
 
 <template>
-  <div class="flex flex-col gap-2.5 text-n-slate-12 max-w-80">
-    <div class="p-3 rounded-xl bg-n-alpha-2">
+  <div class="flex max-w-80 flex-col gap-2.5 text-ds-fg-default">
+    <div
+      class="rounded-xl bg-ds-bg-sunken p-3 ring-1 ring-inset ring-ds-border-subtle"
+    >
       <span
         v-dompurify-html="message.content"
         class="text-sm font-medium prose prose-bubble"
       />
     </div>
     <div class="flex gap-2">
-      <Button :label="buttonText" slate class="!text-n-blue-11 w-full" />
+      <Button
+        type="button"
+        :label="buttonText"
+        color="primary"
+        variant="faded"
+        class="w-full"
+      />
     </div>
   </div>
 </template>

@@ -48,6 +48,34 @@ RSpec.describe 'Webhooks::EvolutionController', type: :request do
       expect(Webhooks::EvolutionEventsJob).to have_received(:perform_later)
     end
 
+    it 'filters credentials before serializing webhook parameters into the job' do
+      job_payload = nil
+      allow(Webhooks::EvolutionEventsJob).to receive(:perform_later) do |args|
+        job_payload = args
+      end
+      sensitive_payload = payload.deep_merge(
+        apikey: 'test_evolution_key',
+        webhook_token: 'webhook-secret',
+        data: {
+          message: {
+            messageContextInfo: {
+              messageSecret: 'encrypted-message-secret'
+            }
+          }
+        }
+      )
+
+      post "/webhooks/evolution/#{channel.phone_number.delete_prefix('+')}",
+           params: sensitive_payload,
+           headers: headers
+
+      expect(response).to have_http_status(:ok)
+      expect(job_payload['apikey']).to eq('[FILTERED]')
+      expect(job_payload['webhook_token']).to eq('[FILTERED]')
+      expect(job_payload.dig('data', 'message', 'messageContextInfo', 'messageSecret')).to eq('[FILTERED]')
+      expect(job_payload.dig('evolution', 'apikey')).to eq('[FILTERED]') if job_payload.key?('evolution')
+    end
+
     it 'rejects events for a different evolution instance' do
       allow(Webhooks::EvolutionEventsJob).to receive(:perform_later)
 

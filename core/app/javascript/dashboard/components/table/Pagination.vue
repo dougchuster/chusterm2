@@ -120,9 +120,13 @@ onMounted(() => {
           class="[&>button]:text-n-slate-11 [&>button]:hover:text-n-slate-12 [&>button]:h-6"
           :options="pageSizeOptions"
         />
-        <nav class="isolate inline-flex items-center gap-1.5">
+        <nav
+          class="isolate inline-flex items-center gap-1.5"
+          :aria-label="$t('PAGINATION_FOOTER.NAVIGATION')"
+        >
           <Button
             icon="i-lucide-chevrons-left"
+            :aria-label="$t('PAGINATION_FOOTER.FIRST_PAGE')"
             ghost
             slate
             sm
@@ -132,6 +136,7 @@ onMounted(() => {
           />
           <Button
             icon="i-lucide-chevron-left"
+            :aria-label="$t('PAGINATION_FOOTER.PREVIOUS_PAGE')"
             ghost
             slate
             sm
@@ -157,6 +162,7 @@ onMounted(() => {
           </Button>
           <Button
             icon="i-lucide-chevron-right"
+            :aria-label="$t('PAGINATION_FOOTER.NEXT_PAGE')"
             ghost
             slate
             sm
@@ -166,6 +172,7 @@ onMounted(() => {
           />
           <Button
             icon="i-lucide-chevrons-right"
+            :aria-label="$t('PAGINATION_FOOTER.LAST_PAGE')"
             ghost
             slate
             sm

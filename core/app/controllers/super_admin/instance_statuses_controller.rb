@@ -1,15 +1,15 @@
 ﻿class SuperAdmin::InstanceStatusesController < SuperAdmin::ApplicationController
   def show
     @metrics = {}
-    ChusteRM_version
+    chusterm_version
     sha
     postgres_status
     redis_metrics
-    ChusteRM_edition
+    chusterm_edition
     instance_meta
   end
 
-  def ChusteRM_edition
+  def chusterm_edition
     @metrics['ChusteRM edition'] = if ChusteRMApp.enterprise?
                                      'Enterprise'
                                    elsif ChusteRMApp.custom?
@@ -20,10 +20,11 @@
   end
 
   def instance_meta
-    @metrics['Database Migrations'] = ActiveRecord::Base.connection.migration_context.needs_migration? ? 'pending' : 'completed'
+    migration_context = ActiveRecord::Base.connection_pool.migration_context
+    @metrics['Database Migrations'] = migration_context.needs_migration? ? 'pending' : 'completed'
   end
 
-  def ChusteRM_version
+  def chusterm_version
     @metrics['ChusteRM version'] = ChusteRM.config[:version]
   end
 

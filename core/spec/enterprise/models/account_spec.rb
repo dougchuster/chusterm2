@@ -39,13 +39,13 @@ RSpec.describe Account, type: :model do
     let(:assistant) { create(:captain_assistant, account: account) }
 
     before do
-      create(:installation_config, name: 'ACCOUNT_AGENTS_LIMIT', value: 20)
+      InstallationConfig.find_or_initialize_by(name: 'ACCOUNT_AGENTS_LIMIT').update!(value: 20)
     end
 
     describe 'when captain limits are configured' do
       before do
         create_list(:captain_document, 3, account: account, assistant: assistant, status: :available)
-        create(:installation_config, name: 'CAPTAIN_CLOUD_PLAN_LIMITS', value: captain_limits.to_json)
+        InstallationConfig.find_or_initialize_by(name: 'CAPTAIN_CLOUD_PLAN_LIMITS').update!(value: captain_limits.to_json)
       end
 
       ## Document
@@ -131,7 +131,7 @@ RSpec.describe Account, type: :model do
 
     describe 'when limits are configured for an account' do
       before do
-        create(:installation_config, name: 'CAPTAIN_CLOUD_PLAN_LIMITS', value: captain_limits.to_json)
+        InstallationConfig.find_or_initialize_by(name: 'CAPTAIN_CLOUD_PLAN_LIMITS').update!(value: captain_limits.to_json)
         account.update(limits: { captain_documents: 5555, captain_responses: 9999 })
       end
 
@@ -191,7 +191,7 @@ RSpec.describe Account, type: :model do
     end
 
     before do
-      InstallationConfig.where(name: 'ChusteRM_CLOUD_PLAN_FEATURES').first_or_create(value: plan_features)
+      InstallationConfig.find_or_initialize_by(name: 'ChusteRM_CLOUD_PLAN_FEATURES').update!(value: plan_features)
     end
 
     context 'when plan_name is hacker' do
@@ -217,7 +217,7 @@ RSpec.describe Account, type: :model do
         account.custom_attributes = {}
         account.save!
 
-        expect(account.subscribed_features).to be_nil
+        expect(account.subscribed_features).to eq([])
       end
     end
   end

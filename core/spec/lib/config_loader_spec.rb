@@ -6,9 +6,11 @@ describe ConfigLoader do
   describe 'execute' do
     context 'when called with default options' do
       it 'creates installation configs' do
-        expect(InstallationConfig.count).to eq(0)
-        subject
-        expect(InstallationConfig.count).to be > 0
+        config_name = described_class.new.general_configs.first.fetch('name')
+        InstallationConfig.find_by(name: config_name)&.destroy!
+
+        expect { trigger }.to change(InstallationConfig, :count).by(1)
+        expect(InstallationConfig.find_by(name: config_name)).to be_present
       end
 
       it 'creates account level feature defaults as entry on config table' do

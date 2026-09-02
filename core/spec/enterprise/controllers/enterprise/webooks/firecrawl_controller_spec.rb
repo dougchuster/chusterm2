@@ -2,7 +2,11 @@ require 'rails_helper'
 
 RSpec.describe 'Firecrawl Webhooks', type: :request do
   describe 'POST /enterprise/webhooks/firecrawl?assistant_id=:assistant_id&token=:token' do
-    let!(:api_key) { create(:installation_config, name: 'CAPTAIN_FIRECRAWL_API_KEY', value: 'test_api_key_123') }
+    let!(:api_key) do
+      InstallationConfig.find_or_initialize_by(name: 'CAPTAIN_FIRECRAWL_API_KEY').tap do |config|
+        config.update!(value: 'test_api_key_123')
+      end
+    end
     let!(:account) { create(:account) }
     let!(:assistant) { create(:captain_assistant, account: account) }
 

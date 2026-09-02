@@ -10,10 +10,14 @@ defineProps({
 
 <template>
   <div
-    class="bg-n-alpha-2 divide-y divide-n-strong text-n-slate-12 rounded-xl max-w-80"
+    class="max-w-80 divide-y divide-ds-border-subtle rounded-xl bg-ds-bg-sunken text-ds-fg-default ring-1 ring-inset ring-ds-border-subtle"
   >
     <div class="px-3 py-2.5">
-      <img :src="message.image_url" class="max-h-44 rounded-lg w-full" />
+      <img
+        alt=""
+        :src="message.image_url"
+        class="max-h-44 w-full rounded-lg object-cover"
+      />
       <div class="pt-2.5 flex flex-col gap-2">
         <h6 class="font-semibold">{{ message.title }}</h6>
         <span
@@ -23,10 +27,20 @@ defineProps({
       </div>
     </div>
     <div class="p-3 flex items-center justify-center">
-      <Button label="Call us to order" link class="hover:!no-underline" />
+      <Button
+        type="button"
+        label="Call us to order"
+        link
+        class="hover:!no-underline"
+      />
     </div>
     <div class="p-3 flex items-center justify-center">
-      <Button label="Visit our store" link class="hover:!no-underline" />
+      <Button
+        type="button"
+        label="Visit our store"
+        link
+        class="hover:!no-underline"
+      />
     </div>
   </div>
 </template>

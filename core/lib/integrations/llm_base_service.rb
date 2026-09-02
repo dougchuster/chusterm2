@@ -83,8 +83,7 @@
   end
 
   def api_base
-    endpoint = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_ENDPOINT')&.value.presence || 'https://api.openai.com/'
-    Llm::Config.normalize_endpoint(endpoint)
+    Llm::Config.normalize_endpoint(Llm::Config.openai_endpoint)
   end
 
   def make_api_call(body)
@@ -100,7 +99,7 @@
     messages = parsed_body['messages']
     model = parsed_body['model']
 
-    Llm::Config.with_api_key(hook.settings['api_key'], api_base: api_base) do |context|
+    Llm::Config.with_api_key(Llm::Config.system_api_key, api_base: api_base) do |context|
       chat = Llm::Config.chat_for(client: context, model: model)
       setup_chat_with_messages(chat, messages)
     end

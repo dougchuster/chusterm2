@@ -47,17 +47,31 @@ watch(
 </script>
 
 <template>
-  <div class="px-4 py-2 text-n-slate-12">
-    <div v-if="!hasSearchableInfo" class="text-center text-n-slate-12">
+  <div class="px-4 py-2 text-ds-fg-default">
+    <div
+      v-if="!hasSearchableInfo"
+      class="rounded-lg bg-ds-bg-sunken px-3 py-4 text-center text-sm text-ds-fg-muted"
+    >
       {{ $t('CONVERSATION_SIDEBAR.SHOPIFY.NO_SHOPIFY_ORDERS') }}
     </div>
-    <div v-else-if="loading" class="flex justify-center items-center p-4">
-      <Spinner size="32" class="text-n-brand" />
+    <div
+      v-else-if="loading"
+      class="flex items-center justify-center p-4"
+      role="status"
+    >
+      <Spinner size="32" class="text-ds-accent" />
     </div>
-    <div v-else-if="error" class="text-center text-n-ruby-12">
+    <div
+      v-else-if="error"
+      role="alert"
+      class="rounded-lg bg-ds-state-danger-soft px-3 py-4 text-center text-sm text-ds-state-danger"
+    >
       {{ error }}
     </div>
-    <div v-else-if="!orders.length" class="text-center text-n-slate-12">
+    <div
+      v-else-if="!orders.length"
+      class="rounded-lg bg-ds-bg-sunken px-3 py-4 text-center text-sm text-ds-fg-muted"
+    >
       {{ $t('CONVERSATION_SIDEBAR.SHOPIFY.NO_SHOPIFY_ORDERS') }}
     </div>
     <div v-else>

@@ -2,7 +2,7 @@
 
 <% account_user = @resource&.account_users&.first %>
 <% account = account_user&.account %>
-<% is_saml_account = account.present? && account.try(:enabled_features).to_h['saml'] == true %>
+<% is_saml_account = account&.saml_enabled? %>
 
 <% if account_user&.inviter.present? && @resource.unconfirmed_email.blank? %>
   <% if is_saml_account %>

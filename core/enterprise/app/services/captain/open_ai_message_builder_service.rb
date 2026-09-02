@@ -33,6 +33,11 @@ class Captain::OpenAiMessageBuilderService
 
   def attachment_parts(attachments)
     image_content = image_parts(attachments.where(file_type: :image))
+    image_context = metadata_context_parts(
+      attachments.where(file_type: :image),
+      'Contexto analisado da imagem',
+      %w[image_description ocr_text]
+    )
 
     audio_text = process_audio(attachments)
     audio_part = text_part("Transcrição do áudio: #{audio_text}") if audio_text.present?
@@ -40,9 +45,9 @@ class Captain::OpenAiMessageBuilderService
     video_text = process_video(attachments)
     video_part = text_part("Descrição do vídeo: #{video_text}") if video_text.present?
 
-    other_part = text_part('User has shared an attachment') if attachments.where.not(file_type: %i[image audio video]).exists?
+    file_parts = file_attachment_parts(attachments.where.not(file_type: %i[image audio video]))
 
-    [image_content, audio_part, video_part, other_part].flatten.compact
+    [image_content, image_context, audio_part, video_part, file_parts].flatten.compact
   end
 
   def image_parts(image_attachments)
@@ -63,23 +68,51 @@ class Captain::OpenAiMessageBuilderService
     audio_attachments = attachments.where(file_type: :audio)
     return '' if audio_attachments.blank?
 
-    if Llm::MediaConfig.transcription_gemini?
-      service = Llm::GeminiMultimodalService.new(purpose: :transcription)
-      audio_attachments.filter_map { |a| service.transcribe_audio(a).presence }.join(' ')
-    else
-      audio_attachments.map do |attachment|
-        result = Messages::AudioTranscriptionService.new(attachment).perform
-        result[:success] ? result[:transcriptions] : ''
-      end.join
-    end
+    audio_attachments.filter_map do |attachment|
+      cached_text = attachment.meta&.dig('transcribed_text').presence
+      next cached_text.strip if cached_text
+
+      result = Messages::AudioTranscriptionService.new(attachment).perform
+      result[:transcriptions].to_s.strip if result[:success]
+    end.join(' ')
   end
 
   def process_video(attachments)
     video_attachments = attachments.where(file_type: :video)
     return '' if video_attachments.blank?
-    return '' unless Llm::GeminiMultimodalService.active?(purpose: :media)
+    return '' unless Llm::OpenRouterMultimodalService.active?(purpose: :media)
 
-    service = Llm::GeminiMultimodalService.new(purpose: :media)
-    video_attachments.filter_map { |a| service.describe_video(a).presence }.join("\n")
+    service = Llm::OpenRouterMultimodalService.new(purpose: :media)
+    video_attachments.filter_map do |attachment|
+      attachment.meta&.dig('video_description').presence || service.describe_video(attachment).presence
+    end.join("\n")
+  end
+
+  def file_attachment_parts(attachments)
+    attachments.map do |attachment|
+      context = metadata_context_text(
+        attachment,
+        'Contexto analisado do arquivo',
+        %w[document_guess image_description transcribed_text ocr_text]
+      )
+      text_part(context.presence || 'User has shared an attachment')
+    end
+  end
+
+  def metadata_context_parts(attachments, label, keys)
+    attachments.filter_map do |attachment|
+      context = metadata_context_text(attachment, label, keys)
+      text_part(context) if context.present?
+    end
+  end
+
+  def metadata_context_text(attachment, label, keys)
+    values = attachment.meta.to_h.slice(*keys).filter_map do |key, value|
+      "#{key}: #{value}" if value.present?
+    end
+    return if values.blank?
+
+    filename = attachment.file.filename.to_s if attachment.file.attached?
+    ["#{label}#{" (#{filename})" if filename.present?}", values.join('; ')].join(': ')
   end
 end

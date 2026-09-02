@@ -1,4 +1,4 @@
-﻿export const FEATURE_FLAGS = {
+export const FEATURE_FLAGS = {
   AGENT_BOTS: 'agent_bots',
   AGENT_MANAGEMENT: 'agent_management',
   ASSIGNMENT_V2: 'assignment_v2',
@@ -9,6 +9,7 @@
   WHATSAPP_CAMPAIGNS: 'whatsapp_campaign',
   CANNED_RESPONSES: 'canned_responses',
   CRM: 'crm',
+  CRM_V2: 'crm_v2',
   CUSTOM_ATTRIBUTES: 'custom_attributes',
   INBOX_MANAGEMENT: 'inbox_management',
   INTEGRATIONS: 'integrations',
@@ -46,5 +47,4 @@
   CONVERSATION_REQUIRED_ATTRIBUTES: 'conversation_required_attributes',
 };
 
-export const PREMIUM_FEATURES = [
-];
+export const PREMIUM_FEATURES = [];

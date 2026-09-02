@@ -22,6 +22,7 @@ const state = {
   conversationLastSeen: null,
   syncConversationsMessages: {},
   conversationFilters: {},
+  searchResultIds: null,
   copilotAssistant: {},
 };
 
@@ -59,9 +60,36 @@ export const mutations = {
     });
     _state.allConversations = newAllConversations;
   },
-  [types.EMPTY_ALL_CONVERSATION](_state) {
-    _state.allConversations = [];
-    _state.selectedChatId = null;
+  [types.SET_CONVERSATION_SEARCH_RESULT_IDS](
+    _state,
+    { conversationIds, append = false }
+  ) {
+    const existingIds =
+      append && Array.isArray(_state.searchResultIds)
+        ? _state.searchResultIds
+        : [];
+    _state.searchResultIds = [...new Set([...existingIds, ...conversationIds])];
+  },
+  [types.CLEAR_CONVERSATION_SEARCH_RESULT_IDS](_state) {
+    _state.searchResultIds = null;
+  },
+  [types.EMPTY_ALL_CONVERSATION](
+    _state,
+    { preserveSelected = false, searchActive = false } = {}
+  ) {
+    const selectedConversation = preserveSelected
+      ? _state.allConversations.find(
+          conversation => conversation.id === _state.selectedChatId
+        )
+      : null;
+
+    _state.allConversations = selectedConversation
+      ? [selectedConversation]
+      : [];
+    _state.selectedChatId = selectedConversation
+      ? selectedConversation.id
+      : null;
+    _state.searchResultIds = searchActive ? [] : null;
   },
   [types.SET_ALL_MESSAGES_LOADED](_state, conversationId) {
     const chat = getConversationById(_state)(conversationId);

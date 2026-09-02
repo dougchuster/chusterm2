@@ -1,15 +1,17 @@
 require 'ruby_llm'
+require 'uri'
 
 module Llm::Config
-  DEFAULT_MODEL = 'gpt-4.1-mini'.freeze
+  DEFAULT_MODEL = LlmConstants::DEFAULT_MODEL.freeze
+  class GatewayConfigurationError < StandardError; end
 
   class << self
     def normalize_endpoint(endpoint)
       value = endpoint.to_s.strip
-      return LlmConstants::OPENAI_API_ENDPOINT if value.blank?
+      return LlmConstants::OPENROUTER_API_ENDPOINT if value.blank?
 
       normalized = value.gsub(%r{/+$}, '')
-      normalized = LlmConstants::OPENAI_API_ENDPOINT if normalized.blank?
+      normalized = LlmConstants::OPENROUTER_API_ENDPOINT if normalized.blank?
       "#{normalized}/"
     end
 
@@ -25,18 +27,16 @@ module Llm::Config
     end
 
     def resolve_model(model)
-      normalize_model(model)
-    end
+      value = normalize_model(model)
+      return "anthropic/#{value}" if value.start_with?('claude-')
+      return "google/#{value}" if value.start_with?('gemini-')
+      return "openai/#{value}" if value.match?(/\A(?:gpt-|o[134]-|text-embedding-|whisper-)/)
 
-    def openai_compatible_gemini_model?(model, api_base: nil)
-      return false unless normalize_model(model).start_with?('gemini-')
-
-      endpoint = normalize_endpoint(api_base.presence || openai_endpoint)
-      endpoint.include?('generativelanguage.googleapis.com') && endpoint.include?('/openai/')
+      value
     end
 
     def anthropic_model?(model)
-      normalize_model(model).start_with?('claude-')
+      resolve_model(model).start_with?('anthropic/claude-')
     end
 
     def initialized?
@@ -56,54 +56,50 @@ module Llm::Config
 
     def with_api_key(api_key, api_base: nil)
       context = RubyLLM.context do |config|
-        config.openai_api_key = api_key
-        config.openai_api_base = api_base
+        config.openai_api_key = api_key.presence || system_api_key
+        config.openai_api_base = normalize_endpoint(api_base.presence || openai_endpoint)
       end
 
       yield context
     end
 
+    def system_api_key
+      ENV.fetch('LLM_API_KEY', nil).presence || InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_API_KEY')&.value
+    end
+
+    def openai_endpoint
+      endpoint = normalize_endpoint(configured_endpoint)
+      return endpoint if openrouter?(endpoint)
+
+      raise GatewayConfigurationError, 'LLM_BASE_URL must point to the unified OpenRouter gateway'
+    end
+
+    def openrouter?(endpoint = nil)
+      candidate = endpoint.presence || configured_endpoint
+      URI.parse(normalize_endpoint(candidate)).host == 'openrouter.ai'
+    rescue URI::InvalidURIError
+      false
+    end
+
     def chat_for(client:, model:)
-      normalized_model = normalize_model(model)
-      if openai_compatible_gemini_model?(normalized_model)
-        return client.chat(model: normalized_model, provider: :openai, assume_model_exists: true)
-      end
-
-      if anthropic_model?(normalized_model)
-        return client.chat(model: normalized_model, provider: :anthropic, assume_model_exists: true)
-      end
-
-      client.chat(model: normalized_model)
-    rescue RubyLLM::ModelNotFoundError
-      if anthropic_model?(normalized_model)
-        return client.chat(model: normalized_model, provider: :anthropic, assume_model_exists: true)
-      end
-
-      # Allow arbitrary OpenAI-compatible model IDs (for example provider/model on OpenRouter).
+      normalized_model = resolve_model(model)
       client.chat(model: normalized_model, provider: :openai, assume_model_exists: true)
     end
 
     private
 
+    def configured_endpoint
+      ENV.fetch('LLM_BASE_URL', nil).presence ||
+        InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_ENDPOINT')&.value.presence ||
+        LlmConstants::OPENROUTER_API_ENDPOINT
+    end
+
     def configure_ruby_llm
       RubyLLM.configure do |config|
         config.openai_api_key = system_api_key if system_api_key.present?
         config.openai_api_base = normalize_endpoint(openai_endpoint) if openai_endpoint.present?
-        config.anthropic_api_key = anthropic_api_key if anthropic_api_key.present?
         config.logger = Rails.logger
       end
-    end
-
-    def system_api_key
-      InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_API_KEY')&.value
-    end
-
-    def anthropic_api_key
-      InstallationConfig.find_by(name: 'CAPTAIN_ANTHROPIC_API_KEY')&.value
-    end
-
-    def openai_endpoint
-      InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_ENDPOINT')&.value
     end
   end
 end

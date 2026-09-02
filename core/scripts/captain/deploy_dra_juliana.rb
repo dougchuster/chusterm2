@@ -25,15 +25,9 @@ captain_configs = {
   'CAPTAIN_OPEN_AI_ENDPOINT' => llm_base_url,
   'CAPTAIN_OPEN_AI_MODEL' => 'openai/gpt-4o-mini',
   'CAPTAIN_OPEN_AI_API_KEY' => llm_api_key,
-  'CAPTAIN_EMBEDDING_ENDPOINT' => llm_base_url,
   'CAPTAIN_EMBEDDING_MODEL' => 'openai/text-embedding-3-small',
-  'CAPTAIN_EMBEDDING_API_KEY' => llm_api_key,
-  'CAPTAIN_AUDIO_TRANSCRIPTION_ENDPOINT' => llm_base_url,
-  'CAPTAIN_AUDIO_TRANSCRIPTION_MODEL' => 'openai/whisper-1',
-  'CAPTAIN_AUDIO_TRANSCRIPTION_API_KEY' => llm_api_key,
-  'CAPTAIN_MEDIA_AI_ENDPOINT' => llm_base_url,
-  'CAPTAIN_MEDIA_AI_MODEL' => 'openai/gpt-4o-mini',
-  'CAPTAIN_MEDIA_AI_API_KEY' => llm_api_key
+  'CAPTAIN_AUDIO_TRANSCRIPTION_MODEL' => 'openai/gpt-4o-transcribe',
+  'CAPTAIN_MEDIA_AI_MODEL' => 'google/gemini-2.5-flash'
 }
 
 captain_configs.each do |name, value|
@@ -44,6 +38,15 @@ captain_configs.each do |name, value|
     c.locked = false
     c.save!
   end
+end
+
+%w[
+  CAPTAIN_ANTHROPIC_API_KEY
+  CAPTAIN_MEDIA_AI_API_KEY CAPTAIN_MEDIA_AI_ENDPOINT
+  CAPTAIN_AUDIO_TRANSCRIPTION_API_KEY CAPTAIN_AUDIO_TRANSCRIPTION_ENDPOINT
+  CAPTAIN_EMBEDDING_API_KEY CAPTAIN_EMBEDDING_ENDPOINT
+].each do |name|
+  InstallationConfig.find_by(name: name)&.update!(value: '')
 end
 GlobalConfig.clear_cache
 puts "InstallationConfig do Captain atualizado"

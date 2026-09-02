@@ -74,6 +74,69 @@ RSpec.describe Captain::Conversation::ResponseBuilderJob, type: :job do
         expect(content).to include('CTPS')
       end
 
+      it 'applies the response policy once to the complete answer before segmenting and flags scheduled parts' do
+        raw_response = 'Primeira parte insegura.\n\nSegunda parte que pediria CPF.'
+        sanitized_response = 'Primeira parte segura.\n\nSegunda parte segura.'
+        policy = instance_double(Captain::Conversation::ResponsePolicyService)
+        segmenter = instance_double(
+          Captain::Conversation::MessageSegmenterService,
+          perform: ['Primeira parte segura.', 'Segunda parte segura.']
+        )
+        configured_job = instance_double(ActiveJob::ConfiguredJob)
+
+        allow(mock_llm_chat_service).to receive(:generate_response).and_return({ 'response' => raw_response })
+        allow(Captain::Conversation::ResponsePolicyService).to receive(:new)
+          .with(conversation: conversation, assistant: assistant)
+          .and_return(policy)
+        expect(policy).to receive(:apply).once.with(raw_response).and_return(sanitized_response)
+        expect(Captain::Conversation::MessageSegmenterService).to receive(:new)
+          .with(text: sanitized_response)
+          .and_return(segmenter)
+        expect(Captain::Conversation::ResponsePartJob).to receive(:set)
+          .with(wait: described_class::RESPONSE_PART_DELAY_SECONDS)
+          .and_return(configured_job)
+        expect(configured_job).to receive(:perform_later).with(
+          conversation,
+          assistant,
+          'Segunda parte segura.',
+          nil,
+          policy_applied: true,
+          origin_incoming_id: conversation.messages.incoming.maximum(:id)
+        )
+
+        described_class.perform_now(conversation, assistant)
+
+        expect(conversation.messages.outgoing.last.content).to eq('Primeira parte segura.')
+      end
+
+      it 'moves the lead review notice into the first delivered part before marking it as sent' do
+        notice = Captain::Conversation::ResponsePolicyService::NEW_LEAD_REVIEW_NOTICE
+        sanitized_response =
+          'Sou a Dra. Letícia, advogada responsável pelo atendimento inicial da Dra. Paula Matos. ' \
+          "#{notice} Qual é a data da decisão?"
+        policy = instance_double(Captain::Conversation::ResponsePolicyService, apply: sanitized_response)
+        segmenter = instance_double(
+          Captain::Conversation::MessageSegmenterService,
+          perform: [
+            'Sou a Dra. Letícia, advogada responsável pelo atendimento inicial da Dra. Paula Matos.',
+            notice,
+            'Qual é a data da decisão?'
+          ]
+        )
+        configured_job = instance_double(ActiveJob::ConfiguredJob, perform_later: true)
+
+        allow(Captain::Conversation::ResponsePolicyService).to receive(:new).and_return(policy)
+        allow(Captain::Conversation::MessageSegmenterService).to receive(:new).and_return(segmenter)
+        allow(Captain::Conversation::ResponsePartJob).to receive(:set).and_return(configured_job)
+
+        described_class.perform_now(conversation, assistant)
+
+        first_message = conversation.messages.outgoing.where(sender: assistant).last
+        expect(first_message.content).to include('Sou a Dra. Letícia')
+        expect(first_message.content).to include(notice)
+        expect(conversation.reload.captain_conversation_state.analysis_notice_sent_at).to be_present
+      end
+
       it 'increments usage response' do
         described_class.perform_now(conversation, assistant)
         account.reload
@@ -182,18 +245,16 @@ RSpec.describe Captain::Conversation::ResponseBuilderJob, type: :job do
         end.to change { conversation.messages.outgoing.where(sender_type: 'Captain::Assistant').count }.by(1)
       end
 
-      it 'does not send AI responses to customer contacts' do
+      it 'continues supporting customer contacts instead of globally disabling AI' do
         conversation.contact.update!(contact_type: :customer)
 
-        expect(mock_llm_chat_service).not_to receive(:generate_response)
         expect do
           described_class.perform_now(conversation, assistant)
-        end.not_to(change { conversation.messages.outgoing.where(sender_type: 'Captain::Assistant').count })
+        end.to change { conversation.messages.outgoing.where(sender_type: 'Captain::Assistant').count }.by(1)
 
         state = conversation.reload.captain_conversation_state
-        expect(conversation.status).to eq('open')
-        expect(state.ai_mode).to eq('human_only')
-        expect(state.handoff_reason).to eq('Contato classificado como cliente; atendimento por IA desativado.')
+        expect(conversation.status).to eq('pending')
+        expect(state.ai_mode).to eq('auto')
       end
 
       it 'does not send another response when the latest public message is already from the assistant' do
@@ -221,6 +282,233 @@ RSpec.describe Captain::Conversation::ResponseBuilderJob, type: :job do
         expect(mock_llm_chat_service).not_to receive(:generate_response)
 
         described_class.perform_now(conversation, assistant, 0, latest_incoming.id, Time.current)
+      end
+
+      it 'waits for audio transcription when the account uses the default enabled setting' do
+        latest_incoming = create(:message, conversation: conversation, content: '', message_type: :incoming)
+        latest_incoming.attachments.create!(
+          account: account,
+          file_type: :audio,
+          meta: { 'media_understanding_status' => 'processing' }
+        )
+        account.update!(audio_transcriptions: nil)
+        allow(Llm::MediaConfig).to receive(:transcription_configured?).and_return(true)
+        scheduled_job = instance_double(ActiveJob::ConfiguredJob)
+
+        expect(Captain::Conversation::ResponseBuilderJob).to receive(:set)
+          .with(wait: kind_of(ActiveSupport::Duration))
+          .and_return(scheduled_job)
+        expect(scheduled_job).to receive(:perform_later).with(
+          conversation,
+          assistant,
+          1,
+          nil,
+          nil
+        )
+        expect(mock_llm_chat_service).not_to receive(:generate_response)
+
+        described_class.perform_now(conversation, assistant)
+      end
+
+      it 'publishes a readable recovery message, adds a private note and hands off when audio transcription failed' do
+        latest_incoming = create(:message, conversation: conversation, content: '', message_type: :incoming)
+        latest_incoming.attachments.create!(
+          account: account,
+          file_type: :audio,
+          meta: {
+            'media_understanding_status' => 'failed',
+            'media_understanding_error' => 'transient_provider_exhausted: Gemini temporary API error 503'
+          }
+        )
+        account.update!(audio_transcriptions: nil)
+        allow(Llm::MediaConfig).to receive(:transcription_configured?).and_return(true)
+
+        expect(mock_llm_chat_service).not_to receive(:generate_response)
+        expect do
+          described_class.perform_now(conversation, assistant)
+        end.to change { conversation.messages.outgoing.where(private: false, sender_type: 'Captain::Assistant').count }.by(1)
+
+        state = conversation.reload.captain_conversation_state
+        expect(conversation.status).to eq('open')
+        expect(state.ai_mode).to eq('human_only')
+        expect(state.handoff_reason).to include('Mídia sem contexto seguro para IA')
+        expect(conversation.messages.outgoing.where(private: false, sender: assistant).last.content).to include(
+          'Recebi o arquivo, mas não consegui ler o conteúdo'
+        )
+        expect(conversation.messages.outgoing.where(private: true, sender: assistant).last.content).to include('IA pausada')
+      end
+
+      it 'publishes the recovery message and hands off when document analysis was skipped' do
+        latest_incoming = create(:message, conversation: conversation, content: '', message_type: :incoming)
+        latest_incoming.attachments.create!(
+          account: account,
+          file_type: :file,
+          meta: { 'media_understanding_status' => 'skipped' }
+        )
+
+        expect(mock_llm_chat_service).not_to receive(:generate_response)
+
+        described_class.perform_now(conversation, assistant)
+
+        public_message = conversation.messages.outgoing.where(private: false, sender: assistant).last
+        private_note = conversation.messages.outgoing.where(private: true, sender: assistant).last
+        state = conversation.reload.captain_conversation_state
+        expect(public_message.content).to include('não consegui ler o conteúdo')
+        expect(public_message.content).to include('Reenvie em PDF ou em fotos nítidas')
+        expect(private_note.content).to include('Atendimento humano necessário')
+        expect(state.ai_mode).to eq('human_only')
+      end
+
+      %w[processed completed].each do |finished_status|
+        it "treats #{finished_status} document understanding without usable fields as unreadable" do
+          latest_incoming = create(:message, conversation: conversation, content: '', message_type: :incoming)
+          latest_incoming.attachments.create!(
+            account: account,
+            file_type: :file,
+            meta: {
+              'media_understanding_status' => finished_status,
+              'ocr_text' => '',
+              'image_description' => '',
+              'document_guess' => '',
+              'media_understanding' => { 'ocr_text' => '', 'description' => '' }
+            }
+          )
+
+          expect(mock_llm_chat_service).not_to receive(:generate_response)
+
+          described_class.perform_now(conversation, assistant)
+
+          expect(conversation.messages.outgoing.where(private: false, sender: assistant).last.content).to include(
+            'não consegui ler o conteúdo'
+          )
+          expect(conversation.messages.outgoing.where(private: true, sender: assistant).last.content).to include('IA pausada')
+          expect(conversation.reload.captain_conversation_state.ai_mode).to eq('human_only')
+        end
+      end
+
+      it 'does not treat a document type guess without extracted content as readable' do
+        latest_incoming = create(:message, conversation: conversation, content: '', message_type: :incoming)
+        latest_incoming.attachments.create!(
+          account: account,
+          file_type: :file,
+          meta: {
+            'media_understanding_status' => 'processed',
+            'document_guess' => 'CNIS'
+          }
+        )
+
+        expect(mock_llm_chat_service).not_to receive(:generate_response)
+
+        described_class.perform_now(conversation, assistant)
+
+        expect(conversation.messages.outgoing.where(private: false, sender: assistant).last.content).to include(
+          'não consegui ler o conteúdo'
+        )
+        expect(conversation.reload.captain_conversation_state.ai_mode).to eq('human_only')
+      end
+
+      it 'propagates a processed file description to the model instead of treating hidden metadata as sufficient' do
+        conversation.contact.update!(contact_type: :customer)
+        latest_incoming = create(:message, conversation: conversation, content: '', message_type: :incoming)
+        latest_incoming.attachments.create!(
+          account: account,
+          file_type: :file,
+          meta: {
+            'media_understanding_status' => 'processed',
+            'image_description' => 'Página de um extrato previdenciário com vínculos e remunerações.'
+          }
+        )
+
+        expect(mock_llm_chat_service).to receive(:generate_response) do |message_history:|
+          expect(message_history.last[:content]).to include('Contexto analisado do arquivo')
+          expect(message_history.last[:content]).to include('extrato previdenciário')
+          { 'response' => 'Vou considerar o conteúdo identificado no documento.' }
+        end
+
+        described_class.perform_now(conversation, assistant)
+
+        expect(conversation.messages.outgoing.where(private: false, sender: assistant).last.content).to eq(
+          'Vou considerar o conteúdo identificado no documento.'
+        )
+        expect(conversation.reload.captain_conversation_state.ai_mode).to eq('auto')
+      end
+
+      it 'publishes the recovery message and hands off when media remains processing after the timeout' do
+        latest_incoming = create(:message, conversation: conversation, content: '', message_type: :incoming)
+        latest_incoming.attachments.create!(
+          account: account,
+          file_type: :file,
+          meta: { 'media_understanding_status' => 'processing' }
+        )
+        allow(Llm::OpenRouterMultimodalService).to receive(:active?).with(purpose: :media).and_return(true)
+
+        expect(mock_llm_chat_service).not_to receive(:generate_response)
+
+        described_class.perform_now(
+          conversation,
+          assistant,
+          described_class::MAX_MEDIA_UNDERSTANDING_WAIT_ATTEMPTS
+        )
+
+        expect(conversation.messages.outgoing.where(private: false, sender: assistant).last.content).to include(
+          'não consegui ler o conteúdo'
+        )
+        expect(conversation.messages.outgoing.where(private: true, sender: assistant).last.content).to include('IA pausada')
+        expect(conversation.reload.captain_conversation_state.ai_mode).to eq('human_only')
+      end
+
+      it 'continues to the model when OCR text is available for the attachment' do
+        latest_incoming = create(:message, conversation: conversation, content: '', message_type: :incoming)
+        latest_incoming.attachments.create!(
+          account: account,
+          file_type: :file,
+          meta: {
+            'media_understanding_status' => 'completed',
+            'ocr_text' => 'Extrato CNIS com vínculo empregatício de 2010 a 2020.'
+          }
+        )
+        message_builder = instance_double(Captain::OpenAiMessageBuilderService, generate_content: 'Documento com OCR')
+        allow(Captain::OpenAiMessageBuilderService).to receive(:new).and_return(message_builder)
+
+        expect(mock_llm_chat_service).to receive(:generate_response).and_return({ 'response' => 'Analisei o texto do documento.' })
+
+        described_class.perform_now(conversation, assistant)
+
+        expect(conversation.messages.outgoing.where(private: false, sender: assistant).last.content).to eq(
+          'Analisei o texto do documento.'
+        )
+        expect(conversation.reload.captain_conversation_state.ai_mode).to eq('auto')
+      end
+
+      it 'discards a stale completion and schedules one response for messages received during generation' do
+        captain_inbox_association.update!(
+          routing_config: { 'response_delay_seconds' => 4, 'response_max_wait_seconds' => 20 }
+        )
+        scheduled_job = instance_double(ActiveJob::ConfiguredJob)
+        allow(mock_llm_chat_service).to receive(:generate_response) do
+          create(
+            :message,
+            conversation: conversation,
+            content: 'Também sou CLT e já tenho o CNIS.',
+            message_type: :incoming
+          )
+          { 'response' => 'Resposta baseada apenas na mensagem anterior.' }
+        end
+
+        expect(Captain::Conversation::ResponseBuilderJob).to receive(:set)
+          .with(wait: kind_of(ActiveSupport::Duration))
+          .and_return(scheduled_job)
+        expect(scheduled_job).to receive(:perform_later).with(
+          conversation,
+          assistant,
+          0,
+          kind_of(Integer),
+          kind_of(ActiveSupport::TimeWithZone)
+        )
+
+        expect do
+          described_class.perform_now(conversation, assistant)
+        end.not_to(change { conversation.messages.outgoing.count })
       end
     end
 
@@ -260,10 +548,74 @@ RSpec.describe Captain::Conversation::ResponseBuilderJob, type: :job do
         expect(conversation.messages.last.content).to eq('Hey, welcome to Captain V2')
       end
 
+      it 'stores the response origin and safe provider error category for auditing' do
+        allow(mock_agent_runner_service).to receive(:generate_response).and_return(
+          {
+            'response' => 'Recebi sua mensagem. Vou orientar o próximo passo.',
+            'response_origin' => 'provider_fallback',
+            'ai_error_category' => 'insufficient_credit'
+          }
+        )
+
+        described_class.perform_now(conversation, assistant)
+
+        attributes = conversation.messages.outgoing.last.additional_attributes
+        expect(attributes).to include(
+          'ai_response_origin' => 'provider_fallback',
+          'ai_error_category' => 'insufficient_credit'
+        )
+      end
+
       it 'increments usage response' do
         described_class.perform_now(conversation, assistant)
         account.reload
         expect(account.usage_limits[:captain][:responses][:consumed]).to eq(1)
+      end
+
+      it 'hands off an explicit request for Dra. Paula before calling the model' do
+        captain_inbox_association.update!(handoff_strategy: 'human_request')
+        conversation.messages.incoming.last.update!(
+          content: 'Oi, gostaria de falar com a Dra. Paula.'
+        )
+
+        expect(Captain::Assistant::AgentRunnerService).not_to receive(:new)
+
+        described_class.perform_now(conversation, assistant)
+
+        state = conversation.reload.captain_conversation_state
+        expect(conversation.status).to eq('open')
+        expect(state.ai_mode).to eq('human_only')
+        expect(state.handoff_reason_code).to eq('customer_request')
+      end
+
+      it 'does not hand off a question about Dra. Paula services' do
+        captain_inbox_association.update!(handoff_strategy: 'human_request')
+        conversation.messages.incoming.last.update!(
+          content: 'A Dra. Paula atende casos de aposentadoria?'
+        )
+
+        expect(Captain::Assistant::AgentRunnerService).to receive(:new).and_return(mock_agent_runner_service)
+
+        described_class.perform_now(conversation, assistant)
+
+        expect(conversation.reload.status).to eq('pending')
+        expect(conversation.messages.outgoing.last.content).to eq('Hey, welcome to Captain V2')
+      end
+
+      it 'lets Dra. Letícia answer a generic request for a lawyer instead of handing off' do
+        captain_inbox_association.update!(handoff_strategy: 'human_request')
+        conversation.messages.incoming.last.update!(
+          content: 'Quero falar com uma advogada sobre minha aposentadoria.'
+        )
+
+        expect(Captain::Assistant::AgentRunnerService).to receive(:new).and_return(mock_agent_runner_service)
+
+        described_class.perform_now(conversation, assistant)
+
+        state = conversation.reload.captain_conversation_state
+        expect(conversation.status).to eq('pending')
+        expect(state.ai_mode).to eq('auto')
+        expect(conversation.messages.outgoing.last.content).to eq('Hey, welcome to Captain V2')
       end
     end
 
@@ -278,6 +630,9 @@ RSpec.describe Captain::Conversation::ResponseBuilderJob, type: :job do
       before do
         allow(account).to receive(:feature_enabled?).and_return(false)
         allow(account).to receive(:feature_enabled?).with('captain_integration_v2').and_return(false)
+        conversation.messages.incoming.last.update!(
+          content: 'Quero falar com um atendente humano.'
+        )
         allow(mock_llm_chat_service).to receive(:generate_response).and_return({ 'response' => 'conversation_handoff' })
       end
 
@@ -327,6 +682,53 @@ RSpec.describe Captain::Conversation::ResponseBuilderJob, type: :job do
         end
 
         described_class.perform_now(conversation, assistant)
+      end
+    end
+
+    context 'when the model requests an unrequested handoff' do
+      before do
+        allow(account).to receive(:feature_enabled?).and_return(false)
+        allow(account).to receive(:feature_enabled?).with('captain_integration_v2').and_return(false)
+        allow(mock_llm_chat_service).to receive(:generate_response)
+          .and_return({ 'response' => 'conversation_handoff' })
+      end
+
+      it 'keeps the conversation with the AI and asks one concise question' do
+        described_class.perform_now(conversation, assistant)
+
+        expect(conversation.reload.status).to eq('pending')
+        expect(conversation.messages.outgoing.last.content).to eq(
+          described_class::UNREQUESTED_HANDOFF_FALLBACK
+        )
+      end
+    end
+
+    context 'when another public reply is created during generation' do
+      let(:human_agent) { create(:user, account: account, role: :agent) }
+
+      before do
+        allow(mock_llm_chat_service).to receive(:generate_response) do
+          create(
+            :message,
+            conversation: conversation,
+            account: account,
+            inbox: inbox,
+            sender: human_agent,
+            message_type: :outgoing,
+            content: 'Já estou atendendo este caso.'
+          )
+          { 'response' => 'Resposta antiga da IA.' }
+        end
+      end
+
+      it 'discards the generated AI response' do
+        expect do
+          described_class.perform_now(conversation, assistant)
+        end.to change { conversation.messages.outgoing.count }.by(1)
+
+        expect(conversation.messages.outgoing.last.content).to eq(
+          'Já estou atendendo este caso.'
+        )
       end
     end
   end
@@ -452,7 +854,12 @@ RSpec.describe Captain::Conversation::ResponseBuilderJob, type: :job do
 
     before do
       captain_inbox_association
-      create(:message, conversation: conversation, content: 'Hello', message_type: :incoming)
+      create(
+        :message,
+        conversation: conversation,
+        content: 'Quero falar com um atendente humano.',
+        message_type: :incoming
+      )
       allow(Captain::Llm::AssistantChatService).to receive(:new).and_return(mock_llm_chat_service)
       allow(account).to receive(:feature_enabled?).and_return(false)
       allow(account).to receive(:feature_enabled?).with('captain_integration_v2').and_return(false)

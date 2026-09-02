@@ -11,12 +11,19 @@
     "MENTION_HEADING": "Menções",
     "UNATTENDED_HEADING": "Não Atendidas",
     "SEARCH": {
-      "INPUT": "Pesquisar pessoas, conversas, respostas salvas .."
+      "INPUT": "Pesquisar por nome, telefone, e-mail, ID ou mensagem",
+      "ERROR": "Não foi possível pesquisar as conversas.",
+      "RETRY": "Tentar novamente"
     },
     "FILTER_ALL": "Todos",
     "ASSIGNEE_TYPE_TABS": {
       "me": "Minhas",
       "unassigned": "Não atribuídas",
+      "all": "Todos"
+    },
+    "ASSIGNEE_TYPE_TABS_SHORT": {
+      "me": "Minhas",
+      "unassigned": "Sem dono",
       "all": "Todos"
     },
     "CHAT_STATUS_FILTER_ITEMS": {

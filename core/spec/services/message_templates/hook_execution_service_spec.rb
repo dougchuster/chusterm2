@@ -270,4 +270,92 @@ describe MessageTemplates::HookExecutionService do
       expect(out_of_office_service).not_to receive(:perform)
     end
   end
+
+  context 'when Captain was paused by an old human reply' do
+    let(:account) { create(:account) }
+    let(:assistant) { create(:captain_assistant, account: account) }
+    let(:inbox) { create(:inbox, account: account) }
+    let(:captain_inbox) do
+      create(
+        :captain_inbox,
+        inbox: inbox,
+        captain_assistant: assistant,
+        enabled: true,
+        auto_reply_enabled: true,
+        ai_mode: 'auto',
+        routing_config: { 'auto_resume_after_hours' => 24, 'response_delay_seconds' => 4 }
+      )
+    end
+    let(:conversation) { create(:conversation, account: account, inbox: inbox, status: :open) }
+
+    before { captain_inbox }
+
+    def pause_after_human_reply(conversation, human_message_at:)
+      create(
+        :message,
+        conversation: conversation,
+        account: conversation.account,
+        message_type: :incoming,
+        created_at: human_message_at - 1.minute
+      )
+      create(
+        :message,
+        conversation: conversation,
+        account: conversation.account,
+        message_type: :outgoing,
+        created_at: human_message_at
+      )
+      conversation.reload
+    end
+
+    it 'resumes on a new customer message after the configured inactivity window' do
+      pause_after_human_reply(conversation, human_message_at: 25.hours.ago)
+      expect(conversation.captain_conversation_state.ai_mode).to eq('human_only')
+
+      create(:message, conversation: conversation, account: account, message_type: :incoming, content: 'Olá, ainda preciso de ajuda.')
+
+      state = conversation.reload.captain_conversation_state
+      expect(state.ai_mode).to eq('auto')
+      expect(state.resume_source).to eq(CaptainConversationState::RESUME_SOURCE_AUTOMATIC)
+      expect(state.handoff_reason_code).to eq(described_class::AUTO_RESUME_REASON_CODE)
+    end
+
+    it 'keeps the human handoff when the customer explicitly asks for a lawyer' do
+      pause_after_human_reply(conversation, human_message_at: 25.hours.ago)
+
+      create(
+        :message,
+        conversation: conversation,
+        account: account,
+        message_type: :incoming,
+        content: 'Quero falar com uma advogada, por favor.'
+      )
+
+      expect(conversation.reload.captain_conversation_state.ai_mode).to eq('human_only')
+    end
+
+    it 'keeps the human handoff during the configured inactivity window' do
+      pause_after_human_reply(conversation, human_message_at: 2.hours.ago)
+
+      create(:message, conversation: conversation, account: account, message_type: :incoming, content: 'Tenho outra dúvida.')
+
+      expect(conversation.reload.captain_conversation_state.ai_mode).to eq('human_only')
+    end
+
+    it 'keeps the human handoff after a recent explicit request for a lawyer' do
+      pause_after_human_reply(conversation, human_message_at: 5.days.ago)
+      create(
+        :message,
+        conversation: conversation,
+        account: account,
+        message_type: :incoming,
+        content: 'Preciso conversar com uma advogada.',
+        created_at: 2.days.ago
+      )
+
+      create(:message, conversation: conversation, account: account, message_type: :incoming, content: 'Olá novamente.')
+
+      expect(conversation.reload.captain_conversation_state.ai_mode).to eq('human_only')
+    end
+  end
 end

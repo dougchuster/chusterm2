@@ -1,18 +1,24 @@
 import { frontendURL } from '../../../helper/URLHelper';
 import { FEATURE_FLAGS } from '../../../featureFlags';
-import CrmIndex from './pages/CrmIndex.vue';
-import AllLeads from './pages/AllLeads.vue';
-import PipelineSettings from './pages/PipelineSettings.vue';
-import Activities from './pages/Activities.vue';
-import Agenda from './pages/Agenda.vue';
-import Reports from './pages/Reports.vue';
-import LossReasons from './pages/LossReasons.vue';
-import ChecklistTemplates from './pages/ChecklistTemplates.vue';
-import AutomationRules from './pages/AutomationRules.vue';
-import ScoringConfig from './pages/ScoringConfig.vue';
-import Cadences from './pages/Cadences.vue';
-import DealDetails from './pages/DealDetails.vue';
-import CrmMetrics from './pages/CrmMetrics.vue';
+
+// PERF-03: todas as páginas CRM são carregadas sob demanda (dynamic import)
+// para sair do chunk principal do dashboard. Não voltar a importar
+// estaticamente — cada página gera seu próprio chunk no build do Vite.
+const CrmIndex = () => import('./pages/CrmIndex.vue');
+const AllLeads = () => import('./pages/AllLeads.vue');
+const PipelineSettings = () => import('./pages/PipelineSettings.vue');
+const Activities = () => import('./pages/Activities.vue');
+const Agenda = () => import('./pages/Agenda.vue');
+const Reports = () => import('./pages/Reports.vue');
+const LossReasons = () => import('./pages/LossReasons.vue');
+const ChecklistTemplates = () => import('./pages/ChecklistTemplates.vue');
+const AutomationRules = () => import('./pages/AutomationRules.vue');
+const ScoringConfig = () => import('./pages/ScoringConfig.vue');
+const Cadences = () => import('./pages/Cadences.vue');
+const DealDetails = () => import('./pages/DealDetails.vue');
+const CrmMetrics = () => import('./pages/CrmMetrics.vue');
+const AiCenter = () => import('./pages/AiCenter.vue');
+const PageTemplatesGallery = () => import('./pages/PageTemplatesGallery.vue');
 
 const commonMeta = {
   featureFlag: FEATURE_FLAGS.CRM,
@@ -97,5 +103,20 @@ export const routes = [
     name: 'crm_metrics',
     component: CrmMetrics,
     meta: commonMeta,
+  },
+  {
+    path: frontendURL('accounts/:accountId/crm/ai-center'),
+    name: 'crm_ai_center',
+    component: AiCenter,
+    meta: commonMeta,
+  },
+  {
+    path: frontendURL('accounts/:accountId/crm/design-system/templates'),
+    name: 'crm_page_templates',
+    component: PageTemplatesGallery,
+    meta: {
+      featureFlag: FEATURE_FLAGS.CRM_V2,
+      permissions: ['administrator'],
+    },
   },
 ];

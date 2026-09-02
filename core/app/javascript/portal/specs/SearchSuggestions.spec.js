@@ -1,4 +1,4 @@
-﻿import { mount } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 import { describe, it, expect, vi } from 'vitest';
 import SearchSuggestions from '../components/SearchSuggestions.vue';
 

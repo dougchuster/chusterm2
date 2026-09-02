@@ -15,7 +15,9 @@ class Api::V1::Accounts::Captain::AssistantsController < Api::V1::Accounts::Base
   end
 
   def update
-    @assistant.update!(assistant_params)
+    attributes = assistant_params
+    attributes[:config] = @assistant.config.merge(attributes[:config].to_h) if attributes[:config]
+    @assistant.update!(attributes)
   end
 
   def destroy
@@ -58,6 +60,8 @@ class Api::V1::Accounts::Captain::AssistantsController < Api::V1::Accounts::Base
                                                   config: [
                                                     :product_name, :feature_faq, :feature_memory, :feature_citation,
                                                     :feature_contact_attributes,
+                                                    :feature_previdenciario_initial_responses,
+                                                    :feature_dra_paula_data_collection_policy,
                                                     :welcome_message, :handoff_message, :resolution_message,
                                                     :instructions, :temperature,
                                                     :llm_provider, :llm_main_model, :llm_fallback_model,

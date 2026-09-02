@@ -4,6 +4,8 @@
 .env.*.local
 .appdeploy
 !.env.example
+# Scripts de setup locais podem conter credenciais (SEC-01)
+setup_*.sh
 
 # Local agent/editor profiles
 .claude/
@@ -84,12 +86,20 @@ coverage/
 .nyc_output/
 test-results/
 playwright-report/
+qa/e2e/playwright/.auth/
 
 # Notas e documentação de orientação (não fazem parte do sistema)
 memorias.md
-docs/
+docs/*
+!docs/audit/
+!docs/audit/**
+!docs/execution/
+!docs/execution/**
+!docs/qa/
+!docs/qa/**
 core/docs/
 SETUP.md
+!SETUP.md
 core-placeholder-readme.md
 
 # Arquivos do Claude Code (prompts e skills de IA)

@@ -58,6 +58,7 @@ Rails.application.config.autoload_paths += %W[
 enterprise_views = Rails.root.join('enterprise/app/views').to_s
 Rails.application.config.to_prepare do
   ActionController::Base.prepend_view_path(enterprise_views)
+  ActionMailer::Base.prepend_view_path(enterprise_views)
 end
 
 puts 'ChusteRM: Enterprise features unlocked'

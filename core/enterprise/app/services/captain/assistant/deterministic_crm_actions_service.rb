@@ -27,11 +27,11 @@ class Captain::Assistant::DeterministicCrmActionsService
     sync_captain_state_score(deal)
   rescue StandardError => e
     Rails.logger.warn "[Captain V2] Deterministic CRM sync failed: #{e.class} - #{e.message}"
-    ChusteRMExceptionTracker.new(e, account: @conversation&.account).capture_exception
+    ::ChusteRMExceptionTracker.new(e, account: @conversation&.account).capture_exception
   end
 
   def sync_captain_state_score(deal)
-    state = CaptainConversationState.find_by(conversation: @conversation)
+    state = @conversation.account.captain_conversation_states.find_by(conversation: @conversation)
     return unless state && deal
 
     updates = {}

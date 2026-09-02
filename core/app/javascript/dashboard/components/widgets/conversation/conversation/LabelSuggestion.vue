@@ -1,4 +1,4 @@
-﻿<script>
+<script>
 // components
 import NextButton from 'dashboard/components-next/button/Button.vue';
 import Avatar from 'dashboard/components-next/avatar/Avatar.vue';
@@ -156,16 +156,18 @@ export default {
 <template>
   <li
     v-if="shouldShowSuggestions"
-    class="label-suggestion right list-none"
+    class="label-suggestion right mt-4 flex list-none flex-row justify-end"
     @mouseover="isHovered = true"
     @mouseleave="isHovered = false"
   >
-    <div class="wrap">
-      <div class="label-suggestion--container">
-        <h6 class="label-suggestion--title">
+    <div class="wrap flex">
+      <div class="label-suggestion--container max-w-[300px]">
+        <h6 class="label-suggestion--title mt-0.5 text-xxs text-ds-fg-muted">
           {{ $t('LABEL_MGMT.SUGGESTIONS.SUGGESTED_LABELS') }}
         </h6>
-        <div class="label-suggestion--options">
+        <div
+          class="label-suggestion--options flex items-center gap-0.5 text-end"
+        >
           <button
             v-for="label in preparedLabels"
             :key="label.title"
@@ -176,13 +178,18 @@ export default {
               delay: { show: 600, hide: 0 },
               hideOnClick: true,
             }"
-            class="label-suggestion--option !px-0"
+            class="label-suggestion--option rounded !px-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
+            type="button"
             @click="pushOrAddLabel(label.title)"
           >
             <woot-label
               variant="dashed"
               v-bind="label"
-              :bg-color="selectedLabels.includes(label.title) ? '#2781F6' : ''"
+              :bg-color="
+                selectedLabels.includes(label.title)
+                  ? 'rgb(var(--ds-accent-primary))'
+                  : ''
+              "
             />
           </button>
           <NextButton
@@ -195,6 +202,7 @@ export default {
             faded
             xs
             icon="i-lucide-x"
+            :aria-label="$t('LABEL_MGMT.SUGGESTIONS.TOOLTIP.DISMISS')"
             class="flex-shrink-0"
             :color="isHovered ? 'ruby' : 'blue'"
             @click="dismissSuggestions"
@@ -221,6 +229,7 @@ export default {
             faded
             xs
             icon="i-lucide-x"
+            :aria-label="$t('LABEL_MGMT.SUGGESTIONS.TOOLTIP.DISMISS')"
             class="flex-shrink-0"
             :color="isHovered ? 'ruby' : 'blue'"
             @click="dismissSuggestions"
@@ -244,34 +253,3 @@ export default {
     </div>
   </li>
 </template>
-
-<style scoped lang="scss">
-.wrap {
-  display: flex;
-}
-
-.label-suggestion {
-  flex-direction: row;
-  justify-content: flex-end;
-  margin-top: 1rem;
-
-  .label-suggestion--container {
-    max-width: 300px;
-  }
-
-  .label-suggestion--options {
-    @apply gap-0.5 text-end flex items-center;
-
-    button.label-suggestion--option {
-      .label {
-        cursor: pointer;
-        margin-bottom: 0;
-      }
-    }
-  }
-
-  .label-suggestion--title {
-    @apply text-n-slate-11 mt-0.5 text-xxs;
-  }
-}
-</style>

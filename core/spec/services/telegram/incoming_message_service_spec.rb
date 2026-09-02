@@ -432,7 +432,7 @@ describe Telegram::IncomingMessageService do
         # Send a new message
         new_params = {
           'update_id' => 2_342_342_343_243,
-          'message' => { 'text' => 'second message' }.merge(message_params)
+          'message' => { 'text' => 'second message' }.merge(message_params).merge('message_id' => 2)
         }.with_indifferent_access
 
         described_class.new(inbox: telegram_channel.inbox, params: new_params).perform
@@ -454,7 +454,7 @@ describe Telegram::IncomingMessageService do
         # Send a new message
         new_params = {
           'update_id' => 2_342_342_343_243,
-          'message' => { 'text' => 'second message' }.merge(message_params)
+          'message' => { 'text' => 'second message' }.merge(message_params).merge('message_id' => 2)
         }.with_indifferent_access
 
         described_class.new(inbox: telegram_channel.inbox, params: new_params).perform
@@ -487,7 +487,7 @@ describe Telegram::IncomingMessageService do
         # Send a new message
         new_params = {
           'update_id' => 2_342_342_343_243,
-          'message' => { 'text' => 'second message' }.merge(message_params)
+          'message' => { 'text' => 'second message' }.merge(message_params).merge('message_id' => 2)
         }.with_indifferent_access
 
         described_class.new(inbox: telegram_channel.inbox, params: new_params).perform

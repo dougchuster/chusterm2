@@ -1,4 +1,4 @@
-﻿import { frontendURL } from 'dashboard/helper/URLHelper';
+import { frontendURL } from 'dashboard/helper/URLHelper';
 import { clearBrowserSessionCookies } from 'dashboard/store/utils/api';
 import { hasAuthCookie } from './AuthHelper';
 import { DEFAULT_REDIRECT_URL } from 'dashboard/constants/globals';

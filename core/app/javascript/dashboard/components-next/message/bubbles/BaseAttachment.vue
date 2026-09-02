@@ -7,7 +7,7 @@ import { useMessageContext } from '../provider.js';
 
 defineProps({
   icon: { type: [String, Object], required: true },
-  iconBgColor: { type: String, default: 'bg-n-alpha-3' },
+  iconBgColor: { type: String, default: 'bg-ds-accent' },
   senderTranslationKey: { type: String, required: true },
   content: { type: String, required: true },
   title: { type: String, default: '' }, // Title can be any name, description, etc
@@ -37,11 +37,11 @@ const senderName = computed(() => {
           :class="iconBgColor"
         >
           <slot name="icon">
-            <Icon :icon="icon" class="text-white size-4" />
+            <Icon :icon="icon" class="size-4 text-ds-fg-on-accent" />
           </slot>
         </div>
         <div class="space-y-1 overflow-hidden">
-          <div v-if="senderName" class="text-n-slate-12 text-sm truncate">
+          <div v-if="senderName" class="truncate text-sm text-ds-fg-default">
             {{
               t(senderTranslationKey, {
                 sender: senderName,
@@ -49,10 +49,10 @@ const senderName = computed(() => {
             }}
           </div>
           <slot>
-            <div v-if="title" class="truncate text-sm text-n-slate-12">
+            <div v-if="title" class="truncate text-sm text-ds-fg-default">
               {{ title }}
             </div>
-            <div v-if="content" class="truncate text-sm text-n-slate-11">
+            <div v-if="content" class="truncate text-sm text-ds-fg-muted">
               {{ content }}
             </div>
           </slot>
@@ -64,13 +64,14 @@ const senderName = computed(() => {
           :href="action.href"
           rel="noreferrer noopener nofollow"
           target="_blank"
-          class="w-full block bg-n-solid-3 px-4 py-2 rounded-lg text-sm text-center border border-n-container"
+          class="block w-full rounded-lg bg-ds-bg-sunken px-4 py-2 text-center text-sm font-medium text-ds-fg-default no-underline ring-1 ring-inset ring-ds-border-subtle transition-colors hover:bg-ds-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
         >
           {{ action.label }}
         </a>
         <button
           v-else
-          class="w-full bg-n-solid-3 px-4 py-2 rounded-lg text-sm text-center border border-n-container"
+          type="button"
+          class="w-full rounded-lg bg-ds-bg-sunken px-4 py-2 text-center text-sm font-medium text-ds-fg-default ring-1 ring-inset ring-ds-border-subtle transition-colors hover:bg-ds-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
           @click="action.onClick"
         >
           {{ action.label }}

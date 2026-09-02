@@ -1,13 +1,19 @@
 module Concerns::Agentable
   extend ActiveSupport::Concern
 
+  STRICT_STRUCTURED_OUTPUT_MODELS = %w[
+    claude-sonnet-5
+    anthropic/claude-sonnet-5
+    google/gemini-3.6-flash
+  ].freeze
+
   def agent
     Agents::Agent.new(
       name: agent_name,
       instructions: ->(context) { agent_instructions(context) },
       tools: agent_tools,
       model: agent_model,
-      temperature: temperature.to_f || 0.7,
+      temperature: agent_temperature,
       response_schema: agent_response_schema
     )
   end
@@ -28,7 +34,7 @@ module Concerns::Agentable
     end
 
     prompt = Captain::PromptRenderer.render(template_name, enhanced_context.with_indifferent_access)
-    openrouter_model? ? "#{prompt}#{json_response_format_instruction}" : prompt
+    openrouter_model? && !strict_structured_output_model? ? "#{prompt}#{json_response_format_instruction}" : prompt
   end
 
   private
@@ -64,13 +70,24 @@ module Concerns::Agentable
     agent_model.to_s.include?('/')
   end
 
+  def strict_structured_output_model?
+    agent_model.to_s.in?(STRICT_STRUCTURED_OUTPUT_MODELS)
+  end
+
+  def agent_temperature
+    return if strict_structured_output_model?
+    return if temperature.nil?
+
+    temperature.to_f
+  end
+
   def json_response_format_instruction
     <<~INSTRUCTION
 
       # Response Format
       You MUST respond with a valid JSON object only — no text outside the JSON.
       Use exactly this structure:
-      {"response": "<your reply to the user>", "reasoning": "<brief internal thinking>"}
+      {"response": "<your reply to the user>", "reasoning": "<brief operational justification for routing and audit; never private chain-of-thought>"}
     INSTRUCTION
   end
 

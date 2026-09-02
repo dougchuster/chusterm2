@@ -53,13 +53,13 @@ const unlinkIssue = () => {
         @unlink-issue="unlinkIssue"
       />
 
-      <h3 class="mt-2 text-sm font-medium text-n-slate-12">
+      <h3 class="mt-2 text-sm font-semibold text-ds-fg-default">
         {{ issue.title }}
       </h3>
 
       <p
         v-if="issue.description"
-        class="mt-1 text-sm text-n-slate-11 line-clamp-3"
+        class="mt-1 line-clamp-3 text-sm leading-5 text-ds-fg-muted"
       >
         {{ issue.description }}
       </p>
@@ -69,29 +69,32 @@ const unlinkIssue = () => {
       <div class="flex items-center gap-2">
         <div v-if="assignee" class="flex items-center gap-1.5">
           <Avatar :src="assignee.thumbnail" :name="assignee.name" :size="16" />
-          <span class="text-xs capitalize truncate text-n-slate-12">
+          <span
+            class="truncate text-xs font-medium capitalize text-ds-fg-default"
+          >
             {{ assignee.name }}
           </span>
         </div>
 
-        <div v-if="assignee" class="w-px h-3 bg-n-slate-4" />
+        <div v-if="assignee" class="h-3 w-px bg-ds-border-subtle" />
 
         <div class="flex items-center gap-1">
           <Icon
             icon="i-lucide-activity"
             class="size-4"
+            aria-hidden="true"
             :style="{ color: issue.state?.color }"
           />
-          <span class="text-xs text-n-slate-12">
+          <span class="text-xs text-ds-fg-default">
             {{ issue.state?.name }}
           </span>
         </div>
 
-        <div v-if="priorityLabel" class="w-px h-3 bg-n-slate-4" />
+        <div v-if="priorityLabel" class="h-3 w-px bg-ds-border-subtle" />
 
         <div v-if="priorityLabel" class="flex items-center gap-1.5">
           <CardPriorityIcon :priority="priorityLabel.toLowerCase()" />
-          <span class="text-xs text-n-slate-12">
+          <span class="text-xs text-ds-fg-default">
             {{ priorityLabel }}
           </span>
         </div>

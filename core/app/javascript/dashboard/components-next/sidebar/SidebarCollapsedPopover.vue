@@ -7,6 +7,7 @@ import Icon from 'next/icon/Icon.vue';
 import TeleportWithDirection from 'dashboard/components-next/TeleportWithDirection.vue';
 
 const props = defineProps({
+  id: { type: String, required: true },
   label: { type: String, required: true },
   children: { type: Array, default: () => [] },
   activeChild: { type: Object, default: undefined },
@@ -32,6 +33,82 @@ const navigateAndClose = to => {
   router.push(to);
   emit('close');
 };
+
+const getMenuItems = () => {
+  if (!popoverRef.value) return [];
+
+  return Array.from(
+    popoverRef.value.querySelectorAll('[role="menuitem"]:not([disabled])')
+  );
+};
+
+const focusFirstItem = async () => {
+  await nextTick();
+  getMenuItems()[0]?.focus();
+};
+
+const focusSubGroupItem = async name => {
+  await nextTick();
+  const subGroupItem = getMenuItems().find(
+    item => item.dataset.subgroupParent === name
+  );
+  subGroupItem?.focus();
+};
+
+const expandSubGroupAndFocus = async name => {
+  expandedSubGroup.value = name;
+  await focusSubGroupItem(name);
+};
+
+const collapseSubGroupAndFocus = async name => {
+  expandedSubGroup.value = null;
+  await nextTick();
+  const subGroupTrigger = getMenuItems().find(
+    item => item.dataset.subgroupTrigger === name
+  );
+  subGroupTrigger?.focus();
+};
+
+const handleMenuKeydown = event => {
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    event.stopPropagation();
+    emit('close', { restoreFocus: true });
+    return;
+  }
+
+  const currentItem = event.target.closest?.('[role="menuitem"]');
+  if (!currentItem) return;
+
+  if (event.key === 'ArrowRight' && currentItem.dataset.subgroupTrigger) {
+    event.preventDefault();
+    expandSubGroupAndFocus(currentItem.dataset.subgroupTrigger);
+    return;
+  }
+
+  if (event.key === 'ArrowLeft' && currentItem.dataset.subgroupParent) {
+    event.preventDefault();
+    collapseSubGroupAndFocus(currentItem.dataset.subgroupParent);
+    return;
+  }
+
+  const items = getMenuItems();
+  const currentIndex = items.indexOf(currentItem);
+  const destinationByKey = {
+    ArrowDown: (currentIndex + 1) % items.length,
+    ArrowUp: (currentIndex - 1 + items.length) % items.length,
+    Home: 0,
+    End: items.length - 1,
+  };
+  const destinationIndex = destinationByKey[event.key];
+
+  if (destinationIndex === undefined || destinationIndex < 0) return;
+
+  event.preventDefault();
+  items[destinationIndex]?.focus();
+};
+
+defineExpose({ focusFirstItem });
 
 const isActive = child => props.activeChild?.name === child.name;
 
@@ -100,31 +177,42 @@ onMounted(async () => {
 <template>
   <TeleportWithDirection>
     <div
+      :id="id"
       ref="popoverRef"
       class="fixed z-[100] min-w-[200px] max-w-[280px]"
+      role="menu"
+      :aria-label="label"
       :style="{
         [isRTL ? 'right' : 'left']: `${sidebarWidth + 8}px`,
         top: `${topPosition}px`,
       }"
       @mouseenter="emit('mouseenter')"
       @mouseleave="emit('mouseleave')"
+      @keydown="handleMenuKeydown"
     >
       <div
-        class="sidebar-collapsed-popover bg-n-alpha-3 backdrop-blur-[100px] outline outline-1 -outline-offset-1 w-60 rounded-2xl shadow-lg py-3 px-3"
+        class="w-60 rounded-2xl bg-ds-shell-panel-strong px-3 py-3 text-ds-shell-fg shadow-2xl shadow-black/30 ring-1 ring-inset ring-ds-shell-border backdrop-blur-xl"
       >
         <div
-          class="sidebar-collapsed-popover__title px-3 py-2 text-xs font-semibold uppercase border-b mb-2"
+          class="mb-2 border-b border-ds-shell-divider px-3 py-2 text-xs font-semibold uppercase tracking-wide text-ds-shell-muted"
+          aria-hidden="true"
         >
           {{ label }}
         </div>
         <ul
           class="m-0 p-0 list-none max-h-[400px] overflow-y-auto no-scrollbar"
+          role="none"
         >
           <template v-for="child in accessibleChildren" :key="child.name">
             <!-- SubGroup with children -->
-            <li v-if="child.children" class="py-0.5">
+            <li v-if="child.children" class="py-0.5" role="none">
               <button
-                class="sidebar-collapsed-popover__item flex items-center gap-3 px-3 py-2 w-full rounded-xl text-left rtl:text-right"
+                type="button"
+                class="flex min-h-10 w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-ds-shell-muted transition-colors hover:bg-ds-shell-hover hover:text-ds-shell-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-shell-focus rtl:text-right"
+                role="menuitem"
+                aria-haspopup="true"
+                :aria-expanded="expandedSubGroup === child.name"
+                :data-subgroup-trigger="child.name"
                 @click="toggleSubGroup(child.name)"
               >
                 <Icon
@@ -146,17 +234,23 @@ onMounted(async () => {
                 <ul
                   v-if="expandedSubGroup === child.name"
                   class="m-0 p-0 list-none ltr:pl-4 rtl:pr-4 mt-1 overflow-hidden"
+                  role="group"
                 >
                   <li
                     v-for="subChild in getAccessibleSubChildren(child.children)"
                     :key="subChild.name"
                     class="py-0.5"
+                    role="none"
                   >
                     <button
-                      class="sidebar-collapsed-popover__item flex items-center gap-3 px-3 py-2 w-full rounded-xl text-left rtl:text-right"
+                      type="button"
+                      class="flex min-h-10 w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-shell-focus rtl:text-right"
+                      role="menuitem"
+                      :data-subgroup-parent="child.name"
                       :class="{
-                        'text-n-slate-12 bg-n-alpha-2': isActive(subChild),
-                        'text-n-slate-11 hover:bg-n-alpha-2':
+                        'bg-ds-shell-active text-ds-shell-fg':
+                          isActive(subChild),
+                        'text-ds-shell-muted hover:bg-ds-shell-hover hover:text-ds-shell-fg':
                           !isActive(subChild),
                       }"
                       @click="navigateAndClose(subChild.to)"
@@ -174,12 +268,15 @@ onMounted(async () => {
               </Transition>
             </li>
             <!-- Direct child item -->
-            <li v-else class="py-0.5">
+            <li v-else class="py-0.5" role="none">
               <button
-                class="sidebar-collapsed-popover__item flex items-center gap-3 px-3 py-2 w-full rounded-xl text-left rtl:text-right"
+                type="button"
+                class="flex min-h-10 w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-shell-focus rtl:text-right"
+                role="menuitem"
                 :class="{
-                  'text-n-slate-12 bg-n-alpha-2': isActive(child),
-                  'text-n-slate-11 hover:bg-n-alpha-2': !isActive(child),
+                  'bg-ds-shell-active text-ds-shell-fg': isActive(child),
+                  'text-ds-shell-muted hover:bg-ds-shell-hover hover:text-ds-shell-fg':
+                    !isActive(child),
                 }"
                 @click="navigateAndClose(child.to)"
               >
@@ -198,32 +295,3 @@ onMounted(async () => {
     </div>
   </TeleportWithDirection>
 </template>
-
-<style scoped>
-.sidebar-collapsed-popover {
-  outline-color: rgba(var(--shell-border-strong));
-  background: linear-gradient(
-    180deg,
-    rgba(var(--shell-panel-strong)),
-    rgb(var(--slate-1) / 0.98)
-  );
-  box-shadow: 0 22px 52px rgb(var(--slate-1) / 0.32);
-}
-
-.sidebar-collapsed-popover__title {
-  color: rgb(var(--slate-10));
-  border-color: rgba(var(--shell-border));
-}
-
-.sidebar-collapsed-popover__item {
-  color: rgb(var(--slate-11));
-  border: 1px solid transparent;
-  transition: all 0.18s ease;
-}
-
-.sidebar-collapsed-popover__item:hover {
-  color: rgb(var(--slate-12));
-  border-color: rgba(var(--shell-border));
-  background: rgb(var(--slate-2) / 0.34);
-}
-</style>

@@ -623,6 +623,8 @@ RSpec.describe Conversation do
           hmac_verified: conversation.contact_inbox.hmac_verified
         },
         id: conversation.display_id,
+        display_id: conversation.display_id,
+        database_id: conversation.id,
         messages: [],
         labels: [],
         last_activity_at: conversation.last_activity_at.to_i,
@@ -961,6 +963,10 @@ RSpec.describe Conversation do
 
   describe 'reply time calculation flows' do
     include ActiveJob::TestHelper
+
+    around do |example|
+      travel_to(Time.zone.local(2026, 7, 10, 12, 0, 0)) { example.run }
+    end
 
     let(:account) { create(:account) }
     let(:inbox) { create(:inbox, account: account) }

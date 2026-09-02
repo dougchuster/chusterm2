@@ -182,6 +182,20 @@ describe('#getters', () => {
         },
       ]);
     });
+
+    it('keeps realtime conversations outside an active search hidden', () => {
+      const conversationList = [
+        { id: 2, status: 1, meta: {}, labels: [] },
+        { id: 3, status: 1, meta: {}, labels: [] },
+      ];
+
+      const result = getters.getUnAssignedChats({
+        allConversations: conversationList,
+        searchResultIds: [2],
+      })({ status: 1 });
+
+      expect(result).toEqual([conversationList[0]]);
+    });
   });
   describe('#getConversationById', () => {
     it('get conversations based on id', () => {

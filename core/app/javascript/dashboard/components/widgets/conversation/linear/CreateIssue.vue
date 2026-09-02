@@ -48,7 +48,6 @@ const statusDesiredOrder = [
 ];
 
 const isCreating = ref(false);
-const inputStyles = { borderRadius: '0.75rem', fontSize: '0.875rem' };
 
 const formState = reactive({
   title: '',
@@ -217,8 +216,7 @@ onMounted(getTeams);
     <woot-input
       v-model="formState.title"
       :class="{ error: v$.title.$error }"
-      class="w-full"
-      :styles="{ ...inputStyles, padding: '0.375rem 0.75rem' }"
+      class="w-full [&_input]:rounded-xl [&_input]:border-ds-border-subtle [&_input]:bg-ds-bg-sunken [&_input]:px-3 [&_input]:py-1.5 [&_input]:text-sm [&_input]:text-ds-fg-default [&_input]:outline-none [&_input]:placeholder:text-ds-fg-subtle [&_input]:focus:border-ds-border-focus [&_input]:focus:ring-2 [&_input]:focus:ring-ds-border-focus/30"
       :label="$t('INTEGRATION_SETTINGS.LINEAR.ADD_OR_LINK.FORM.TITLE.LABEL')"
       :placeholder="
         $t('INTEGRATION_SETTINGS.LINEAR.ADD_OR_LINK.FORM.TITLE.PLACEHOLDER')
@@ -226,13 +224,12 @@ onMounted(getTeams);
       :error="nameError"
       @input="v$.title.$touch"
     />
-    <label>
+    <label class="text-sm font-medium text-ds-fg-muted">
       {{ $t('INTEGRATION_SETTINGS.LINEAR.ADD_OR_LINK.FORM.DESCRIPTION.LABEL') }}
       <textarea
         v-model="formState.description"
-        :style="{ ...inputStyles, padding: '0.5rem 0.75rem' }"
         rows="3"
-        class="text-sm"
+        class="rounded-xl border-ds-border-subtle bg-ds-bg-sunken px-3 py-2 text-sm text-ds-fg-default outline-none placeholder:text-ds-fg-subtle focus:border-ds-border-focus focus:ring-2 focus:ring-ds-border-focus/30"
         :placeholder="
           $t(
             'INTEGRATION_SETTINGS.LINEAR.ADD_OR_LINK.FORM.DESCRIPTION.PLACEHOLDER'
@@ -255,8 +252,8 @@ onMounted(getTeams);
     </div>
     <div class="flex items-center justify-end w-full gap-2 mt-8">
       <Button
-        faded
-        slate
+        color="tertiary"
+        variant="faded"
         type="reset"
         :label="$t('INTEGRATION_SETTINGS.LINEAR.ADD_OR_LINK.CANCEL')"
         @click.prevent="onClose"

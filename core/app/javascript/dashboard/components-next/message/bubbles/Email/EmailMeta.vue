@@ -68,12 +68,12 @@ const showMeta = computed(() => {
   <section
     v-show="showMeta"
     class="space-y-1 rtl:pl-9 ltr:pr-9 text-sm break-words"
-    :class="hasError ? 'text-n-ruby-11' : 'text-n-slate-11'"
+    :class="hasError ? 'text-ds-state-danger' : 'text-ds-fg-muted'"
   >
     <template v-if="showMeta">
       <div
         v-if="fromEmail[0]"
-        :class="hasError ? 'text-n-ruby-11' : 'text-n-slate-12'"
+        :class="hasError ? 'text-ds-state-danger' : 'text-ds-fg-default'"
       >
         <template v-if="senderName">
           <span>

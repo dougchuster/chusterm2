@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # deploy.sh — Deploy ChusteRM na VPS
-# Uso: ./infra/deploy.sh
-# Pré-requisito: SSH configurado para root@187.77.255.211
+# Uso: CHUSTERM_VPS=usuario@host ./infra/deploy.sh
+# Pré-requisito: SSH configurado para o host de deploy (dados no gerenciador
+# de senhas — nunca hardcoded aqui, SEC-06). Preferir usuário de deploy sem root.
 
 set -euo pipefail
 
-VPS="root@187.77.255.211"
+VPS="${CHUSTERM_VPS:?Defina CHUSTERM_VPS=usuario@host (ver gerenciador de senhas)}"
 APP_DIR="/opt/chusterm"
 REPO="https://github.com/dougchuster/chuterm.git"
 BRANCH="main"
@@ -41,6 +42,11 @@ ssh "$VPS" bash -s << REMOTE
   echo "==> Build e deploy dos containers..."
   docker compose -f $APP_DIR/docker-compose.prod.yml pull --quiet
   docker compose -f $APP_DIR/docker-compose.prod.yml build --no-cache
+
+  # BUG-10: migrations rodam num serviço one-shot antes do core subir
+  echo "==> Rodando migrations (db:migrate)..."
+  docker compose -f $APP_DIR/docker-compose.prod.yml run --rm migrate
+
   docker compose -f $APP_DIR/docker-compose.prod.yml up -d
 
   # Aguardar Core ficar saudável

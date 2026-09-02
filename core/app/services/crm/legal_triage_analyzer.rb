@@ -24,7 +24,23 @@ class Crm::LegalTriageAnalyzer
     'media' => /\b(preciso|quero|analise|orientacao|consulta|documento|contratar)\b/i
   }.freeze
 
-  DOCUMENT_RULE = /\b(anexo|enviei|documento|contrato|holerite|carta|cnis|extrato|print|comprovante)\b/i
+  DOCUMENT_MENTION_RULE = /\b(documento\w*|contrato\w*|holerite\w*|carta\w*|cnis|extrato\w*|print\w*|comprovante\w*|anexo\w*)\b/i
+  DOCUMENT_SEND_RULE = /
+    (?<!n[aã]o\s)
+    (?<!nunca\s)
+    \b
+    (?:
+      enviei |
+      anexei |
+      encaminhei |
+      mandei |
+      estou\s+(?:enviando|anexando|encaminhando|mandando) |
+      acabei\s+de\s+(?:enviar|anexar|encaminhar|mandar) |
+      segue(?:m)?\s+(?:em\s+)?anexo |
+      anexo\s+(?:o|a|meu|minha|este|esta)
+    )
+    \b
+  /ix
   PAYMENT_RULE = /\b(honorario|valor|preco|custo|parcel|pagar|consulta)\b/i
   HIRING_RULE = /\b(contratar|fechar|seguir|representar|advogado|entrar com acao)\b/i
   GREETING_ONLY_RULE = /\A(oi+|ol(?:a|\u00e1)|bom dia|boa tarde|boa noite|e a(?:i|\u00ed)|tudo bem|teste)[!.\s]*\z/i
@@ -68,17 +84,23 @@ class Crm::LegalTriageAnalyzer
   private
 
   def transcript_text
-    @transcript_text ||= @conversation.messages
-                                      .incoming
-                                      .where(private: false)
-                                      .order(created_at: :asc)
-                                      .last(20)
-                                      .filter_map { |message| message.content.to_s.presence }
-                                      .join("\n")
-                                      .squish
+    @transcript_text ||= incoming_messages
+                         .filter_map { |message| message.content.to_s.presence }
+                         .join("\n")
+                         .squish
+  end
+
+  def incoming_messages
+    @incoming_messages ||= @conversation.messages
+                                        .incoming
+                                        .where(private: false)
+                                        .includes(:attachments)
+                                        .order(created_at: :asc)
+                                        .last(20)
   end
 
   def insufficient_data?(text)
+    return false if document_received?(text)
     return true if text.blank?
     return true if text.match?(GREETING_ONLY_RULE)
     return false if legal_signal?(text)
@@ -89,7 +111,7 @@ class Crm::LegalTriageAnalyzer
   def legal_signal?(text)
     [AREA_RULES, CASE_RULES, URGENCY_RULES].any? do |rules|
       rules.values.any? { |rule| text.match?(rule) }
-    end || text.match?(DOCUMENT_RULE) || text.match?(PAYMENT_RULE) || text.match?(HIRING_RULE)
+    end || text.match?(DOCUMENT_MENTION_RULE) || text.match?(PAYMENT_RULE) || text.match?(HIRING_RULE)
   end
 
   def insufficient_data_triage(text)
@@ -186,7 +208,7 @@ class Crm::LegalTriageAnalyzer
   end
 
   def engagement_level_for(text)
-    return 'alto' if text.match?(HIRING_RULE) || text.match?(DOCUMENT_RULE)
+    return 'alto' if text.match?(HIRING_RULE) || document_received?(text)
     return 'medio' if text.length > 120
 
     'baixo'
@@ -199,9 +221,13 @@ class Crm::LegalTriageAnalyzer
   end
 
   def document_status_for(text)
-    return 'parcial' if text.match?(DOCUMENT_RULE)
+    return 'parcial' if document_received?(text)
 
     'solicitado'
+  end
+
+  def document_received?(text)
+    incoming_messages.any? { |message| message.attachments.any? } || text.match?(DOCUMENT_SEND_RULE)
   end
 
   def next_best_action_for(legal_area, urgency_level, documents_needed)
@@ -216,7 +242,7 @@ class Crm::LegalTriageAnalyzer
     signals << "area #{legal_area}"
     signals << "urgencia #{urgency_level}"
     signals << 'intencao de contratacao' if text.match?(HIRING_RULE)
-    signals << 'documentos mencionados' if text.match?(DOCUMENT_RULE)
+    signals << 'documentos recebidos' if document_received?(text)
     "Lead classificado por #{signals.join(', ')}."
   end
 

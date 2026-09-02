@@ -1,10 +1,6 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
-import { ref } from 'vue';
-
-import WootDropdownItem from 'shared/components/ui/dropdown/DropdownItem.vue';
-import WootDropdownMenu from 'shared/components/ui/dropdown/DropdownMenu.vue';
-import Button from 'dashboard/components-next/button/Button.vue';
+import { nextTick, onMounted, ref } from 'vue';
 
 const props = defineProps({
   showResolve: {
@@ -25,6 +21,7 @@ const emit = defineEmits(['update', 'close']);
 
 const { t } = useI18n();
 
+const menuRef = ref(null);
 const actions = ref([
   { icon: 'i-lucide-check', key: 'resolved' },
   { icon: 'i-lucide-redo', key: 'open' },
@@ -46,6 +43,45 @@ const onClose = () => {
   emit('close');
 };
 
+const focusMenuItem = event => {
+  const items = Array.from(
+    menuRef.value?.querySelectorAll('[role="menuitem"]') || []
+  );
+  if (!items.length) return;
+
+  const activeIndex = items.indexOf(document.activeElement);
+  let nextIndex;
+
+  if (event.key === 'Home') {
+    nextIndex = 0;
+  } else if (event.key === 'End') {
+    nextIndex = items.length - 1;
+  } else if (event.key === 'ArrowDown') {
+    nextIndex = activeIndex < 0 ? 0 : (activeIndex + 1) % items.length;
+  } else {
+    nextIndex =
+      activeIndex < 0
+        ? items.length - 1
+        : (activeIndex - 1 + items.length) % items.length;
+  }
+
+  event.preventDefault();
+  items[nextIndex].focus();
+};
+
+const onMenuKeydown = event => {
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    event.stopPropagation();
+    onClose();
+    return;
+  }
+
+  if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+    focusMenuItem(event);
+  }
+};
+
 const showAction = key => {
   const actionsMap = {
     resolved: props.showResolve,
@@ -63,47 +99,62 @@ const actionLabel = key => {
   };
   return labelsMap[key] || '';
 };
+
+onMounted(() => {
+  nextTick(() => {
+    menuRef.value?.querySelector('[role="menuitem"]')?.focus();
+  });
+});
 </script>
 
 <template>
   <div
+    ref="menuRef"
     v-on-clickaway="onClose"
-    class="absolute z-20 w-auto origin-top-right border border-solid rounded-lg shadow-md ltr:right-2 rtl:left-2 top-12 bg-n-alpha-3 backdrop-blur-[100px] border-n-weak"
+    class="absolute top-12 z-20 w-[min(15rem,calc(100vw-1rem))] origin-top-right overflow-hidden rounded-xl bg-ds-bg-elevated/95 text-ds-fg-default shadow-[var(--ds-shadow-lg)] ring-1 ring-ds-border-subtle backdrop-blur-xl ltr:right-2 rtl:left-2"
+    role="menu"
+    :aria-label="$t('BULK_ACTION.UPDATE.CHANGE_STATUS')"
+    @keydown="onMenuKeydown"
   >
+    <span
+      class="absolute -top-1.5 z-10 size-3 rotate-45 border-l border-t border-ds-border-subtle bg-ds-bg-elevated ltr:right-[var(--triangle-position)] rtl:left-[var(--triangle-position)]"
+      aria-hidden="true"
+    />
     <div
-      class="right-[var(--triangle-position)] block z-10 absolute text-left -top-3"
+      class="flex min-h-11 items-center justify-between border-b border-ds-border-subtle px-3 py-2"
     >
-      <svg height="12" viewBox="0 0 24 12" width="24">
-        <path
-          d="M20 12l-8-8-12 12"
-          fill-rule="evenodd"
-          stroke-width="1px"
-          class="fill-n-alpha-3 backdrop-blur-[100px] stroke-n-weak"
-        />
-      </svg>
-    </div>
-    <div class="p-2.5 flex gap-1 items-center justify-between">
-      <span class="text-sm font-medium text-n-slate-12">
+      <span class="text-sm font-semibold text-ds-fg-default">
         {{ $t('BULK_ACTION.UPDATE.CHANGE_STATUS') }}
       </span>
-      <Button ghost xs slate icon="i-lucide-x" @click="onClose" />
+      <button
+        type="button"
+        class="inline-flex size-8 items-center justify-center rounded-lg text-ds-fg-muted transition-colors hover:bg-ds-bg-hover hover:text-ds-fg-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
+        :aria-label="$t('GENERAL.CLOSE')"
+        @click="onClose"
+      >
+        <span class="i-lucide-x size-4" aria-hidden="true" />
+      </button>
     </div>
-    <div class="px-2.5 pt-0 pb-2.5">
-      <WootDropdownMenu class="m-0 list-none">
-        <template v-for="action in actions">
-          <WootDropdownItem v-if="showAction(action.key)" :key="action.key">
-            <Button
-              ghost
-              sm
-              slate
-              class="!w-full !justify-start"
-              :icon="action.icon"
-              :label="actionLabel(action.key)"
-              @click="updateConversations(action.key)"
+    <ul class="m-0 list-none p-1.5">
+      <template v-for="action in actions" :key="action.key">
+        <li v-if="showAction(action.key)" role="none">
+          <button
+            type="button"
+            role="menuitem"
+            class="flex min-h-10 w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm text-ds-fg-default transition-colors hover:bg-ds-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ds-border-focus"
+            @click="updateConversations(action.key)"
+          >
+            <span
+              class="size-4 shrink-0 text-ds-fg-muted"
+              :class="action.icon"
+              aria-hidden="true"
             />
-          </WootDropdownItem>
-        </template>
-      </WootDropdownMenu>
-    </div>
+            <span class="min-w-0 truncate">
+              {{ actionLabel(action.key) }}
+            </span>
+          </button>
+        </li>
+      </template>
+    </ul>
   </div>
 </template>

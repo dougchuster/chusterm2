@@ -1,4 +1,4 @@
-﻿<script>
+<script>
 import { useMessageFormatter } from 'shared/composables/useMessageFormatter';
 import Avatar from 'dashboard/components-next/avatar/Avatar.vue';
 import configMixin from '../mixins/configMixin';

@@ -29,6 +29,28 @@ const onTabChange = selectedTabIndex => {
   }
 };
 
+const onTabKeydown = (event, index) => {
+  let nextIndex;
+
+  if (event.key === 'ArrowRight') {
+    nextIndex = (index + 1) % props.items.length;
+  } else if (event.key === 'ArrowLeft') {
+    nextIndex = (index - 1 + props.items.length) % props.items.length;
+  } else if (event.key === 'Home') {
+    nextIndex = 0;
+  } else if (event.key === 'End') {
+    nextIndex = props.items.length - 1;
+  }
+
+  if (nextIndex === undefined) return;
+
+  event.preventDefault();
+  onTabChange(nextIndex);
+  event.currentTarget.parentElement
+    ?.querySelectorAll('[role="tab"]')
+    [nextIndex]?.focus();
+};
+
 const keyboardEvents = {
   'Alt+KeyN': {
     action: () => {
@@ -47,116 +69,35 @@ useKeyboardEvents(keyboardEvents);
 </script>
 
 <template>
-  <div class="chat-type-tabs" role="tablist">
+  <div
+    class="flex w-full min-w-0 gap-1 bg-ds-bg-surface/80 px-2 pb-2 pt-1"
+    role="tablist"
+  >
     <button
       v-for="(item, index) in items"
       :key="item.key"
       type="button"
-      class="chat-type-tabs__item"
-      :class="{ 'is-active': index === activeTabIndex }"
+      class="group inline-flex min-h-10 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-lg px-1.5 text-[13px] font-semibold leading-none text-ds-fg-muted outline-none transition-colors duration-150 hover:bg-ds-bg-hover hover:text-ds-fg-default focus-visible:ring-2 focus-visible:ring-ds-border-focus focus-visible:ring-offset-1 focus-visible:ring-offset-ds-bg-surface sm:text-sm"
+      :class="{
+        'bg-ds-accent-soft text-ds-accent': index === activeTabIndex,
+      }"
       role="tab"
       :aria-selected="index === activeTabIndex"
+      :aria-label="`${item.name}: ${item.count}`"
+      :tabindex="index === activeTabIndex ? 0 : -1"
+      :title="item.name"
       @click="onTabChange(index)"
+      @keydown="onTabKeydown($event, index)"
     >
-      <span class="chat-type-tabs__label">{{ item.name }}</span>
-      <span class="chat-type-tabs__count">{{ item.count }}</span>
+      <span class="whitespace-nowrap">{{ item.shortName || item.name }}</span>
+      <span
+        class="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-ds-bg-elevated px-1 text-[11px] font-bold leading-none text-ds-fg-muted transition-colors group-hover:text-ds-fg-default"
+        :class="{
+          'bg-ds-accent-soft text-ds-accent': index === activeTabIndex,
+        }"
+      >
+        {{ item.count }}
+      </span>
     </button>
   </div>
 </template>
-
-<style scoped>
-.chat-type-tabs {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(6.25rem, 1fr));
-  gap: 0.375rem;
-  width: 100%;
-  min-width: 0;
-  padding: 0.375rem 0.75rem 0.5rem;
-  border-bottom: 1px solid rgb(var(--slate-4));
-}
-
-.chat-type-tabs__item {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 0;
-  min-height: 2.375rem;
-  gap: 0.375rem;
-  border-radius: 0.5rem;
-  color: rgb(var(--slate-11));
-  font-size: 0.875rem;
-  font-weight: 600;
-  line-height: 1;
-  outline: none;
-  transition:
-    background-color 0.15s ease,
-    color 0.15s ease;
-}
-
-.chat-type-tabs__item:hover {
-  background: rgb(var(--slate-3));
-  color: rgb(var(--slate-12));
-}
-
-.chat-type-tabs__item:focus-visible {
-  box-shadow: 0 0 0 2px rgb(var(--brand-7));
-}
-
-.chat-type-tabs__item::after {
-  position: absolute;
-  right: 0.25rem;
-  bottom: -0.5rem;
-  left: 0.25rem;
-  height: 2px;
-  border-radius: 999px;
-  background: transparent;
-  content: '';
-}
-
-.chat-type-tabs__item.is-active {
-  color: rgb(var(--brand-11));
-  background: rgb(var(--brand-3));
-}
-
-.chat-type-tabs__item.is-active::after {
-  background: rgb(var(--brand-9));
-}
-
-.chat-type-tabs__label {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.chat-type-tabs__count {
-  display: inline-grid;
-  flex: 0 0 auto;
-  min-width: 1.25rem;
-  height: 1.25rem;
-  place-content: center;
-  border-radius: 999px;
-  background: rgb(var(--slate-4));
-  color: rgb(var(--slate-11));
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-
-.chat-type-tabs__item.is-active .chat-type-tabs__count {
-  background: rgb(var(--brand-4));
-  color: rgb(var(--brand-12));
-}
-
-@media (max-width: 420px) {
-  .chat-type-tabs {
-    padding-inline: 0.5rem;
-    gap: 0.25rem;
-  }
-
-  .chat-type-tabs__item {
-    font-size: 0.8125rem;
-    gap: 0.25rem;
-  }
-}
-</style>

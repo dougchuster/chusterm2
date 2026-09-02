@@ -1,0 +1,588 @@
+{
+  "generated_from": "../../docs/audit/INVENTARIO-ROTAS.md",
+  "route_count": 135,
+  "routes": [
+    {
+      "route": "/app*",
+      "family": "other"
+    },
+    {
+      "route": "/app/*params",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/campaigns",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/campaigns/email",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/campaigns/live_chat",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/campaigns/one_off",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/campaigns/ongoing",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/campaigns/sms",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/campaigns/whatsapp",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/captain",
+      "family": "captain"
+    },
+    {
+      "route": "/app/accounts/:accountId/captain/:assistantId/config",
+      "family": "captain"
+    },
+    {
+      "route": "/app/accounts/:accountId/captain/:assistantId/documents",
+      "family": "captain"
+    },
+    {
+      "route": "/app/accounts/:accountId/captain/:assistantId/faqs",
+      "family": "captain"
+    },
+    {
+      "route": "/app/accounts/:accountId/captain/:assistantId/faqs/pending",
+      "family": "captain"
+    },
+    {
+      "route": "/app/accounts/:accountId/captain/:assistantId/inboxes",
+      "family": "captain"
+    },
+    {
+      "route": "/app/accounts/:accountId/captain/:assistantId/playground",
+      "family": "captain"
+    },
+    {
+      "route": "/app/accounts/:accountId/captain/:assistantId/scenarios",
+      "family": "captain"
+    },
+    {
+      "route": "/app/accounts/:accountId/captain/:assistantId/score",
+      "family": "captain"
+    },
+    {
+      "route": "/app/accounts/:accountId/captain/:assistantId/settings",
+      "family": "captain"
+    },
+    {
+      "route": "/app/accounts/:accountId/captain/:assistantId/settings/guardrails",
+      "family": "captain"
+    },
+    {
+      "route": "/app/accounts/:accountId/captain/:assistantId/settings/guidelines",
+      "family": "captain"
+    },
+    {
+      "route": "/app/accounts/:accountId/captain/:assistantId/tools",
+      "family": "captain"
+    },
+    {
+      "route": "/app/accounts/:accountId/captain/:navigationPath",
+      "family": "captain"
+    },
+    {
+      "route": "/app/accounts/:accountId/captain/assistants",
+      "family": "captain"
+    },
+    {
+      "route": "/app/accounts/:accountId/captain/flows",
+      "family": "captain"
+    },
+    {
+      "route": "/app/accounts/:accountId/captain/flows/:flowId/editor",
+      "family": "captain"
+    },
+    {
+      "route": "/app/accounts/:accountId/companies",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/contacts",
+      "family": "contacts"
+    },
+    {
+      "route": "/app/accounts/:accountId/contacts/:contactId",
+      "family": "contacts"
+    },
+    {
+      "route": "/app/accounts/:accountId/contacts/:contactId/labels/:label",
+      "family": "contacts"
+    },
+    {
+      "route": "/app/accounts/:accountId/contacts/:contactId/segments/:segmentId",
+      "family": "contacts"
+    },
+    {
+      "route": "/app/accounts/:accountId/contacts/active",
+      "family": "contacts"
+    },
+    {
+      "route": "/app/accounts/:accountId/contacts/categories",
+      "family": "contacts"
+    },
+    {
+      "route": "/app/accounts/:accountId/contacts/categories/:kind",
+      "family": "contacts"
+    },
+    {
+      "route": "/app/accounts/:accountId/contacts/categories/:kind/:categoryId",
+      "family": "contacts"
+    },
+    {
+      "route": "/app/accounts/:accountId/contacts/labels/:label",
+      "family": "contacts"
+    },
+    {
+      "route": "/app/accounts/:accountId/contacts/list",
+      "family": "contacts"
+    },
+    {
+      "route": "/app/accounts/:accountId/contacts/segments/:segmentId",
+      "family": "contacts"
+    },
+    {
+      "route": "/app/accounts/:accountId/conversations/:conversation_id",
+      "family": "conversations"
+    },
+    {
+      "route": "/app/accounts/:accountId/crm",
+      "family": "crm"
+    },
+    {
+      "route": "/app/accounts/:accountId/crm/activities",
+      "family": "crm"
+    },
+    {
+      "route": "/app/accounts/:accountId/crm/agenda",
+      "family": "crm"
+    },
+    {
+      "route": "/app/accounts/:accountId/crm/ai-center",
+      "family": "crm"
+    },
+    {
+      "route": "/app/accounts/:accountId/crm/deals/:dealId",
+      "family": "crm"
+    },
+    {
+      "route": "/app/accounts/:accountId/crm/leads",
+      "family": "crm"
+    },
+    {
+      "route": "/app/accounts/:accountId/crm/metrics",
+      "family": "crm"
+    },
+    {
+      "route": "/app/accounts/:accountId/crm/reports",
+      "family": "crm"
+    },
+    {
+      "route": "/app/accounts/:accountId/crm/settings/automation-rules",
+      "family": "crm"
+    },
+    {
+      "route": "/app/accounts/:accountId/crm/settings/cadences",
+      "family": "crm"
+    },
+    {
+      "route": "/app/accounts/:accountId/crm/settings/checklist-templates",
+      "family": "crm"
+    },
+    {
+      "route": "/app/accounts/:accountId/crm/settings/loss-reasons",
+      "family": "crm"
+    },
+    {
+      "route": "/app/accounts/:accountId/crm/settings/pipelines",
+      "family": "crm"
+    },
+    {
+      "route": "/app/accounts/:accountId/crm/settings/scoring",
+      "family": "crm"
+    },
+    {
+      "route": "/app/accounts/:accountId/custom_view/:id",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/custom_view/:id/conversations/:conversation_id",
+      "family": "conversations"
+    },
+    {
+      "route": "/app/accounts/:accountId/dashboard",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/inbox-view",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/inbox-view/:type/:id",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/inbox/:inbox_id",
+      "family": "conversations"
+    },
+    {
+      "route": "/app/accounts/:accountId/inbox/:inbox_id/conversations/:conversation_id",
+      "family": "conversations"
+    },
+    {
+      "route": "/app/accounts/:accountId/label/:label",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/label/:label/conversations/:conversation_id",
+      "family": "conversations"
+    },
+    {
+      "route": "/app/accounts/:accountId/mentions/conversations",
+      "family": "conversations"
+    },
+    {
+      "route": "/app/accounts/:accountId/mentions/conversations/:conversationId",
+      "family": "conversations"
+    },
+    {
+      "route": "/app/accounts/:accountId/notifications",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/participating/conversations",
+      "family": "conversations"
+    },
+    {
+      "route": "/app/accounts/:accountId/participating/conversations/:conversationId",
+      "family": "conversations"
+    },
+    {
+      "route": "/app/accounts/:accountId/portals/:navigationPath",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/portals/:portalSlug/:locale/:categorySlug?/articles/:tab?",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/portals/:portalSlug/:locale/:categorySlug?/articles/:tab?/edit/:articleSlug",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/portals/:portalSlug/:locale/:categorySlug?/articles/new",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/portals/:portalSlug/:locale/categories",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/portals/:portalSlug/:locale/categories/:categorySlug/articles",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/portals/:portalSlug/:locale/categories/:categorySlug/articles/:articleSlug",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/portals/:portalSlug/locales",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/portals/:portalSlug/settings",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/portals/new",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/reports",
+      "family": "reports"
+    },
+    {
+      "route": "/app/accounts/:accountId/reports/agent",
+      "family": "reports"
+    },
+    {
+      "route": "/app/accounts/:accountId/reports/agents/:id",
+      "family": "reports"
+    },
+    {
+      "route": "/app/accounts/:accountId/reports/agents_overview",
+      "family": "reports"
+    },
+    {
+      "route": "/app/accounts/:accountId/reports/bot",
+      "family": "reports"
+    },
+    {
+      "route": "/app/accounts/:accountId/reports/conversation",
+      "family": "conversations"
+    },
+    {
+      "route": "/app/accounts/:accountId/reports/csat",
+      "family": "reports"
+    },
+    {
+      "route": "/app/accounts/:accountId/reports/inboxes",
+      "family": "reports"
+    },
+    {
+      "route": "/app/accounts/:accountId/reports/inboxes/:id",
+      "family": "reports"
+    },
+    {
+      "route": "/app/accounts/:accountId/reports/inboxes_overview",
+      "family": "reports"
+    },
+    {
+      "route": "/app/accounts/:accountId/reports/label",
+      "family": "reports"
+    },
+    {
+      "route": "/app/accounts/:accountId/reports/labels/:id",
+      "family": "reports"
+    },
+    {
+      "route": "/app/accounts/:accountId/reports/labels_overview",
+      "family": "reports"
+    },
+    {
+      "route": "/app/accounts/:accountId/reports/overview",
+      "family": "reports"
+    },
+    {
+      "route": "/app/accounts/:accountId/reports/sla",
+      "family": "reports"
+    },
+    {
+      "route": "/app/accounts/:accountId/reports/teams",
+      "family": "reports"
+    },
+    {
+      "route": "/app/accounts/:accountId/reports/teams/:id",
+      "family": "reports"
+    },
+    {
+      "route": "/app/accounts/:accountId/reports/teams_overview",
+      "family": "reports"
+    },
+    {
+      "route": "/app/accounts/:accountId/search/:tab?",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/settings",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/suspended",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/team/:teamId",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:accountId/team/:teamId/conversations/:conversationId",
+      "family": "conversations"
+    },
+    {
+      "route": "/app/accounts/:accountId/unattended/conversations",
+      "family": "conversations"
+    },
+    {
+      "route": "/app/accounts/:accountId/unattended/conversations/:conversationId",
+      "family": "conversations"
+    },
+    {
+      "route": "/app/accounts/:id",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/:id/edit",
+      "family": "other"
+    },
+    {
+      "route": "/app/accounts/new",
+      "family": "other"
+    },
+    {
+      "route": "/app/auth/*",
+      "family": "authentication"
+    },
+    {
+      "route": "/app/auth/confirmation",
+      "family": "authentication"
+    },
+    {
+      "route": "/app/auth/password/edit",
+      "family": "authentication"
+    },
+    {
+      "route": "/app/auth/reset/password",
+      "family": "authentication"
+    },
+    {
+      "route": "/app/auth/signup",
+      "family": "authentication"
+    },
+    {
+      "route": "/app/login",
+      "family": "authentication"
+    },
+    {
+      "route": "/app/login/sso",
+      "family": "authentication"
+    },
+    {
+      "route": "/app/no-accounts",
+      "family": "other"
+    },
+    {
+      "route": "/hc/*",
+      "family": "other"
+    },
+    {
+      "route": "/installation_configs/:id",
+      "family": "other"
+    },
+    {
+      "route": "/installation_configs/:id/edit",
+      "family": "other"
+    },
+    {
+      "route": "/installation_configs/new",
+      "family": "other"
+    },
+    {
+      "route": "/super_admin",
+      "family": "super_admin"
+    },
+    {
+      "route": "/super_admin*",
+      "family": "super_admin"
+    },
+    {
+      "route": "/super_admin/access_tokens",
+      "family": "super_admin"
+    },
+    {
+      "route": "/super_admin/account_users/new",
+      "family": "super_admin"
+    },
+    {
+      "route": "/super_admin/accounts",
+      "family": "super_admin"
+    },
+    {
+      "route": "/super_admin/agent_bots",
+      "family": "super_admin"
+    },
+    {
+      "route": "/super_admin/app_config",
+      "family": "super_admin"
+    },
+    {
+      "route": "/super_admin/installation_configs",
+      "family": "super_admin"
+    },
+    {
+      "route": "/super_admin/instance_status",
+      "family": "super_admin"
+    },
+    {
+      "route": "/super_admin/platform_apps",
+      "family": "super_admin"
+    },
+    {
+      "route": "/super_admin/settings",
+      "family": "super_admin"
+    },
+    {
+      "route": "/super_admin/settings/refresh",
+      "family": "super_admin"
+    },
+    {
+      "route": "/super_admin/sign_in",
+      "family": "super_admin"
+    },
+    {
+      "route": "/super_admin/users",
+      "family": "super_admin"
+    },
+    {
+      "route": "/swagger/*path",
+      "family": "other"
+    },
+    {
+      "route": "/widget?website_token=...#/<rota>",
+      "family": "other"
+    }
+  ],
+  "non_route_surfaces": [
+    {
+      "family": "conversations",
+      "type": "drawer",
+      "name": "detalhes da conversa"
+    },
+    {
+      "family": "contacts",
+      "type": "drawer",
+      "name": "detalhes do contato"
+    },
+    {
+      "family": "crm",
+      "type": "drawer",
+      "name": "detalhes do negócio"
+    },
+    {
+      "family": "crm",
+      "type": "modal",
+      "name": "criar ou editar negócio"
+    },
+    {
+      "family": "crm",
+      "type": "modal",
+      "name": "marcar ganho ou perdido"
+    },
+    {
+      "family": "captain",
+      "type": "tabs",
+      "name": "FAQ, documentos, ferramentas, cenários e configurações"
+    },
+    {
+      "family": "settings",
+      "type": "factory",
+      "name": "ChannelFactory por tipo de canal"
+    },
+    {
+      "family": "global",
+      "type": "state",
+      "name": "loading, vazio, erro, offline, permissão e confirmação"
+    }
+  ]
+}

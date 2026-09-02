@@ -3,6 +3,11 @@
 describe Enterprise::Billing::CreateStripeCustomerService do
   subject(:create_stripe_customer_service) { described_class }
 
+  before do
+    InstallationConfig.where(name: 'ChusteRM_CLOUD_PLANS').delete_all
+  end
+
+
   let(:account) { create(:account) }
   let!(:admin1) { create(:user, account: account, role: :administrator) }
   let(:admin2) { create(:user, account: account, role: :administrator) }

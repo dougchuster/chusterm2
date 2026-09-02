@@ -19,7 +19,7 @@
     end
     response
   rescue StandardError => e
-    ChusteRMExceptionTracker.new(e, account: account).capture_exception
+    ::ChusteRMExceptionTracker.new(e, account: account).capture_exception
     executed ? response : yield
   end
 

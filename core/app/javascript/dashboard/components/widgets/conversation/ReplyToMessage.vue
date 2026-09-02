@@ -14,10 +14,13 @@ const emit = defineEmits(['dismiss']);
 
 <template>
   <div
-    class="reply-editor bg-n-slate-9/10 rounded-md py-1 pl-2 pr-1 text-xs tracking-wide mt-2 flex items-center gap-1.5"
+    class="reply-editor mt-2 flex items-center gap-1.5 rounded-lg bg-ds-bg-active py-1 pl-2 pr-1 text-xs tracking-wide text-ds-fg-muted"
   >
-    <fluent-icon class="flex-shrink-0 icon" icon="arrow-reply" size="14" />
-    <div class="flex-grow gap-1 mt-px text-xs truncate">
+    <span
+      class="i-lucide-corner-up-left size-3.5 shrink-0"
+      aria-hidden="true"
+    />
+    <div class="mt-px flex-grow truncate text-xs">
       {{ $t('CONVERSATION.REPLYBOX.REPLYING_TO') }}
       <MessagePreview
         :message="message"
@@ -28,6 +31,7 @@ const emit = defineEmits(['dismiss']);
     </div>
     <Button
       v-tooltip="$t('CONVERSATION.REPLYBOX.DISMISS_REPLY')"
+      :aria-label="$t('CONVERSATION.REPLYBOX.DISMISS_REPLY')"
       ghost
       xs
       slate
@@ -37,13 +41,3 @@ const emit = defineEmits(['dismiss']);
     />
   </div>
 </template>
-
-<style lang="scss">
-// TODO: Remove this
-// override for dashboard/assets/scss/widgets/_reply-box.scss
-.reply-editor {
-  .icon {
-    margin-right: 0px !important;
-  }
-}
-</style>

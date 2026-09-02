@@ -1,4 +1,4 @@
-﻿export const ChusteRM_SET_USER = 'ChusteRM_SET_USER';
+export const ChusteRM_SET_USER = 'ChusteRM_SET_USER';
 export const CHUSTERM_RESET = 'CHUSTERM_RESET';
 
 // Aliases backward-compat: arquivos originais do Chatwoot (não rebranded) ainda usam estes nomes

@@ -1,4 +1,4 @@
-﻿import { parseBoolean } from '@ChusteRM/utils';
+import { parseBoolean } from '@ChusteRM/utils';
 import { resolveMaximumFileUploadSize } from 'shared/helpers/FileHelper';
 
 const {

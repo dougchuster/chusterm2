@@ -222,7 +222,7 @@ RSpec.describe 'Api::V1::Accounts::Captain::Documents', type: :request do
         before do
           create_list(:captain_document, 5, assistant: assistant, account: account)
 
-          create(:installation_config, name: 'CAPTAIN_CLOUD_PLAN_LIMITS', value: captain_limits.to_json)
+          InstallationConfig.find_or_initialize_by(name: 'CAPTAIN_CLOUD_PLAN_LIMITS').update!(value: captain_limits.to_json)
           post "/api/v1/accounts/#{account.id}/captain/documents",
                params: valid_attributes,
                headers: admin.create_new_auth_token

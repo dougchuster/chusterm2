@@ -79,14 +79,14 @@ export default {
 </script>
 
 <template>
-  <div class="sidebar-labels-wrap">
+  <div class="sidebar-labels-wrap mb-0">
     <div
       v-if="!conversationUiFlags.isFetching"
-      class="contact-conversation--list"
+      class="contact-conversation--list w-full"
     >
       <div
         v-on-clickaway="closeDropdownLabel"
-        class="label-wrap flex flex-wrap"
+        class="label-wrap relative flex flex-wrap leading-6"
         @keyup.esc="closeDropdownLabel"
       >
         <AddLabel @add="toggleLabels" />
@@ -107,7 +107,7 @@ export default {
             'block visible': showSearchDropdownLabel,
             'hidden invisible': !showSearchDropdownLabel,
           }"
-          class="border rounded-lg bg-n-alpha-3 top-6 backdrop-blur-[100px] absolute w-full shadow-lg border-n-strong dark:border-n-strong p-2 box-border z-[9999]"
+          class="absolute top-6 z-[9999] box-border w-full rounded-xl border border-ds-border-subtle bg-ds-bg-elevated/95 p-2 shadow-lg backdrop-blur-xl"
         >
           <LabelDropdown
             v-if="showSearchDropdownLabel"
@@ -124,17 +124,3 @@ export default {
     <Spinner v-else />
   </div>
 </template>
-
-<style lang="scss" scoped>
-.sidebar-labels-wrap {
-  margin-bottom: 0;
-}
-.contact-conversation--list {
-  width: 100%;
-
-  .label-wrap {
-    line-height: 1.5rem;
-    position: relative;
-  }
-}
-</style>

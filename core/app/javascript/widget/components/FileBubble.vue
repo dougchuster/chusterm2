@@ -1,4 +1,4 @@
-﻿<script>
+<script>
 import FluentIcon from 'shared/components/FluentIcon/Index.vue';
 import { getContrastingTextColor } from '@ChusteRM/utils';
 

@@ -1,19 +1,15 @@
 # frozen_string_literal: true
 
-# DEPRECATED: This class uses the legacy OpenAI Ruby gem directly.
-# Only used for PDF/file operations that require OpenAI's files API:
-# - Captain::Llm::PdfProcessingService (files.upload for assistants)
-# - Captain::Llm::PaginatedFaqGeneratorService (uses file_id from uploaded files)
-#
-# For all other LLM operations, use Llm::BaseAiService with RubyLLM instead.
+# Compatibility wrapper around an OpenAI-format client. The key and endpoint
+# always come from the installation-wide OpenRouter gateway.
 class Llm::LegacyBaseOpenAiService
-  DEFAULT_MODEL = 'gpt-4.1-mini'
+  DEFAULT_MODEL = LlmConstants::DEFAULT_MODEL
 
   attr_reader :client, :model
 
   def initialize
     @client = OpenAI::Client.new(
-      access_token: InstallationConfig.find_by!(name: 'CAPTAIN_OPEN_AI_API_KEY').value,
+      access_token: Llm::Config.system_api_key,
       uri_base: uri_base,
       log_errors: Rails.env.development?
     )
@@ -33,8 +29,7 @@ class Llm::LegacyBaseOpenAiService
   end
 
   def uri_base
-    endpoint = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_ENDPOINT')&.value
-    Llm::Config.normalize_endpoint(endpoint.presence || 'https://api.openai.com/')
+    Llm::Config.normalize_endpoint(Llm::Config.openai_endpoint)
   end
 
   def setup_model

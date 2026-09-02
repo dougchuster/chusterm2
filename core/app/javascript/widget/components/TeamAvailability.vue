@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { IFrameHelper } from 'widget/helpers/utils';
 import { ChusteRM_ON_START_CONVERSATION } from '../constants/sdkEvents';
 import AvailabilityContainer from 'widget/components/Availability/AvailabilityContainer.vue';

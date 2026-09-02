@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { reactive, computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAlert } from 'dashboard/composables';

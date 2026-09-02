@@ -9,23 +9,13 @@ export default {
 </script>
 
 <template>
-  <div class="agent-placeholder">
+  <div
+    class="flex min-w-[12.5rem] flex-col items-center justify-center py-4 text-ds-fg-muted"
+    role="status"
+  >
     <Spinner />
-    <p>{{ $t('CONVERSATION.CARD_CONTEXT_MENU.AGENTS_LOADING') }}</p>
+    <p class="mb-0 mt-2">
+      {{ $t('CONVERSATION.CARD_CONTEXT_MENU.AGENTS_LOADING') }}
+    </p>
   </div>
 </template>
-
-<style scoped lang="scss">
-.agent-placeholder {
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  justify-content: center;
-  padding: 1rem 0;
-  min-width: calc(6.25rem * 2);
-
-  p {
-    margin: 0.5rem 0 0 0;
-  }
-}
-</style>

@@ -186,33 +186,11 @@ onMounted(async () => {
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <defs>
-                  <linearGradient
-                    id="node-grad"
-                    x1="0%"
-                    y1="0%"
-                    x2="100%"
-                    y2="100%"
-                  >
-                    <stop offset="0%" stop-color="#06b6d4" />
-                    <stop offset="100%" stop-color="#3b82f6" />
-                  </linearGradient>
-                  <linearGradient
-                    id="ring-grad"
-                    x1="100%"
-                    y1="100%"
-                    x2="0%"
-                    y2="0%"
-                  >
-                    <stop offset="0%" stop-color="#ec4899" />
-                    <stop offset="100%" stop-color="#a855f7" />
-                  </linearGradient>
-                </defs>
                 <circle
                   cx="32"
                   cy="32"
                   r="24"
-                  stroke="url(#ring-grad)"
+                  stroke="#4f46e5"
                   stroke-width="6"
                   stroke-linecap="round"
                   stroke-dasharray="80 30"
@@ -222,13 +200,13 @@ onMounted(async () => {
                   cx="32"
                   cy="32"
                   r="16"
-                  stroke="url(#node-grad)"
+                  stroke="#0f766e"
                   stroke-width="5"
                   stroke-linecap="round"
                   stroke-dasharray="40 20"
                   transform="rotate(-30 32 32)"
                 />
-                <circle cx="32" cy="32" r="8" fill="url(#node-grad)" />
+                <circle cx="32" cy="32" r="8" fill="#4f46e5" />
                 <circle cx="56" cy="32" r="4" fill="#ec4899" />
                 <circle cx="8" cy="32" r="4" fill="#06b6d4" />
               </svg>
@@ -266,7 +244,7 @@ onMounted(async () => {
                       cx="32"
                       cy="32"
                       r="24"
-                      stroke="url(#ring-grad)"
+                      stroke="#4f46e5"
                       stroke-width="6"
                       stroke-linecap="round"
                       stroke-dasharray="80 30"
@@ -276,13 +254,13 @@ onMounted(async () => {
                       cx="32"
                       cy="32"
                       r="16"
-                      stroke="url(#node-grad)"
+                      stroke="#0f766e"
                       stroke-width="5"
                       stroke-linecap="round"
                       stroke-dasharray="40 20"
                       transform="rotate(-30 32 32)"
                     />
-                    <circle cx="32" cy="32" r="8" fill="url(#node-grad)" />
+                    <circle cx="32" cy="32" r="8" fill="#4f46e5" />
                     <circle cx="56" cy="32" r="4" fill="#ec4899" />
                     <circle cx="8" cy="32" r="4" fill="#06b6d4" />
                   </svg>
@@ -332,7 +310,6 @@ onMounted(async () => {
                         name="email"
                         type="email"
                         :placeholder="$t('LOGIN.SAML.WORK_EMAIL.PLACEHOLDER')"
-                        :tabindex="1"
                         required
                         autocomplete="email"
                         spellcheck="false"
@@ -358,7 +335,6 @@ onMounted(async () => {
                     type="submit"
                     class="auth-submit-btn"
                     :disabled="loginApi.showLoading"
-                    :tabindex="2"
                   >
                     <svg
                       v-if="loginApi.showLoading"
@@ -402,8 +378,6 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;700;800&display=swap');
-
 .auth-modern {
   position: fixed !important;
   inset: 0 !important;
@@ -428,11 +402,7 @@ onMounted(async () => {
   --card-bg: rgba(255, 255, 255, 0.7);
   --card-border: rgba(255, 255, 255, 0.8);
   --form-bg: rgba(255, 255, 255, 0.9);
-  --hero-bg: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.8) 0%,
-    rgba(248, 250, 252, 0.4) 100%
-  );
+  --hero-bg: #f8fafc;
   --input-bg: rgba(241, 245, 249, 0.8);
   --input-border: #e2e8f0;
   --input-text: #0f172a;
@@ -458,11 +428,7 @@ onMounted(async () => {
   --card-bg: rgba(15, 23, 42, 0.4);
   --card-border: rgba(255, 255, 255, 0.12);
   --form-bg: rgba(2, 6, 23, 0.5);
-  --hero-bg: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.08) 0%,
-    rgba(255, 255, 255, 0.01) 100%
-  );
+  --hero-bg: #111827;
   --input-bg: rgba(0, 0, 0, 0.2);
   --input-border: rgba(255, 255, 255, 0.1);
   --input-text: #ffffff;
@@ -497,8 +463,6 @@ onMounted(async () => {
   justify-content: center;
   color: var(--text-main);
   cursor: pointer;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
@@ -519,12 +483,7 @@ onMounted(async () => {
 }
 
 .orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(100px);
-  opacity: 0.8;
-  animation: float 20s infinite ease-in-out alternate;
-  mix-blend-mode: screen;
+  display: none;
 }
 
 .auth-modern.light .orb {
@@ -573,6 +532,7 @@ onMounted(async () => {
 }
 
 .glass-overlay {
+  display: none;
   position: absolute;
   inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
@@ -608,14 +568,11 @@ onMounted(async () => {
 .auth-glass-card {
   display: flex;
   background: var(--card-bg);
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
   border: 1px solid var(--card-border);
-  border-radius: 28px;
-  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 16px 40px -24px rgba(15, 23, 42, 0.35);
   overflow: hidden;
   min-height: 640px;
-  animation: cardEntrance 1s cubic-bezier(0.2, 0.8, 0.2, 1);
   transition:
     background 0.5s ease,
     border-color 0.5s ease;
@@ -664,7 +621,6 @@ onMounted(async () => {
   width: 48px;
   height: 48px;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
-  animation: logoSpin 30s linear infinite;
 }
 
 @keyframes logoSpin {
@@ -677,7 +633,7 @@ onMounted(async () => {
 }
 
 .logo-text {
-  font-family: 'Outfit', sans-serif;
+  font-family: inherit;
   font-size: 2.25rem;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -686,9 +642,7 @@ onMounted(async () => {
 }
 
 .logo-highlight {
-  background: linear-gradient(135deg, #a855f7, #ec4899);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #4f46e5;
 }
 
 .auth-brand-mark {
@@ -696,7 +650,7 @@ onMounted(async () => {
 }
 
 .auth-badge {
-  font-family: 'Outfit', sans-serif;
+  font-family: inherit;
   font-size: 2.5rem;
   font-weight: 800;
   color: var(--text-main);
@@ -705,7 +659,7 @@ onMounted(async () => {
 }
 
 .auth-headline {
-  font-family: 'Outfit', sans-serif;
+  font-family: inherit;
   font-size: 3.5rem;
   font-weight: 700;
   line-height: 1.1;
@@ -742,14 +696,14 @@ onMounted(async () => {
 }
 
 .auth-wordmark-mobile {
-  font-family: 'Outfit', sans-serif;
+  font-family: inherit;
   font-size: 1.5rem;
   font-weight: 800;
   color: var(--text-main);
 }
 
 .auth-title {
-  font-family: 'Outfit', sans-serif;
+  font-family: inherit;
   font-size: 2rem;
   font-weight: 700;
   color: var(--text-main);

@@ -43,7 +43,7 @@
 
 ## Frontend Design System
 
-- Any future frontend change must follow the ChusteRM design system defined in [../docs/chusterm_design_system.md](../docs/chusterm_design_system.md) and [../docs/DESIGN.md](../docs/DESIGN.md).
+- Any future frontend change must follow the ChusteRM design system defined in [../.github/skills/chusterm-ui-redesign/references/design-brief.md](../.github/skills/chusterm-ui-redesign/references/design-brief.md).
 - For agent-driven redesign work, also use [../.github/skills/chusterm-ui-redesign/SKILL.md](../.github/skills/chusterm-ui-redesign/SKILL.md).
 - Preserve one unified visual language across login, super login, system configuration access, dashboard, navigation, cards, forms, and operational surfaces.
 - Login, super login, and the main system configuration access area must look like the same product family; distinguish them through copy, security cues, context, and information hierarchy, not through a separate design language.

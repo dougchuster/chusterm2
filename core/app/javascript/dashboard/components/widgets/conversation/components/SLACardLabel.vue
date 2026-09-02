@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { evaluateSLAStatus } from '@ChusteRM/utils';
@@ -35,7 +35,7 @@ const slaEvents = computed(() => props.chat?.sla_events);
 const hasSlaThreshold = computed(() => slaStatus.value?.threshold);
 const isSlaMissed = computed(() => slaStatus.value?.isSlaMissed);
 const slaTextStyles = computed(() =>
-  isSlaMissed.value ? 'text-n-ruby-11' : 'text-n-amber-11'
+  isSlaMissed.value ? 'text-ds-state-danger' : 'text-ds-state-warning'
 );
 
 const slaStatusText = computed(() => {
@@ -53,8 +53,8 @@ const showSlaPopoverCard = computed(
 
 const groupClass = computed(() => {
   return props.showExtendedInfo
-    ? 'h-[26px] rounded-lg bg-n-alpha-1'
-    : 'rounded h-5  border border-n-strong';
+    ? 'h-[26px] rounded-lg bg-ds-bg-active'
+    : 'h-5 rounded border border-ds-border-strong';
 });
 
 const updateSlaStatus = () => {
@@ -80,7 +80,7 @@ watch(
 
 const slaPopoverClass = computed(() => {
   return props.showExtendedInfo
-    ? 'ltr:pr-1.5 rtl:pl-1.5 ltr:border-r rtl:border-l border-n-strong'
+    ? 'border-ds-border-strong ltr:border-r ltr:pr-1.5 rtl:border-l rtl:pl-1.5'
     : '';
 });
 
@@ -100,21 +100,23 @@ onUnmounted(() => {
 <template>
   <div
     v-if="hasSlaThreshold"
-    class="relative flex items-center cursor-pointer min-w-fit group"
+    :aria-label="`${slaStatusText}: ${slaStatus.threshold}`"
+    class="group relative flex min-w-fit cursor-help items-center rounded outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
     :class="groupClass"
+    tabindex="0"
   >
     <div
       class="flex items-center w-full truncate px-1.5"
       :class="showExtendedInfo ? '' : 'gap-1'"
     >
       <div class="flex items-center gap-1" :class="slaPopoverClass">
-        <fluent-icon
-          size="12"
-          :icon="slaStatus.icon"
-          type="outline"
-          :icon-lib="isSlaMissed ? 'lucide' : 'fluent'"
-          class="flex-shrink-0"
-          :class="slaTextStyles"
+        <span
+          :class="[
+            isSlaMissed ? 'i-lucide-flame' : 'i-lucide-clock-3',
+            slaTextStyles,
+          ]"
+          class="size-3 shrink-0"
+          aria-hidden="true"
         />
         <span
           v-if="showExtendedInfo && parentWidth > 650"
@@ -134,7 +136,7 @@ onUnmounted(() => {
     <SLAPopoverCard
       v-if="showSlaPopoverCard"
       :sla-missed-events="slaEvents"
-      class="start-0 xl:start-auto xl:end-0 top-7 hidden group-hover:flex"
+      class="top-7 hidden group-hover:flex group-focus-within:flex start-0 xl:start-auto xl:end-0"
     />
   </div>
 </template>

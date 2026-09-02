@@ -46,6 +46,7 @@ const handleMouseEnter = () => {
         class="transition-opacity duration-200 !h-7 ltr:rounded-r-md rtl:rounded-l-md ltr:rounded-l-none rtl:rounded-r-none w-6 bg-transparent"
         :class="{ 'opacity-0': !isHovered, 'opacity-100': isHovered }"
         type="button"
+        :aria-label="`Remover ${label.display_title || label.title}`"
         slate
         xs
         faded

@@ -216,6 +216,29 @@ RSpec.describe 'Api::V1::Accounts::Captain::Assistants', type: :request do
         expect(response).to have_http_status(:success)
         expect(json_response[:config][:feature_citation]).to be(false)
       end
+
+      it 'preserves hidden scoped policies during a partial config update' do
+        assistant.update!(
+          config: {
+            'feature_previdenciario_initial_responses' => true,
+            'feature_dra_paula_data_collection_policy' => true,
+            'feature_citation' => true
+          }
+        )
+
+        patch "/api/v1/accounts/#{account.id}/captain/assistants/#{assistant.id}",
+              params: { assistant: { config: { feature_citation: false } } },
+              headers: admin.create_new_auth_token,
+              as: :json
+
+        expect(response).to have_http_status(:success)
+        assistant.reload
+        expect(assistant.config).to include(
+          'feature_previdenciario_initial_responses' => true,
+          'feature_dra_paula_data_collection_policy' => true,
+          'feature_citation' => false
+        )
+      end
     end
   end
 
@@ -277,6 +300,10 @@ RSpec.describe 'Api::V1::Accounts::Captain::Assistants', type: :request do
     end
 
     context 'when captain v2 is disabled' do
+      before do
+        account.disable_features('captain_integration_v2')
+      end
+
       it 'generates a response with the legacy assistant chat service' do
         allow(Captain::Llm::AssistantChatService).to receive(:new).with(
           assistant: assistant,

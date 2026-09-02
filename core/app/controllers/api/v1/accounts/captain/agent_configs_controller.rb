@@ -259,7 +259,7 @@ class Api::V1::Accounts::Captain::AgentConfigsController < Api::V1::Accounts::Ba
       count: scope.count,
       auto_count: scope.where(ai_mode: 'auto').count,
       human_count: scope.where(ai_mode: CaptainConversationState::HUMAN_MODES).count,
-      high_score_count: scope.where('score_total >= ?', CaptainConversationState::AUTO_HANDOFF_SCORE_THRESHOLD).count
+      high_score_count: scope.where('score_total >= ?', CaptainConversationState::HIGH_PRIORITY_SCORE_THRESHOLD).count
     }
   end
 

@@ -1,4 +1,4 @@
-﻿import { useBranding } from '../useBranding';
+import { useBranding } from '../useBranding';
 import { useMapGetter } from 'dashboard/composables/store.js';
 
 // Mock the store composable
@@ -76,10 +76,10 @@ describe('useBranding', () => {
     it('should be case-sensitive for "ChusteRM"', () => {
       const { replaceInstallationName } = useBranding();
       const result = replaceInstallationName(
-        'Welcome to ChusteRM and ChusteRM'
+        'Welcome to chusterm and CHUSTERM'
       );
 
-      expect(result).toBe('Welcome to ChusteRM and ChusteRM');
+      expect(result).toBe('Welcome to chusterm and CHUSTERM');
     });
 
     it('should handle special characters in installation name', () => {

@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { useAttachments } from '../useAttachments';
 import { useStore } from 'vuex';
 import { computed } from 'vue';

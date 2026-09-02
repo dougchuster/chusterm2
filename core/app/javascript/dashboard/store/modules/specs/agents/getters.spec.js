@@ -1,4 +1,4 @@
-﻿import { getters } from '../../agents';
+import { getters } from '../../agents';
 
 describe('#getters', () => {
   it('getAgents', () => {

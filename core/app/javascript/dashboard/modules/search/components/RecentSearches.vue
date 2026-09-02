@@ -72,8 +72,8 @@ onMounted(() => {
   <div v-if="hasRecentSearches" class="px-4 pb-4 w-full pt-2">
     <div class="flex items-center justify-between mb-4">
       <div class="flex items-center gap-2.5">
-        <Icon icon="i-lucide-rotate-ccw" class="text-n-slate-10 size-4" />
-        <h3 class="text-base font-medium text-n-slate-10">
+        <Icon icon="i-lucide-rotate-ccw" class="text-n-slate-11 size-4" />
+        <h3 class="text-base font-medium text-n-slate-11">
           {{ $t('SEARCH.RECENT_SEARCHES') }}
         </h3>
       </div>
@@ -82,7 +82,7 @@ onMounted(() => {
         xs
         slate
         ghost
-        class="!text-n-slate-10 hover:!text-n-slate-12"
+        class="!text-n-slate-11 hover:!text-n-slate-12"
         @mousedown.prevent
         @click="onClearAll"
       >

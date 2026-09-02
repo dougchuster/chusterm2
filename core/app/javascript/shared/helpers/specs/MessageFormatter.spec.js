@@ -1,4 +1,4 @@
-﻿import MessageFormatter from '../MessageFormatter';
+import MessageFormatter from '../MessageFormatter';
 
 describe('#MessageFormatter', () => {
   describe('content with links', () => {

@@ -47,7 +47,7 @@ RSpec.describe Inboxes::BulkAutoAssignmentJob do
       context 'when account is on default plan in ChusteRM cloud' do
         before do
           account.update!(custom_attributes: {})
-          InstallationConfig.create(name: 'ChusteRM_CLOUD_PLANS', value: [{ 'name' => 'default' }])
+          InstallationConfig.find_or_initialize_by(name: 'ChusteRM_CLOUD_PLANS').update!(value: [{ 'name' => 'default' }])
           allow(ChusteRMApp).to receive(:ChusteRM_cloud?).and_return(true)
         end
 

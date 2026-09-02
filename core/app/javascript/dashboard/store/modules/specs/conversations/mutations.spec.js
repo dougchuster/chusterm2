@@ -15,10 +15,49 @@ import { emitter } from 'shared/helpers/mitt';
 describe('#mutations', () => {
   describe('#EMPTY_ALL_CONVERSATION', () => {
     it('empty conversations', () => {
-      const state = { allConversations: [{ id: 1 }], selectedChatId: 1 };
+      const state = {
+        allConversations: [{ id: 1 }],
+        selectedChatId: 1,
+        searchResultIds: [1],
+      };
       mutations[types.EMPTY_ALL_CONVERSATION](state);
       expect(state.allConversations).toEqual([]);
       expect(state.selectedChatId).toEqual(null);
+      expect(state.searchResultIds).toEqual(null);
+    });
+
+    it('preserves the open conversation while resetting search results', () => {
+      const selectedConversation = { id: 2, messages: [{ id: 10 }] };
+      const state = {
+        allConversations: [{ id: 1 }, selectedConversation, { id: 3 }],
+        selectedChatId: 2,
+        searchResultIds: [1, 3],
+      };
+
+      mutations[types.EMPTY_ALL_CONVERSATION](state, {
+        preserveSelected: true,
+        searchActive: true,
+      });
+
+      expect(state.allConversations).toEqual([selectedConversation]);
+      expect(state.selectedChatId).toEqual(2);
+      expect(state.searchResultIds).toEqual([]);
+    });
+  });
+
+  describe('#SET_CONVERSATION_SEARCH_RESULT_IDS', () => {
+    it('replaces page one and appends unique ids on later pages', () => {
+      const state = { searchResultIds: [99] };
+
+      mutations[types.SET_CONVERSATION_SEARCH_RESULT_IDS](state, {
+        conversationIds: [1, 2],
+      });
+      mutations[types.SET_CONVERSATION_SEARCH_RESULT_IDS](state, {
+        conversationIds: [2, 3],
+        append: true,
+      });
+
+      expect(state.searchResultIds).toEqual([1, 2, 3]);
     });
   });
 

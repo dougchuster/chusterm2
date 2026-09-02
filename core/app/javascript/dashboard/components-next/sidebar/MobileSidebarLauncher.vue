@@ -47,14 +47,15 @@ const toggleSidebar = () => {
     ]"
   >
     <ButtonGroup
-      class="rounded-full bg-n-alpha-2 backdrop-blur-lg p-1 shadow hover:shadow-md"
+      class="rounded-full bg-ds-shell-panel/90 p-1 shadow-[var(--ds-shadow-md)] ring-1 ring-inset ring-ds-shell-border backdrop-blur-lg"
     >
       <Button
+        :aria-label="$t('HELP_CENTER.EDIT_HEADER.OPEN_SIDEBAR')"
         icon="i-lucide-menu"
         no-animation
-        class="!rounded-full !bg-n-solid-3 dark:!bg-n-alpha-2 !text-n-slate-12 text-xl transition-all duration-200 ease-out hover:brightness-110"
+        class="!rounded-full !bg-ds-shell-panel-strong !text-ds-shell-fg text-xl transition-colors duration-150 hover:!bg-ds-shell-hover focus-visible:!ring-2 focus-visible:!ring-ds-shell-focus"
         lg
-        @click="toggleSidebar"
+        @click.stop="toggleSidebar"
       />
     </ButtonGroup>
   </div>

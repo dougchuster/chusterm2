@@ -294,6 +294,9 @@
     }
   },
   "SIDEBAR": {
+    "PRODUCT_SCOPE": "CRM + AI",
+    "WORKSPACE": "Workspace",
+    "PROFILE_ONLINE": "Online · profile and preferences",
     "NO_ITEMS": "No items",
     "CURRENTLY_VIEWING_ACCOUNT": "Currently viewing:",
     "SWITCH": "Switch",

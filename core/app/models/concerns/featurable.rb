@@ -42,8 +42,6 @@ module Featurable
   end
 
   def feature_enabled?(name)
-    return true if ChusteRMApp.enterprise?
-
     send("feature_#{name}?")
   end
 
@@ -58,8 +56,6 @@ module Featurable
   end
 
   def disabled_features
-    return {} if ChusteRMApp.enterprise?
-
     all_features.select { |_feature, enabled| enabled == false }
   end
 

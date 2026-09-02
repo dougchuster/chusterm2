@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { computed } from 'vue';
 import { useUISettings } from 'dashboard/composables/useUISettings';
 import { formatNumber } from '@chatwoot/utils';
@@ -41,6 +41,8 @@ const formattedAllCount = computed(() => formatNumber(allCount.value));
 
 const toggleConversationLayout = () => {
   const { LAYOUT_TYPES } = wootConstants;
+  if (window.innerWidth <= wootConstants.SMALL_SCREEN_BREAKPOINT) return;
+
   const {
     conversation_display_type: conversationDisplayType = LAYOUT_TYPES.CONDENSED,
   } = uiSettings.value;
@@ -57,14 +59,11 @@ const toggleConversationLayout = () => {
 
 <template>
   <div
-    class="chat-list-header flex items-center justify-between gap-2 px-4 py-3 min-h-[4rem]"
-    :class="{
-      'border-b border-n-strong': hasAppliedFiltersOrActiveFolders,
-    }"
+    class="flex min-h-16 items-center justify-between gap-2 bg-ds-bg-surface/90 px-3 py-2.5 text-ds-fg-default backdrop-blur-md"
   >
-    <div class="flex items-center justify-center min-w-0 flex-1">
+    <div class="flex min-w-0 flex-1 items-center justify-center">
       <h1
-        class="text-[1.05rem] font-semibold truncate text-n-slate-12 tracking-[0.01em]"
+        class="truncate font-manrope text-base font-semibold tracking-[-0.01em] text-ds-fg-default"
         :title="pageTitle"
       >
         {{ pageTitle }}
@@ -73,23 +72,24 @@ const toggleConversationLayout = () => {
         v-if="
           allCount > 0 && hasAppliedFiltersOrActiveFolders && !isListLoading
         "
-        class="chat-list-header__badge px-2.5 py-1 my-0.5 mx-2 capitalize text-xs text-n-slate-12 shrink-0"
+        class="mx-2 inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-ds-bg-elevated px-1.5 text-xs font-semibold leading-none text-ds-fg-muted"
         :title="allCount"
       >
         {{ formattedAllCount }}
       </span>
       <span
         v-if="!hasAppliedFiltersOrActiveFolders"
-        class="chat-list-header__badge px-2.5 py-1 my-0.5 mx-2 capitalize text-xs text-n-slate-12 shrink-0"
+        class="mx-2 inline-flex h-5 shrink-0 items-center rounded-full bg-ds-bg-elevated px-2 text-xs font-semibold leading-none text-ds-fg-muted"
       >
         {{ $t(`CHAT_LIST.CHAT_STATUS_FILTER_ITEMS.${activeStatus}.TEXT`) }}
       </span>
     </div>
-    <div class="flex shrink-0 items-center gap-1.5">
+    <div class="flex shrink-0 items-center gap-1">
       <template v-if="hasAppliedFilters && !hasActiveFolders">
         <div class="relative">
           <NextButton
             v-tooltip.top-end="$t('FILTER.CUSTOM_VIEWS.ADD.SAVE_BUTTON')"
+            :aria-label="$t('FILTER.CUSTOM_VIEWS.ADD.SAVE_BUTTON')"
             icon="i-lucide-save"
             slate
             xs
@@ -104,6 +104,7 @@ const toggleConversationLayout = () => {
         </div>
         <NextButton
           v-tooltip.top-end="$t('FILTER.CLEAR_BUTTON_LABEL')"
+          :aria-label="$t('FILTER.CLEAR_BUTTON_LABEL')"
           icon="i-lucide-circle-x"
           ruby
           faded
@@ -116,6 +117,7 @@ const toggleConversationLayout = () => {
           <NextButton
             id="toggleConversationFilterButton"
             v-tooltip.top-end="$t('FILTER.CUSTOM_VIEWS.EDIT.EDIT_BUTTON')"
+            :aria-label="$t('FILTER.CUSTOM_VIEWS.EDIT.EDIT_BUTTON')"
             icon="i-lucide-pen-line"
             slate
             xs
@@ -129,8 +131,8 @@ const toggleConversationLayout = () => {
           />
         </div>
         <NextButton
-          id="toggleConversationFilterButton"
           v-tooltip.top-end="$t('FILTER.CUSTOM_VIEWS.DELETE.DELETE_BUTTON')"
+          :aria-label="$t('FILTER.CUSTOM_VIEWS.DELETE.DELETE_BUTTON')"
           icon="i-lucide-trash-2"
           ruby
           xs
@@ -142,6 +144,7 @@ const toggleConversationLayout = () => {
         <NextButton
           id="toggleConversationFilterButton"
           v-tooltip.right="$t('FILTER.TOOLTIP_LABEL')"
+          :aria-label="$t('FILTER.TOOLTIP_LABEL')"
           icon="i-lucide-list-filter"
           slate
           xs
@@ -166,16 +169,3 @@ const toggleConversationLayout = () => {
     </div>
   </div>
 </template>
-
-<style scoped>
-.chat-list-header {
-  background: rgb(var(--slate-1) / 0.6);
-}
-
-.chat-list-header__badge {
-  border-radius: 999px;
-  background: rgb(var(--slate-3) / 0.6);
-  font-weight: 600;
-  line-height: 1rem;
-}
-</style>

@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { computed, onMounted, watch } from 'vue';
 import ArticleBlock from 'widget/components/pageComponents/Home/Article/ArticleBlock.vue';
 import ArticleCardSkeletonLoader from 'widget/components/pageComponents/Home/Article/SkeletonLoader.vue';

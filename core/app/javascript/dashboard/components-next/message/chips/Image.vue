@@ -15,6 +15,7 @@ defineProps({
 });
 const hasError = ref(false);
 const showGallery = ref(false);
+const galleryAriaLabel = 'Abrir imagem';
 
 const { filteredCurrentChatAttachments } = useMessageContext();
 
@@ -24,20 +25,23 @@ const handleError = () => {
 </script>
 
 <template>
-  <div
-    class="relative size-[72px] overflow-hidden contain-content rounded-xl cursor-pointer"
+  <button
+    type="button"
+    :aria-label="galleryAriaLabel"
+    class="relative size-[72px] overflow-hidden rounded-xl outline-none ring-1 ring-inset ring-ds-border-subtle transition-shadow focus-visible:ring-2 focus-visible:ring-ds-border-focus"
     @click="showGallery = true"
   >
     <div
       v-if="hasError"
-      class="flex flex-col items-center justify-center gap-1 text-xs text-center rounded-lg size-full bg-n-alpha-1 text-n-slate-11"
+      class="flex size-full flex-col items-center justify-center gap-1 rounded-lg bg-ds-bg-sunken text-center text-xs text-ds-fg-muted"
     >
-      <Icon icon="i-lucide-circle-off" class="text-n-slate-11" />
+      <Icon icon="i-lucide-circle-off" class="text-ds-fg-muted" />
       {{ $t('COMPONENTS.MEDIA.LOADING_FAILED') }}
     </div>
     <img
       v-else
-      class="object-cover w-full h-full skip-context-menu"
+      alt=""
+      class="size-full object-cover skip-context-menu"
       :src="attachment.dataUrl"
       @error="handleError"
     />
@@ -46,7 +50,7 @@ const handleError = () => {
       overlay
       class="absolute inset-x-1 bottom-1 justify-center [&>span:last-child]:sr-only"
     />
-  </div>
+  </button>
   <GalleryView
     v-if="showGallery"
     v-model:show="showGallery"

@@ -1,4 +1,4 @@
-﻿import { useConfig } from '../useConfig';
+import { useConfig } from '../useConfig';
 
 describe('useConfig', () => {
   const originalchustermConfig = window.chustermConfig;

@@ -29,8 +29,8 @@ const fileType = computed(() => {
 
 <template>
   <BaseAttachmentBubble
-    icon="i-teenyicons-user-circle-solid"
-    icon-bg-color="bg-n-alpha-3 dark:bg-n-alpha-white"
+    icon="i-lucide-file"
+    icon-bg-color="bg-ds-bg-sunken"
     sender-translation-key="CONVERSATION.SHARED_ATTACHMENT.FILE"
     :content="decodeURI(fileName)"
     :action="{

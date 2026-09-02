@@ -87,22 +87,50 @@ class Api::V1::Accounts::Crm::PipelinesController < Api::V1::Accounts::Crm::Base
   end
 
   def serialize_pipelines(pipelines)
-    pipelines.map { |p| serialize_pipeline(p) }
+    pipeline_ids = pipelines.map(&:id)
+    deal_counts = Current.account.crm_deals
+                         .where(crm_pipeline_id: pipeline_ids)
+                         .group(:crm_pipeline_id)
+                         .count
+    open_deal_counts = Current.account.crm_deals
+                              .open_deals
+                              .where(crm_pipeline_id: pipeline_ids)
+                              .group(:crm_pipeline_id)
+                              .count
+
+    pipelines.map do |pipeline|
+      serialize_pipeline(
+        pipeline,
+        deals_count: deal_counts.fetch(pipeline.id, 0),
+        open_deals_count: open_deal_counts.fetch(pipeline.id, 0)
+      )
+    end
   end
 
-  def serialize_pipeline(pipeline)
+  def serialize_pipeline(pipeline, deals_count: nil, open_deals_count: nil)
+    total_count = deals_count || pipeline.crm_deals.count
+    open_count = open_deals_count || pipeline.crm_deals.open_deals.count
+
     {
       id: pipeline.id,
       name: pipeline.name,
       slug: pipeline.slug,
       kind: pipeline.kind,
       inbox_id: pipeline.inbox_id,
-      inbox: pipeline.inbox ? { id: pipeline.inbox.id, name: pipeline.inbox.name, channel_type: pipeline.inbox.channel_type } : nil,
+      inbox: serialize_inbox(pipeline.inbox),
       is_default: pipeline.is_default,
       position: pipeline.position,
+      deals_count: total_count,
+      open_deals_count: open_count,
       scoring_config: pipeline.scoring_config || {},
       stages: pipeline.crm_pipeline_stages.active.ordered.map { |s| serialize_stage(s) }
     }
+  end
+
+  def serialize_inbox(inbox)
+    return unless inbox
+
+    { id: inbox.id, name: inbox.name, channel_type: inbox.channel_type }
   end
 
   def serialize_stage(stage)

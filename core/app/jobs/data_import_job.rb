@@ -23,8 +23,8 @@ class DataImportJob < ApplicationJob
     reset_import_summary
     contact_entries, rejected_contacts = parse_csv_and_build_contacts
 
-    saved_count, save_failures = import_contacts(contact_entries, rejected_contacts)
-    update_data_import_status(saved_count, rejected_contacts.length + save_failures)
+    saved_count = import_contacts(contact_entries, rejected_contacts)
+    update_data_import_status(saved_count, rejected_contacts.length)
     save_failed_records_csv(rejected_contacts)
   end
 
@@ -104,19 +104,16 @@ class DataImportJob < ApplicationJob
   def import_contacts(contact_entries, rejected_contacts)
     # Save one by one so label_list, CRM defaults and merged existing contacts run callbacks correctly.
     saved_count = 0
-    save_failures = 0
-
     contact_entries.each do |entry|
       contact = entry[:contact]
       contact.save!
       saved_count += 1
       record_import_summary(entry)
     rescue ActiveRecord::RecordInvalid => e
-      save_failures += 1
       rejected_contacts << rejected_row_from_contact(contact, e.record)
     end
 
-    [saved_count, save_failures]
+    saved_count
   end
 
   def rejected_row_from_contact(contact, invalid_record)
@@ -126,13 +123,14 @@ class DataImportJob < ApplicationJob
   end
 
   def update_data_import_status(processed_records, rejected_records)
+    total_records = processed_records + rejected_records
     metadata = (@data_import.metadata || {}).deep_dup
-    metadata['import_summary'] = import_summary_payload(processed_records, rejected_records)
+    metadata['import_summary'] = import_summary_payload(total_records, rejected_records)
 
     @data_import.update!(
       status: :completed,
       processed_records: processed_records,
-      total_records: processed_records + rejected_records,
+      total_records: total_records,
       processing_errors: rejected_records.positive? ? "#{rejected_records} registros rejeitados" : nil,
       metadata: metadata
     )

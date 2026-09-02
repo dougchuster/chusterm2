@@ -1,6 +1,4 @@
-﻿// ChusteRM Theme — Purple-Teal identity on Chatwoot CE base
-import 'dashboard/assets/css/chusterm-theme.css';
-
+// ChusteRM Theme — Purple-Teal identity on Chatwoot CE base
 import { createApp } from 'vue';
 import { createI18n } from 'vue-i18n';
 
@@ -10,6 +8,7 @@ import {
   initializeAnalyticsEvents,
   initializeChusteRMEvents,
 } from 'dashboard/helper/scriptHelpers';
+import { setColorTheme } from 'dashboard/helper/themeHelper';
 import App from '../v3/App.vue';
 import router, { initalizeRouter } from '../v3/views/index';
 import store from '../v3/store';
@@ -26,6 +25,8 @@ const i18n = createI18n({
   fallbackLocale: 'pt_BR',
   messages: i18nMessages,
 });
+
+setColorTheme(window.matchMedia('(prefers-color-scheme: dark)').matches);
 
 const app = createApp(App);
 app.use(i18n);

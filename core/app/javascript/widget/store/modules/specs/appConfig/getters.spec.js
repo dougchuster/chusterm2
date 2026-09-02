@@ -1,4 +1,4 @@
-﻿import { getters } from '../../appConfig';
+import { getters } from '../../appConfig';
 
 describe('#getters', () => {
   describe('#getWidgetColor', () => {

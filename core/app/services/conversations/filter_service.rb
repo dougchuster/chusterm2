@@ -9,6 +9,7 @@ class Conversations::FilterService < FilterService
   def perform
     validate_query_operator
     @conversations = query_builder(@filters['conversations'])
+    @conversations = Conversations::TextSearchService.new(@conversations, @params[:q]).perform
     mine_count, unassigned_count, all_count, = set_count_for_all_conversations
     assigned_count = all_count - unassigned_count
 

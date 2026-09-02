@@ -96,6 +96,16 @@ describe ConversationFinder do
       end
     end
 
+    context 'with inbox sentinel all' do
+      let(:params) { { inbox_id: 'all', status: 'all', assignee_type: 'all' } }
+
+      it 'uses every inbox available to the user' do
+        result = conversation_finder.perform
+
+        expect(result[:conversations].length).to be 5
+      end
+    end
+
     context 'with assignee_type assigned' do
       let(:params) { { assignee_type: 'assigned' } }
 
@@ -144,6 +154,37 @@ describe ConversationFinder do
       it 'filter conversations by source id' do
         result = conversation_finder.perform
         expect(result[:conversations].length).to be 1
+      end
+    end
+
+    context 'with query' do
+      let(:query) { 'termo jurídico exclusivo' }
+      let(:params) { { q: query }.merge(status_params) }
+      let(:status_params) { {} }
+      let!(:open_match) { create(:conversation, account: account, inbox: inbox, status: :open) }
+      let!(:resolved_match) { create(:conversation, account: account, inbox: inbox, status: :resolved) }
+
+      before do
+        create(:message, account: account, conversation: open_match, content: query)
+        create(:message, account: account, conversation: resolved_match, content: query)
+      end
+
+      it 'searches across every status when status is omitted' do
+        result = conversation_finder.perform
+
+        expect(result[:conversations]).to contain_exactly(open_match, resolved_match)
+        expect(result[:count][:all_count]).to eq(2)
+      end
+
+      context 'when status is explicit' do
+        let(:status_params) { { status: 'resolved' } }
+
+        it 'respects the requested status' do
+          result = conversation_finder.perform
+
+          expect(result[:conversations]).to contain_exactly(resolved_match)
+          expect(result[:count][:all_count]).to eq(1)
+        end
       end
     end
 

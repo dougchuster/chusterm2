@@ -4,6 +4,10 @@
     return if ChusteRMApp.enterprise?
 
     return if ChusteRMHub.pricing_plan != 'community'
+
+    create_premium_config_reset_warning if premium_config_reset_required?
+    reconcile_premium_config
+    reconcile_premium_features
   end
 
   private

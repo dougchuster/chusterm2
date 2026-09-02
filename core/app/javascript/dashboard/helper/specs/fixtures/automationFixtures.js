@@ -1,4 +1,4 @@
-﻿import allLanguages from 'dashboard/components/widgets/conversation/advancedFilterItems/languages';
+import allLanguages from 'dashboard/components/widgets/conversation/advancedFilterItems/languages';
 
 import allCountries from 'shared/constants/countries.js';
 

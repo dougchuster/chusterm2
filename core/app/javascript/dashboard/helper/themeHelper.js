@@ -1,16 +1,25 @@
 import { LocalStorage } from 'shared/helpers/localStorage';
 import { LOCAL_STORAGE_KEYS } from 'dashboard/constants/localStorage';
 
+const LEGACY_LOGIN_THEME_STORAGE_KEY = 'chusterm-login-theme';
+
 export const setColorTheme = isOSOnDarkMode => {
-  const selectedColorScheme =
-    LocalStorage.get(LOCAL_STORAGE_KEYS.COLOR_SCHEME) || 'auto';
+  const storedColorScheme =
+    LocalStorage.get(LOCAL_STORAGE_KEYS.COLOR_SCHEME) ||
+    LocalStorage.get(LEGACY_LOGIN_THEME_STORAGE_KEY);
+  const selectedColorScheme = ['light', 'dark', 'auto', 'system'].includes(
+    storedColorScheme
+  )
+    ? storedColorScheme
+    : 'auto';
+  const followsSystemTheme = ['auto', 'system'].includes(selectedColorScheme);
   const shouldUseDarkTheme =
-    (selectedColorScheme === 'auto' && isOSOnDarkMode) ||
-    selectedColorScheme === 'dark';
+    (followsSystemTheme && isOSOnDarkMode) || selectedColorScheme === 'dark';
 
   const resolvedTheme = shouldUseDarkTheme ? 'dark' : 'light';
   document.documentElement.dataset.theme = resolvedTheme;
   document.body.dataset.theme = resolvedTheme;
+  document.documentElement.classList.toggle('dark', shouldUseDarkTheme);
 
   if (shouldUseDarkTheme) {
     document.body.classList.add('dark');

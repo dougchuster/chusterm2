@@ -278,6 +278,12 @@ class Message < ApplicationRecord
     '[Attachment]' if attachments.any?
   end
 
+  # SendReplyJob must be able to skip messages imported from an external
+  # history without bypassing Ruby visibility via `send`.
+  def external_import?
+    ActiveModel::Type::Boolean.new.cast(content_attributes['external_import'])
+  end
+
   private
 
   def attachment_content_for_llm
@@ -381,10 +387,6 @@ class Message < ApplicationRecord
     update_contact_activity
     track_campaign_reply
     track_campaign_opt_out
-  end
-
-  def external_import?
-    ActiveModel::Type::Boolean.new.cast(content_attributes['external_import'])
   end
 
   def update_contact_activity

@@ -29,7 +29,7 @@ const handleSubmit = () => {
 </script>
 
 <template>
-  <div class="flex justify-between items-center p-3 pt-0">
+  <div class="flex items-center justify-between p-3 pt-0">
     <NextButton
       :label="t('GENERAL.DISCARD')"
       slate
@@ -41,7 +41,7 @@ const handleSubmit = () => {
     />
     <NextButton
       :label="acceptLabel"
-      class="bg-n-iris-9 text-white"
+      class="bg-ds-accent text-ds-fg-on-accent"
       solid
       sm
       :disabled="isGeneratingContent"

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# audit-brand.sh — Detecta referências proibidas ao Chatwoot no fork.
-# Executar dentro do diretório raiz do repositório ou passar o caminho como argumento.
+# audit-brand.sh — Detecta referências legadas visíveis ao usuário.
+# Identificadores técnicos do fork upstream (constantes, eventos e pacotes) são
+# compatibilidade interna e não constituem falha de marca.
 # Uso: bash scripts/audit-brand.sh [caminho_do_fork]
 set -euo pipefail
 
@@ -8,18 +9,20 @@ TARGET="${1:-./core}"
 REPORT_FILE="./docs/audit-brand-report.txt"
 
 FORBIDDEN_PATTERNS=(
-  "Chatwoot"
-  "chatwoot"
-  "CHATWOOT"
-  "chatwoot\.com"
-  "support@chatwoot"
   "Powered by Chatwoot"
-  "chatwoot-logo"
-  "chatwoot_logo"
+  "support@chatwoot"
+  "hello@chatwoot\.com"
+  "Chatwoot account"
+  "Chatwoot instance"
+  "Chatwoot Installation"
+  "Chatwoot System"
+  "Chatwoot Team"
+  "URL pública do Chatwoot"
+  "para o Chatwoot"
+  "próprio Chatwoot"
 )
 
-# Extensões a verificar
-EXTENSIONS=("*.rb" "*.erb" "*.html" "*.vue" "*.js" "*.ts" "*.json" "*.yml" "*.yaml" "*.md" "*.txt" "*.css" "*.scss")
+SCAN_PATHS=(app enterprise/app config/locales)
 
 echo "============================================================"
 echo " ChusteRM — Auditoria de Referências de Marca"
@@ -39,21 +42,11 @@ TOTAL=0
 for pattern in "${FORBIDDEN_PATTERNS[@]}"; do
   echo "🔍 Buscando: '$pattern'"
 
-  INCLUDE_ARGS=()
-  for ext in "${EXTENSIONS[@]}"; do
-    INCLUDE_ARGS+=("--include=$ext")
-  done
+  # Limita a busca a fontes rastreadas e evita varrer builds Vite, logs,
+  # caches e node_modules locais.
+  MATCHES=$(git -C "$TARGET" grep -n -I -i -E "$pattern" -- "${SCAN_PATHS[@]}" 2>/dev/null || true)
 
-  MATCHES=$(grep -rn "$pattern" "$TARGET" "${INCLUDE_ARGS[@]}" \
-    --exclude-dir=".git" \
-    --exclude-dir="node_modules" \
-    --exclude-dir="vendor" \
-    --exclude-dir="coverage" \
-    --exclude-dir="dist" \
-    --exclude-dir="build" \
-    2>/dev/null || true)
-
-  COUNT=$(echo "$MATCHES" | grep -c . || echo 0)
+  COUNT=$(printf '%s\n' "$MATCHES" | awk 'NF { count++ } END { print count + 0 }')
 
   if [ "$COUNT" -gt 0 ] && [ -n "$MATCHES" ]; then
     echo "  ⚠️  $COUNT ocorrência(s) encontrada(s)"

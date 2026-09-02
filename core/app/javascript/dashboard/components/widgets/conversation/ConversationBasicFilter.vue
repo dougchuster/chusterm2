@@ -138,6 +138,9 @@ const handleSortChange = value => {
   <div class="relative flex">
     <NextButton
       v-tooltip.right="$t('CHAT_LIST.SORT_TOOLTIP_LABEL')"
+      :aria-label="$t('CHAT_LIST.SORT_TOOLTIP_LABEL')"
+      aria-haspopup="menu"
+      :aria-expanded="showActionsDropdown"
       icon="i-lucide-arrow-up-down"
       slate
       faded
@@ -147,14 +150,15 @@ const handleSortChange = value => {
     <div
       v-if="showActionsDropdown"
       v-on-click-outside="() => toggleDropdown()"
-      class="mt-1 bg-n-alpha-3 backdrop-blur-[100px] border border-n-weak w-72 rounded-xl p-4 absolute z-40 top-full"
+      class="absolute top-full z-40 mt-1 w-72 rounded-xl border border-ds-border-subtle bg-ds-bg-elevated/95 p-4 shadow-lg backdrop-blur-xl"
+      role="menu"
       :class="{
         'ltr:left-0 rtl:right-0': !isOnExpandedLayout,
         'ltr:right-0 rtl:left-0': isOnExpandedLayout,
       }"
     >
       <div class="flex items-center justify-between last:mt-4 gap-2">
-        <span class="text-sm truncate text-n-slate-12">
+        <span class="truncate text-sm text-ds-fg-default">
           {{ $t('CHAT_LIST.CHAT_SORT.STATUS') }}
         </span>
         <SelectMenu
@@ -166,7 +170,7 @@ const handleSortChange = value => {
         />
       </div>
       <div class="flex items-center justify-between last:mt-4 gap-2">
-        <span class="text-sm truncate text-n-slate-12">
+        <span class="truncate text-sm text-ds-fg-default">
           {{ $t('CHAT_LIST.CHAT_SORT.ORDER_BY') }}
         </span>
         <SelectMenu

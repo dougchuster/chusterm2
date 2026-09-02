@@ -1,4 +1,4 @@
-﻿/* eslint-disable no-console */
+/* eslint-disable no-console */
 import NotificationSubscriptions from '../api/notificationSubscription';
 import auth from '../api/auth';
 import { useAlert } from 'dashboard/composables';

@@ -34,6 +34,7 @@
     --ds-accent-primary-hover: var(--iris-10);
     --ds-accent-primary-active: var(--iris-11);
     --ds-accent-primary-soft: var(--iris-3);
+    --ds-accent-primary-fg: var(--iris-11);
 
     --ds-accent-secondary: var(--teal-9);
     --ds-accent-secondary-hover: var(--teal-10);
@@ -42,16 +43,34 @@
     // ── Estados (semântico) ─────────────────────────────────
     --ds-state-success: var(--teal-9);
     --ds-state-success-soft: var(--teal-3);
+    --ds-state-success-fg: var(--teal-12);
     --ds-state-warning: var(--amber-9);
     --ds-state-warning-soft: var(--amber-3);
+    --ds-state-warning-fg: var(--amber-12);
     --ds-state-danger: var(--ruby-9);
     --ds-state-danger-soft: var(--ruby-3);
+    --ds-state-danger-fg: var(--ruby-11);
+    --ds-state-danger-solid: var(--ruby-11);
     --ds-state-info: var(--blue-9);
     --ds-state-info-soft: var(--blue-3);
+    --ds-state-info-fg: var(--blue-12);
+
+    // ── Séries de gráficos (dashboards/métricas) ────────────
+    // Derivadas das escalas Radix do brief (iris/teal/amber/ruby/blue/violet).
+    --ds-chart-brand: var(--iris-9);
+    --ds-chart-violet: var(--violet-9);
+    --ds-chart-success: var(--teal-9);
+    --ds-chart-danger: var(--ruby-9);
+    --ds-chart-warning: var(--amber-9);
+    --ds-chart-warning-strong: var(--amber-11);
+    --ds-chart-info: var(--blue-9);
+    --ds-chart-neutral: var(--slate-9);
 
     // ── Tipografia ──────────────────────────────────────────
     --ds-font-sans: 'Inter', -apple-system, BlinkMacSystemFont,
       'Segoe UI', Roboto, sans-serif;
+    --ds-font-heading: 'InterDisplay', 'Inter', -apple-system,
+      BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --ds-font-mono: ui-monospace, 'SF Mono', Consolas, monospace;
 
     --ds-text-xs: 0.75rem;      // 12px — caption
@@ -108,10 +127,14 @@
     --ds-shell-panel-sunken: 241 245 249;
     --ds-shell-border: 210 218 232;
     --ds-shell-divider: 226 232 240;
-    --ds-shell-muted: 100 116 139;
+    --ds-shell-fg: 15 23 42;
+    --ds-shell-muted: 96 110 132;
+    --ds-shell-subtle: 148 163 184;
     --ds-shell-accent: 99 102 241;
     --ds-shell-accent-soft: 238 242 255;
     --ds-shell-accent-contrast: 255 255 255;
+    --ds-shell-hover: 241 245 249;
+    --ds-shell-active: 224 231 255;
     --ds-shell-secondary: 15 118 110;
     --ds-shell-secondary-soft: 204 251 241;
     --ds-shell-warning: 180 83 9;
@@ -122,6 +145,20 @@
     --ds-shell-glow: 99 102 241 / 0.16;
     --ds-shell-shadow-soft: 15 23 42 / 0.08;
     --ds-shell-shadow-strong: 15 23 42 / 0.16;
+
+    // Transitional brand scale for legacy CRM components.
+    --brand-1: var(--iris-1);
+    --brand-2: var(--iris-2);
+    --brand-3: var(--iris-3);
+    --brand-4: var(--iris-4);
+    --brand-5: var(--iris-5);
+    --brand-6: var(--iris-6);
+    --brand-7: var(--iris-7);
+    --brand-8: var(--iris-8);
+    --brand-9: var(--iris-9);
+    --brand-10: var(--iris-10);
+    --brand-11: var(--iris-11);
+    --brand-12: var(--iris-12);
 
     // ── Motion ──────────────────────────────────────────────
     --ds-duration-fast: 120ms;
@@ -160,6 +197,37 @@
     --ds-border-strong: var(--slate-6);
     --ds-border-focus: var(--iris-9);
 
+    // Recalcula os aliases no elemento que recebe o tema. Sem esta
+    // sobrescrita, `var()` seria resolvido no :root usando a escala clara.
+    --ds-accent-primary: var(--iris-7);
+    --ds-accent-primary-hover: var(--iris-6);
+    --ds-accent-primary-active: var(--iris-5);
+    --ds-accent-primary-soft: var(--iris-3);
+    --ds-accent-primary-fg: var(--iris-11);
+    --ds-state-success: var(--teal-9);
+    --ds-state-success-soft: var(--teal-3);
+    --ds-state-success-fg: var(--teal-11);
+    --ds-state-warning: var(--amber-9);
+    --ds-state-warning-soft: var(--amber-3);
+    --ds-state-warning-fg: var(--amber-11);
+    --ds-state-danger: var(--ruby-9);
+    --ds-state-danger-soft: var(--ruby-3);
+    --ds-state-danger-fg: var(--ruby-11);
+    --ds-state-danger-solid: var(--ruby-7);
+    --ds-state-info: var(--blue-9);
+    --ds-state-info-soft: var(--blue-3);
+    --ds-state-info-fg: var(--blue-11);
+
+    // Recalcula as séries de gráficos contra a escala dark.
+    --ds-chart-brand: var(--iris-7);
+    --ds-chart-violet: var(--violet-9);
+    --ds-chart-success: var(--teal-9);
+    --ds-chart-danger: var(--ruby-9);
+    --ds-chart-warning: var(--amber-9);
+    --ds-chart-warning-strong: var(--amber-11);
+    --ds-chart-info: var(--blue-9);
+    --ds-chart-neutral: var(--slate-9);
+
     --ds-shadow-xs: 0 1px 2px rgb(0 0 0 / 0.40);
     --ds-shadow-sm: 0 1px 3px rgb(0 0 0 / 0.50), 0 1px 2px rgb(0 0 0 / 0.30);
     --ds-shadow-md: 0 4px 6px rgb(0 0 0 / 0.55), 0 2px 4px rgb(0 0 0 / 0.35);
@@ -173,10 +241,14 @@
     --ds-shell-panel-sunken: 4 10 24;
     --ds-shell-border: 42 59 96;
     --ds-shell-divider: 29 44 78;
+    --ds-shell-fg: 237 242 255;
     --ds-shell-muted: 185 200 222;
+    --ds-shell-subtle: 128 150 181;
     --ds-shell-accent: 189 194 255;
     --ds-shell-accent-soft: 55 59 120;
     --ds-shell-accent-contrast: 6 14 32;
+    --ds-shell-hover: 24 43 82;
+    --ds-shell-active: 55 59 120;
     --ds-shell-secondary: 94 234 212;
     --ds-shell-secondary-soft: 19 78 74;
     --ds-shell-warning: 251 191 36;

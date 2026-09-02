@@ -1,4 +1,4 @@
-﻿import { mutations, actions, getters } from '../articles';
+import { mutations, actions, getters } from '../articles';
 import { getMostReadArticles } from 'widget/api/article';
 import { getFromCache, setCache } from 'shared/helpers/cache';
 

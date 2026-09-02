@@ -1,6 +1,12 @@
 require 'rails_helper'
 
 RSpec.describe Internal::AccountAnalysis::DiscordNotifierService do
+  before do
+    InstallationConfig.where(name: 'ACCOUNT_SECURITY_NOTIFICATION_WEBHOOK_URL').delete_all
+    allow(Rails.logger).to receive(:info)
+    allow(Rails.logger).to receive(:error)
+  end
+
   let(:service) { described_class.new }
   let(:webhook_url) { 'https://discord.com/api/webhooks/123456789/some-token' }
   let(:account) do
@@ -16,10 +22,6 @@ RSpec.describe Internal::AccountAnalysis::DiscordNotifierService do
   end
   let!(:user) { create(:user, account: account) }
 
-  before do
-    allow(Rails.logger).to receive(:info)
-    allow(Rails.logger).to receive(:error)
-  end
 
   describe '#notify_flagged_account' do
     context 'when webhook URL is configured' do

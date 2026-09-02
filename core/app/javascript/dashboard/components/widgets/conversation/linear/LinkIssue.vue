@@ -107,10 +107,13 @@ const linkIssue = async () => {
     :class="shouldShowDropdown ? 'h-[256px]' : 'gap-2'"
   >
     <FilterButton
+      type="button"
+      aria-haspopup="listbox"
+      :aria-expanded="shouldShowDropdown"
       trailing-icon
       icon="i-lucide-chevron-down"
       :button-text="linkIssueTitle"
-      class="justify-between w-full h-[2.5rem] py-1.5 px-3 rounded-xl bg-n-alpha-black2 outline outline-1 outline-n-weak dark:outline-n-weak hover:outline-n-slate-6 dark:hover:outline-n-slate-6"
+      class="h-10 w-full justify-between rounded-xl bg-ds-bg-sunken px-3 py-1.5 text-ds-fg-default outline outline-1 outline-ds-border-subtle transition-shadow hover:bg-ds-bg-hover hover:outline-ds-border-strong focus-visible:outline-ds-border-focus focus-visible:ring-2 focus-visible:ring-ds-border-focus/30"
       @click="toggleDropdown"
     >
       <template v-if="shouldShowDropdown" #dropdown>
@@ -124,7 +127,9 @@ const linkIssue = async () => {
           :input-placeholder="$t('INTEGRATION_SETTINGS.LINEAR.LINK.SEARCH')"
           :loading-placeholder="$t('INTEGRATION_SETTINGS.LINEAR.LINK.LOADING')"
           enable-search
-          class="left-0 flex flex-col w-full overflow-y-auto h-fit !max-h-[160px] md:left-auto md:right-0 top-10"
+          role="listbox"
+          :aria-label="$t('INTEGRATION_SETTINGS.LINEAR.LINK.SEARCH')"
+          class="left-0 top-10 flex h-fit max-h-[160px] w-full flex-col overflow-y-auto bg-ds-bg-elevated text-ds-fg-default outline-ds-border-subtle md:left-auto md:right-0"
           @on-search="onSearch"
           @select="onSelectIssue"
         />
@@ -132,8 +137,8 @@ const linkIssue = async () => {
     </FilterButton>
     <div class="flex items-center justify-end w-full gap-2 mt-2">
       <Button
-        faded
-        slate
+        color="tertiary"
+        variant="faded"
         type="reset"
         :label="$t('INTEGRATION_SETTINGS.LINEAR.ADD_OR_LINK.CANCEL')"
         @click.prevent="onClose"

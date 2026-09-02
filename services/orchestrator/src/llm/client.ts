@@ -16,9 +16,9 @@ export const llm = new OpenAI({
 export const LLM_MODEL = process.env.LLM_MODEL ?? 'google/gemini-3.7-flash'
 
 export const DR_PAULA_MATOS_LLM_MODEL =
+  process.env.ORCHESTRATOR_DRA_LETICIA_LLM_MODEL ??
   process.env.ORCHESTRATOR_DR_PAULA_LLM_MODEL ??
-  process.env.LLM_MODEL ??
-  'google/gemini-3.7-flash'
+  'anthropic/claude-sonnet-5'
 
 export const LLM_ATTENDANCE_TEST_MODEL =
   process.env.LLM_ATTENDANCE_TEST_MODEL ?? 'deepseek/deepseek-v4-flash'

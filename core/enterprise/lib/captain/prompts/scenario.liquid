@@ -31,6 +31,16 @@ Here's the metadata we have about the current conversation and the contact assoc
 {% endif -%}
 {% endif -%}
 
+{% if crm_context_json -%}
+# CRM Context
+
+Use this CRM dossier as the source of truth for contact status, lifecycle, owner, legal deal, attachments, OCR/media understanding and next action. Read it before asking for information already available and never treat a mere document mention as an uploaded file.
+
+```json
+{{ crm_context_json }}
+```
+{% endif -%}
+
 
 {% if response_guidelines.size > 0 -%}
 # Response Guidelines
@@ -54,4 +64,7 @@ You have access to these tools:
 {% for tool in tools -%}
 - {{ tool.id }}: {{ tool.description }}
 {% endfor %}
+
+# FAQ Lookup Budget (Strict)
+If a FAQ lookup tool is available and a legal or institutional fact genuinely needs RAG support, invoke it at most once during this customer response/turn. Use one short, objective query, reuse the returned result and answer immediately. Never repeat the lookup with synonyms, paraphrases, narrower wording or follow-up searches. If that single result is incomplete, state the limit or ask one concise clarification instead of searching again. Do not use FAQ lookup for greetings, thanks, acknowledgements or facts already present in the conversation, CRM context, attachments or instructions.
 {%- endif %}

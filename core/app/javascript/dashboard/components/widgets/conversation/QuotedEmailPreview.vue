@@ -32,30 +32,39 @@ const formattedQuotedEmailText = computed(() => {
 const toggleExpand = () => {
   isExpanded.value = !isExpanded.value;
 };
+
+const expandLabel = computed(() =>
+  isExpanded.value
+    ? t('CONVERSATION.REPLYBOX.QUOTED_REPLY.COLLAPSE')
+    : t('CONVERSATION.REPLYBOX.QUOTED_REPLY.EXPAND')
+);
 </script>
 
 <template>
   <div class="mt-2">
     <div
-      class="relative rounded-md px-3 py-2 text-xs text-n-slate-12 bg-n-slate-3 dark:bg-n-solid-3"
+      class="relative rounded-xl bg-ds-bg-sunken px-3 py-2 text-xs text-ds-fg-default ring-1 ring-inset ring-ds-border-subtle"
     >
-      <div class="absolute top-2 right-2 z-10 flex items-center gap-1">
+      <div
+        class="absolute top-2 z-10 flex items-center gap-1 ltr:right-2 rtl:left-2"
+      >
         <NextButton
-          v-tooltip="
-            isExpanded
-              ? t('CONVERSATION.REPLYBOX.QUOTED_REPLY.COLLAPSE')
-              : t('CONVERSATION.REPLYBOX.QUOTED_REPLY.EXPAND')
-          "
-          ghost
-          slate
+          v-tooltip="expandLabel"
+          type="button"
+          :aria-label="expandLabel"
+          :aria-expanded="isExpanded"
+          color="primary"
+          variant="ghost"
           xs
           :icon="isExpanded ? 'i-lucide-minimize' : 'i-lucide-maximize'"
           @click="toggleExpand"
         />
         <NextButton
           v-tooltip="t('CONVERSATION.REPLYBOX.QUOTED_REPLY.REMOVE_PREVIEW')"
-          ghost
-          slate
+          type="button"
+          :aria-label="t('CONVERSATION.REPLYBOX.QUOTED_REPLY.REMOVE_PREVIEW')"
+          color="primary"
+          variant="ghost"
           xs
           icon="i-lucide-x"
           @click="emit('toggle')"
@@ -63,13 +72,19 @@ const toggleExpand = () => {
       </div>
       <div
         v-dompurify-html="formattedQuotedEmailText"
-        class="w-full max-w-none break-words prose prose-sm dark:prose-invert cursor-pointer ltr:pr-8 rtl:pl-8"
+        role="button"
+        tabindex="0"
+        :aria-label="expandLabel"
+        :aria-expanded="isExpanded"
+        class="prose prose-sm w-full max-w-none cursor-pointer break-words rounded-md outline-none ltr:pr-8 rtl:pl-8 [&_a]:text-ds-accent [&_p]:text-ds-fg-default [&_strong]:text-ds-fg-default focus-visible:ring-2 focus-visible:ring-ds-border-focus"
         :class="{
           'line-clamp-1': !isExpanded,
           'max-h-60 overflow-y-auto': isExpanded,
         }"
         :title="previewText"
         @click="toggleExpand"
+        @keydown.enter.prevent="toggleExpand"
+        @keydown.space.prevent="toggleExpand"
       />
     </div>
   </div>

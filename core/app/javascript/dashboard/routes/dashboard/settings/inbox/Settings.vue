@@ -121,7 +121,7 @@ export default {
       captainLinkedAssistantId: '',
       captainAiMode: 'auto',
       captainAutoReply: true,
-      captainHandoffStrategy: 'human_request_or_score',
+      captainHandoffStrategy: 'human_request',
       captainLoading: false,
       captainSaving: false,
     };
@@ -389,9 +389,7 @@ export default {
     },
     captainHandoffOptions() {
       return [
-        { value: 'human_request_or_score', label: 'Pedido ou pontuação' },
         { value: 'human_request', label: 'Pedido humano' },
-        { value: 'score_threshold', label: 'Limite de pontuação' },
         { value: 'manual_only', label: 'Somente manual' },
       ];
     },
@@ -601,7 +599,9 @@ export default {
           `/api/v1/accounts/${this.accountId}/channels/evolution/instances/${this.evolutionInstanceId}/sync_history`,
           { limit: 80, contact_limit: 200 }
         );
-        useAlert('Sincronização de histórico enviada. As conversas serão atualizadas em segundo plano.');
+        useAlert(
+          'Sincronização de histórico enviada. As conversas serão atualizadas em segundo plano.'
+        );
       } catch (e) {
         useAlert(
           e?.response?.data?.error || e?.response?.data?.message || e.message
@@ -859,7 +859,7 @@ export default {
           this.captainAiMode = captainInbox.ai_mode || 'auto';
           this.captainAutoReply = captainInbox.auto_reply_enabled ?? true;
           this.captainHandoffStrategy =
-            captainInbox.handoff_strategy || 'human_request_or_score';
+            captainInbox.handoff_strategy || 'human_request';
           return;
         }
         this.captainAssistantId = '';

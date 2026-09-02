@@ -1,4 +1,4 @@
-﻿export default [
+export default [
   {
     id: 4,
     url: 'https://1.chusterm.com',

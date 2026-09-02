@@ -1,4 +1,4 @@
-﻿import axios from 'axios';
+import axios from 'axios';
 import { actions } from '../../conversationStats';
 import * as types from '../../../mutation-types';
 

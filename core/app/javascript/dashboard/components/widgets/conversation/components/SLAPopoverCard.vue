@@ -41,9 +41,11 @@ const toggleShowAllNRT = () => {
 
 <template>
   <div
-    class="absolute flex flex-col items-start border-n-strong bg-n-solid-3 w-96 backdrop-blur-[100px] px-6 py-5 z-50 shadow rounded-xl gap-4 max-h-96 overflow-auto"
+    role="region"
+    :aria-label="$t('SLA.EVENTS.TITLE')"
+    class="absolute z-50 flex max-h-96 w-[min(24rem,calc(100vw-2rem))] flex-col items-start gap-4 overflow-auto rounded-2xl bg-ds-bg-elevated/95 px-6 py-5 text-ds-fg-default shadow-[var(--ds-shadow-lg)] ring-1 ring-ds-border-subtle backdrop-blur-xl"
   >
-    <span class="text-sm font-medium text-n-slate-12">
+    <span class="font-manrope text-sm font-semibold text-ds-fg-default">
       {{ $t('SLA.EVENTS.TITLE') }}
     </span>
     <SLAEventItem
@@ -62,10 +64,12 @@ const toggleShowAllNRT = () => {
           class="flex flex-col items-end w-full"
         >
           <Button
+            type="button"
             link
             xs
-            slate
-            class="hover:!no-underline"
+            color="primary"
+            :aria-expanded="shouldShowAllNrts"
+            class="hover:no-underline"
             :icon="!shouldShowAllNrts ? 'i-lucide-plus' : ''"
             :label="
               shouldShowAllNrts

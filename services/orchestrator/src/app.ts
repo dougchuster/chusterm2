@@ -1,6 +1,5 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
-import jwt from '@fastify/jwt'
 import { registerRoutes } from './routes/index.js'
 
 export async function buildApp() {
@@ -15,16 +14,11 @@ export async function buildApp() {
   })
 
   // ─── CORS ──────────────────────────────────────────────────────────────────
+  // Serviço interno: sem CORS_ORIGIN explícito, nenhuma origem cross-site é
+  // permitida (SEC-07). Nunca refletir qualquer origem por default.
   await fastify.register(cors, {
-    origin: process.env.CORS_ORIGIN ?? true,
+    origin: process.env.CORS_ORIGIN ?? false,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  })
-
-  // ─── JWT ───────────────────────────────────────────────────────────────────
-  // JWT is registered but route-level verification is opt-in via preHandler.
-  // Internal service-to-service calls use a shared secret from the environment.
-  await fastify.register(jwt, {
-    secret: process.env.JWT_SECRET ?? 'orchestrator-dev-secret-change-in-production',
   })
 
   // ─── Routes ────────────────────────────────────────────────────────────────
@@ -38,13 +32,20 @@ export async function buildApp() {
     )
 
     // Never expose internal error details in production
-    const statusCode = error.statusCode ?? 500
+    const statusCode =
+      typeof error === 'object' &&
+      error !== null &&
+      'statusCode' in error &&
+      typeof error.statusCode === 'number'
+        ? error.statusCode
+        : 500
+    const errorMessage = error instanceof Error ? error.message : 'Bad request'
     return reply.status(statusCode).send({
       error: statusCode >= 500 ? 'INTERNAL_SERVER_ERROR' : 'REQUEST_ERROR',
       message:
         statusCode >= 500
           ? 'An unexpected error occurred'
-          : (error.message ?? 'Bad request'),
+          : errorMessage,
     })
   })
 

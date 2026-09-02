@@ -1,13 +1,28 @@
-<!-- eslint-disable vue/no-bare-strings-in-template, @intlify/vue-i18n/no-raw-text -->
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import CrmAPI from '../../../../api/crm';
-import CRMExportButton from 'dashboard/components/crm/CRMExportButton.vue';
-import CRMFunnelChart from 'dashboard/components/crm/CRMFunnelChart.vue';
+import { useI18n } from 'vue-i18n';
+
+import CrmAPI from 'dashboard/api/crm';
+import Icon from 'dashboard/components-next/icon/Icon.vue';
+import {
+  DsBadge,
+  DsButton,
+  DsCard,
+  DsEmptyState,
+  DsInput,
+  DsSelect,
+  DsSkeleton,
+} from 'dashboard/design-system/components';
+import { DsPageHeader } from 'dashboard/design-system/templates';
+import {
+  CRM_OPTIONS_FALLBACK,
+  fetchCrmOptions,
+} from 'dashboard/helper/crmOptions';
 
 const route = useRoute();
 const router = useRouter();
+const { t } = useI18n();
 
 const filters = reactive({
   status: route.query.status || 'open',
@@ -23,68 +38,122 @@ const stats = ref(null);
 const loading = ref(false);
 const error = ref('');
 
-const STATUS_OPTIONS = [
-  { value: '', label: 'Todos os status' },
-  { value: 'open', label: 'Abertos' },
-  { value: 'won', label: 'Ganhos' },
-  { value: 'lost', label: 'Perdidos' },
-  { value: 'archived', label: 'Arquivados' },
+const exporting = ref(false);
+const exportError = ref('');
+const exportSuccess = ref('');
+
+// Larguras quantizadas em passos de 5%: as classes precisam existir de forma
+// estatica para o Tailwind, entao barras nao usam style inline.
+const BAR_WIDTH_CLASSES = [
+  'w-0',
+  'w-[5%]',
+  'w-[10%]',
+  'w-[15%]',
+  'w-[20%]',
+  'w-[25%]',
+  'w-[30%]',
+  'w-[35%]',
+  'w-[40%]',
+  'w-[45%]',
+  'w-1/2',
+  'w-[55%]',
+  'w-[60%]',
+  'w-[65%]',
+  'w-[70%]',
+  'w-[75%]',
+  'w-[80%]',
+  'w-[85%]',
+  'w-[90%]',
+  'w-[95%]',
+  'w-full',
 ];
 
-const LEGAL_AREAS = [
-  { value: '', label: 'Todas as áreas' },
-  { value: 'previdenciario', label: 'Previdenciário' },
-  { value: 'trabalhista', label: 'Trabalhista' },
-  { value: 'familia', label: 'Família' },
-  { value: 'consumidor', label: 'Consumidor' },
-  { value: 'civil', label: 'Civil' },
-  { value: 'criminal', label: 'Criminal' },
-  { value: 'tributario', label: 'Tributário' },
-  { value: 'empresarial', label: 'Empresarial' },
-  { value: 'imobiliario', label: 'Imobiliário' },
-];
-
-const URGENCY_OPTIONS = [
-  { value: '', label: 'Toda urgência' },
-  { value: 'baixa', label: 'Baixa' },
-  { value: 'media', label: 'Média' },
-  { value: 'alta', label: 'Alta' },
-  { value: 'critica', label: 'Crítica' },
-];
-
-const OPERATIONAL_STATUS_OPTIONS = [
-  { value: '', label: 'Todos os tipos' },
-  { value: 'active', label: 'Lead ativo' },
-  { value: 'returning_client', label: 'Retorno de Cliente' },
-  { value: 'base_client', label: 'Cliente Base' },
-  { value: 'converted_client', label: 'Cliente Convertido' },
-  { value: 'invalid', label: 'Inválido' },
-  { value: 'spam', label: 'Spam' },
-  { value: 'duplicated', label: 'Duplicado' },
-  { value: 'no_lead', label: 'Não é lead' },
-  { value: 'archived', label: 'Arquivado' },
-];
-
-const SOURCE_OPTIONS = [
-  { value: '', label: 'Todas as origens' },
-  { value: 'whatsapp', label: 'WhatsApp' },
-  { value: 'jusbrasil', label: 'JusBrasil' },
-  { value: 'instagram', label: 'Instagram' },
-  { value: 'facebook', label: 'Facebook' },
-  { value: 'google_ads', label: 'Google Ads' },
-  { value: 'indicacao', label: 'Indicação' },
-  { value: 'site', label: 'Site' },
-  { value: 'lista_importada', label: 'Lista importada' },
-  { value: 'cliente_base', label: 'Cliente Base' },
-  { value: 'outros', label: 'Outros' },
-];
-
-const priorityLabels = {
-  baixa: 'Baixa',
-  normal: 'Normal',
-  alta: 'Alta',
-  critica: 'Crítica',
+const KPI_ICON_TONES = {
+  brand: 'text-ui-brand',
+  blue: 'text-ui-info',
+  ruby: 'text-ui-danger',
+  amber: 'text-ui-warning',
+  teal: 'text-ui-success',
+  slate: 'text-ui-text-muted',
 };
+
+const INSIGHT_TONE_CLASSES = {
+  danger: 'bg-ui-danger-soft text-ui-danger-foreground',
+  warning: 'bg-ui-warning-soft text-ui-warning-foreground',
+  info: 'bg-ui-info-soft text-ui-info-foreground',
+  good: 'bg-ui-success-soft text-ui-success-foreground',
+};
+
+const statusOptions = computed(() => [
+  { value: '', label: t('CRM.REPORTS.OPTIONS.STATUS.ALL') },
+  { value: 'open', label: t('CRM.REPORTS.OPTIONS.STATUS.OPEN') },
+  { value: 'won', label: t('CRM.REPORTS.OPTIONS.STATUS.WON') },
+  { value: 'lost', label: t('CRM.REPORTS.OPTIONS.STATUS.LOST') },
+  { value: 'archived', label: t('CRM.REPORTS.OPTIONS.STATUS.ARCHIVED') },
+]);
+
+// UX-05: listas de domínio vêm do backend via helper compartilhado
+// com as chaves históricas já usadas pela triagem e pelos registros existentes.
+const crmOptions = ref(CRM_OPTIONS_FALLBACK);
+
+const legalAreaOptions = computed(() => [
+  { value: '', label: t('CRM.REPORTS.OPTIONS.LEGAL_AREA_ALL') },
+  ...crmOptions.value.legal_areas,
+]);
+
+const urgencyOptions = computed(() => [
+  { value: '', label: t('CRM.REPORTS.OPTIONS.URGENCY_ALL') },
+  ...crmOptions.value.urgency_levels,
+]);
+
+const operationalStatusOptions = computed(() => [
+  { value: '', label: t('CRM.REPORTS.OPTIONS.OPERATIONAL.ALL') },
+  { value: 'active', label: t('CRM.REPORTS.OPTIONS.OPERATIONAL.ACTIVE') },
+  {
+    value: 'returning_client',
+    label: t('CRM.REPORTS.OPTIONS.OPERATIONAL.RETURNING_CLIENT'),
+  },
+  {
+    value: 'base_client',
+    label: t('CRM.REPORTS.OPTIONS.OPERATIONAL.BASE_CLIENT'),
+  },
+  {
+    value: 'converted_client',
+    label: t('CRM.REPORTS.OPTIONS.OPERATIONAL.CONVERTED_CLIENT'),
+  },
+  { value: 'invalid', label: t('CRM.REPORTS.OPTIONS.OPERATIONAL.INVALID') },
+  { value: 'spam', label: t('CRM.REPORTS.OPTIONS.OPERATIONAL.SPAM') },
+  {
+    value: 'duplicated',
+    label: t('CRM.REPORTS.OPTIONS.OPERATIONAL.DUPLICATED'),
+  },
+  { value: 'no_lead', label: t('CRM.REPORTS.OPTIONS.OPERATIONAL.NO_LEAD') },
+  { value: 'archived', label: t('CRM.REPORTS.OPTIONS.OPERATIONAL.ARCHIVED') },
+]);
+
+const sourceOptions = computed(() => [
+  { value: '', label: t('CRM.REPORTS.OPTIONS.SOURCE.ALL') },
+  { value: 'whatsapp', label: t('CRM.REPORTS.OPTIONS.SOURCE.WHATSAPP') },
+  { value: 'jusbrasil', label: t('CRM.REPORTS.OPTIONS.SOURCE.JUSBRASIL') },
+  { value: 'instagram', label: t('CRM.REPORTS.OPTIONS.SOURCE.INSTAGRAM') },
+  { value: 'facebook', label: t('CRM.REPORTS.OPTIONS.SOURCE.FACEBOOK') },
+  { value: 'google_ads', label: t('CRM.REPORTS.OPTIONS.SOURCE.GOOGLE_ADS') },
+  { value: 'indicacao', label: t('CRM.REPORTS.OPTIONS.SOURCE.INDICACAO') },
+  { value: 'site', label: t('CRM.REPORTS.OPTIONS.SOURCE.SITE') },
+  {
+    value: 'lista_importada',
+    label: t('CRM.REPORTS.OPTIONS.SOURCE.LISTA_IMPORTADA'),
+  },
+  { value: 'cliente_base', label: t('CRM.REPORTS.OPTIONS.SOURCE.CLIENTE_BASE') },
+  { value: 'outros', label: t('CRM.REPORTS.OPTIONS.SOURCE.OUTROS') },
+]);
+
+const priorityLabels = computed(() => ({
+  baixa: t('CRM.REPORTS.PRIORITY.BAIXA'),
+  normal: t('CRM.REPORTS.PRIORITY.NORMAL'),
+  alta: t('CRM.REPORTS.PRIORITY.ALTA'),
+  critica: t('CRM.REPORTS.PRIORITY.CRITICA'),
+}));
 
 const cleanFilters = () =>
   Object.fromEntries(
@@ -111,67 +180,80 @@ const qualificationRate = computed(() => {
 
 const metricCards = computed(() => [
   {
-    label: 'Leads abertos',
+    key: 'open',
+    label: t('CRM.REPORTS.KPI.OPEN_LEADS.LABEL'),
     value: openDeals.value,
-    hint: 'Casos ainda em operação',
+    hint: t('CRM.REPORTS.KPI.OPEN_LEADS.HINT'),
     icon: 'i-lucide-layers',
-    tone: 'brand',
+    iconClass: KPI_ICON_TONES.brand,
   },
   {
-    label: 'Qualificação',
+    key: 'qualification',
+    label: t('CRM.REPORTS.KPI.QUALIFICATION.LABEL'),
     value: qualificationRate.value,
-    hint: `${stats.value?.qualified_deals || 0} lead(s) com score forte`,
+    hint: t('CRM.REPORTS.KPI.QUALIFICATION.HINT', {
+      count: stats.value?.qualified_deals || 0,
+    }),
     icon: 'i-lucide-badge-check',
-    tone: 'blue',
+    iconClass: KPI_ICON_TONES.blue,
   },
   {
-    label: 'Alta prioridade',
+    key: 'priority',
+    label: t('CRM.REPORTS.KPI.HIGH_PRIORITY.LABEL'),
     value: stats.value?.priority_deals || 0,
-    hint: 'Score ou urgência pedem ação',
+    hint: t('CRM.REPORTS.KPI.HIGH_PRIORITY.HINT'),
     icon: 'i-lucide-alert-triangle',
-    tone: 'ruby',
+    iconClass: KPI_ICON_TONES.ruby,
   },
   {
-    label: 'Atividades vencidas',
+    key: 'overdue',
+    label: t('CRM.REPORTS.KPI.OVERDUE.LABEL'),
     value: stats.value?.overdue_activities || 0,
-    hint: 'Próximas ações atrasadas',
+    hint: t('CRM.REPORTS.KPI.OVERDUE.HINT'),
     icon: 'i-lucide-alarm-clock',
-    tone: 'amber',
+    iconClass: KPI_ICON_TONES.amber,
   },
   {
-    label: 'Fechados',
+    key: 'won',
+    label: t('CRM.REPORTS.KPI.WON.LABEL'),
     value: wonDeals.value,
-    hint: `${stats.value?.won_deals_this_month || 0} este mês`,
+    hint: t('CRM.REPORTS.KPI.WON.HINT', {
+      count: stats.value?.won_deals_this_month || 0,
+    }),
     icon: 'i-lucide-trophy',
-    tone: 'teal',
+    iconClass: KPI_ICON_TONES.teal,
   },
   {
-    label: 'Score médio',
+    key: 'score',
+    label: t('CRM.REPORTS.KPI.AVG_SCORE.LABEL'),
     value: stats.value?.average_score || 0,
-    hint: 'Média dos leads abertos',
+    hint: t('CRM.REPORTS.KPI.AVG_SCORE.HINT'),
     icon: 'i-lucide-sparkles',
-    tone: 'slate',
+    iconClass: KPI_ICON_TONES.slate,
   },
   {
-    label: 'Conversão',
+    key: 'conversion',
+    label: t('CRM.REPORTS.KPI.CONVERSION.LABEL'),
     value: conversionRate.value,
-    hint: 'Ganhos sobre pipeline aberto + ganho',
+    hint: t('CRM.REPORTS.KPI.CONVERSION.HINT'),
     icon: 'i-lucide-trending-up',
-    tone: 'brand',
+    iconClass: KPI_ICON_TONES.brand,
   },
   {
-    label: 'Cliente Base',
+    key: 'base',
+    label: t('CRM.REPORTS.KPI.BASE_CLIENTS.LABEL'),
     value: stats.value?.base_clients || 0,
-    hint: 'Clientes preservados fora da conversão nova',
+    hint: t('CRM.REPORTS.KPI.BASE_CLIENTS.HINT'),
     icon: 'i-lucide-archive',
-    tone: 'teal',
+    iconClass: KPI_ICON_TONES.teal,
   },
   {
-    label: 'Descartados',
+    key: 'discarded',
+    label: t('CRM.REPORTS.KPI.DISCARDED.LABEL'),
     value: stats.value?.discarded_deals || 0,
-    hint: 'Spam, inválidos, duplicados ou não leads',
+    hint: t('CRM.REPORTS.KPI.DISCARDED.HINT'),
     icon: 'i-lucide-ban',
-    tone: 'ruby',
+    iconClass: KPI_ICON_TONES.ruby,
   },
 ]);
 
@@ -183,61 +265,112 @@ const funnelStages = computed(() => {
     .filter(stage => Number(stage.count) > 0);
 });
 
+const funnelTotal = computed(() =>
+  funnelStages.value.reduce((sum, stage) => sum + (stage.count || 0), 0)
+);
+
+const maxFunnelCount = computed(() =>
+  Math.max(...funnelStages.value.map(stage => stage.count || 0), 1)
+);
+
 const areaRows = computed(() =>
-  objectRows(stats.value?.deals_by_legal_area, 'Sem área')
+  objectRows(stats.value?.deals_by_legal_area, t('CRM.REPORTS.EMPTY_LABELS.AREA'))
 );
 
 const urgencyRows = computed(() =>
-  objectRows(stats.value?.deals_by_urgency, 'Sem urgência')
-);
-
-const priorityRows = computed(() =>
-  objectRows(stats.value?.activities_by_priority, 'Sem prioridade').map(
-    row => ({
-      ...row,
-      label: priorityLabels[row.key] || row.label,
-    })
+  objectRows(
+    stats.value?.deals_by_urgency,
+    t('CRM.REPORTS.EMPTY_LABELS.URGENCY')
   )
 );
 
+const priorityRows = computed(() =>
+  objectRows(
+    stats.value?.activities_by_priority,
+    t('CRM.REPORTS.EMPTY_LABELS.PRIORITY')
+  ).map(row => ({
+    ...row,
+    label: priorityLabels.value[row.key] || row.label,
+  }))
+);
+
 const sourceRows = computed(() =>
-  objectRows(stats.value?.deals_by_source, 'Sem origem')
+  objectRows(
+    stats.value?.deals_by_source,
+    t('CRM.REPORTS.EMPTY_LABELS.SOURCE')
+  )
 );
 
 const operationalRows = computed(() =>
-  objectRows(stats.value?.deals_by_operational_status, 'Sem status')
+  objectRows(
+    stats.value?.deals_by_operational_status,
+    t('CRM.REPORTS.EMPTY_LABELS.OPERATIONAL')
+  )
 );
+
+const breakdownPanels = computed(() => [
+  {
+    key: 'area',
+    title: t('CRM.REPORTS.AREA.TITLE'),
+    rows: areaRows.value,
+    empty: t('CRM.REPORTS.AREA.EMPTY'),
+  },
+  {
+    key: 'urgency',
+    title: t('CRM.REPORTS.URGENCY_PANEL.TITLE'),
+    rows: urgencyRows.value,
+    empty: t('CRM.REPORTS.URGENCY_PANEL.EMPTY'),
+  },
+  {
+    key: 'priority',
+    title: t('CRM.REPORTS.PRIORITY_PANEL.TITLE'),
+    rows: priorityRows.value,
+    empty: t('CRM.REPORTS.PRIORITY_PANEL.EMPTY'),
+  },
+  {
+    key: 'source',
+    title: t('CRM.REPORTS.SOURCE_PANEL.TITLE'),
+    rows: sourceRows.value,
+    empty: t('CRM.REPORTS.SOURCE_PANEL.EMPTY'),
+  },
+  {
+    key: 'sanitation',
+    title: t('CRM.REPORTS.SANITATION.TITLE'),
+    rows: operationalRows.value,
+    empty: t('CRM.REPORTS.SANITATION.EMPTY'),
+  },
+]);
 
 const insights = computed(() => {
   const items = [];
   if ((stats.value?.overdue_activities || 0) > 0) {
     items.push({
-      title: 'Recuperar atividades vencidas',
-      body: 'Há próximas ações atrasadas. Entre em Atividades e conclua ou reagende antes de novos disparos.',
+      title: t('CRM.REPORTS.INSIGHTS.OVERDUE.TITLE'),
+      body: t('CRM.REPORTS.INSIGHTS.OVERDUE.BODY'),
       tone: 'danger',
       icon: 'i-lucide-alarm-clock',
     });
   }
   if ((stats.value?.priority_deals || 0) > 0) {
     items.push({
-      title: 'Priorizar leads quentes',
-      body: 'Leads de prioridade alta devem ter responsável e próxima ação definida.',
+      title: t('CRM.REPORTS.INSIGHTS.HOT_LEADS.TITLE'),
+      body: t('CRM.REPORTS.INSIGHTS.HOT_LEADS.BODY'),
       tone: 'warning',
       icon: 'i-lucide-flame',
     });
   }
   if (openDeals.value > 0 && (stats.value?.qualified_deals || 0) === 0) {
     items.push({
-      title: 'Qualificação fraca no funil',
-      body: 'Revise etiquetas, área jurídica e score para separar leads frios de oportunidades reais.',
+      title: t('CRM.REPORTS.INSIGHTS.WEAK_QUALIFICATION.TITLE'),
+      body: t('CRM.REPORTS.INSIGHTS.WEAK_QUALIFICATION.BODY'),
       tone: 'info',
       icon: 'i-lucide-filter',
     });
   }
   if (items.length === 0) {
     items.push({
-      title: 'Operação sem alertas críticos',
-      body: 'Os principais indicadores não apontam gargalos imediatos para os filtros atuais.',
+      title: t('CRM.REPORTS.INSIGHTS.NO_ALERTS.TITLE'),
+      body: t('CRM.REPORTS.INSIGHTS.NO_ALERTS.BODY'),
       tone: 'good',
       icon: 'i-lucide-circle-check',
     });
@@ -261,6 +394,24 @@ function humanize(value) {
     .replace(/\b\w/g, char => char.toUpperCase());
 }
 
+function funnelPct(count) {
+  return Math.round((count / maxFunnelCount.value) * 100);
+}
+
+function barWidthClass(pct) {
+  const step = Math.min(20, Math.max(0, Math.round(pct / 5)));
+  return BAR_WIDTH_CLASSES[step];
+}
+
+function conversionFromPrevious(idx) {
+  if (idx === 0 || funnelStages.value[idx - 1]?.count === 0) return null;
+  const rate = (
+    (funnelStages.value[idx].count / funnelStages.value[idx - 1].count) *
+    100
+  ).toFixed(0);
+  return `${rate}%`;
+}
+
 async function loadStats() {
   loading.value = true;
   error.value = '';
@@ -269,7 +420,7 @@ async function loadStats() {
     const { data } = await CrmAPI.getDashboard(cleanFilters());
     stats.value = data;
   } catch {
-    error.value = 'Não foi possível carregar os relatórios do CRM.';
+    error.value = t('CRM.REPORTS.ERROR_LOAD');
   } finally {
     loading.value = false;
   }
@@ -286,621 +437,367 @@ function resetFilters() {
   loadStats();
 }
 
+// PERF-04: o export roda em background no servidor; o CSV chega por email.
+async function triggerExport() {
+  exporting.value = true;
+  exportError.value = '';
+  exportSuccess.value = '';
+
+  try {
+    const response = await CrmAPI.exportDeals(cleanFilters());
+    exportSuccess.value =
+      response?.data?.message || t('CRM.REPORTS.EXPORT.SUCCESS_FALLBACK');
+  } catch (err) {
+    if (err?.response?.status === 403) {
+      exportError.value = t('CRM.REPORTS.EXPORT.ERROR_FORBIDDEN');
+    } else {
+      exportError.value =
+        err?.response?.data?.error || t('CRM.REPORTS.EXPORT.ERROR_GENERIC');
+    }
+  } finally {
+    exporting.value = false;
+  }
+}
+
 watch(
   () => route.query.pipeline_id,
   () => loadStats()
 );
 
-onMounted(loadStats);
+onMounted(() => {
+  fetchCrmOptions().then(options => {
+    crmOptions.value = options;
+  });
+  loadStats();
+});
 </script>
 
 <template>
-  <main class="crm-reports-page">
-    <header class="crm-page-header">
-      <div>
-        <p class="crm-eyebrow">Inteligência CRM</p>
-        <h1>Relatórios CRM</h1>
-        <p>
-          Acompanhe conversão, gargalos de follow-up, distribuição por área e
-          prioridade jurídica.
-        </p>
-      </div>
-      <CRMExportButton :filters="cleanFilters()" label="Exportar CSV" />
-    </header>
+  <section
+    class="flex min-h-0 w-full min-w-0 flex-1 flex-col bg-ui-canvas text-ui-text"
+    :aria-busy="loading || undefined"
+  >
+    <DsPageHeader
+      :title="$t('CRM.REPORTS.TITLE')"
+      :breadcrumbs="[
+        { label: $t('CRM.REPORTS.EYEBROW') },
+        { label: $t('CRM.REPORTS.TITLE') },
+      ]"
+    >
+      <template #actions>
+        <DsButton
+          variant="secondary"
+          icon="i-lucide-download"
+          :label="
+            exporting
+              ? $t('CRM.REPORTS.EXPORT.EXPORTING')
+              : $t('CRM.REPORTS.EXPORT.LABEL')
+          "
+          :loading="exporting"
+          @click="triggerExport"
+        />
+      </template>
+    </DsPageHeader>
 
-    <section class="crm-filter-panel">
-      <label>
-        <span>Status</span>
-        <select v-model="filters.status" class="crm-select">
-          <option
-            v-for="option in STATUS_OPTIONS"
-            :key="option.value"
-            :value="option.value"
-          >
-            {{ option.label }}
-          </option>
-        </select>
-      </label>
-      <label>
-        <span>Tipo CRM</span>
-        <select v-model="filters.operational_status" class="crm-select">
-          <option
-            v-for="option in OPERATIONAL_STATUS_OPTIONS"
-            :key="option.value"
-            :value="option.value"
-          >
-            {{ option.label }}
-          </option>
-        </select>
-      </label>
-      <label>
-        <span>Origem</span>
-        <select v-model="filters.source" class="crm-select">
-          <option
-            v-for="option in SOURCE_OPTIONS"
-            :key="option.value"
-            :value="option.value"
-          >
-            {{ option.label }}
-          </option>
-        </select>
-      </label>
-      <label>
-        <span>Área jurídica</span>
-        <select v-model="filters.legal_area" class="crm-select">
-          <option
-            v-for="option in LEGAL_AREAS"
-            :key="option.value"
-            :value="option.value"
-          >
-            {{ option.label }}
-          </option>
-        </select>
-      </label>
-      <label>
-        <span>Urgência</span>
-        <select v-model="filters.urgency_level" class="crm-select">
-          <option
-            v-for="option in URGENCY_OPTIONS"
-            :key="option.value"
-            :value="option.value"
-          >
-            {{ option.label }}
-          </option>
-        </select>
-      </label>
-      <label>
-        <span>De</span>
-        <input v-model="filters.from" type="date" class="crm-input" />
-      </label>
-      <label>
-        <span>Até</span>
-        <input v-model="filters.to" type="date" class="crm-input" />
-      </label>
-      <div class="crm-filter-actions">
-        <button class="crm-primary-button" @click="loadStats">
-          <span class="i-lucide-filter size-4" />
-          Filtrar
-        </button>
-        <button class="crm-ghost-button" @click="resetFilters">Limpar</button>
-      </div>
-    </section>
+    <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4 sm:p-6">
+      <p class="m-0 max-w-3xl text-ui-body-sm text-ui-text-muted">
+        {{ $t('CRM.REPORTS.SUBTITLE') }}
+      </p>
 
-    <div v-if="error" class="crm-alert">
-      <span class="i-lucide-circle-alert size-4" />
-      {{ error }}
-    </div>
-
-    <section v-if="loading" class="crm-state">
-      <span class="i-lucide-loader-circle size-5 animate-spin" />
-      Carregando relatórios...
-    </section>
-
-    <template v-else-if="stats">
-      <section class="crm-kpi-grid" aria-label="Indicadores CRM">
-        <article
-          v-for="card in metricCards"
-          :key="card.label"
-          class="crm-kpi-card"
-          :class="`crm-kpi-card--${card.tone}`"
-        >
-          <span :class="[card.icon, 'size-4']" />
-          <strong>{{ card.value }}</strong>
-          <small>{{ card.label }}</small>
-          <p>{{ card.hint }}</p>
-        </article>
-      </section>
-
-      <section class="crm-insights-grid">
-        <article
-          v-for="insight in insights"
-          :key="insight.title"
-          class="crm-insight"
-          :class="`crm-insight--${insight.tone}`"
-        >
-          <span :class="[insight.icon, 'size-4']" />
-          <div>
-            <h2>{{ insight.title }}</h2>
-            <p>{{ insight.body }}</p>
-          </div>
-        </article>
-      </section>
-
-      <section class="crm-main-grid">
-        <div class="crm-panel crm-panel--wide">
-          <div class="crm-panel__header">
-            <div>
-              <h2>Funil por etapa</h2>
-              <p>{{ funnelStages.length }} etapa(s) com oportunidades</p>
-            </div>
-          </div>
-          <CRMFunnelChart
-            v-if="funnelStages.length"
-            :stages="funnelStages"
-            title="Distribuição do funil"
+      <DsCard as="section" :aria-label="$t('CRM.REPORTS.FILTERS.APPLY')">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <DsSelect
+            v-model="filters.status"
+            :label="$t('CRM.REPORTS.FILTERS.STATUS')"
+            :options="statusOptions"
           />
-          <div v-else class="crm-empty-inline">
-            Nenhuma oportunidade encontrada para os filtros atuais.
+          <DsSelect
+            v-model="filters.operational_status"
+            :label="$t('CRM.REPORTS.FILTERS.OPERATIONAL_STATUS')"
+            :options="operationalStatusOptions"
+          />
+          <DsSelect
+            v-model="filters.source"
+            :label="$t('CRM.REPORTS.FILTERS.SOURCE')"
+            :options="sourceOptions"
+          />
+          <DsSelect
+            v-model="filters.legal_area"
+            :label="$t('CRM.REPORTS.FILTERS.LEGAL_AREA')"
+            :options="legalAreaOptions"
+          />
+          <DsSelect
+            v-model="filters.urgency_level"
+            :label="$t('CRM.REPORTS.FILTERS.URGENCY')"
+            :options="urgencyOptions"
+          />
+          <DsInput
+            v-model="filters.from"
+            type="date"
+            :label="$t('CRM.REPORTS.FILTERS.FROM')"
+          />
+          <DsInput
+            v-model="filters.to"
+            type="date"
+            :label="$t('CRM.REPORTS.FILTERS.TO')"
+          />
+          <div class="flex items-end gap-2">
+            <DsButton
+              variant="primary"
+              icon="i-lucide-filter"
+              :label="$t('CRM.REPORTS.FILTERS.APPLY')"
+              class="min-w-0 flex-1"
+              @click="loadStats"
+            />
+            <DsButton
+              variant="ghost"
+              :label="$t('CRM.REPORTS.FILTERS.RESET')"
+              @click="resetFilters"
+            />
           </div>
+        </div>
+      </DsCard>
+
+      <div aria-live="polite" class="flex flex-col gap-2">
+        <div
+          v-if="exportError"
+          role="alert"
+          class="flex items-center gap-2 rounded-ui-surface bg-ui-danger-soft p-3 text-ui-body-sm text-ui-danger-foreground"
+        >
+          <Icon
+            icon="i-lucide-circle-alert"
+            class="size-4 shrink-0"
+            aria-hidden="true"
+          />
+          {{ exportError }}
+        </div>
+        <div
+          v-else-if="exportSuccess"
+          role="status"
+          class="flex items-center gap-2 rounded-ui-surface bg-ui-success-soft p-3 text-ui-body-sm text-ui-success-foreground"
+        >
+          <Icon
+            icon="i-lucide-mail-check"
+            class="size-4 shrink-0"
+            aria-hidden="true"
+          />
+          {{ exportSuccess }}
+        </div>
+      </div>
+
+      <div
+        v-if="error"
+        role="alert"
+        class="flex items-center gap-2 rounded-ui-surface bg-ui-danger-soft p-3 text-ui-body-sm text-ui-danger-foreground"
+      >
+        <Icon
+          icon="i-lucide-circle-alert"
+          class="size-4 shrink-0"
+          aria-hidden="true"
+        />
+        {{ error }}
+      </div>
+
+      <div
+        v-if="loading"
+        role="status"
+        :aria-label="$t('CRM.REPORTS.LOADING')"
+        class="flex flex-col gap-4"
+      >
+        <span class="sr-only">{{ $t('CRM.REPORTS.LOADING') }}</span>
+        <DsSkeleton shape="block" class="h-24" />
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+          <DsSkeleton
+            v-for="panel in 6"
+            :key="panel"
+            shape="block"
+            class="h-56"
+          />
+        </div>
+      </div>
+
+      <template v-else-if="stats">
+        <DsCard
+          as="section"
+          padding="none"
+          :aria-label="$t('CRM.REPORTS.KPI.ARIA_LABEL')"
+        >
+          <dl
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-9"
+          >
+            <div
+              v-for="card in metricCards"
+              :key="card.key"
+              class="flex min-w-0 flex-col gap-1 p-3 sm:p-4"
+            >
+              <dt
+                class="flex items-center justify-between gap-2 text-ui-caption font-medium uppercase tracking-wide text-ui-text-muted"
+              >
+                <span class="truncate">{{ card.label }}</span>
+                <Icon
+                  :icon="card.icon"
+                  class="size-4 shrink-0"
+                  :class="card.iconClass"
+                  aria-hidden="true"
+                />
+              </dt>
+              <dd
+                class="m-0 truncate font-manrope text-ui-heading font-semibold text-ui-text"
+                :title="String(card.value)"
+              >
+                {{ card.value }}
+              </dd>
+              <dd
+                class="m-0 truncate text-ui-caption text-ui-text-subtle"
+                :title="card.hint"
+              >
+                {{ card.hint }}
+              </dd>
+            </div>
+          </dl>
+        </DsCard>
+
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <article
+            v-for="insight in insights"
+            :key="insight.title"
+            class="flex min-w-0 gap-3 rounded-ui-surface p-4"
+            :class="INSIGHT_TONE_CLASSES[insight.tone]"
+          >
+            <Icon
+              :icon="insight.icon"
+              class="mt-0.5 size-4 shrink-0"
+              aria-hidden="true"
+            />
+            <div class="min-w-0">
+              <h2 class="m-0 font-manrope text-ui-label font-semibold">
+                {{ insight.title }}
+              </h2>
+              <p class="m-0 mt-1 text-ui-body-sm">
+                {{ insight.body }}
+              </p>
+            </div>
+          </article>
         </div>
 
-        <div class="crm-panel">
-          <div class="crm-panel__header">
-            <h2>Por área jurídica</h2>
-          </div>
-          <div v-if="areaRows.length" class="crm-breakdown">
-            <div v-for="row in areaRows" :key="row.key || row.label">
-              <span>{{ row.label }}</span>
-              <strong>{{ row.count }}</strong>
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+          <DsCard
+            as="section"
+            aria-labelledby="crm-reports-funnel-title"
+            class="lg:col-span-2 xl:col-span-3"
+          >
+            <div class="mb-4 flex items-start justify-between gap-4">
+              <div class="min-w-0">
+                <h2
+                  id="crm-reports-funnel-title"
+                  class="m-0 font-manrope text-ui-label font-semibold text-ui-text"
+                >
+                  {{ $t('CRM.REPORTS.FUNNEL.TITLE') }}
+                </h2>
+                <p class="m-0 mt-1 text-ui-caption text-ui-text-muted">
+                  {{
+                    $t('CRM.REPORTS.FUNNEL.SUBTITLE', {
+                      count: funnelStages.length,
+                    })
+                  }}
+                </p>
+              </div>
+              <DsBadge
+                variant="neutral"
+                :label="
+                  $t('CRM.REPORTS.FUNNEL.TOTAL', { count: funnelTotal })
+                "
+              />
             </div>
-          </div>
-          <div v-else class="crm-empty-inline">Sem dados de área.</div>
-        </div>
+            <DsEmptyState
+              v-if="!funnelStages.length"
+              :title="$t('CRM.REPORTS.FUNNEL.EMPTY')"
+            />
+            <div v-else class="flex flex-col gap-2">
+              <div
+                v-for="(stage, idx) in funnelStages"
+                :key="stage.slug || stage.name"
+                class="flex items-center gap-3"
+              >
+                <span
+                  class="w-24 shrink-0 truncate text-right text-ui-caption text-ui-text-muted sm:w-40"
+                  :title="stage.name"
+                >
+                  {{ stage.name }}
+                </span>
+                <div
+                  class="h-5 min-w-0 flex-1 overflow-hidden rounded-ui-control bg-ui-sunken"
+                >
+                  <div
+                    aria-hidden="true"
+                    class="h-full rounded-ui-control bg-ui-chart-brand transition-[width] duration-500"
+                    :class="barWidthClass(funnelPct(stage.count))"
+                  />
+                </div>
+                <span
+                  class="w-10 shrink-0 text-right text-ui-caption font-semibold text-ui-text"
+                >
+                  {{ stage.count }}
+                </span>
+                <DsBadge
+                  class="w-16 shrink-0 justify-center"
+                  :variant="conversionFromPrevious(idx) ? 'success' : 'neutral'"
+                  :label="
+                    conversionFromPrevious(idx) ||
+                    $t('CRM.REPORTS.FUNNEL.ENTRY')
+                  "
+                  :title="
+                    conversionFromPrevious(idx)
+                      ? $t('CRM.REPORTS.FUNNEL.CONV_RATE_TITLE')
+                      : undefined
+                  "
+                />
+              </div>
+            </div>
+          </DsCard>
 
-        <div class="crm-panel">
-          <div class="crm-panel__header">
-            <h2>Por urgência</h2>
-          </div>
-          <div v-if="urgencyRows.length" class="crm-breakdown">
-            <div v-for="row in urgencyRows" :key="row.key || row.label">
-              <span>{{ row.label }}</span>
-              <strong>{{ row.count }}</strong>
+          <DsCard
+            v-for="panel in breakdownPanels"
+            :key="panel.key"
+            as="section"
+            :aria-labelledby="`crm-reports-panel-${panel.key}`"
+          >
+            <h2
+              :id="`crm-reports-panel-${panel.key}`"
+              class="m-0 mb-4 font-manrope text-ui-label font-semibold text-ui-text"
+            >
+              {{ panel.title }}
+            </h2>
+            <div
+              v-if="panel.rows.length"
+              class="divide-y divide-ui-border-subtle"
+            >
+              <div
+                v-for="row in panel.rows"
+                :key="row.key || row.label"
+                class="flex items-center justify-between gap-4 py-2.5"
+              >
+                <span
+                  class="min-w-0 truncate text-ui-body-sm text-ui-text-muted"
+                >
+                  {{ row.label }}
+                </span>
+                <strong
+                  class="shrink-0 text-ui-body-sm font-semibold text-ui-text"
+                >
+                  {{ row.count }}
+                </strong>
+              </div>
             </div>
-          </div>
-          <div v-else class="crm-empty-inline">Sem dados de urgência.</div>
-        </div>
-
-        <div class="crm-panel">
-          <div class="crm-panel__header">
-            <h2>Atividades por prioridade</h2>
-          </div>
-          <div v-if="priorityRows.length" class="crm-breakdown">
-            <div v-for="row in priorityRows" :key="row.key || row.label">
-              <span>{{ row.label }}</span>
-              <strong>{{ row.count }}</strong>
+            <div
+              v-else
+              class="rounded-ui-control border border-dashed border-ui-border p-4 text-center text-ui-body-sm text-ui-text-muted"
+            >
+              {{ panel.empty }}
             </div>
-          </div>
-          <div v-else class="crm-empty-inline">
-            Sem atividades pendentes nos filtros atuais.
-          </div>
+          </DsCard>
         </div>
-
-        <div class="crm-panel">
-          <div class="crm-panel__header">
-            <h2>Por origem</h2>
-          </div>
-          <div v-if="sourceRows.length" class="crm-breakdown">
-            <div v-for="row in sourceRows" :key="row.key || row.label">
-              <span>{{ row.label }}</span>
-              <strong>{{ row.count }}</strong>
-            </div>
-          </div>
-          <div v-else class="crm-empty-inline">Sem dados de origem.</div>
-        </div>
-
-        <div class="crm-panel">
-          <div class="crm-panel__header">
-            <h2>Saneamento do funil</h2>
-          </div>
-          <div v-if="operationalRows.length" class="crm-breakdown">
-            <div v-for="row in operationalRows" :key="row.key || row.label">
-              <span>{{ row.label }}</span>
-              <strong>{{ row.count }}</strong>
-            </div>
-          </div>
-          <div v-else class="crm-empty-inline">Sem dados de saneamento.</div>
-        </div>
-      </section>
-    </template>
-  </main>
+      </template>
+    </div>
+  </section>
 </template>
-
-<style scoped>
-.crm-reports-page {
-  display: flex;
-  width: 100%;
-  min-width: 0;
-  min-height: 100%;
-  flex-direction: column;
-  gap: 1rem;
-  overflow-x: hidden;
-  padding: clamp(1rem, 2vw, 1.5rem);
-  background: rgb(var(--bg-app));
-  color: rgb(var(--slate-12));
-}
-
-.crm-page-header {
-  display: flex;
-  min-width: 0;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.crm-page-header > * {
-  min-width: 0;
-}
-
-.crm-eyebrow {
-  margin: 0 0 0.25rem;
-  color: rgb(var(--brand-9));
-  font-size: 0.75rem;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.crm-page-header h1,
-.crm-panel h2,
-.crm-insight h2 {
-  margin: 0;
-}
-
-.crm-page-header h1 {
-  font-size: 1.5rem;
-  font-weight: 800;
-}
-
-.crm-page-header p:last-child {
-  max-width: 54rem;
-  margin: 0.25rem 0 0;
-  color: rgb(var(--slate-10));
-  font-size: 0.875rem;
-  line-height: 1.5;
-}
-
-.crm-filter-panel {
-  display: grid;
-  min-width: 0;
-  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
-  gap: 0.75rem;
-  border: 1px solid rgb(var(--slate-4));
-  border-radius: 8px;
-  padding: 1rem;
-  background: rgb(var(--slate-1));
-}
-
-.crm-filter-panel label {
-  display: grid;
-  min-width: 0;
-  gap: 0.35rem;
-}
-
-.crm-filter-panel label span {
-  color: rgb(var(--slate-10));
-  font-size: 0.75rem;
-  font-weight: 800;
-}
-
-.crm-filter-actions {
-  display: flex;
-  min-width: 0;
-  align-items: end;
-  gap: 0.5rem;
-}
-
-.crm-input,
-.crm-select {
-  width: 100%;
-  min-width: 0;
-  height: 2.5rem;
-  border: 1px solid rgb(var(--slate-5));
-  border-radius: 8px;
-  padding: 0 0.75rem;
-  color: rgb(var(--slate-12));
-  background: rgb(var(--slate-2));
-  outline: none;
-}
-
-.crm-select {
-  appearance: none;
-  background-image: linear-gradient(
-      45deg,
-      transparent 50%,
-      rgb(var(--slate-10)) 50%
-    ),
-    linear-gradient(135deg, rgb(var(--slate-10)) 50%, transparent 50%);
-  background-position:
-    calc(100% - 1rem) 1.05rem,
-    calc(100% - 0.68rem) 1.05rem;
-  background-repeat: no-repeat;
-  background-size: 0.32rem 0.32rem;
-  padding-right: 2rem;
-}
-
-.crm-input:focus,
-.crm-select:focus {
-  border-color: rgb(var(--brand-8));
-  box-shadow: 0 0 0 3px rgb(var(--brand-4) / 0.25);
-}
-
-.crm-primary-button,
-.crm-ghost-button {
-  display: inline-flex;
-  height: 2.5rem;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  border-radius: 8px;
-  padding: 0 0.85rem;
-  font-size: 0.875rem;
-  font-weight: 800;
-}
-
-.crm-primary-button {
-  color: white;
-  background: rgb(var(--brand-9));
-}
-
-.crm-primary-button:hover {
-  background: rgb(var(--brand-10));
-}
-
-.crm-ghost-button {
-  border: 1px solid rgb(var(--slate-5));
-  color: rgb(var(--slate-11));
-  background: rgb(var(--slate-2));
-}
-
-.crm-ghost-button:hover {
-  background: rgb(var(--slate-3));
-}
-
-.crm-alert,
-.crm-state,
-.crm-kpi-card,
-.crm-insight,
-.crm-panel {
-  border: 1px solid rgb(var(--slate-4));
-  border-radius: 8px;
-  background: rgb(var(--slate-1));
-}
-
-.crm-alert {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  border-color: rgb(var(--ruby-7));
-  padding: 0.85rem 1rem;
-  color: rgb(var(--ruby-11));
-  background: rgb(var(--ruby-2));
-}
-
-.crm-state {
-  display: grid;
-  min-height: 16rem;
-  place-items: center;
-  gap: 0.6rem;
-  padding: 2rem;
-  color: rgb(var(--slate-10));
-}
-
-.crm-kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 0.75rem;
-}
-
-.crm-kpi-card {
-  display: grid;
-  gap: 0.35rem;
-  min-width: 0;
-  min-height: 8rem;
-  padding: 1rem;
-}
-
-.crm-kpi-card > span {
-  color: rgb(var(--slate-9));
-}
-
-.crm-kpi-card strong {
-  color: rgb(var(--slate-12));
-  font-size: 1.55rem;
-  line-height: 1;
-}
-
-.crm-kpi-card small {
-  color: rgb(var(--slate-10));
-  font-size: 0.72rem;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.crm-kpi-card p {
-  margin: 0;
-  color: rgb(var(--slate-9));
-  font-size: 0.78rem;
-  line-height: 1.35;
-}
-
-.crm-kpi-card--brand {
-  border-color: rgb(var(--brand-5));
-}
-
-.crm-kpi-card--ruby {
-  border-color: rgb(var(--ruby-6));
-}
-
-.crm-kpi-card--amber {
-  border-color: rgb(var(--amber-6));
-}
-
-.crm-kpi-card--teal {
-  border-color: rgb(var(--teal-6));
-}
-
-.crm-insights-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.75rem;
-}
-
-.crm-insight {
-  display: flex;
-  min-width: 0;
-  gap: 0.75rem;
-  padding: 1rem;
-}
-
-.crm-insight > span {
-  flex-shrink: 0;
-  margin-top: 0.15rem;
-}
-
-.crm-insight h2 {
-  font-size: 0.95rem;
-  font-weight: 800;
-}
-
-.crm-insight p {
-  margin: 0.25rem 0 0;
-  color: rgb(var(--slate-10));
-  font-size: 0.82rem;
-  line-height: 1.45;
-}
-
-.crm-insight--danger {
-  border-color: rgb(var(--ruby-6));
-  background: rgb(var(--ruby-1));
-}
-
-.crm-insight--warning {
-  border-color: rgb(var(--amber-6));
-  background: rgb(var(--amber-1));
-}
-
-.crm-insight--good {
-  border-color: rgb(var(--teal-6));
-  background: rgb(var(--teal-1));
-}
-
-.crm-main-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.75rem;
-}
-
-.crm-panel {
-  min-width: 0;
-  padding: 1rem;
-}
-
-.crm-panel--wide {
-  grid-column: 1 / -1;
-}
-
-.crm-panel__header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.8rem;
-}
-
-.crm-panel__header h2 {
-  font-size: 0.95rem;
-  font-weight: 800;
-}
-
-.crm-panel__header p {
-  margin: 0.2rem 0 0;
-  color: rgb(var(--slate-9));
-  font-size: 0.78rem;
-}
-
-.crm-breakdown {
-  display: grid;
-}
-
-.crm-breakdown div {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  border-top: 1px solid rgb(var(--slate-4));
-  padding: 0.75rem 0;
-}
-
-.crm-breakdown div:first-child {
-  border-top: 0;
-}
-
-.crm-breakdown span {
-  color: rgb(var(--slate-11));
-  font-size: 0.875rem;
-}
-
-.crm-breakdown strong {
-  color: rgb(var(--slate-12));
-}
-
-.crm-empty-inline {
-  border: 1px dashed rgb(var(--slate-5));
-  border-radius: 8px;
-  padding: 1.3rem;
-  color: rgb(var(--slate-9));
-  text-align: center;
-}
-
-@media (max-width: 1440px) {
-  .crm-kpi-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .crm-filter-panel {
-    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-  }
-}
-
-@media (max-width: 1024px) {
-  .crm-page-header {
-    flex-direction: column;
-  }
-
-  .crm-kpi-grid,
-  .crm-insights-grid,
-  .crm-main-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .crm-filter-actions {
-    align-items: stretch;
-  }
-}
-
-@media (max-width: 720px) {
-  .crm-kpi-grid,
-  .crm-insights-grid,
-  .crm-main-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .crm-filter-actions {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .crm-filter-actions button {
-    width: 100%;
-  }
-}
-</style>

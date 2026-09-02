@@ -7,7 +7,7 @@
 #  auto_reply_enabled   :boolean          default(TRUE), not null
 #  created_at           :datetime         not null
 #  enabled              :boolean          default(TRUE), not null
-#  handoff_strategy     :string           default("human_request_or_score"), not null
+#  handoff_strategy     :string           default("human_request"), not null
 #  routing_config       :jsonb            not null
 #  updated_at           :datetime         not null
 #  captain_assistant_id :bigint           not null
@@ -23,7 +23,7 @@
 #
 class CaptainInbox < ApplicationRecord
   AI_MODES = %w[auto supervised paused human_only].freeze
-  HANDOFF_STRATEGIES = %w[human_request human_request_or_score score_threshold manual_only].freeze
+  HANDOFF_STRATEGIES = %w[human_request manual_only].freeze
 
   belongs_to :captain_assistant, class_name: 'Captain::Assistant'
   belongs_to :inbox

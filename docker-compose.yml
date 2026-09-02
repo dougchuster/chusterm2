@@ -48,32 +48,7 @@ services:
       - "8025:8025"
       - "1025:1025"
 
-  # ─── CRM Service (backend interno do CRM integrado ao Core) ────────────────
-  crm-service:
-    build:
-      context: ./services/crm-service
-      dockerfile: Dockerfile
-      target: development
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    env_file:
-      - .env
-    ports:
-      - "4003:4000"
-    volumes:
-      - ./services/crm-service:/app
-      - /app/node_modules
-    command: sh -c "npm run db:migrate && npm run dev"
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4000/health || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+  # ARQ-02: crm-service aposentado — CRM real vive no Rails (tabelas crm_*).
 
   # ─── Agent Orchestrator (skills IA internas) ────────────────────────────────
   orchestrator:
@@ -102,27 +77,7 @@ services:
       retries: 5
       start_period: 30s
 
-  # ─── Identity Bridge (auth service-to-service) ─────────────────────────────
-  identity-bridge:
-    build:
-      context: ./services/identity-bridge
-      dockerfile: Dockerfile
-      target: development
-    restart: unless-stopped
-    env_file:
-      - .env
-    ports:
-      - "4002:4002"
-    volumes:
-      - ./services/identity-bridge:/app
-      - /app/node_modules
-    command: npm run dev
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4002/health || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
+  # ARQ-03: identity-bridge aposentado — nenhum consumidor no core.
 
   # ─── Evolution API (WhatsApp não-oficial via Baileys) ────────────────────────
   evolution-api:
@@ -198,13 +153,10 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      crm-service:
-        condition: service_healthy
     env_file:
       - .env
     environment:
       - VITE_HOT_RELOAD=true
-      - CRM_SERVICE_INTERNAL_URL=http://crm-service:4000
       - EVOLUTION_API_URL=http://evolution-api:8080
       - RACK_TIMEOUT_SERVICE_TIMEOUT=60
     ports:
@@ -213,7 +165,9 @@ services:
       - core-vite-output:/app/public/vite
       - core-storage:/app/storage
     command: >
-      sh -c "rm -f /app/tmp/pids/server.pid && bundle exec rails s -b 0.0.0.0 -p 3000"
+      sh -c "cp -a /app/public/vite-image/. /app/public/vite/ &&
+      rm -f /app/tmp/pids/server.pid &&
+      bundle exec rails s -b 0.0.0.0 -p 3000"
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/health || exit 1"]
       interval: 30s
@@ -222,8 +176,10 @@ services:
       start_period: 120s
 
   # ─── Vite Watch (hot-reload de design) ───────────────────────────────
-  # Usar: docker compose up -d core-vite
+  # Opcional: o build contínuo é pesado e não sobe no perfil padrão.
+  # Usar: docker compose --profile frontend-watch up -d core-vite
   core-vite:
+    profiles: ["frontend-watch"]
     build:
       context: ./core
       dockerfile: Dockerfile

@@ -1,4 +1,4 @@
-﻿import { actions } from '../../appConfig';
+import { actions } from '../../appConfig';
 
 const commit = vi.fn();
 describe('#actions', () => {

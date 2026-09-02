@@ -1,6 +1,8 @@
 import { and, eq, inArray } from 'drizzle-orm'
 import { db, pgClient } from '../db/client.js'
 import {
+  DR_LETICIA_NEW_LEAD_CLOSING,
+  DR_LETICIA_PUBLIC_INTRO,
   DR_PAULA_MATOS_CAMPAIGN,
   DR_PAULA_MATOS_KNOWLEDGE,
   DR_PAULA_MATOS_SCORE_MODEL,
@@ -38,7 +40,7 @@ async function seedCollection() {
           accountId,
           name: collectionName,
           description:
-            'RAG inicial da Dra. Paula Matos para triagem de planejamento previdenciário.',
+            'RAG da Dra. Letícia para o atendimento inicial da Dra. Paula Matos e triagem previdenciária.',
           scope: [DR_PAULA_MATOS_SLUG, DR_PAULA_MATOS_CAMPAIGN, 'previdenciario'],
         })
         .returning()
@@ -49,7 +51,8 @@ async function seedCollection() {
       .update(knowledgeCollections)
       .set({
         name: collectionName,
-        description: 'RAG inicial da Dra. Paula Matos para triagem de planejamento previdenciário.',
+        description:
+          'RAG da Dra. Letícia para o atendimento inicial da Dra. Paula Matos e triagem previdenciária.',
         updatedAt: new Date(),
       })
       .where(eq(knowledgeCollections.id, existing.id))
@@ -134,21 +137,31 @@ async function seedCollection() {
     .where(and(eq(promptVersions.accountId, accountId), eq(promptVersions.skillSlug, promptSlug)))
     .limit(1)
 
-  const systemPrompt =
-    'Dra. Paula Matos: atendimento inicial humanizado do Coimbra & Ruas. Na primeira resposta, se a pessoa apenas cumprimentar ou não explicar o caso, não iniciar triagem previdenciária; apresentar-se de forma simples e perguntar como pode ajudar hoje. Só iniciar triagem quando houver assunto ligado a aposentadoria, INSS, benefício, revisão, auxílio, BPC/LOAS, pensão, CNIS, contribuição, MEI, GPS, DAS, Meu INSS, professor, rural, atividade especial, servidor ou RPPS. Fazer uma mensagem por vez e uma pergunta principal por mensagem. Nunca solicitar, recomendar ou usar simulador do Meu INSS como parâmetro de análise; se o cliente mencionar simulação, explicar que ela pode falhar e que a análise segura depende de CNIS, vínculos, remunerações, contribuições e documentos. Sem promessa de resultado, com coleta gradual de objetivo, CNIS, forma de contribuição, situação no INSS, documentos simples e risco para encaminhamento à equipe jurídica responsável. Responder sempre em português brasileiro correto, com acentuação completa, concordância e ortografia revisadas. Nunca mencionar IA, robô, automação ou assistente virtual. Quando o caso exigir revisão, dizer que vamos analisar o caso com atenção e entraremos com retorno em breve.'
+  const systemPrompt = [
+    `${DR_LETICIA_PUBLIC_INTRO} Esta é a identidade pública obrigatória; Dra. Paula Matos é a advogada real do escritório. Nunca se apresentar como Dra. Paula, assistente, IA, automação ou pelo nome interno Capitão.`,
+    'Antes de responder, ler todo o histórico, analisar fatos e documentos disponíveis e consultar a base recuperada. Nunca fingir leitura de anexo indisponível. Resolver referências curtas pelo contexto e responder toda pergunta direta na primeira frase, antes de fazer triagem ou pedir dados.',
+    'Se a pessoa disser que uma advogada pediu algo, informar que também é advogada e pode orientar. No fluxo CNIS, se depois perguntar como conseguir, ensinar aplicativo ou site Meu INSS, conta gov.br e opção Extrato de Contribuições (CNIS), sem pedir CPF. Depois de agradecimento, encerrar gentilmente sem retomar triagem.',
+    `Quando um lead novo relatar seu caso, depois de compreender o ponto inicial encerrar com "${DR_LETICIA_NEW_LEAD_CLOSING}" exatamente uma vez; verificar o histórico e não repetir nem parafrasear o aviso. Saudação ou dúvida operacional isolada não acionam esse encerramento.`,
+    'Responder em português brasileiro correto, em uma ou duas frases curtas, com até 240 caracteres e no máximo uma pergunta. Não repetir o histórico, perguntas ou documentos já informados. Não prometer resultado, valor ou prazo, não pedir credenciais e não usar o simulador do Meu INSS como análise segura.',
+  ].join(' ')
 
   if (!existingPrompt) {
     await db.insert(promptVersions).values({
       accountId,
       skillSlug: promptSlug,
-      version: '1.0.0',
+      version: '2.0.0',
       systemPrompt,
       isActive: true,
     })
   } else {
     await db
       .update(promptVersions)
-      .set({ systemPrompt, isActive: true, updatedAt: new Date() })
+      .set({
+        version: '2.0.0',
+        systemPrompt,
+        isActive: true,
+        updatedAt: new Date(),
+      })
       .where(eq(promptVersions.id, existingPrompt.id))
   }
 
@@ -157,7 +170,9 @@ async function seedCollection() {
 
 seedCollection()
   .then(async (collectionId) => {
-    console.log(`Seeded Dra. Paula Matos knowledge for account ${accountId}: ${collectionId}`)
+    console.log(
+      `Seeded Dra. Letícia public persona (legacy Dra. Paula profile) for account ${accountId}: ${collectionId}`,
+    )
   })
   .finally(async () => {
     await pgClient.end()

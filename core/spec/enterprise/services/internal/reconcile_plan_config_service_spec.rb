@@ -1,11 +1,17 @@
 ﻿require 'rails_helper'
 
 RSpec.describe Internal::ReconcilePlanConfigService do
+  before do
+    premium_config_names = YAML.safe_load(Rails.root.join('enterprise/config/premium_installation_config.yml').read).pluck('name')
+    InstallationConfig.where(name: premium_config_names).delete_all
+  end
+
   describe '#perform' do
     let(:service) { described_class.new }
 
     context 'when pricing plan is community' do
       before do
+        allow(ChusteRMApp).to receive(:enterprise?).and_return(false)
         allow(ChusteRMHub).to receive(:pricing_plan).and_return('community')
       end
 

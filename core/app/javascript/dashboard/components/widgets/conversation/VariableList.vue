@@ -70,9 +70,3 @@ export default {
     @mention-select="handleVariableClick"
   />
 </template>
-
-<style scoped>
-.variable--list-label {
-  font-weight: 600;
-}
-</style>

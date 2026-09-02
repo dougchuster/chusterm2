@@ -126,7 +126,9 @@ async function main() {
       console.log(`  ${tags.join(', ').padEnd(28)} ${r.file}`);
     });
   console.log('');
-  console.log('Como migrar: ver docs/design-system.md');
+  console.log(
+    'Como migrar: ver .github/skills/chusterm-ui-redesign/references/design-brief.md'
+  );
 }
 
 main().catch(err => {

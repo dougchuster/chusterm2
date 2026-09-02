@@ -105,7 +105,7 @@ RSpec.describe Webhooks::WhatsappEventsJob do
       channel.update(provider: 'default')
       allow(Whatsapp::IncomingMessageService).to receive(:new).and_return(process_service)
       expect(Whatsapp::IncomingMessageService).to receive(:new)
-      job.perform_now(params)
+      job.perform_now(phone_number: channel.phone_number)
     end
   end
 

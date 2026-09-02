@@ -26,7 +26,7 @@ function onPageChange(newPage) {
 }
 
 const onNextPage = () => {
-  if (!onNextPage.value) {
+  if (!hasNextPage.value) {
     onPageChange(props.currentPage + 1);
   }
 };
@@ -56,6 +56,7 @@ const onLastPage = () => {
       sm
       slate
       icon="i-lucide-chevrons-left"
+      :aria-label="$t('PAGINATION_FOOTER.FIRST_PAGE')"
       class="ltr:rounded-l-lg ltr:rounded-r-none rtl:rounded-r-lg rtl:rounded-l-none"
       :disabled="hasFirstPage"
       @click="onFirstPage"
@@ -68,6 +69,7 @@ const onLastPage = () => {
       sm
       slate
       icon="i-lucide-chevron-left"
+      :aria-label="$t('PAGINATION_FOOTER.PREVIOUS_PAGE')"
       class="rounded-none"
       :disabled="hasPrevPage"
       @click="onPrevPage"
@@ -88,6 +90,7 @@ const onLastPage = () => {
       sm
       slate
       icon="i-lucide-chevron-right"
+      :aria-label="$t('PAGINATION_FOOTER.NEXT_PAGE')"
       class="rounded-none"
       :disabled="hasNextPage"
       @click="onNextPage"
@@ -100,6 +103,7 @@ const onLastPage = () => {
       sm
       slate
       icon="i-lucide-chevrons-right"
+      :aria-label="$t('PAGINATION_FOOTER.LAST_PAGE')"
       class="ltr:rounded-r-lg ltr:rounded-l-none rtl:rounded-l-lg rtl:rounded-r-none"
       :disabled="hasLastPage"
       @click="onLastPage"

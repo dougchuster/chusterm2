@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { ref, computed, watch, onMounted, useTemplateRef } from 'vue';
 
 import {
@@ -207,22 +207,25 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="space-y-2 mb-4">
+  <div class="mb-4 space-y-2">
     <div
       class="overflow-y-auto"
       :class="{ 'max-h-96': isPopout, 'max-h-56': !isPopout }"
     >
       <p
         v-dompurify-html="formatMessage(generatedContent, false)"
-        class="text-n-iris-12 text-sm prose-sm font-normal !mb-4"
+        class="prose-sm !mb-4 text-sm font-normal text-ds-fg-default"
       />
     </div>
-    <div class="editor-root relative editor--copilot space-x-2">
+    <div
+      class="editor-root editor--copilot relative space-x-2 rounded-xl bg-ds-accent-soft [&_.ProseMirror-woot-style]:!max-h-[7.5rem] [&_.ProseMirror-woot-style]:min-h-20 [&_.ProseMirror-woot-style]:overflow-auto [&_.ProseMirror-woot-style]:!px-2 [&_.empty-node::before]:text-ds-accent"
+    >
       <div ref="editor" />
-      <div class="flex items-center justify-end absolute right-2 bottom-2">
+      <div class="absolute bottom-2 right-2 flex items-center justify-end">
         <NextButton
-          class="bg-n-iris-9 text-white !rounded-full"
+          class="!rounded-full bg-ds-accent text-ds-fg-on-accent"
           icon="i-lucide-arrow-up"
+          :aria-label="$t('CONVERSATION.REPLYBOX.SEND')"
           solid
           sm
           @click="handleSubmit"
@@ -231,24 +234,3 @@ onMounted(() => {
     </div>
   </div>
 </template>
-
-<style lang="scss">
-@import '@ChusteRM/prosemirror-schema/src/styles/base.scss';
-
-.editor--copilot {
-  @apply bg-n-iris-5 rounded;
-
-  .ProseMirror-woot-style {
-    min-height: 5rem;
-    max-height: 7.5rem !important;
-    overflow: auto;
-    @apply px-2 !important;
-
-    .empty-node {
-      &::before {
-        @apply text-n-iris-9 dark:text-n-iris-11;
-      }
-    }
-  }
-}
-</style>

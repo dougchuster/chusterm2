@@ -254,21 +254,6 @@ const gridClass = computed(() => {
   return map[orientation.value];
 });
 
-const gridTemplate = computed(() => {
-  const map = {
-    [ORIENTATION.LEFT]: `
-      "bubble"
-      "meta"
-    `,
-    [ORIENTATION.RIGHT]: `
-      "bubble avatar"
-      "meta spacer"
-    `,
-  };
-
-  return map[orientation.value];
-});
-
 const shouldGroupWithNext = computed(() => {
   if (props.status === MESSAGE_STATUS.FAILED) return false;
 
@@ -522,9 +507,11 @@ provideMessageContext({
     :data-message-id="props.id"
     :class="[
       flexOrientationClass,
+      shouldGroupWithNext
+        ? 'group-with-next [&+_.message-bubble-container_.left-bubble]:ltr:rounded-tl-sm [&+_.message-bubble-container_.left-bubble]:rtl:rounded-tr-sm [&+_.message-bubble-container_.right-bubble]:ltr:rounded-tr-sm [&+_.message-bubble-container_.right-bubble]:rtl:rounded-tl-sm'
+        : '',
       {
-        'group-with-next': shouldGroupWithNext,
-        'bg-n-alpha-1': showBackgroundHighlight,
+        'rounded-lg bg-ds-accent-soft': showBackgroundHighlight,
       },
     ]"
   >
@@ -541,19 +528,16 @@ provideMessageContext({
         },
       ]"
       class="gap-x-2"
-      :style="{
-        gridTemplateAreas: gridTemplate,
-      }"
     >
       <div
         v-if="!shouldGroupWithNext && shouldShowAvatar"
         v-tooltip.left-end="avatarTooltip"
-        class="[grid-area:avatar] flex items-end"
+        class="col-start-2 row-start-1 flex items-end"
       >
         <Avatar v-bind="avatarInfo" :size="24" />
       </div>
       <div
-        class="[grid-area:bubble] flex"
+        class="col-start-1 row-start-1 flex"
         :class="{
           'ltr:ml-8 rtl:mr-8 justify-end': orientation === ORIENTATION.RIGHT,
           'ltr:mr-8 rtl:ml-8': orientation === ORIENTATION.LEFT,
@@ -565,7 +549,7 @@ provideMessageContext({
       </div>
       <MessageError
         v-if="contentAttributes.externalError"
-        class="[grid-area:meta]"
+        class="col-start-1 row-start-2"
         :class="flexOrientationClass"
         :error="contentAttributes.externalError"
         @retry="emit('retry')"
@@ -586,15 +570,3 @@ provideMessageContext({
     </div>
   </div>
 </template>
-
-<style lang="scss">
-.group-with-next + .message-bubble-container {
-  .left-bubble {
-    @apply ltr:rounded-tl-sm rtl:rounded-tr-sm;
-  }
-
-  .right-bubble {
-    @apply ltr:rounded-tr-sm rtl:rounded-tl-sm;
-  }
-}
-</style>

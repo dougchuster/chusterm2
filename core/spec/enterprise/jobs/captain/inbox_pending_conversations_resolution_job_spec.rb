@@ -19,6 +19,10 @@ RSpec.describe Captain::InboxPendingConversationsResolutionJob, type: :job do
   end
 
   context 'when captain_tasks is disabled' do
+    before do
+      inbox.account.disable_features!('captain_tasks')
+    end
+
     it 'resolves pending conversations inactive for over 1 hour' do
       described_class.perform_now(inbox)
 
@@ -176,6 +180,7 @@ RSpec.describe Captain::InboxPendingConversationsResolutionJob, type: :job do
     let(:handoff_reason) { 'Assistant asked for order number but customer did not respond' }
 
     before do
+      inbox.captain_inbox.update!(routing_config: { 'auto_handoff_on_pending_timeout' => true })
       allow(inbox.account).to receive(:feature_enabled?).and_call_original
       allow(inbox.account).to receive(:feature_enabled?).with('captain_tasks').and_return(true)
       mock_service = instance_double(Captain::ConversationCompletionService)
@@ -270,10 +275,35 @@ RSpec.describe Captain::InboxPendingConversationsResolutionJob, type: :job do
     end
   end
 
+  context 'when LLM evaluation returns incomplete without auto-handoff opt-in' do
+    before do
+      allow(inbox.account).to receive(:feature_enabled?).and_call_original
+      allow(inbox.account).to receive(:feature_enabled?).with('captain_tasks').and_return(true)
+      mock_service = instance_double(Captain::ConversationCompletionService)
+      allow(mock_service).to receive(:perform).and_return({ complete: false, reason: 'Customer clarification pending' })
+      allow(Captain::ConversationCompletionService).to receive(:new).and_return(mock_service)
+    end
+
+    it 'keeps the conversation with the AI and records a review recommendation' do
+      described_class.perform_now(inbox)
+
+      expect(resolvable_pending_conversation.reload.status).to eq('pending')
+      state = resolvable_pending_conversation.captain_conversation_state
+      expect(state.ai_mode).to eq('auto')
+      expect(state.score_payload).to include(
+        'review_recommended' => true,
+        'automatic_handoff' => false
+      )
+      expect(resolvable_pending_conversation.messages.where(private: true).last.content)
+        .to eq('Revisão recomendada: Customer clarification pending')
+    end
+  end
+
   context 'when handoff occurs outside business hours' do
     let(:handoff_reason) { 'Customer has not responded to clarifying question' }
 
     before do
+      inbox.captain_inbox.update!(routing_config: { 'auto_handoff_on_pending_timeout' => true })
       allow(inbox.account).to receive(:feature_enabled?).and_call_original
       allow(inbox.account).to receive(:feature_enabled?).with('captain_tasks').and_return(true)
       mock_service = instance_double(Captain::ConversationCompletionService)

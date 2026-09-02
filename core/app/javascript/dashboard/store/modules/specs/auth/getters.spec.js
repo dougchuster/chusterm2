@@ -1,4 +1,4 @@
-﻿import { getters } from '../../auth';
+import { getters } from '../../auth';
 
 describe('#getters', () => {
   describe('#isLoggedIn', () => {

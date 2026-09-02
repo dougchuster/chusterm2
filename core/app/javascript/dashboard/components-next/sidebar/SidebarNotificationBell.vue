@@ -26,13 +26,15 @@ function openNotificationPanel() {
 
 <template>
   <button
-    class="size-8 rounded-lg hover:bg-n-alpha-1 flex-shrink-0 grid place-content-center relative"
+    type="button"
+    class="relative grid size-10 flex-shrink-0 place-content-center rounded-xl text-ds-shell-muted transition-colors hover:bg-ds-shell-hover hover:text-ds-shell-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-shell-focus"
+    :aria-label="$t('SIDEBAR.NOTIFICATIONS')"
     @click="openNotificationPanel"
   >
-    <span class="i-lucide-bell size-4" />
+    <span class="i-lucide-bell size-4" aria-hidden="true" />
     <span
       v-if="unreadCount"
-      class="min-h-2 min-w-2 p-0.5 px-1 bg-n-ruby-9 rounded-lg absolute -top-1 -right-1.5 grid place-items-center text-[9px] leading-none text-n-ruby-3"
+      class="absolute -right-1 -top-1 grid min-h-4 min-w-4 place-items-center rounded-full bg-ds-shell-danger px-1 text-[9px] font-semibold leading-none text-white"
     >
       {{ unreadCount }}
     </span>

@@ -46,6 +46,7 @@ const handleContactAction = ({ action }) => {
   <div v-on-clickaway="() => (showActionsDropdown = false)" class="relative">
     <Button
       icon="i-lucide-ellipsis-vertical"
+      :aria-label="t('CONTACTS_LAYOUT.HEADER.ACTIONS.MORE_ACTIONS')"
       color="slate"
       variant="ghost"
       size="sm"

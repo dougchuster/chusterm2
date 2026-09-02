@@ -11,7 +11,8 @@ import CRMContactSummary from 'dashboard/components-next/Contacts/CRMContactSumm
 import ContactLabels from 'dashboard/components-next/Contacts/ContactLabels/ContactLabels.vue';
 
 const props = defineProps({
-  conversationId: { type: [Number, String], required: true },
+  conversationDatabaseId: { type: [Number, String], default: null },
+  conversationDisplayId: { type: [Number, String], required: true },
   contact: { type: Object, default: () => ({}) },
 });
 
@@ -45,11 +46,10 @@ const agentList = useMapGetter('agents/getVerifiedAgents');
 const currentChat = useMapGetter('getSelectedChat');
 
 const urgencyColors = {
-  critica: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
-  alta: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
-  media:
-    'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
-  baixa: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+  critica: 'bg-ds-state-danger-soft text-ds-state-danger',
+  alta: 'bg-ds-state-warning-soft text-ds-state-warning',
+  media: 'bg-ds-state-warning-soft text-ds-state-warning',
+  baixa: 'bg-ds-state-success-soft text-ds-state-success',
 };
 
 const urgencyLabels = {
@@ -95,13 +95,13 @@ const temperatureLabels = {
 
 const temperatureClasses = {
   prioridade_alta:
-    'bg-red-100 text-red-700 ring-red-200 dark:bg-red-900/30 dark:text-red-300 dark:ring-red-900',
+    'bg-ds-state-danger-soft text-ds-state-danger ring-ds-state-danger/25',
   qualificado:
-    'bg-orange-100 text-orange-700 ring-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:ring-orange-900',
+    'bg-ds-state-warning-soft text-ds-state-warning ring-ds-state-warning/25',
   medio_potencial:
-    'bg-yellow-100 text-yellow-700 ring-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:ring-yellow-900',
+    'bg-ds-state-warning-soft text-ds-state-warning ring-ds-state-warning/25',
   baixo_potencial:
-    'bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700',
+    'bg-ds-bg-sunken text-ds-fg-muted ring-ds-border-subtle',
 };
 
 const lifecycleLabels = {
@@ -138,12 +138,12 @@ async function loadPendingActivities() {
 }
 
 async function loadDeal() {
-  if (!props.conversationId) return;
+  if (!props.conversationDatabaseId) return;
   loading.value = true;
   error.value = null;
   try {
     const { data } = await CrmAPI.getDeals({
-      conversation_id: props.conversationId,
+      conversation_id: props.conversationDatabaseId,
       per_page: 1,
     });
     const list = Array.isArray(data) ? data : data?.data || [];
@@ -157,10 +157,13 @@ async function loadDeal() {
 }
 
 async function runTriage() {
+  if (!props.conversationDatabaseId) return;
   triageLoading.value = true;
   error.value = null;
   try {
-    const { data } = await CrmAPI.triageFromConversation(props.conversationId);
+    const { data } = await CrmAPI.triageFromConversation(
+      props.conversationDatabaseId
+    );
     deal.value = data;
     window.setTimeout(loadDeal, 400);
   } catch (e) {
@@ -171,7 +174,7 @@ async function runTriage() {
 }
 
 async function createDealFromConversation() {
-  if (!props.conversationId || !props.contact?.id) return;
+  if (!props.conversationDatabaseId || !props.contact?.id) return;
 
   createDealLoading.value = true;
   error.value = null;
@@ -179,7 +182,7 @@ async function createDealFromConversation() {
     const { data } = await CrmAPI.createDeal({
       title: props.contact?.name || `Contato ${props.contact.id}`,
       contact_id: props.contact.id,
-      conversation_id: props.conversationId,
+      conversation_id: props.conversationDatabaseId,
       inbox_id: currentChat.value?.inbox_id,
       owner_id: selectedOwnerId.value ? Number(selectedOwnerId.value) : null,
       assignee_id: selectedAssigneeId.value
@@ -262,7 +265,7 @@ async function updateOwner() {
 }
 
 async function updateConversationAssignee() {
-  if (!props.conversationId) return;
+  if (!props.conversationDisplayId) return;
 
   assigneeUpdating.value = true;
   try {
@@ -270,7 +273,7 @@ async function updateConversationAssignee() {
       ? Number(selectedAssigneeId.value)
       : null;
     await store.dispatch('assignAgent', {
-      conversationId: props.conversationId,
+      conversationId: props.conversationDisplayId,
       agentId: assigneeId,
     });
     if (deal.value?.id) {
@@ -293,7 +296,7 @@ async function createQuickActivity() {
     const payload = {
       crm_deal_id: deal.value?.id,
       contact_id: props.contact?.id,
-      conversation_id: props.conversationId,
+      conversation_id: props.conversationDatabaseId,
       owner_id: selectedOwnerId.value ? Number(selectedOwnerId.value) : null,
       assignee_id: selectedAssigneeId.value
         ? Number(selectedAssigneeId.value)
@@ -320,10 +323,10 @@ async function createQuickActivity() {
 
 const scoreColor = computed(() => {
   const s = deal.value?.score_total || 0;
-  if (s >= 80) return 'text-red-500';
-  if (s >= 60) return 'text-green-500';
-  if (s >= 40) return 'text-yellow-500';
-  return 'text-gray-400';
+  if (s >= 80) return 'text-ds-state-danger';
+  if (s >= 60) return 'text-ds-state-success';
+  if (s >= 40) return 'text-ds-state-warning';
+  return 'text-ds-fg-subtle';
 });
 
 const crmDealUrl = computed(() => {
@@ -369,7 +372,7 @@ const leadTemperature = computed(() => {
     label: temperatureLabels[classification] || classification,
     className:
       temperatureClasses[classification] ||
-      'bg-n-alpha-2 text-n-slate-11 ring-n-weak',
+      'bg-ds-bg-sunken text-ds-fg-muted ring-ds-border-subtle',
   };
 });
 
@@ -393,7 +396,7 @@ watch(
   { immediate: true }
 );
 
-watch(() => props.conversationId, loadDeal, { immediate: true });
+watch(() => props.conversationDatabaseId, loadDeal, { immediate: true });
 
 onMounted(() => {
   if (!agentList.value?.length) {
@@ -403,19 +406,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <div
-    class="crm-sidebar-card rounded-lg border border-n-weak bg-n-slate-1 p-3"
-  >
-    <div class="mb-2 flex items-center justify-between">
-      <h3
-        class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"
-      >
-        CRM jurídico
-      </h3>
+  <div class="crm-sidebar-card space-y-3 p-3 text-ds-fg-default">
+    <div v-if="!deal" class="flex items-center justify-end">
       <button
-        v-if="!deal"
+        type="button"
         :disabled="triageLoading"
-        class="inline-flex h-7 items-center gap-1.5 rounded-lg border border-woot-500 px-2.5 text-xs font-medium text-woot-500 transition hover:bg-woot-50 disabled:opacity-50 dark:hover:bg-woot-900/20"
+        class="inline-flex min-h-8 items-center gap-1.5 rounded-lg bg-ds-accent-soft px-2.5 text-xs font-semibold text-ds-accent transition-colors hover:bg-ds-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus disabled:cursor-not-allowed disabled:opacity-50"
         @click="runTriage"
       >
         <span class="i-lucide-search size-3" />
@@ -424,10 +420,10 @@ onMounted(() => {
     </div>
 
     <div
-      class="mb-3 rounded border border-n-weak bg-white p-2 text-xs dark:bg-slate-800"
+      class="rounded-xl bg-ds-bg-sunken p-3 text-xs ring-1 ring-inset ring-ds-border-subtle"
     >
       <div
-        class="mb-2 text-[10px] font-semibold uppercase tracking-wide text-gray-400"
+        class="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-ds-fg-subtle"
       >
         Relacionamento
       </div>
@@ -441,17 +437,17 @@ onMounted(() => {
       <div class="mt-3 grid grid-cols-1 gap-2">
         <div>
           <div
-            class="text-[10px] font-semibold uppercase tracking-wide text-gray-400"
+            class="text-[10px] font-semibold uppercase tracking-[0.14em] text-ds-fg-subtle"
           >
             Etapa
           </div>
-          <div class="font-semibold text-gray-800 dark:text-gray-100">
+          <div class="font-semibold text-ds-fg-default">
             {{ lifecycleLabel }}
           </div>
         </div>
         <div>
           <div
-            class="text-[10px] font-semibold uppercase tracking-wide text-gray-400"
+            class="text-[10px] font-semibold uppercase tracking-[0.14em] text-ds-fg-subtle"
           >
             Responsável pelo contato
           </div>
@@ -459,8 +455,8 @@ onMounted(() => {
             class="font-semibold"
             :class="
               contact?.crm_owner
-                ? 'text-gray-800 dark:text-gray-100'
-                : 'text-red-500'
+                ? 'text-ds-fg-default'
+                : 'text-ds-state-danger'
             "
           >
             {{ ownerName }}
@@ -468,7 +464,8 @@ onMounted(() => {
           <div class="mt-1 flex gap-1">
             <select
               v-model="selectedOwnerId"
-              class="h-7 min-w-0 flex-1 rounded border border-n-weak bg-white px-1.5 text-xs outline-none dark:bg-slate-800"
+              aria-label="Responsável pelo contato"
+              class="h-8 min-w-0 flex-1 rounded-lg border-0 bg-ds-bg-surface px-2 text-xs text-ds-fg-default ring-1 ring-inset ring-ds-border-default focus:outline-none focus:ring-2 focus:ring-ds-border-focus"
               :disabled="ownerUpdating"
             >
               <option value="">Sem responsável</option>
@@ -482,7 +479,7 @@ onMounted(() => {
             </select>
             <button
               type="button"
-              class="h-7 rounded border border-woot-500 px-2 text-xs font-medium text-woot-500 hover:bg-woot-50 disabled:opacity-50 dark:hover:bg-woot-900/20"
+              class="h-8 rounded-lg bg-ds-accent-soft px-2 text-xs font-semibold text-ds-accent transition-colors hover:bg-ds-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus disabled:cursor-not-allowed disabled:opacity-50"
               :disabled="ownerUpdating"
               @click="updateOwner"
             >
@@ -492,7 +489,7 @@ onMounted(() => {
         </div>
         <div>
           <div
-            class="text-[10px] font-semibold uppercase tracking-wide text-gray-400"
+            class="text-[10px] font-semibold uppercase tracking-[0.14em] text-ds-fg-subtle"
           >
             Responder por
           </div>
@@ -500,8 +497,8 @@ onMounted(() => {
             class="font-semibold"
             :class="
               currentChat?.meta?.assignee
-                ? 'text-gray-800 dark:text-gray-100'
-                : 'text-amber-500'
+                ? 'text-ds-fg-default'
+                : 'text-ds-state-warning'
             "
           >
             {{ currentAssigneeName }}
@@ -509,7 +506,8 @@ onMounted(() => {
           <div class="mt-1 flex gap-1">
             <select
               v-model="selectedAssigneeId"
-              class="h-7 min-w-0 flex-1 rounded border border-n-weak bg-white px-1.5 text-xs outline-none dark:bg-slate-800"
+              aria-label="Atendente da conversa"
+              class="h-8 min-w-0 flex-1 rounded-lg border-0 bg-ds-bg-surface px-2 text-xs text-ds-fg-default ring-1 ring-inset ring-ds-border-default focus:outline-none focus:ring-2 focus:ring-ds-border-focus"
               :disabled="assigneeUpdating"
             >
               <option value="">Sem atendente</option>
@@ -523,7 +521,7 @@ onMounted(() => {
             </select>
             <button
               type="button"
-              class="h-7 rounded border border-woot-500 px-2 text-xs font-medium text-woot-500 hover:bg-woot-50 disabled:opacity-50 dark:hover:bg-woot-900/20"
+              class="h-8 rounded-lg bg-ds-accent-soft px-2 text-xs font-semibold text-ds-accent transition-colors hover:bg-ds-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus disabled:cursor-not-allowed disabled:opacity-50"
               :disabled="assigneeUpdating"
               @click="updateConversationAssignee"
             >
@@ -536,29 +534,34 @@ onMounted(() => {
 
     <div
       v-if="contact?.id"
-      class="mb-3 rounded border border-n-weak bg-white p-2 text-xs dark:bg-slate-800"
+      class="rounded-xl bg-ds-bg-sunken p-3 text-xs ring-1 ring-inset ring-ds-border-subtle"
     >
       <div
-        class="mb-2 text-[10px] font-semibold uppercase tracking-wide text-gray-400"
+        class="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-ds-fg-subtle"
       >
         Etiquetas do contato
       </div>
       <ContactLabels :contact-id="contact.id" />
     </div>
 
-    <div v-if="loading" class="text-xs text-gray-400">Carregando...</div>
+    <div v-if="loading" class="text-xs text-ds-fg-subtle">Carregando...</div>
     <div
       v-else-if="error"
-      class="rounded bg-red-50 p-2 text-xs text-red-500 dark:bg-red-900/20"
+      class="rounded-lg bg-ds-state-danger-soft p-2 text-xs text-ds-state-danger"
+      role="alert"
     >
       {{ error }}
     </div>
-    <div v-else-if="!deal" class="py-2 text-center text-xs text-gray-400">
+    <div
+      v-else-if="!deal"
+      class="rounded-xl bg-ds-bg-sunken px-3 py-4 text-center text-xs text-ds-fg-subtle"
+    >
       <span class="i-lucide-file-search mx-auto mb-1 block size-5 opacity-40" />
       Nenhuma oportunidade vinculada.
       <div class="mt-2 flex justify-center gap-1">
         <button
-          class="rounded bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-200 disabled:opacity-50 dark:bg-slate-700 dark:text-gray-100 dark:hover:bg-slate-600"
+          type="button"
+          class="min-h-8 rounded-lg bg-ds-accent-soft px-3 py-1 text-xs font-semibold text-ds-accent transition-colors hover:bg-ds-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus disabled:cursor-not-allowed disabled:opacity-50"
           :disabled="createDealLoading"
           @click="createDealFromConversation"
         >
@@ -567,10 +570,10 @@ onMounted(() => {
       </div>
     </div>
 
-    <div v-else class="space-y-2">
+    <div v-else class="space-y-3">
       <div class="flex items-center justify-between gap-2">
         <span
-          class="max-w-[160px] truncate text-xs font-medium"
+          class="max-w-[160px] truncate text-xs font-semibold text-ds-fg-default"
           :title="deal.title"
         >
           {{ deal.title }}
@@ -586,7 +589,7 @@ onMounted(() => {
         </span>
       </div>
 
-      <div class="flex items-center gap-2 text-xs text-gray-500">
+      <div class="flex items-center gap-2 text-xs text-ds-fg-muted">
         <span class="font-bold" :class="[scoreColor]">
           {{ deal.score_total || 0 }}pts
         </span>
@@ -605,27 +608,28 @@ onMounted(() => {
           v-if="deal.urgency_level"
           class="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium capitalize"
           :class="
-            urgencyColors[deal.urgency_level] || 'bg-gray-100 text-gray-600'
+            urgencyColors[deal.urgency_level] ||
+            'bg-ds-bg-sunken text-ds-fg-muted'
           "
         >
           {{ urgencyLabels[deal.urgency_level] || deal.urgency_level }}
         </span>
       </div>
 
-      <div v-if="deal.stage" class="text-xs text-gray-500">
+      <div v-if="deal.stage" class="text-xs text-ds-fg-muted">
         Etapa: <span class="font-medium">{{ deal.stage?.name }}</span>
       </div>
 
-      <div class="grid grid-cols-1 gap-1 text-xs text-gray-500">
+      <div class="grid grid-cols-1 gap-1 text-xs text-ds-fg-muted">
         <div>
           Status CRM:
-          <span class="font-medium text-gray-700 dark:text-gray-200">
+          <span class="font-medium text-ds-fg-default">
             {{ operationalStatusLabel }}
           </span>
         </div>
         <div>
           Origem:
-          <span class="font-medium text-gray-700 dark:text-gray-200">
+          <span class="font-medium text-ds-fg-default">
             {{ sourceLabel }}
           </span>
           <span v-if="deal.source_detail"> - {{ deal.source_detail }}</span>
@@ -634,12 +638,10 @@ onMounted(() => {
 
       <div
         v-if="deal.next_best_action"
-        class="rounded bg-blue-50 p-1.5 text-xs dark:bg-slate-700"
+        class="rounded-lg bg-ds-state-info-soft p-2 text-xs text-ds-state-info"
       >
-        <span class="i-lucide-lightbulb mr-1 inline size-3 text-blue-400" />
-        <span class="text-blue-600 dark:text-blue-300">
-          {{ deal.next_best_action }}
-        </span>
+        <span class="i-lucide-lightbulb mr-1 inline size-3" />
+        <span>{{ deal.next_best_action }}</span>
       </div>
 
       <CRMScoreAudit
@@ -650,32 +652,32 @@ onMounted(() => {
 
       <div
         v-if="pendingActivities.length > 0"
-        class="rounded border border-n-weak p-1.5"
+        class="rounded-xl bg-ds-bg-sunken p-2.5 ring-1 ring-inset ring-ds-border-subtle"
       >
         <div
-          class="mb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-400"
+          class="mb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ds-fg-subtle"
         >
           Atividades pendentes
         </div>
         <div
           v-for="act in pendingActivities"
           :key="act.id"
-          class="flex items-center gap-1.5 py-0.5 text-xs text-gray-600 dark:text-gray-300"
+          class="flex items-center gap-1.5 py-0.5 text-xs text-ds-fg-muted"
         >
           <span
             class="inline-block size-1.5 rounded-full"
             :class="
               act.kind === 'ligacao'
-                ? 'bg-blue-400'
+                ? 'bg-ds-state-info'
                 : act.kind === 'reuniao'
-                  ? 'bg-purple-400'
-                  : 'bg-gray-400'
+                  ? 'bg-ds-accent-secondary'
+                  : 'bg-ds-fg-subtle'
             "
           />
           <span class="truncate">{{ act.title }}</span>
           <span
             v-if="act.due_at"
-            class="ml-auto shrink-0 text-[10px] text-gray-400"
+            class="ml-auto shrink-0 text-[10px] text-ds-fg-subtle"
           >
             {{
               new Date(act.due_at).toLocaleDateString('pt-BR', {
@@ -687,21 +689,24 @@ onMounted(() => {
         </div>
       </div>
 
-      <div class="rounded border border-n-weak p-2">
+      <div
+        class="rounded-xl bg-ds-bg-sunken p-3 ring-1 ring-inset ring-ds-border-subtle"
+      >
         <div
-          class="mb-2 text-[10px] font-semibold uppercase tracking-wide text-gray-400"
+          class="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-ds-fg-subtle"
         >
           Próxima ação
         </div>
         <input
           v-model="quickActivity.title"
-          class="mb-1 h-8 w-full rounded border border-n-weak bg-white px-2 text-xs outline-none dark:bg-slate-800"
+          class="mb-1 h-8 w-full rounded-lg border-0 bg-ds-bg-surface px-2 text-xs text-ds-fg-default ring-1 ring-inset ring-ds-border-default placeholder:text-ds-fg-disabled focus:outline-none focus:ring-2 focus:ring-ds-border-focus"
           placeholder="Ex: ligar para confirmar documentos"
         />
         <div class="grid grid-cols-2 gap-1">
           <select
             v-model="quickActivity.kind"
-            class="h-8 rounded border border-n-weak bg-white px-2 text-xs outline-none dark:bg-slate-800"
+            aria-label="Tipo da próxima ação"
+            class="h-8 min-w-0 rounded-lg border-0 bg-ds-bg-surface px-2 text-xs text-ds-fg-default ring-1 ring-inset ring-ds-border-default focus:outline-none focus:ring-2 focus:ring-ds-border-focus"
           >
             <option value="follow_up">Follow-up</option>
             <option value="ligação">Ligação</option>
@@ -711,7 +716,8 @@ onMounted(() => {
           </select>
           <select
             v-model="quickActivity.priority"
-            class="h-8 rounded border border-n-weak bg-white px-2 text-xs outline-none dark:bg-slate-800"
+            aria-label="Prioridade da próxima ação"
+            class="h-8 min-w-0 rounded-lg border-0 bg-ds-bg-surface px-2 text-xs text-ds-fg-default ring-1 ring-inset ring-ds-border-default focus:outline-none focus:ring-2 focus:ring-ds-border-focus"
           >
             <option value="normal">Normal</option>
             <option value="alta">Alta</option>
@@ -722,11 +728,12 @@ onMounted(() => {
         <input
           v-model="quickActivity.due_at"
           type="datetime-local"
-          class="mt-1 h-8 w-full rounded border border-n-weak bg-white px-2 text-xs outline-none dark:bg-slate-800"
+          aria-label="Data e hora da próxima ação"
+          class="mt-1 h-8 w-full rounded-lg border-0 bg-ds-bg-surface px-2 text-xs text-ds-fg-default ring-1 ring-inset ring-ds-border-default focus:outline-none focus:ring-2 focus:ring-ds-border-focus"
         />
         <button
           type="button"
-          class="mt-2 h-8 w-full rounded bg-woot-500 px-2 text-xs font-semibold text-white hover:bg-woot-600 disabled:opacity-50"
+          class="mt-2 h-8 w-full rounded-lg bg-ds-accent px-2 text-xs font-semibold text-ds-fg-on-accent transition-colors hover:bg-ds-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus disabled:cursor-not-allowed disabled:opacity-50"
           :disabled="activitySaving || !quickActivity.title.trim()"
           @click="createQuickActivity"
         >
@@ -738,18 +745,20 @@ onMounted(() => {
         <a
           v-if="crmDealUrl"
           :href="crmDealUrl"
-          class="rounded bg-gray-100 px-2 py-0.5 text-xs hover:bg-gray-200 dark:bg-slate-700 dark:hover:bg-slate-600"
+          class="inline-flex min-h-8 items-center rounded-lg bg-ds-bg-sunken px-2.5 text-xs font-medium text-ds-fg-default no-underline transition-colors hover:bg-ds-bg-hover hover:text-ds-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
         >
           Abrir no CRM
         </a>
         <button
-          class="rounded bg-gray-100 px-2 py-0.5 text-xs hover:bg-gray-200 dark:bg-slate-700 dark:hover:bg-slate-600"
+          type="button"
+          class="min-h-8 rounded-lg bg-ds-bg-sunken px-2.5 text-xs font-medium text-ds-fg-default transition-colors hover:bg-ds-bg-hover hover:text-ds-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
           @click="drawerOpen = true"
         >
           Editar
         </button>
         <button
-          class="rounded bg-gray-100 px-2 py-0.5 text-xs hover:bg-gray-200 disabled:opacity-50 dark:bg-slate-700 dark:hover:bg-slate-600"
+          type="button"
+          class="min-h-8 rounded-lg bg-ds-bg-sunken px-2.5 text-xs font-medium text-ds-fg-default transition-colors hover:bg-ds-bg-hover hover:text-ds-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus disabled:cursor-not-allowed disabled:opacity-50"
           :disabled="scoreLoading"
           @click="recalcScore"
         >

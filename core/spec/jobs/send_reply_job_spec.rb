@@ -77,6 +77,7 @@ RSpec.describe SendReplyJob do
     end
 
     it 'does not send messages imported from external history' do
+      stub_request(:post, 'https://waba.360dialog.io/v1/configs/webhook')
       whatsapp_channel = create(:channel_whatsapp, sync_templates: false)
       message = create(
         :message,

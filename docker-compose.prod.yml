@@ -1,8 +1,10 @@
 # Docker Compose — ChusteRM Produção
-# VPS: ssh root@187.77.255.211
 # Domínio: crm.coimbraeruas.com.br
+# Acesso ao VPS: ver gerenciador de senhas do time (nunca documentar aqui — SEC-06)
 #
 # Uso: docker compose -f docker-compose.prod.yml up -d --build
+# Migrations: docker compose -f docker-compose.prod.yml run --rm migrate
+#   (o deploy.sh já faz isso antes do up — BUG-10)
 #
 # Diferenças do compose de dev:
 #   - Sem mailhog, sem core-vite (hot-reload)
@@ -11,12 +13,20 @@
 #   - Core e Evolution API acessíveis apenas via 127.0.0.1 (Nginx faz proxy)
 #   - Rede isolada chusterm_network (coexiste com outros sistemas no VPS)
 
+# PERF-08: rotação de logs em todos os serviços (json-file cresce sem limite)
+x-default-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "50m"
+    max-file: "3"
+
 services:
 
   # ─── PostgreSQL ──────────────────────────────────────────────────────────────
   postgres:
     image: pgvector/pgvector:pg15
     restart: unless-stopped
+    logging: *default-logging
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-chusterm}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -37,6 +47,7 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
+    logging: *default-logging
     command: redis-server --requirepass ${REDIS_PASSWORD} --loglevel warning
     volumes:
       - redis-data:/data
@@ -48,29 +59,9 @@ services:
       timeout: 5s
       retries: 5
 
-  # ─── CRM Service ─────────────────────────────────────────────────────────────
-  crm-service:
-    build:
-      context: ./services/crm-service
-      dockerfile: Dockerfile
-      target: production
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    env_file:
-      - .env
-    networks:
-      - chusterm_network
-    command: sh -c "node dist/server.js"
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4000/health || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+  # ARQ-02: crm-service aposentado — o CRM real vive no Rails (tabelas crm_*);
+  # o proxy CrmController#proxy não tinha rota e foi removido. O database
+  # chusterm_crm permanece no volume do Postgres para consulta histórica.
 
   # ─── Agent Orchestrator ──────────────────────────────────────────────────────
   orchestrator:
@@ -79,6 +70,7 @@ services:
       dockerfile: Dockerfile
       target: production
     restart: unless-stopped
+    logging: *default-logging
     depends_on:
       postgres:
         condition: service_healthy
@@ -95,28 +87,13 @@ services:
       retries: 5
       start_period: 30s
 
-  # ─── Identity Bridge ─────────────────────────────────────────────────────────
-  identity-bridge:
-    build:
-      context: ./services/identity-bridge
-      dockerfile: Dockerfile
-      target: production
-    restart: unless-stopped
-    env_file:
-      - .env
-    networks:
-      - chusterm_network
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4002/health || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
+  # ARQ-03: identity-bridge aposentado — nenhum consumidor no core.
 
   # ─── Evolution API (WhatsApp) ─────────────────────────────────────────────────
   evolution-api:
     image: evoapicloud/evolution-api:v2.3.0
     restart: unless-stopped
+    logging: *default-logging
     entrypoint: ["/bin/bash", "/startup/evolution-patch-start.sh"]
     depends_on:
       postgres:
@@ -142,7 +119,7 @@ services:
       - CACHE_REDIS_PREFIX_KEY=evolution
       - CACHE_LOCAL_ENABLED=false
       - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY}
-      - AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES=true
+      - AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES=false
       - LOG_LEVEL=${EVOLUTION_LOG_LEVEL:-WARN}
       - DEL_INSTANCE=false
       - WEBHOOK_GLOBAL_ENABLED=false
@@ -164,25 +141,47 @@ services:
       retries: 5
       start_period: 20s
 
-  # ─── ChusteRM Core (Rails) ───────────────────────────────────────────────────
-  core:
+  # ─── Migrations (one-shot, BUG-10) ───────────────────────────────────────────
+  # Roda db:migrate antes do core subir. Ativado só no deploy:
+  #   docker compose -f docker-compose.prod.yml run --rm migrate
+  migrate:
     build:
       context: ./core
       dockerfile: Dockerfile
-    restart: unless-stopped
+    profiles: ["deploy"]
+    restart: "no"
+    logging: *default-logging
     depends_on:
       postgres:
         condition: service_healthy
       redis:
-        condition: service_healthy
-      crm-service:
         condition: service_healthy
     env_file:
       - .env
     environment:
       - RAILS_ENV=production
       - NODE_ENV=production
-      - CRM_SERVICE_INTERNAL_URL=http://crm-service:4000
+    command: bundle exec rails db:migrate
+    networks:
+      - chusterm_network
+
+  # ─── ChusteRM Core (Rails) ───────────────────────────────────────────────────
+  core:
+    build:
+      context: ./core
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    logging: *default-logging
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - RAILS_ENV=production
+      - NODE_ENV=production
       - EVOLUTION_API_URL=http://evolution-api:8080
       - RACK_TIMEOUT_SERVICE_TIMEOUT=60
     ports:
@@ -191,7 +190,6 @@ services:
       - core-storage:/app/storage
     command: >
       sh -c "rm -f /app/tmp/pids/server.pid &&
-             bundle exec rails db:migrate &&
              bundle exec rails s -b 0.0.0.0 -p 3000"
     networks:
       - chusterm_network
@@ -208,6 +206,7 @@ services:
       context: ./core
       dockerfile: Dockerfile
     restart: unless-stopped
+    logging: *default-logging
     depends_on:
       postgres:
         condition: service_healthy
@@ -226,7 +225,9 @@ services:
     networks:
       - chusterm_network
     healthcheck:
-      test: ["CMD-SHELL", "bundle exec sidekiqmon status 2>/dev/null || exit 0"]
+      # BUG-09: sem "|| exit 0" (mascarava qualquer falha). Verifica o processo
+      # sidekiq real via /proc (a imagem não tem ps/pgrep).
+      test: ["CMD-SHELL", "grep -l sidekiq /proc/[0-9]*/cmdline >/dev/null 2>&1"]
       interval: 30s
       timeout: 10s
       retries: 3

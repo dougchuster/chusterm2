@@ -29,7 +29,7 @@ const updateSignature = () => {
     <WootMessageEditor
       id="message-signature-input"
       v-model="signature"
-      class="message-editor h-[10rem] !px-3"
+      class="mb-0 h-[10rem] rounded-lg bg-ds-bg-sunken !px-3 py-0 ring-1 ring-ds-border transition-shadow hover:ring-ds-border-strong"
       is-format-mode
       :placeholder="$t('PROFILE_SETTINGS.FORM.MESSAGE_SIGNATURE.PLACEHOLDER')"
       channel-type="Context::MessageSignature"

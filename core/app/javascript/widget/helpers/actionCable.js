@@ -1,4 +1,4 @@
-﻿import BaseActionCableConnector from '../../shared/helpers/BaseActionCableConnector';
+import BaseActionCableConnector from '../../shared/helpers/BaseActionCableConnector';
 import { playNewMessageNotificationInWidget } from 'widget/helpers/WidgetAudioNotificationHelper';
 import { ON_AGENT_MESSAGE_RECEIVED } from '../constants/widgetBusEvents';
 import { IFrameHelper } from 'widget/helpers/utils';

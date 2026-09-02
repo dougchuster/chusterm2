@@ -1,0 +1,14 @@
+{
+  "ignored_warnings": [
+    {
+      "fingerprint": "7b16e95ac2c09df2b20e6760373f11505a40a7f8d1875ab61a2997e7803fe06c",
+      "note": "Reviewed 2026-07-10. Filter values use Active Record bind parameters, standard attributes/operators come from lib/filters/filter_keys.yml, custom attributes are validated by account, and query_operator is restricted to AND/OR by Filters::FilterHelper#validate_single_condition. Brakeman cannot infer these guards across helper methods. Re-review if the filter builder or validation flow changes."
+    },
+    {
+      "fingerprint": "98b26f60d776fd41ee6f088c833725145be9aac2d7c5b33780241c273622db42",
+      "note": "Temporary acceptance recorded 2026-07-10. Rails 7.2.3.1 is the newest compatible stabilization target for F0 and has no known CVE in bundler-audit. Upgrade to a supported Rails branch is mandatory before 2026-08-09; tracked in docs/execution/F0-RUBY-SECURITY-BASELINE.md."
+    }
+  ],
+  "updated": "2026-07-10 00:00:00 -0300",
+  "brakeman_version": "8.0.5"
+}

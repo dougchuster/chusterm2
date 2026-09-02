@@ -45,8 +45,14 @@ Rails.application.configure do
   config.action_mailer.delivery_method = :test
   config.active_job.queue_adapter = :test
 
-  # Print deprecation notices to the stderr.
-  config.active_support.deprecation = :stderr
+  # The existing backend specs assert canonical English validation messages.
+  # Production remains pt_BR; keeping tests deterministic prevents the host or
+  # product locale from changing model/API expectations.
+  config.i18n.default_locale = :en
+
+  # Print deprecation notices by default. Large local validation runs can opt
+  # into silence after the warnings have been recorded in the upgrade backlog.
+  config.active_support.deprecation = ENV.fetch('RAILS_DEPRECATION_BEHAVIOR', 'stderr').to_sym
 
   # Raises error for missing translations.
   # config.action_view.raise_on_missing_translations = true

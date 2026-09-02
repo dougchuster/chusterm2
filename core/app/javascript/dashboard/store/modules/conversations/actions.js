@@ -18,6 +18,8 @@ import {
   handleVoiceCallUpdated,
 } from 'dashboard/helper/voice';
 
+let latestConversationListRequestId = 0;
+
 export const hasMessageFailedWithExternalError = pendingMessage => {
   // This helper is used to check if the message has failed with an external error.
   // We have two cases
@@ -43,40 +45,76 @@ const actions = {
   },
 
   fetchAllConversations: async ({ commit, state, dispatch }) => {
+    latestConversationListRequestId += 1;
+    const requestId = latestConversationListRequestId;
     commit(types.SET_LIST_LOADING_STATUS);
     try {
       const params = state.conversationFilters;
+      const hasSearchQuery = Boolean(params.q?.trim());
       const {
         data: { data },
       } = await ConversationApi.get(params);
+
+      if (requestId !== latestConversationListRequestId) return null;
+
+      if (hasSearchQuery) {
+        commit(types.SET_CONVERSATION_SEARCH_RESULT_IDS, {
+          conversationIds: data.payload.map(conversation => conversation.id),
+          append: Number(params.page) > 1,
+        });
+      } else {
+        commit(types.CLEAR_CONVERSATION_SEARCH_RESULT_IDS);
+      }
+
       buildConversationList(
         { commit, dispatch },
         params,
         data,
         params.assigneeType
       );
+      return true;
     } catch (error) {
-      // Handle error
+      if (requestId !== latestConversationListRequestId) return null;
+
+      commit(types.CLEAR_LIST_LOADING_STATUS);
+      return false;
     }
   },
 
   fetchFilteredConversations: async ({ commit, dispatch }, params) => {
+    latestConversationListRequestId += 1;
+    const requestId = latestConversationListRequestId;
     commit(types.SET_LIST_LOADING_STATUS);
     try {
       const { data } = await ConversationApi.filter(params);
+      if (requestId !== latestConversationListRequestId) return null;
+
+      if (params.q) {
+        commit(types.SET_CONVERSATION_SEARCH_RESULT_IDS, {
+          conversationIds: data.payload.map(conversation => conversation.id),
+          append: Number(params.page) > 1,
+        });
+      } else {
+        commit(types.CLEAR_CONVERSATION_SEARCH_RESULT_IDS);
+      }
+
       buildConversationList(
         { commit, dispatch },
         params,
         data,
         'appliedFilters'
       );
+      return true;
     } catch (error) {
-      // Handle error
+      if (requestId !== latestConversationListRequestId) return null;
+
+      commit(types.CLEAR_LIST_LOADING_STATUS);
+      return false;
     }
   },
 
-  emptyAllConversations({ commit }) {
-    commit(types.EMPTY_ALL_CONVERSATION);
+  emptyAllConversations({ commit }, options) {
+    commit(types.EMPTY_ALL_CONVERSATION, options);
   },
 
   clearSelectedState({ commit }) {
@@ -195,8 +233,8 @@ const actions = {
     commit(types.CLEAR_ALL_MESSAGES_LOADED, data.id);
     const messages = data.messages || [];
     const shouldFetchMessages =
-      data.dataFetched === undefined ||
-      (messages.length <= 1 && data.allMessagesLoaded !== true);
+      data.dataFetched === undefined &&
+      (messages.length <= 1 || data.allMessagesLoaded !== true);
 
     if (shouldFetchMessages) {
       try {

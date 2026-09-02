@@ -1,7 +1,6 @@
 <script>
 import { mapGetters } from 'vuex';
 import { useUISettings } from 'dashboard/composables/useUISettings';
-import { useAccount } from 'dashboard/composables/useAccount';
 import ChatList from '../../../components/ChatList.vue';
 import ConversationBox from '../../../components/widgets/conversation/ConversationBox.vue';
 import wootConstants from 'dashboard/constants/globals';
@@ -10,6 +9,8 @@ import CmdBarConversationSnooze from 'dashboard/routes/dashboard/commands/CmdBar
 import { emitter } from 'shared/helpers/mitt';
 import SidepanelSwitch from 'dashboard/components-next/Conversation/SidepanelSwitch.vue';
 import ConversationSidebar from 'dashboard/components/widgets/conversation/ConversationSidebar.vue';
+import { useWindowSize } from '@vueuse/core';
+import { shouldCloseContactSidebarOnConversationOpen } from './conversationPanelHelper';
 
 export default {
   components: {
@@ -55,17 +56,12 @@ export default {
   },
   setup() {
     const { uiSettings, updateUISettings } = useUISettings();
-    const { accountId } = useAccount();
+    const { width: windowWidth } = useWindowSize();
 
     return {
       uiSettings,
       updateUISettings,
-      accountId,
-    };
-  },
-  data() {
-    return {
-      showSearchModal: false,
+      windowWidth,
     };
   },
   computed: {
@@ -98,7 +94,8 @@ export default {
     },
   },
   watch: {
-    conversationId() {
+    conversationId(newConversationId) {
+      this.closePersistedMobileSidebar(newConversationId);
       this.fetchConversationIfUnavailable();
     },
   },
@@ -110,6 +107,8 @@ export default {
     // with conversation view and other screens
     if (!this.conversationId) {
       this.$store.dispatch('clearSelectedState');
+    } else {
+      this.closePersistedMobileSidebar(this.conversationId);
     }
   },
 
@@ -124,6 +123,22 @@ export default {
   },
 
   methods: {
+    closePersistedMobileSidebar(conversationId) {
+      if (
+        !shouldCloseContactSidebarOnConversationOpen({
+          conversationId,
+          isContactSidebarOpen: this.uiSettings.is_contact_sidebar_open,
+          windowWidth: this.windowWidth,
+        })
+      ) {
+        return;
+      }
+
+      this.updateUISettings({
+        is_contact_sidebar_open: false,
+        is_copilot_panel_open: false,
+      });
+    },
     onConversationLoad() {
       this.fetchConversationIfUnavailable();
     },
@@ -184,19 +199,17 @@ export default {
         this.$store.dispatch('clearSelectedState');
       }
     },
-    onSearch() {
-      this.showSearchModal = true;
-    },
-    closeSearch() {
-      this.showSearchModal = false;
-    },
   },
 };
 </script>
 
 <template>
-  <section class="conversation-view-shell flex h-full w-full min-w-0 p-2 md:p-3">
-    <div class="conversation-view-frame flex min-h-0 w-full min-w-0 flex-1 overflow-hidden rounded-lg border border-n-weak bg-n-surface-1 shadow-sm">
+  <section
+    class="conversation-view-shell flex h-full w-full min-w-0 bg-ds-bg-canvas p-1.5 sm:p-2 lg:p-3"
+  >
+    <div
+      class="conversation-view-frame relative isolate flex min-h-0 w-full min-w-0 flex-1 overflow-hidden rounded-xl bg-ds-bg-surface shadow-[var(--ds-shadow-sm)]"
+    >
       <ChatList
         :show-conversation-list="showConversationList"
         :conversation-inbox="inboxId"
@@ -214,7 +227,10 @@ export default {
       >
         <SidepanelSwitch v-if="currentChat.id" />
       </ConversationBox>
-      <ConversationSidebar v-if="shouldShowSidebar" :current-chat="currentChat" />
+      <ConversationSidebar
+        v-if="shouldShowSidebar"
+        :current-chat="currentChat"
+      />
       <CmdBarConversationSnooze />
     </div>
   </section>

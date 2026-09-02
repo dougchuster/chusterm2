@@ -1,4 +1,4 @@
-﻿import Auth from '../api/auth';
+import Auth from '../api/auth';
 
 const parseErrorCode = error => Promise.reject(error);
 

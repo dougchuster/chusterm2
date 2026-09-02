@@ -2,6 +2,8 @@ json.payload do
   json.conversations do
     json.array! @result[:conversations] do |conversation|
       json.id conversation.display_id
+      json.display_id conversation.display_id
+      json.database_id conversation.id
       json.account_id conversation.account_id
       json.created_at conversation.created_at.to_i
       json.message do

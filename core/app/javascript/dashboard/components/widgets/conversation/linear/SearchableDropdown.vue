@@ -50,10 +50,15 @@ const selectedItemId = computed(() => selectedItem.value?.id || null);
     <label class="w-full" :class="{ error: hasError }">
       {{ label }}
       <FilterButton
+        type="button"
+        aria-haspopup="listbox"
+        :aria-expanded="shouldShowDropdown"
+        :aria-invalid="hasError"
+        :aria-describedby="hasError ? `${type}-error` : undefined"
         trailing-icon
         icon="i-lucide-chevron-down"
         :button-text="selectedItemName"
-        class="justify-between w-full h-[2.5rem] py-1.5 px-3 rounded-xl bg-n-alpha-black2 outline outline-1 outline-n-weak dark:outline-n-weak hover:outline-n-slate-6 dark:hover:outline-n-slate-6"
+        class="h-10 w-full justify-between rounded-xl bg-ds-bg-sunken px-3 py-1.5 text-ds-fg-default outline outline-1 outline-ds-border-subtle transition-shadow hover:bg-ds-bg-hover hover:outline-ds-border-strong focus-visible:outline-ds-border-focus focus-visible:ring-2 focus-visible:ring-ds-border-focus/30"
         @click="toggleDropdown"
       >
         <template v-if="shouldShowDropdown" #dropdown>
@@ -64,12 +69,16 @@ const selectedItemId = computed(() => selectedItem.value?.id || null);
             :active-filter-id="selectedItemId"
             :input-placeholder="placeholder"
             enable-search
-            class="left-0 flex flex-col w-full overflow-y-auto h-fit !max-h-[160px] md:left-auto md:right-0 top-10"
+            role="listbox"
+            :aria-label="label"
+            class="left-0 top-10 flex h-fit max-h-[160px] w-full flex-col overflow-y-auto bg-ds-bg-elevated text-ds-fg-default outline-ds-border-subtle md:left-auto md:right-0"
             @select="onSelect"
           />
         </template>
       </FilterButton>
-      <span v-if="hasError" class="mt-1 message">{{ error }}</span>
+      <span v-if="hasError" :id="`${type}-error`" class="message mt-1">
+        {{ error }}
+      </span>
     </label>
   </div>
 </template>

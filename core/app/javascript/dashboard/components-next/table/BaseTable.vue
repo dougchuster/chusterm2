@@ -55,8 +55,9 @@ const columnCount = computed(() => props.headers.length || 1);
                 class="base-table__empty py-16 text-center text-base text-n-slate-11"
               >
                 <div class="base-table__empty-state mx-auto max-w-md">
-                  <span class="base-table__empty-eyebrow">Operational space</span>
-                  <p class="mb-0 mt-4 text-sm leading-7 text-n-slate-11 sm:text-base">
+                  <p
+                    class="mb-0 text-sm leading-7 text-n-slate-11 sm:text-base"
+                  >
                     {{ noDataMessage }}
                   </p>
                 </div>
@@ -90,8 +91,11 @@ const columnCount = computed(() => props.headers.length || 1);
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background:
-    radial-gradient(circle at top right, rgba(var(--shell-glow-primary)) 0%, transparent 28%),
+  background: radial-gradient(
+      circle at top right,
+      rgba(var(--shell-glow-primary)) 0%,
+      transparent 28%
+    ),
     linear-gradient(180deg, rgb(255 255 255 / 0.035), transparent 24%);
 }
 
@@ -142,18 +146,5 @@ const columnCount = computed(() => props.headers.length || 1);
   border-radius: 1.2rem;
   padding: 2rem 1.5rem;
   background: rgb(var(--slate-2) / 0.45);
-}
-
-.base-table__empty-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 9999px;
-  border: 1px solid rgba(var(--shell-border));
-  padding: 0.4rem 0.8rem;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgb(var(--slate-10));
 }
 </style>

@@ -116,10 +116,12 @@ const handleCreateAssistant = () => {
 
 <template>
   <section
-    class="captain-page-shell flex flex-col w-full h-full overflow-hidden bg-n-surface-1"
+    class="captain-page-shell flex size-full flex-col overflow-hidden bg-ds-bg-canvas text-ds-fg-default"
   >
-    <header class="captain-page-header sticky top-0 z-10 px-6">
-      <div class="w-full max-w-5xl mx-auto">
+    <header
+      class="captain-page-header sticky top-0 z-10 border-b border-ds-border-subtle bg-ds-bg-elevated px-4 sm:px-6"
+    >
+      <div class="mx-auto w-full max-w-7xl">
         <div
           class="flex items-start lg:items-center justify-between w-full py-6 lg:py-0 lg:h-20 gap-4 lg:gap-2 flex-col lg:flex-row"
         >
@@ -132,7 +134,7 @@ const handleCreateAssistant = () => {
               <div class="flex items-center gap-2">
                 <span
                   v-if="!isFetchingAssistants"
-                  class="text-xl font-medium truncate text-n-slate-12"
+                  class="truncate text-xl font-semibold text-ds-fg-default"
                 >
                   {{ activeAssistantName }}
                 </span>
@@ -147,9 +149,12 @@ const handleCreateAssistant = () => {
                       "
                       color="slate"
                       size="xs"
+                      :aria-label="
+                        t('CAPTAIN.ASSISTANT_SWITCHER.SWITCH_ASSISTANT')
+                      "
                       :disabled="isFetchingAssistants"
                       :is-loading="isFetchingAssistants"
-                      class="rounded-md group-hover:bg-n-slate-3 hover:bg-n-slate-3 [&>span]:size-4"
+                      class="rounded-md group-hover:bg-ds-bg-hover hover:bg-ds-bg-hover [&>span]:size-4"
                       @click="toggleAssistantSwitcher"
                     />
 
@@ -166,11 +171,11 @@ const handleCreateAssistant = () => {
             <div class="flex items-center gap-4">
               <div
                 v-if="showAssistantSwitcher && !showPaywall && headerTitle"
-                class="w-0.5 h-4 rounded-2xl bg-n-weak"
+                class="h-4 w-0.5 rounded-2xl bg-ds-border"
               />
               <span
                 v-if="headerTitle"
-                class="text-xl font-medium text-n-slate-12"
+                class="text-xl font-medium text-ds-fg-default"
               >
                 {{ headerTitle }}
               </span>
@@ -178,7 +183,7 @@ const handleCreateAssistant = () => {
                 v-if="!isEmpty && showKnowMore"
                 class="flex items-center gap-2"
               >
-                <div class="w-0.5 h-4 rounded-2xl bg-n-weak" />
+                <div class="h-4 w-0.5 rounded-2xl bg-ds-border" />
                 <slot name="knowMore" />
               </div>
             </div>
@@ -207,14 +212,16 @@ const handleCreateAssistant = () => {
         <slot name="subHeader" />
       </div>
     </header>
-    <main class="captain-page-content flex-1 px-6 overflow-y-auto">
+    <main
+      class="captain-page-content flex-1 overflow-y-auto bg-ds-bg-canvas px-4 sm:px-6"
+    >
       <div
-        class="captain-page-content-inner w-full max-w-5xl h-full mx-auto py-4"
+        class="captain-page-content-inner mx-auto h-full w-full max-w-7xl py-5"
       >
         <slot v-if="!showPaywall" name="controls" />
         <div
           v-if="isFetching"
-          class="flex items-center justify-center py-10 text-n-slate-11"
+          class="flex items-center justify-center py-10 text-ds-fg-muted"
         >
           <Spinner />
         </div>
@@ -230,7 +237,7 @@ const handleCreateAssistant = () => {
     </main>
     <footer
       v-if="showPaginationFooter"
-      class="captain-page-footer sticky bottom-0 z-10"
+      class="captain-page-footer sticky bottom-0 z-10 border-t border-ds-border-subtle bg-ds-bg-elevated"
     >
       <PaginationFooter
         :current-page="currentPage"

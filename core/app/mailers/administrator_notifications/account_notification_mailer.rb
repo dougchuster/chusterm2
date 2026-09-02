@@ -50,6 +50,11 @@
     send_notification(subject, to: email_to, action_url: file_url)
   end
 
+  def crm_deals_export_complete(file_url, email_to)
+    subject = 'Sua exportação de leads (CSV) está pronta para download.'
+    send_notification(subject, to: email_to, action_url: file_url)
+  end
+
   def automation_rule_disabled(rule)
     subject = 'Automation rule disabled due to validation errors.'
     action_url = settings_url('automation/list')

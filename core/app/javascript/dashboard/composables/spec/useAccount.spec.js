@@ -1,4 +1,4 @@
-﻿import { defineComponent, h } from 'vue';
+import { defineComponent, h } from 'vue';
 import { createStore } from 'vuex';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useAccount } from '../useAccount';

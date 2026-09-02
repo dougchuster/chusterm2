@@ -2,5 +2,5 @@
 # So we can extend it as Agents::Schema
 class Captain::ResponseSchema < RubyLLM::Schema
   string :response, description: 'The message to send to the user'
-  string :reasoning, description: "Agent's thought process"
+  string :reasoning, description: 'Brief operational justification for audit and routing; never private chain-of-thought'
 end

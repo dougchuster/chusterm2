@@ -30,8 +30,7 @@ export default {
     contextScope: {
       type: String,
       default: 'all',
-      validator: value =>
-        ['all', 'contact', 'conversation'].includes(value),
+      validator: value => ['all', 'contact', 'conversation'].includes(value),
     },
   },
   emits: ['update', 'add', 'remove'],

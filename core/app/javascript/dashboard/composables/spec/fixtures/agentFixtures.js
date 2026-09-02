@@ -1,4 +1,4 @@
-﻿import { allAgentsData } from 'dashboard/helper/specs/fixtures/agentFixtures';
+import { allAgentsData } from 'dashboard/helper/specs/fixtures/agentFixtures';
 
 export { allAgentsData };
 export const formattedAgentsData = [

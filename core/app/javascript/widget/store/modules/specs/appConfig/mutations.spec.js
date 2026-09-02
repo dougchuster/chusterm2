@@ -1,4 +1,4 @@
-﻿import { mutations } from '../../appConfig';
+import { mutations } from '../../appConfig';
 
 describe('#mutations', () => {
   describe('#SET_REFERRER_HOST', () => {

@@ -1,4 +1,4 @@
-﻿export const payload = {
+export const payload = {
   title: 'Test',
   content: [
     { url: 'https://example.com', type: 'frame' },

@@ -20,19 +20,23 @@ defineProps({
 </script>
 
 <template>
-  <div class="settings-layout flex h-full w-full flex-col gap-6 font-inter">
+  <div class="flex h-full w-full flex-col gap-5">
     <slot name="header" />
-    <main class="settings-layout__content flex min-h-0 flex-1 flex-col gap-4">
+    <main class="flex min-h-0 flex-1 flex-col gap-4">
       <slot name="preBody" />
-      <section class="settings-layout__panel flex min-h-0 flex-1 flex-col">
+      <section
+        class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-n-weak bg-n-solid-2"
+      >
         <slot v-if="isLoading" name="loading">
-          <div class="settings-layout__state">
+          <div
+            class="flex min-h-72 items-center justify-center p-8 text-center"
+          >
             <woot-loading-state :message="loadingMessage" />
           </div>
         </slot>
         <p
           v-else-if="noRecordsFound"
-          class="settings-layout__state text-base text-n-slate-11"
+          class="flex min-h-72 items-center justify-center p-8 text-center text-base text-n-slate-11"
         >
           {{ noRecordsMessage }}
         </p>
@@ -44,31 +48,3 @@ defineProps({
     </main>
   </div>
 </template>
-
-<style scoped>
-.settings-layout__content {
-  position: relative;
-}
-
-.settings-layout__panel {
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgb(var(--border-weak));
-  border-radius: 12px;
-  background: rgb(var(--bg-card));
-  box-shadow: 0 12px 34px rgba(var(--shell-shadow));
-}
-
-.settings-layout__panel::before {
-  display: none;
-}
-
-.settings-layout__state {
-  display: flex;
-  min-height: 18rem;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  text-align: center;
-}
-</style>

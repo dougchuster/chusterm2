@@ -20,17 +20,17 @@ const { variant, orientation, inReplyTo, shouldGroupWithNext } =
 const { t } = useI18n();
 
 const varaintBaseMap = {
-  [MESSAGE_VARIANTS.AGENT]: 'bg-n-solid-blue text-n-slate-12',
+  [MESSAGE_VARIANTS.AGENT]: 'bg-ds-state-info-soft text-ds-fg-default',
   [MESSAGE_VARIANTS.PRIVATE]:
-    'bg-n-solid-amber text-n-amber-12 [&_.prosemirror-mention-node]:font-semibold',
-  [MESSAGE_VARIANTS.USER]: 'bg-n-slate-4 text-n-slate-12',
-  [MESSAGE_VARIANTS.ACTIVITY]: 'bg-n-alpha-1 text-n-slate-11 text-sm',
-  [MESSAGE_VARIANTS.BOT]: 'bg-n-solid-iris text-n-slate-12',
-  [MESSAGE_VARIANTS.TEMPLATE]: 'bg-n-solid-iris text-n-slate-12',
-  [MESSAGE_VARIANTS.ERROR]: 'bg-n-ruby-4 text-n-ruby-12',
+    'bg-ds-state-warning-soft text-ds-fg-default [&_.prosemirror-mention-node]:font-semibold',
+  [MESSAGE_VARIANTS.USER]: 'bg-ds-bg-active text-ds-fg-default',
+  [MESSAGE_VARIANTS.ACTIVITY]: 'bg-ds-bg-sunken text-ds-fg-muted text-sm',
+  [MESSAGE_VARIANTS.BOT]: 'bg-ds-accent-soft text-ds-fg-default',
+  [MESSAGE_VARIANTS.TEMPLATE]: 'bg-ds-accent-soft text-ds-fg-default',
+  [MESSAGE_VARIANTS.ERROR]: 'bg-ds-state-danger-soft text-ds-state-danger',
   [MESSAGE_VARIANTS.EMAIL]: 'w-full',
   [MESSAGE_VARIANTS.UNSUPPORTED]:
-    'bg-n-solid-amber/70 border border-dashed border-n-amber-12 text-n-amber-12',
+    'border border-dashed border-ds-state-warning bg-ds-state-warning-soft text-ds-state-warning',
 };
 
 const orientationMap = {
@@ -105,7 +105,7 @@ const replyToPreview = computed(() => {
   >
     <div
       v-if="inReplyTo"
-      class="p-2 -mx-1 mb-2 rounded-lg cursor-pointer bg-n-alpha-black1"
+      class="-mx-1 mb-2 cursor-pointer rounded-lg bg-ds-bg-canvas/60 p-2"
       @click="scrollToMessage"
     >
       <div
@@ -120,8 +120,8 @@ const replyToPreview = computed(() => {
         flexOrientationClass,
         variant === MESSAGE_VARIANTS.EMAIL ? 'px-3 pb-3' : '',
         variant === MESSAGE_VARIANTS.PRIVATE
-          ? 'text-n-amber-12/50'
-          : 'text-n-slate-11',
+          ? 'text-ds-state-warning'
+          : 'text-ds-fg-muted',
       ]"
       class="mt-2"
     />

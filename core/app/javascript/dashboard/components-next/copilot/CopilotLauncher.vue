@@ -55,12 +55,13 @@ const toggleSidebar = () => {
     class="fixed bottom-4 ltr:right-4 rtl:left-4 z-50"
   >
     <ButtonGroup
-      class="rounded-full bg-n-alpha-2 backdrop-blur-lg p-1 shadow hover:shadow-md"
+      class="rounded-full bg-ds-bg-elevated/90 p-1 shadow-lg ring-1 ring-ds-border-subtle backdrop-blur-lg transition-shadow hover:shadow-xl"
     >
       <Button
+        :aria-label="$t('CAPTAIN.COPILOT.TITLE')"
         icon="i-woot-captain"
         no-animation
-        class="!rounded-full !bg-n-solid-3 dark:!bg-n-alpha-2 !text-n-slate-12 text-xl transition-all duration-200 ease-out hover:brightness-110"
+        class="!rounded-full !bg-ds-bg-surface !text-ds-accent text-xl transition-all duration-200 ease-out hover:!bg-ds-bg-hover"
         lg
         @click="toggleSidebar"
       />

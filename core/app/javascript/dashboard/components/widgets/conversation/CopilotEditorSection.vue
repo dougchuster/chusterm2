@@ -65,7 +65,7 @@ const onSend = () => {
       v-if="showCopilotEditor && !isGeneratingContent"
       key="copilot-editor"
       v-model="copilotEditorContent"
-      class="copilot-editor"
+      class="[&_.ProseMirror-menubar]:hidden"
       :generated-content="generatedContent"
       :min-height="4"
       :enabled-menu-options="[]"
@@ -78,22 +78,16 @@ const onSend = () => {
     <div
       v-else-if="isGeneratingContent"
       key="loading-state"
-      class="bg-n-iris-5 rounded min-h-[4.75rem] w-full mb-4 p-4 flex items-start"
+      class="mb-4 flex min-h-[4.75rem] w-full items-start rounded-xl bg-ds-accent-soft p-4 text-ds-accent"
+      role="status"
+      aria-live="polite"
     >
       <div class="flex items-center gap-2">
-        <CaptainLoader class="text-n-iris-10 size-4" />
-        <span class="text-sm text-n-iris-10">
+        <CaptainLoader class="size-4 text-ds-accent" />
+        <span class="text-sm text-ds-accent">
           {{ $t('CONVERSATION.REPLYBOX.COPILOT_THINKING') }}
         </span>
       </div>
     </div>
   </Transition>
 </template>
-
-<style lang="scss">
-.copilot-editor {
-  .ProseMirror-menubar {
-    display: none;
-  }
-}
-</style>

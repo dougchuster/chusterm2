@@ -13,7 +13,7 @@ RSpec.describe Internal::AccountAnalysis::ContentEvaluatorService do
   end
 
   before do
-    create(:installation_config, name: 'CAPTAIN_OPEN_AI_API_KEY', value: 'test-key')
+    InstallationConfig.find_or_initialize_by(name: 'CAPTAIN_OPEN_AI_API_KEY').update!(value: 'test-key')
     allow(RubyLLM).to receive(:moderate).and_return(mock_moderation_result)
   end
 
@@ -119,6 +119,7 @@ RSpec.describe Internal::AccountAnalysis::ContentEvaluatorService do
       end
 
       it 'logs error and returns default evaluation with error type' do
+        allow(Rails.logger).to receive(:error)
         expect(Rails.logger).to receive(:error).with('Error evaluating content: Test error')
 
         result = service.evaluate(content)

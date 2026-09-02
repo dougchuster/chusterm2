@@ -9,10 +9,7 @@ export default {
 
 <template>
   <div class="settings-subpage-header mb-4 w-full">
-    <span class="settings-subpage-header__eyebrow">
-      Configura&ccedil;&atilde;o guiada
-    </span>
-    <div class="mt-2 flex min-w-0 items-center gap-3">
+    <div class="flex min-w-0 items-center gap-3">
       <span class="settings-subpage-header__icon i-lucide-settings-2" />
       <h2 class="settings-subpage-header__title break-words text-n-slate-12">
         {{ headerTitle }}

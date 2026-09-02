@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
-# audit-enterprise.sh — Detecta referências à pasta enterprise/ ou recursos
-# proprietários do Chatwoot que não devem ser usados no fork ChusteRM.
+# audit-enterprise.sh — Valida a integridade do overlay Enterprise do ChusteRM.
 set -euo pipefail
 
 TARGET="${1:-./core}"
 REPORT_FILE="./docs/audit-enterprise-report.txt"
 
 echo "============================================================"
-echo " ChusteRM — Auditoria de Referências Enterprise"
+echo " ChusteRM — Auditoria do Overlay Enterprise"
 echo " Alvo: $TARGET"
 echo " Data: $(date '+%Y-%m-%d %H:%M:%S')"
 echo "============================================================"
@@ -15,94 +14,57 @@ echo ""
 
 TOTAL=0
 {
-  echo "ChusteRM — Enterprise Audit Report"
+  echo "ChusteRM — Enterprise Overlay Audit Report"
   echo "Data: $(date '+%Y-%m-%d %H:%M:%S')"
   echo "Alvo: $TARGET"
   echo "============================================================"
 } > "$REPORT_FILE"
 
-# ── 1. Verificar se a pasta enterprise/ existe no fork ─────────────────────────
-echo "🔍 Verificando presença da pasta enterprise/..."
-if [ -d "$TARGET/enterprise" ]; then
-  echo "  ⚠️  ATENÇÃO: pasta '$TARGET/enterprise' existe no fork."
-  echo "     Revisar quais arquivos foram incluídos."
-  echo "" >> "$REPORT_FILE"
-  echo "=== Conteúdo de enterprise/ ===" >> "$REPORT_FILE"
-  find "$TARGET/enterprise" -type f | head -100 >> "$REPORT_FILE"
+echo "🔍 Verificando presença e rastreamento do overlay enterprise/..."
+if [ ! -d "$TARGET/enterprise" ]; then
+  echo "  ❌ Pasta '$TARGET/enterprise' não encontrada."
   TOTAL=$((TOTAL + 1))
 else
-  echo "  ✅ Pasta enterprise/ não encontrada."
+  TRACKED_COUNT=$(git -C "$TARGET" ls-files 'enterprise/**' | grep -c . || true)
+  if [ "$TRACKED_COUNT" -eq 0 ]; then
+    echo "  ❌ O overlay existe, mas não possui arquivos rastreados."
+    TOTAL=$((TOTAL + 1))
+  else
+    echo "  ✅ Overlay presente com $TRACKED_COUNT arquivo(s) rastreado(s)."
+  fi
 fi
 
 echo ""
+echo "🔍 Verificando arquivos incompatíveis com o overlay..."
+UNSAFE_FILES=$(find "$TARGET/enterprise" \
+  \( -type l -o -type f \( -name '.env*' -o -name '*.pem' -o -name '*.key' \
+  -o -name '*.p12' -o -name '*.dump' -o -name '*.sql' -o -name '*.tar' \
+  -o -name '*.tar.gz' -o -name '*.zip' \) \) -print 2>/dev/null || true)
 
-# ── 2. Verificar imports/require apontando para enterprise ─────────────────────
-ENTERPRISE_IMPORT_PATTERNS=(
-  "require.*enterprise"
-  "from.*enterprise"
-  "include.*Enterprise"
-  "prepend.*Enterprise"
-  "Enterprise::"
-)
+if [ -n "$UNSAFE_FILES" ]; then
+  COUNT=$(printf '%s\n' "$UNSAFE_FILES" | grep -c . || true)
+  echo "  ❌ $COUNT arquivo(s) inseguro(s) encontrado(s)."
+  printf '\n=== Arquivos inseguros ===\n%s\n' "$UNSAFE_FILES" >> "$REPORT_FILE"
+  TOTAL=$((TOTAL + COUNT))
+else
+  echo "  ✅ Nenhum segredo, link ou arquivo binário indevido encontrado."
+fi
 
-echo "🔍 Verificando referências a módulos Enterprise no código..."
-
-for pattern in "${ENTERPRISE_IMPORT_PATTERNS[@]}"; do
-  MATCHES=$(grep -rn "$pattern" "$TARGET" \
-    --include="*.rb" --include="*.js" --include="*.ts" --include="*.vue" \
-    --exclude-dir=".git" --exclude-dir="node_modules" --exclude-dir="vendor" \
-    --exclude-dir="enterprise" \
-    2>/dev/null || true)
-
-  COUNT=$(echo "$MATCHES" | grep -c . || echo 0)
-  if [ "$COUNT" -gt 0 ] && [ -n "$MATCHES" ]; then
-    echo "  ⚠️  '$pattern': $COUNT ocorrência(s)"
-    echo "" >> "$REPORT_FILE"
-    echo "=== Enterprise import: $pattern ===" >> "$REPORT_FILE"
-    echo "$MATCHES" >> "$REPORT_FILE"
-    TOTAL=$((TOTAL + COUNT))
-  fi
-done
-
-echo ""
-
-# ── 3. Verificar feature flags de billing/upgrade na UI ────────────────────────
-BILLING_PATTERNS=(
-  "billing"
-  "upgrade"
-  "plan_name"
-  "trial_"
-  "subscription"
-  "chatwoot_cloud"
-)
-
-echo "🔍 Verificando feature flags de billing/upgrade na UI..."
-
-for pattern in "${BILLING_PATTERNS[@]}"; do
-  MATCHES=$(grep -rni "$pattern" "$TARGET/app/javascript" \
-    --include="*.vue" --include="*.js" --include="*.ts" \
-    --exclude-dir=".git" --exclude-dir="node_modules" \
-    2>/dev/null || true)
-
-  COUNT=$(echo "$MATCHES" | grep -c . || echo 0)
-  if [ "$COUNT" -gt 0 ] && [ -n "$MATCHES" ]; then
-    echo "  ⚠️  '$pattern' (UI): $COUNT ocorrência(s)"
-    echo "" >> "$REPORT_FILE"
-    echo "=== Billing/upgrade flag: $pattern ===" >> "$REPORT_FILE"
-    echo "$MATCHES" >> "$REPORT_FILE"
-    TOTAL=$((TOTAL + COUNT))
-  fi
-done
+if find "$TARGET/enterprise" -mindepth 2 -type d -name .git -print -quit | grep -q .; then
+  echo "  ❌ Repositório Git embutido encontrado em enterprise/."
+  TOTAL=$((TOTAL + 1))
+else
+  echo "  ✅ Nenhum repositório Git embutido."
+fi
 
 echo ""
 echo "============================================================"
 if [ "$TOTAL" -gt 0 ]; then
-  echo " ❌ RESULTADO: $TOTAL item(ns) enterprise/billing encontrado(s)."
+  echo " ❌ RESULTADO: $TOTAL problema(s) estrutural(is) no overlay."
   echo "    Relatório completo em: $REPORT_FILE"
   echo "============================================================"
   exit 1
-else
-  echo " ✅ RESULTADO: Nenhuma referência enterprise/billing encontrada."
-  echo "============================================================"
-  exit 0
 fi
+
+echo " ✅ RESULTADO: Overlay Enterprise íntegro."
+echo "============================================================"

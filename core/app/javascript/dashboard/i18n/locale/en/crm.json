@@ -1,0 +1,228 @@
+{
+  "CRM": {
+    "LOSS_REASONS": {
+      "BREADCRUMB": "CRM Settings",
+      "TITLE": "Loss Reasons",
+      "SUBTITLE": "Standardize the reasons used to close lost leads.",
+      "PLACEHOLDER": "New loss reason...",
+      "ADD": "Add",
+      "LOADING": "Loading..."
+    },
+    "CARD": {
+      "NO_CONTACT": "No contact",
+      "FALLBACK_TITLE": "Deal #{id}",
+      "NO_OWNER": "Unassigned",
+      "NO_NEXT_ACTION": "No next action",
+      "SCHEDULE": "Schedule",
+      "UNDATED": "Scheduled without a date",
+      "OVERDUE": "Overdue",
+      "STALE": "Sitting for {days}d",
+      "AI_ACTIVE": "AI is handling",
+      "MORE_BADGES": "+{count}",
+      "SELECT": "Select {name}",
+      "ATTEND": "Reply to {name} on WhatsApp",
+      "MORE_ACTIONS": "More actions for {name}",
+      "OPEN_RECORD": "Open record for {name}",
+      "RECOMPUTE_SCORE": "Recompute score",
+      "MARK_BASE_CLIENT": "Mark as existing client",
+      "DISCARD": "Discard deal",
+      "SCHEDULE_NEXT_ACTION": "Schedule next action for {name}"
+    },
+    "COLUMN": {
+      "AVERAGE_AGE": "Average time in this stage",
+      "WIP_TITLE": "Work in progress in this stage",
+      "WIP": "WIP {current}/{limit}",
+      "LOADING_MORE": "Loading more…",
+      "CREATE_IN_STAGE": "Create deal in {stage}"
+    },
+    "DENSITY": {
+      "LABEL": "Card density",
+      "COMPACT": "Compact",
+      "NORMAL": "Normal",
+      "DETAILED": "Detailed"
+    },
+    "FILTERS": {
+      "SEARCH": "Search",
+      "STAGE": "Stage",
+      "OWNER": "Owner",
+      "LABEL": "Label",
+      "OPERATIONAL_STATUS": "Status",
+      "AI_MODE": "AI mode",
+      "SCORE": "Score",
+      "VALUE": "Value",
+      "CREATED": "Created",
+      "UNASSIGNED": "unassigned",
+      "HAS_NEXT_ACTION": "With next action",
+      "NO_NEXT_ACTION": "No next action",
+      "STALE": "Sitting",
+      "NOT_STALE": "On track",
+      "REMOVE": "Remove {filter} filter",
+      "CLEAR_ALL": "Clear filters",
+      "RESULT_COUNT": "{count} deals",
+      "NO_RESULTS": "No deals match these filters"
+    },
+    "VIEWS": {
+      "MENU": "Views",
+      "MINE": "Mine",
+      "TEAM": "Shared by the team",
+      "EMPTY": "No saved views yet",
+      "SAVE_CURRENT": "Save current view",
+      "SAVE_PROMPT": "View name",
+      "SHARE": "Share {name} with the team",
+      "UNSHARE": "Make {name} private",
+      "DELETE": "Delete the view {name}",
+      "DELETE_CONFIRM": "Delete the view \"{name}\"?",
+      "SAVE_FAILED": "Could not save the view.",
+      "LOAD_FAILED": "Could not load the saved views."
+    },
+    "CREATE_DEAL": {
+      "TITLE": "New deal",
+      "DESCRIPTION": "Add the subject and the contact to the pipeline.",
+      "SUBJECT": "Subject",
+      "SUBJECT_PLACEHOLDER": "e.g. Initial consultation",
+      "CONTACT_NAME": "Contact name",
+      "PHONE": "Phone",
+      "INITIAL_STAGE": "Initial stage",
+      "CANCEL": "Cancel",
+      "SUBMIT": "Create deal"
+    },
+    "DISPOSITION": {
+      "INVALID": "Invalid",
+      "SPAM": "Spam",
+      "DUPLICATED": "Duplicate",
+      "NO_LEAD": "Not a lead"
+    },
+    "ERRORS": {
+      "DISCARD": "Could not discard the deal.",
+      "MARK_BASE_CLIENT": "Could not mark it as an existing client.",
+      "RECOMPUTE_SCORE": "Could not recompute the score."
+    },
+    "TOOLBAR": {
+      "SEARCH": "Search the pipeline",
+      "SEARCH_PLACEHOLDER": "Search by name, phone or subject",
+      "PIPELINE": "Pipeline",
+      "OWNER": "Owner",
+      "PRIORITY": "Priority",
+      "CLEAR": "Clear",
+      "TOTAL": "{count} deal(s)"
+    },
+    "BOARD": {
+      "EMPTY_STAGES": "This pipeline has no stages yet.",
+      "EMPTY_GROUPED": "No deals to group with the current filters."
+    },
+    "GROUP_BY": {
+      "LABEL": "Group by",
+      "STAGE": "Stage",
+      "OWNER": "Owner",
+      "SCORE_BAND": "Score band",
+      "LEGAL_AREA": "Area",
+      "SOURCE": "Source",
+      "OPERATIONAL_STATUS": "Status"
+    },
+    "METRICS": {
+      "TITLE": "CRM Metrics",
+      "BREADCRUMB": "CRM",
+      "BACK": "Back to CRM",
+      "PERIOD_LABEL": "Period",
+      "LOADING": "Loading metrics…",
+      "PERIODS": {
+        "DAYS_7": "7 days",
+        "DAYS_30": "30 days",
+        "DAYS_90": "90 days",
+        "MONTHS_6": "6 months",
+        "YEAR_1": "1 year"
+      },
+      "EMPTY_TITLE": "No data yet",
+      "EMPTY_DESCRIPTION": "Metrics will appear here as you create and move deals through the pipeline.",
+      "ANALYST": {
+        "TITLE": "CRM Analyst",
+        "SUBTITLE": "Ask about contacts, lists, campaigns and the funnel using Core data.",
+        "QUESTION_LABEL": "Question for the analyst",
+        "PLACEHOLDER": "E.g.: Which hot leads have no owner?",
+        "ASK": "Ask",
+        "ASKING": "Asking…",
+        "ERROR": "Could not reach the CRM analyst right now.",
+        "EXAMPLES": {
+          "INSS": "How many INSS leads came in this week?",
+          "UNASSIGNED_HOT": "Which hot leads have no owner?",
+          "TOP_LIST": "Which imported list has the most contacts?",
+          "WAITING_DOCS": "Which contacts have been waiting for documents for over 3 days?",
+          "BEST_OWNER": "Which owner converts the most?",
+          "CAMPAIGNS": "How did recent campaigns perform?"
+        }
+      },
+      "KPI": {
+        "TITLE": "Key indicators",
+        "TOTAL": "Total",
+        "OPEN": "Open",
+        "WON": "Won",
+        "LOST": "Lost",
+        "WIN_RATE": "Win rate",
+        "AVG_SCORE": "Avg score",
+        "SCORE_UNIT": "/100",
+        "PIPELINE": "Pipeline",
+        "WON_VALUE": "Won value",
+        "AVG_TIME": "Avg time",
+        "DAY_UNIT": "d"
+      },
+      "FUNNEL": {
+        "TITLE": "Conversion Funnel",
+        "EMPTY": "Create pipeline stages to see the funnel"
+      },
+      "WIN_LOSS": {
+        "TITLE": "Won vs Lost (monthly)",
+        "EMPTY": "No deals won or lost in the period",
+        "SUMMARY": "{won} won, {lost} lost"
+      },
+      "LOSS_REASONS": {
+        "TITLE": "Top Loss Reasons",
+        "EMPTY": "No loss reasons recorded",
+        "RANK": "#",
+        "REASON": "Reason",
+        "COUNT": "Count"
+      },
+      "AREA": {
+        "TITLE": "Distribution by Legal Area",
+        "EMPTY": "No deals with a legal area set"
+      },
+      "SCORE_BY_STAGE": {
+        "TITLE": "Average Score by Stage",
+        "EMPTY": "No data"
+      },
+      "TIME_IN_STAGE": {
+        "TITLE": "Average Time by Stage",
+        "EMPTY": "No transition data",
+        "STAGE": "Stage",
+        "AVG": "Avg time",
+        "DETAIL": "Detail",
+        "NO_DATA": "No data",
+        "SAMPLES": "{count} samples, min {min}, max {max}"
+      },
+      "TOP_DEALS": {
+        "TITLE": "Top Deals by Score",
+        "EMPTY": "No open deals",
+        "DEAL": "Title",
+        "CONTACT": "Contact",
+        "STAGE": "Stage",
+        "SCORE": "Score",
+        "URGENCY": "Urgency",
+        "OPEN": "Open deal {title}"
+      },
+      "STALE_DEALS": {
+        "TITLE": "Stale Deals (no activity for 7+ days)",
+        "EMPTY": "No stale deals",
+        "NEVER": "Never",
+        "DAYS": "{days}d",
+        "STALE_FOR": "Stale for",
+        "OPEN": "Open deal {title}"
+      },
+      "URGENCY": {
+        "CRITICA": "critical",
+        "ALTA": "high",
+        "MEDIA": "medium",
+        "NORMAL": "normal",
+        "BAIXA": "low"
+      }
+    }
+  }
+}

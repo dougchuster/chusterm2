@@ -1,4 +1,4 @@
-﻿import AuthAPI from '../api/auth';
+import AuthAPI from '../api/auth';
 import BaseActionCableConnector from '../../shared/helpers/BaseActionCableConnector';
 import DashboardAudioNotificationHelper from './AudioAlerts/DashboardAudioNotificationHelper';
 import { BUS_EVENTS } from 'shared/constants/busEvents';
@@ -34,6 +34,11 @@ class ActionCableConnector extends BaseActionCableConnector {
       'conversation.updated': this.onConversationUpdated,
       'account.cache_invalidated': this.onCacheInvalidate,
       'copilot.message.created': this.onCopilotMessageCreated,
+      // PERF-02: realtime do board CRM. F1.8: um handler por tipo, porque o
+      // patch incremental precisa distinguir uma exclusao de uma atualizacao.
+      'crm_deal.created': this.onCrmDealCreated,
+      'crm_deal.updated': this.onCrmDealUpdated,
+      'crm_deal.deleted': this.onCrmDealDeleted,
     };
   }
 
@@ -193,6 +198,23 @@ class ActionCableConnector extends BaseActionCableConnector {
   onCopilotMessageCreated = data => {
     this.app.$store.dispatch('copilotMessages/upsert', data);
   };
+
+  // PERF-02: as telas CRM escutam este evento no bus e atualizam o board.
+  //
+  // F1.8: o tipo vai junto. Os tres eventos apontavam para o mesmo handler, que
+  // emitia so `data` — o nome do evento se perdia no caminho e o board nao tinha
+  // como saber se o card foi excluido ou so mudou de lugar. Sem isso nao ha
+  // patch incremental possivel, so refetch do quadro inteiro.
+  // eslint-disable-next-line class-methods-use-this
+  onCrmDealChanged = (type, deal) => {
+    emitter.emit('crm_deal_changed', { type, deal });
+  };
+
+  onCrmDealCreated = deal => this.onCrmDealChanged('created', deal);
+
+  onCrmDealUpdated = deal => this.onCrmDealChanged('updated', deal);
+
+  onCrmDealDeleted = deal => this.onCrmDealChanged('deleted', deal);
 
   onCacheInvalidate = data => {
     const keys = data.cache_keys;

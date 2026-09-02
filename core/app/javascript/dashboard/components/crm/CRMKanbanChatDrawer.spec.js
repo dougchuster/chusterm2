@@ -12,6 +12,9 @@ vi.mock('dashboard/api/crm', () => ({
     getDeal: vi.fn(),
     moveDeal: vi.fn(),
     updateDeal: vi.fn(),
+    markDealWon: vi.fn(),
+    markDealLost: vi.fn(),
+    reopenDeal: vi.fn(),
   },
 }));
 
@@ -48,6 +51,7 @@ const baseDeal = {
   conversation_display_id: 55,
   crm_pipeline_stage_id: 3,
   operational_status: 'active',
+  status: 'open',
   messages: [],
   activities: [],
 };
@@ -79,13 +83,14 @@ const mediaMessages = [
   },
 ];
 
-const mountDrawer = () =>
+const mountDrawer = (deal = baseDeal) =>
   mount(CRMKanbanChatDrawer, {
     props: {
       show: true,
-      deal: baseDeal,
+      deal,
       stages: [{ id: 3, name: 'Analise' }],
       agents: [],
+      lossReasons: [{ id: 12, name: 'Sem retorno do cliente' }],
       accountId: 1,
     },
   });
@@ -111,6 +116,21 @@ describe('CRMKanbanChatDrawer', () => {
       },
     });
     ConversationApi.markMessageRead.mockResolvedValue({});
+    CrmAPI.markDealWon.mockResolvedValue({
+      data: { ...baseDeal, status: 'won' },
+    });
+    CrmAPI.markDealLost.mockResolvedValue({
+      data: {
+        ...baseDeal,
+        status: 'lost',
+        crm_loss_reason_id: 12,
+        loss_reason: { id: 12, name: 'Sem retorno do cliente' },
+        lost_reason_note: 'Cliente não respondeu.',
+      },
+    });
+    CrmAPI.reopenDeal.mockResolvedValue({
+      data: { ...baseDeal, status: 'open' },
+    });
     CaptainConversationStateAPI.show.mockResolvedValue({
       data: {
         id: 1,
@@ -119,6 +139,9 @@ describe('CRMKanbanChatDrawer', () => {
         handoff_at: '2026-05-26T10:00:00.000Z',
         handoff_by_name: 'Doug',
       },
+    });
+    CaptainConversationStateAPI.update.mockResolvedValue({
+      data: { id: 1, ai_mode: 'auto', resume_source: 'manual' },
     });
   });
 
@@ -161,6 +184,55 @@ describe('CRMKanbanChatDrawer', () => {
     expect(CaptainConversationStateAPI.update).not.toHaveBeenCalled();
   });
 
+  it('uses only the display ID for Captain when database and display IDs diverge', async () => {
+    const wrapper = mountDrawer();
+    await flushPromises();
+
+    expect(CaptainConversationStateAPI.show).toHaveBeenCalledWith(55);
+    expect(wrapper.text()).toContain('Atendimento #55');
+    expect(wrapper.text()).not.toContain('Atendimento #100');
+
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Retomar')
+      .trigger('click');
+    await flushPromises();
+
+    expect(CaptainConversationStateAPI.update).toHaveBeenCalledWith(
+      55,
+      expect.objectContaining({ ai_mode: 'auto', crm_deal_id: 7 })
+    );
+    expect(CaptainConversationStateAPI.update).not.toHaveBeenCalledWith(
+      100,
+      expect.anything()
+    );
+  });
+
+  it('keeps Captain actions unavailable when the explicit display ID is missing', async () => {
+    const dealWithoutDisplayId = {
+      ...baseDeal,
+      conversation_display_id: undefined,
+    };
+    CrmAPI.getDeal.mockResolvedValueOnce({
+      data: {
+        ...dealWithoutDisplayId,
+        conversation: { id: 100 },
+      },
+    });
+
+    const wrapper = mountDrawer(dealWithoutDisplayId);
+    await flushPromises();
+
+    expect(CaptainConversationStateAPI.show).not.toHaveBeenCalled();
+    expect(wrapper.text()).toContain('Atendimento');
+    expect(wrapper.text()).not.toContain('Atendimento #100');
+    expect(wrapper.text()).not.toContain('Atendimento #7');
+    const resumeButton = wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Retomar');
+    expect(resumeButton.attributes('disabled')).toBeDefined();
+  });
+
   it('allows the operator to write and send a chat message from the drawer', async () => {
     const wrapper = mountDrawer();
 
@@ -183,6 +255,47 @@ describe('CRMKanbanChatDrawer', () => {
       private: false,
     });
     expect(wrapper.text()).toContain('Mensagem enviada');
+  });
+
+  it('marks the deal as won from the Kanban drawer', async () => {
+    const wrapper = mountDrawer();
+    await flushPromises();
+
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Marcar ganho')
+      .trigger('click');
+    await flushPromises();
+
+    expect(CrmAPI.markDealWon).toHaveBeenCalledWith(7);
+    expect(wrapper.get('[data-testid="deal-outcome-status"]').text()).toBe(
+      'Ganho'
+    );
+  });
+
+  it('marks the deal as lost with a required reason and note', async () => {
+    const wrapper = mountDrawer();
+    await flushPromises();
+
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Marcar perdido')
+      .trigger('click');
+    await wrapper.get('[data-testid="deal-loss-form"] select').setValue('12');
+    await wrapper
+      .get('[data-testid="deal-loss-form"] input')
+      .setValue('Cliente não respondeu.');
+    await wrapper.get('[data-testid="deal-loss-form"]').trigger('submit');
+    await flushPromises();
+
+    expect(CrmAPI.markDealLost).toHaveBeenCalledWith(
+      7,
+      12,
+      'Cliente não respondeu.'
+    );
+    expect(wrapper.get('[data-testid="deal-outcome-status"]').text()).toBe(
+      'Perdido'
+    );
   });
 
   it('renders contact avatar, optional summary, direction icons and media attachments', async () => {

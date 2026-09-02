@@ -5,12 +5,7 @@ module Crm
     CUSTOMER_STAGES = %w[customer active_customer recurring_customer ex_customer].freeze
 
     def self.customer_contact?(contact)
-      return false if contact.blank?
-      return true if contact.respond_to?(:customer?) && contact.customer?
-      return true if contact.respond_to?(:crm_relationship_status) && contact.crm_relationship_status == 'customer'
-
-      stage = contact.respond_to?(:crm_lifecycle_stage) ? contact.crm_lifecycle_stage : contact.try(:lifecycle_stage)
-      CUSTOMER_STAGES.include?(stage.to_s)
+      Crm::ContactRelationshipClassifier.new(contact).perform[:status] == 'customer'
     end
 
     def self.promote!(contact, source:, metadata: {})

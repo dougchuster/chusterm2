@@ -35,10 +35,9 @@ const statusConfig = computed(() => {
   if (fileType.value === 'audio') {
     if (transcribedText.value) {
       return {
-        label: 'Audio transcrito',
+        label: 'Áudio transcrito',
         icon: 'i-lucide-check-circle-2',
-        className:
-          'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-900',
+        className: 'bg-ds-state-success-soft text-ds-state-success',
       };
     }
 
@@ -48,18 +47,17 @@ const statusConfig = computed(() => {
 
     if (mediaStatus.value === 'failed') {
       return {
-        label: 'Falha na transcricao',
+        label: 'Falha na transcrição',
         icon: 'i-lucide-circle-alert',
-        className:
-          'bg-ruby-50 text-ruby-700 ring-ruby-200 dark:bg-ruby-950/40 dark:text-ruby-300 dark:ring-ruby-900',
+        className: 'bg-ds-state-danger-soft text-ds-state-danger',
       };
     }
 
     if (mediaStatus.value === 'skipped') {
       return {
-        label: 'Audio nao transcrito',
+        label: 'Áudio não transcrito',
         icon: 'i-lucide-circle-minus',
-        className: 'bg-n-alpha-2 text-n-slate-11 ring-n-weak',
+        className: 'bg-ds-bg-sunken text-ds-fg-muted',
       };
     }
 
@@ -68,10 +66,9 @@ const statusConfig = computed(() => {
     }
 
     return {
-      label: 'Transcrevendo audio',
+      label: 'Transcrevendo áudio',
       icon: 'i-lucide-loader-circle animate-spin',
-      className:
-        'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:ring-sky-900',
+      className: 'bg-ds-state-info-soft text-ds-state-info',
     };
   }
 
@@ -81,10 +78,9 @@ const statusConfig = computed(() => {
 
   if (mediaStatus.value === 'failed') {
     return {
-      label: 'Falha na analise',
+      label: 'Falha na análise',
       icon: 'i-lucide-circle-alert',
-      className:
-        'bg-ruby-50 text-ruby-700 ring-ruby-200 dark:bg-ruby-950/40 dark:text-ruby-300 dark:ring-ruby-900',
+      className: 'bg-ds-state-danger-soft text-ds-state-danger',
     };
   }
 
@@ -92,7 +88,7 @@ const statusConfig = computed(() => {
     return {
       label: 'Mídia não analisada',
       icon: 'i-lucide-circle-minus',
-      className: 'bg-n-alpha-2 text-n-slate-11 ring-n-weak',
+      className: 'bg-ds-bg-sunken text-ds-fg-muted',
     };
   }
 
@@ -106,16 +102,14 @@ const statusConfig = computed(() => {
         ? `Documento: ${documentGuess.value}`
         : 'Imagem analisada',
       icon: 'i-lucide-sparkles',
-      className:
-        'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-900',
+      className: 'bg-ds-state-success-soft text-ds-state-success',
     };
   }
 
   return {
-    label: 'Analisando midia',
+    label: 'Analisando mídia',
     icon: 'i-lucide-loader-circle animate-spin',
-    className:
-      'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:ring-sky-900',
+    className: 'bg-ds-state-info-soft text-ds-state-info',
   };
 });
 </script>
@@ -123,10 +117,12 @@ const statusConfig = computed(() => {
 <template>
   <span
     v-show="statusConfig"
-    class="inline-flex max-w-full items-center gap-1 rounded px-2 py-1 text-xs font-medium ring-1"
+    role="status"
+    aria-live="polite"
+    class="inline-flex max-w-full items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium ring-1 ring-inset ring-current/15"
     :class="[
       statusConfig?.className,
-      overlay ? 'bg-opacity-95 shadow-sm backdrop-blur' : '',
+      overlay ? 'shadow-[var(--ds-shadow-xs)] backdrop-blur' : '',
     ]"
   >
     <span :class="statusConfig?.icon" class="size-3.5 shrink-0" />

@@ -1,4 +1,4 @@
-﻿import { dispatchWindowEvent } from '../CustomEventHelper';
+import { dispatchWindowEvent } from '../CustomEventHelper';
 
 describe('dispatchWindowEvent', () => {
   it('dispatches correct event', () => {

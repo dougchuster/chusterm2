@@ -1,4 +1,4 @@
-﻿import { flushPromises, shallowMount } from '@vue/test-utils';
+import { flushPromises, shallowMount } from '@vue/test-utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import PublicArticleSearch from '../components/PublicArticleSearch.vue';
 import ArticlesAPI from '../api/article';

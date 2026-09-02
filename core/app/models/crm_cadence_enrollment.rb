@@ -1,4 +1,6 @@
 class CrmCadenceEnrollment < ApplicationRecord
+  include AccountAssociationScoped
+
   STATUSES = %w[active paused completed cancelled].freeze
 
   belongs_to :account
@@ -6,6 +8,7 @@ class CrmCadenceEnrollment < ApplicationRecord
   belongs_to :crm_deal
 
   validates :status, inclusion: { in: STATUSES }
+  validates_same_account_for :crm_cadence, :crm_deal
   validates :crm_deal_id, uniqueness: { scope: :crm_cadence_id, message: 'ja inscrito nesta cadencia' }
 
   scope :active, -> { where(status: 'active') }

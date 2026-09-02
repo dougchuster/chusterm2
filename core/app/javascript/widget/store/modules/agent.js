@@ -1,4 +1,4 @@
-﻿import { getAvailableAgents } from 'widget/api/agent';
+import { getAvailableAgents } from 'widget/api/agent';
 import * as MutationHelpers from 'shared/helpers/vuex/mutationHelpers';
 import { getFromCache, setCache } from 'shared/helpers/cache';
 

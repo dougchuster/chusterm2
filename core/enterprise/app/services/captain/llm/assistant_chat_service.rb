@@ -60,7 +60,7 @@ class Captain::Llm::AssistantChatService < Llm::BaseAiService
     return nil unless @conversation
 
     captain_state = @conversation.captain_conversation_state
-    deal = captain_state&.crm_deal || CrmDeal.open_deals.find_by(conversation: @conversation)
+    deal = captain_state&.crm_deal || @conversation.account.crm_deals.open_deals.find_by(conversation: @conversation)
     return nil unless deal
 
     stage = deal.crm_pipeline_stage

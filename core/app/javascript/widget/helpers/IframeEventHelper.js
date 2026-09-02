@@ -1,4 +1,4 @@
-﻿export const loadedEventConfig = () => {
+export const loadedEventConfig = () => {
   return {
     event: 'loaded',
     config: {

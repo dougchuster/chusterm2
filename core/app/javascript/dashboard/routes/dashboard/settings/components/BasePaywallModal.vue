@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { computed } from 'vue';
 import Icon from 'next/icon/Icon.vue';
 import ButtonV4 from 'next/button/Button.vue';
@@ -54,7 +54,9 @@ const isCloudInstance = computed(
         />
       </span>
       <div class="min-w-0">
-        <span class="base-paywall-modal__eyebrow">Premium access</span>
+        <span class="base-paywall-modal__eyebrow">
+          {{ $t('GENERAL.PREMIUM_ACCESS') }}
+        </span>
         <p class="base-paywall-modal__title mb-0 mt-1 text-n-slate-12">
           {{ $t(`${featurePrefix}.PAYWALL.TITLE`) }}
         </p>
@@ -74,10 +76,18 @@ const isCloudInstance = computed(
     </p>
 
     <template v-if="isCloudInstance">
-      <ButtonV4 blue solid md class="relative z-10 mt-6 w-full" @click="emit('upgrade')">
+      <ButtonV4
+        blue
+        solid
+        md
+        class="relative z-10 mt-6 w-full"
+        @click="emit('upgrade')"
+      >
         {{ $t(`${featurePrefix}.PAYWALL.UPGRADE_NOW`) }}
       </ButtonV4>
-      <span class="relative z-10 mt-3 text-xs tracking-[0.08em] uppercase text-center text-n-slate-11">
+      <span
+        class="relative z-10 mt-3 text-xs tracking-[0.08em] uppercase text-center text-n-slate-11"
+      >
         {{ $t(`${featurePrefix}.PAYWALL.CANCEL_ANYTIME`) }}
       </span>
     </template>
@@ -107,9 +117,16 @@ const isCloudInstance = computed(
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background:
-    radial-gradient(circle at top right, rgba(var(--shell-glow-primary)) 0%, transparent 30%),
-    radial-gradient(circle at bottom left, rgba(var(--shell-glow-tertiary)) 0%, transparent 34%);
+  background: radial-gradient(
+      circle at top right,
+      rgba(var(--shell-glow-primary)) 0%,
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at bottom left,
+      rgba(var(--shell-glow-tertiary)) 0%,
+      transparent 34%
+    );
   opacity: 0.95;
 }
 

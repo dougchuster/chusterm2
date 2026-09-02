@@ -1,4 +1,4 @@
-﻿import types from '../../../mutation-types';
+import types from '../../../mutation-types';
 import { mutations } from '../../integrations';
 
 describe('#mutations', () => {

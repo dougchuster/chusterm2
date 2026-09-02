@@ -150,4 +150,26 @@ RSpec.describe Captain::PromptRenderer do
       expect(result).to eq({})
     end
   end
+
+  describe 'FAQ lookup prompt contract' do
+    let(:prompts_path) { Rails.root.join('enterprise/lib/captain/prompts') }
+
+    it 'limits the assistant to one objective FAQ lookup per response' do
+      prompt = File.binread(prompts_path.join('assistant.liquid'))
+
+      expect(prompt).to include('invoke `captain--tools--faq_lookup` at most once')
+      expect(prompt).to include('one short, objective query')
+      expect(prompt).to include('Never repeat the lookup in the same turn with synonyms')
+      expect(prompt).to include('whenever a legal or institutional fact genuinely requires RAG support')
+    end
+
+    it 'applies the same lookup budget after a scenario handoff' do
+      prompt = File.binread(prompts_path.join('scenario.liquid'))
+
+      expect(prompt).to include('invoke it at most once during this customer response/turn')
+      expect(prompt).to include('one short, objective query')
+      expect(prompt).to include('Never repeat the lookup with synonyms')
+      expect(prompt).to include('a legal or institutional fact genuinely needs RAG support')
+    end
+  end
 end

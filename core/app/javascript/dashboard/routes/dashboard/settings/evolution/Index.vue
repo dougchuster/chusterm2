@@ -2,6 +2,7 @@
 <script>
 import { mapGetters } from 'vuex';
 import { useAlert } from 'dashboard/composables';
+import { useBranding } from 'shared/composables/useBranding';
 import SettingsLayout from '../SettingsLayout.vue';
 import NextButton from 'dashboard/components-next/button/Button.vue';
 
@@ -9,6 +10,10 @@ export default {
   components: {
     SettingsLayout,
     NextButton,
+  },
+  setup() {
+    const { replaceInstallationName } = useBranding();
+    return { replaceInstallationName };
   },
   data() {
     return {
@@ -27,7 +32,7 @@ export default {
         globalApiKeyPlaceholder: 'Informe a chave para salvar ou rotacionar',
         keyPresent:
           'Uma chave já está cadastrada. Preencha este campo apenas para substituir.',
-        webhookBaseUrl: 'URL pública do Chatwoot para webhooks',
+        webhookBaseUrl: 'URL pública do ChusteRM para webhooks',
         webhookBaseUrlPlaceholder: 'https://crm.seudominio.com',
         status: 'Status:',
       },
@@ -133,7 +138,7 @@ export default {
         </label>
 
         <label>
-          {{ labels.webhookBaseUrl }}
+          {{ replaceInstallationName(labels.webhookBaseUrl) }}
           <input
             v-model="webhookBaseUrl"
             type="url"

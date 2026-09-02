@@ -17,7 +17,7 @@ RSpec.describe Captain::Llm::ConversationFaqService do
   end
 
   before do
-    create(:installation_config, name: 'CAPTAIN_OPEN_AI_API_KEY', value: 'test-key')
+    InstallationConfig.find_or_initialize_by(name: 'CAPTAIN_OPEN_AI_API_KEY').update!(value: 'test-key')
     allow(Captain::Llm::EmbeddingService).to receive(:new).and_return(embedding_service)
     allow(RubyLLM).to receive(:chat).and_return(mock_chat)
     allow(mock_chat).to receive(:with_temperature).and_return(mock_chat)

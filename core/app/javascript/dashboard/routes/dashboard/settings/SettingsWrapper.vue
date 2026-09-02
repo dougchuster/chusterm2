@@ -13,7 +13,7 @@ const route = useRoute();
 
 <template>
   <div
-    class="settings-wrapper-shell flex flex-col w-full h-full m-0 pb-8 pt-4 px-6 overflow-auto"
+    class="m-0 flex h-full w-full flex-col overflow-auto bg-n-surface-1 px-3 pb-8 pt-3 text-n-slate-12 sm:px-6 sm:pt-4"
   >
     <div class="flex items-start w-full max-w-5xl mx-auto">
       <router-view v-slot="{ Component }">
@@ -25,17 +25,3 @@ const route = useRoute();
     </div>
   </div>
 </template>
-
-<style scoped>
-.settings-wrapper-shell {
-  background: rgb(var(--bg-app));
-  color: rgb(var(--slate-12));
-}
-
-@media (max-width: 640px) {
-  .settings-wrapper-shell {
-    padding-inline: 0.75rem;
-    padding-top: 0.75rem;
-  }
-}
-</style>

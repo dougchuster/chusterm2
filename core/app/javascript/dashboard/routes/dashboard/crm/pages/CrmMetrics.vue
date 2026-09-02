@@ -1,9 +1,25 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
+
 import CrmAPI from 'dashboard/api/crm';
+import Icon from 'dashboard/components-next/icon/Icon.vue';
+import {
+  DsBadge,
+  DsButton,
+  DsCard,
+  DsEmptyState,
+  DsInput,
+  DsSelect,
+  DsSkeleton,
+  DsTable,
+} from 'dashboard/design-system/components';
+import { DsPageHeader } from 'dashboard/design-system/templates';
+
 const route = useRoute();
 const router = useRouter();
+const { t } = useI18n();
 
 const loading = ref(true);
 const periodDays = ref(parseInt(route.query.period, 10) || 30);
@@ -21,22 +37,56 @@ const analystQuestion = ref('');
 const analystLoading = ref(false);
 const analystResult = ref(null);
 
-const analystExamples = [
-  'Quantos leads INSS entraram essa semana?',
-  'Quais leads quentes estão sem responsável?',
-  'Qual lista importada tem mais contatos?',
-  'Quais contatos estão aguardando documento há mais de 3 dias?',
-  'Qual responsável converte mais?',
-  'Como foram as campanhas recentes?',
+// Larguras quantizadas em passos de 5%: as classes precisam existir de forma
+// estatica para o Tailwind, entao barras nao usam style inline.
+const BAR_WIDTH_CLASSES = [
+  'w-0',
+  'w-[5%]',
+  'w-[10%]',
+  'w-[15%]',
+  'w-[20%]',
+  'w-[25%]',
+  'w-[30%]',
+  'w-[35%]',
+  'w-[40%]',
+  'w-[45%]',
+  'w-1/2',
+  'w-[55%]',
+  'w-[60%]',
+  'w-[65%]',
+  'w-[70%]',
+  'w-[75%]',
+  'w-[80%]',
+  'w-[85%]',
+  'w-[90%]',
+  'w-[95%]',
+  'w-full',
 ];
 
-const periodOptions = [
-  { value: 7, label: '7 dias' },
-  { value: 30, label: '30 dias' },
-  { value: 90, label: '90 dias' },
-  { value: 180, label: '6 meses' },
-  { value: 365, label: '1 ano' },
-];
+const URGENCY_DOT_CLASSES = {
+  critica: 'bg-ui-chart-danger',
+  alta: 'bg-ui-chart-warning-strong',
+  media: 'bg-ui-chart-warning',
+  normal: 'bg-ui-chart-neutral',
+  baixa: 'bg-ui-chart-info',
+};
+
+const periodOptions = computed(() => [
+  { value: 7, label: t('CRM.METRICS.PERIODS.DAYS_7') },
+  { value: 30, label: t('CRM.METRICS.PERIODS.DAYS_30') },
+  { value: 90, label: t('CRM.METRICS.PERIODS.DAYS_90') },
+  { value: 180, label: t('CRM.METRICS.PERIODS.MONTHS_6') },
+  { value: 365, label: t('CRM.METRICS.PERIODS.YEAR_1') },
+]);
+
+const analystExamples = computed(() => [
+  t('CRM.METRICS.ANALYST.EXAMPLES.INSS'),
+  t('CRM.METRICS.ANALYST.EXAMPLES.UNASSIGNED_HOT'),
+  t('CRM.METRICS.ANALYST.EXAMPLES.TOP_LIST'),
+  t('CRM.METRICS.ANALYST.EXAMPLES.WAITING_DOCS'),
+  t('CRM.METRICS.ANALYST.EXAMPLES.BEST_OWNER'),
+  t('CRM.METRICS.ANALYST.EXAMPLES.CAMPAIGNS'),
+]);
 
 const maxFunnelCount = computed(() =>
   Math.max(1, ...funnel.value.map(f => f.deal_count))
@@ -45,7 +95,92 @@ const maxWinLossCount = computed(() =>
   Math.max(1, ...winLoss.value.map(d => d.total))
 );
 
-function setPeriod(days) {
+const kpis = computed(() => {
+  const o = overview.value;
+  return [
+    { key: 'total', label: t('CRM.METRICS.KPI.TOTAL'), value: o.total_deals || 0 },
+    {
+      key: 'open',
+      label: t('CRM.METRICS.KPI.OPEN'),
+      value: o.open_deals || 0,
+      valueClass: 'text-ui-brand',
+    },
+    {
+      key: 'won',
+      label: t('CRM.METRICS.KPI.WON'),
+      value: o.won_deals || 0,
+      valueClass: 'text-ui-success',
+    },
+    {
+      key: 'lost',
+      label: t('CRM.METRICS.KPI.LOST'),
+      value: o.lost_deals || 0,
+      valueClass: 'text-ui-danger',
+    },
+    {
+      key: 'win_rate',
+      label: t('CRM.METRICS.KPI.WIN_RATE'),
+      value: `${o.win_rate || 0}%`,
+    },
+    {
+      key: 'avg_score',
+      label: t('CRM.METRICS.KPI.AVG_SCORE'),
+      value: o.avg_score || 0,
+      unit: t('CRM.METRICS.KPI.SCORE_UNIT'),
+    },
+    {
+      key: 'pipeline',
+      label: t('CRM.METRICS.KPI.PIPELINE'),
+      value: formatCurrency(o.total_value),
+    },
+    {
+      key: 'won_value',
+      label: t('CRM.METRICS.KPI.WON_VALUE'),
+      value: formatCurrency(o.won_value),
+      valueClass: 'text-ui-success',
+    },
+    {
+      key: 'avg_time',
+      label: t('CRM.METRICS.KPI.AVG_TIME'),
+      value: o.avg_time_to_close || 0,
+      unit: t('CRM.METRICS.KPI.DAY_UNIT'),
+    },
+  ];
+});
+
+const lossReasonHeaders = computed(() => [
+  { key: 'rank', label: t('CRM.METRICS.LOSS_REASONS.RANK'), class: 'w-10' },
+  { key: 'reason', label: t('CRM.METRICS.LOSS_REASONS.REASON') },
+  {
+    key: 'count',
+    label: t('CRM.METRICS.LOSS_REASONS.COUNT'),
+    class: 'w-16 text-right',
+  },
+]);
+
+const timeInStageHeaders = computed(() => [
+  { key: 'stage', label: t('CRM.METRICS.TIME_IN_STAGE.STAGE') },
+  { key: 'avg', label: t('CRM.METRICS.TIME_IN_STAGE.AVG'), class: 'w-20' },
+  { key: 'detail', label: t('CRM.METRICS.TIME_IN_STAGE.DETAIL') },
+]);
+
+const topDealsHeaders = computed(() => [
+  { key: 'title', label: t('CRM.METRICS.TOP_DEALS.DEAL') },
+  { key: 'contact', label: t('CRM.METRICS.TOP_DEALS.CONTACT') },
+  { key: 'stage', label: t('CRM.METRICS.TOP_DEALS.STAGE') },
+  { key: 'score', label: t('CRM.METRICS.TOP_DEALS.SCORE'), class: 'w-16' },
+  { key: 'urgency', label: t('CRM.METRICS.TOP_DEALS.URGENCY'), class: 'w-24' },
+]);
+
+const staleDealsHeaders = computed(() => [
+  { key: 'title', label: t('CRM.METRICS.TOP_DEALS.DEAL') },
+  { key: 'stage', label: t('CRM.METRICS.TOP_DEALS.STAGE') },
+  { key: 'contact', label: t('CRM.METRICS.TOP_DEALS.CONTACT') },
+  { key: 'days', label: t('CRM.METRICS.STALE_DEALS.STALE_FOR'), class: 'w-20' },
+]);
+
+function changePeriod() {
+  const days = Number(periodDays.value) || 30;
   periodDays.value = days;
   router.replace({ query: { ...route.query, period: days } });
   fetchAll();
@@ -108,19 +243,42 @@ function winLossBarPct(count) {
   return Math.round((count / maxWinLossCount.value) * 100);
 }
 
-function urgencyColor(level) {
-  const map = {
-    critica: '#dc2626',
-    alta: '#ea580c',
-    media: '#f59e0b',
-    normal: '#6b7280',
-    baixa: '#3b82f6',
+function barWidthClass(pct) {
+  const step = Math.min(20, Math.max(0, Math.round(pct / 5)));
+  return BAR_WIDTH_CLASSES[step];
+}
+
+function scoreBarClass(score) {
+  if (score >= 75) return 'bg-ui-chart-danger';
+  if (score >= 50) return 'bg-ui-chart-warning-strong';
+  if (score >= 25) return 'bg-ui-chart-warning';
+  return 'bg-ui-chart-neutral';
+}
+
+function urgencyDotClass(level) {
+  return URGENCY_DOT_CLASSES[level] || URGENCY_DOT_CLASSES.normal;
+}
+
+function urgencyLabel(level) {
+  const labels = {
+    critica: t('CRM.METRICS.URGENCY.CRITICA'),
+    alta: t('CRM.METRICS.URGENCY.ALTA'),
+    media: t('CRM.METRICS.URGENCY.MEDIA'),
+    normal: t('CRM.METRICS.URGENCY.NORMAL'),
+    baixa: t('CRM.METRICS.URGENCY.BAIXA'),
   };
-  return map[level] || '#6b7280';
+  return labels[level] || labels.normal;
 }
 
 function goBack() {
   router.push({ name: 'crm', params: { accountId: route.params.accountId } });
+}
+
+const dealUrl = deal =>
+  `/app/accounts/${route.params.accountId}/crm/deals/${deal.id}`;
+
+function openDeal(deal) {
+  router.push(dealUrl(deal));
 }
 
 async function askAnalyst(question = analystQuestion.value) {
@@ -138,7 +296,7 @@ async function askAnalyst(question = analystQuestion.value) {
     analystResult.value = response.data;
   } catch {
     analystResult.value = {
-      answer: 'Não foi possível consultar o analista CRM agora.',
+      answer: t('CRM.METRICS.ANALYST.ERROR'),
       metrics: {},
     };
   } finally {
@@ -150,971 +308,524 @@ onMounted(fetchAll);
 </script>
 
 <template>
-  <div class="crm-metrics-page min-h-full bg-n-background">
-    <!-- Header -->
-    <header class="metrics-header">
-      <div class="flex items-center gap-3">
-        <button
-          type="button"
-          class="h-9 w-9 inline-flex items-center justify-center rounded-lg hover:bg-n-slate-3"
+  <section
+    class="flex min-h-0 w-full min-w-0 flex-1 flex-col bg-ui-canvas text-ui-text"
+    :aria-busy="loading || undefined"
+  >
+    <DsPageHeader
+      :title="$t('CRM.METRICS.TITLE')"
+      :breadcrumbs="[
+        { label: $t('CRM.METRICS.BREADCRUMB') },
+        { label: $t('CRM.METRICS.TITLE') },
+      ]"
+    >
+      <template #actions>
+        <DsButton
+          icon="i-lucide-arrow-left"
+          variant="ghost"
+          :aria-label="$t('CRM.METRICS.BACK')"
           @click="goBack"
-        >
-          <span
-            class="i-lucide-arrow-left"
-            style="width: 1.25rem; height: 1.25rem"
-          />
-        </button>
-        <h1 class="text-xl font-semibold text-n-slate-12">Métricas do CRM</h1>
-      </div>
-      <div class="flex items-center gap-2">
-        <button
-          v-for="opt in periodOptions"
-          :key="opt.value"
-          type="button"
-          class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-          :class="
-            periodDays === opt.value
-              ? 'bg-n-brand text-white'
-              : 'bg-n-slate-3 text-n-slate-11 hover:bg-n-slate-4'
-          "
-          @click="setPeriod(opt.value)"
-        >
-          {{ opt.label }}
-        </button>
-      </div>
-    </header>
-
-    <section class="analyst-card">
-      <div class="analyst-card__header">
-        <div>
-          <h2 class="analyst-card__title">Analista CRM</h2>
-          <p class="analyst-card__subtitle">
-            Consulte contatos, listas, campanhas e funil usando dados do Core.
-          </p>
-        </div>
-      </div>
-      <form class="analyst-card__form" @submit.prevent="askAnalyst()">
-        <input
-          v-model="analystQuestion"
-          type="search"
-          class="analyst-card__input"
-          placeholder="Ex.: Quais leads quentes estão sem responsável?"
         />
-        <button
-          type="submit"
-          class="analyst-card__button"
-          :disabled="analystLoading || !analystQuestion.trim()"
+        <DsSelect
+          v-model="periodDays"
+          :label="$t('CRM.METRICS.PERIOD_LABEL')"
+          hide-label
+          :options="periodOptions"
+          class="min-w-36"
+          @change="changePeriod"
+        />
+      </template>
+    </DsPageHeader>
+
+    <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4 sm:p-6">
+      <DsCard as="section" aria-labelledby="crm-analyst-title">
+        <h2
+          id="crm-analyst-title"
+          class="m-0 font-manrope text-ui-heading font-semibold text-ui-text"
         >
-          {{ analystLoading ? 'Consultando...' : 'Perguntar' }}
-        </button>
-      </form>
-      <div class="analyst-card__examples">
-        <button
-          v-for="example in analystExamples"
-          :key="example"
-          type="button"
-          class="analyst-card__example"
-          @click="askAnalyst(example)"
+          {{ $t('CRM.METRICS.ANALYST.TITLE') }}
+        </h2>
+        <p class="m-0 mt-1 text-ui-body-sm text-ui-text-muted">
+          {{ $t('CRM.METRICS.ANALYST.SUBTITLE') }}
+        </p>
+        <form
+          class="mt-4 flex flex-col gap-2 sm:flex-row"
+          @submit.prevent="askAnalyst()"
         >
-          {{ example }}
-        </button>
-      </div>
-      <div v-if="analystResult" class="analyst-card__answer">
-        <p>{{ analystResult.answer }}</p>
-        <pre v-if="analystResult.metrics">{{
-          JSON.stringify(analystResult.metrics, null, 2)
-        }}</pre>
-      </div>
-    </section>
-
-    <!-- Loading -->
-    <div v-if="loading" class="py-20 text-center">
-      <span
-        class="i-lucide-loader-2 animate-spin"
-        style="width: 2rem; height: 2rem"
-      />
-      <p class="mt-3 text-sm text-n-slate-10">Carregando métricas...</p>
-    </div>
-
-    <!-- Empty state geral -->
-    <div v-else-if="!overview.total_deals" class="empty-state-global">
-      <span class="i-lucide-bar-chart-2 empty-state-icon" />
-      <h3 class="empty-state-title">Nenhum dado ainda</h3>
-      <p class="empty-state-desc">
-        As métricas aparecerão aqui conforme você criar e movimentar deals no
-        pipeline.
-      </p>
-    </div>
-
-    <!-- Content -->
-    <div v-else class="metrics-grid">
-      <!-- KPIs compactos -->
-      <div class="kpi-strip">
-        <div class="kpi-item">
-          <span class="kpi-item-label">Total</span>
-          <span class="kpi-item-value">{{ overview.total_deals || 0 }}</span>
-        </div>
-        <div class="kpi-divider" />
-        <div class="kpi-item">
-          <span class="kpi-item-label">Abertos</span>
-          <span class="kpi-item-value text-n-brand">{{
-            overview.open_deals || 0
-          }}</span>
-        </div>
-        <div class="kpi-divider" />
-        <div class="kpi-item">
-          <span class="kpi-item-label">Ganhos</span>
-          <span class="kpi-item-value" style="color: #16a34a">{{
-            overview.won_deals || 0
-          }}</span>
-        </div>
-        <div class="kpi-divider" />
-        <div class="kpi-item">
-          <span class="kpi-item-label">Perdidos</span>
-          <span class="kpi-item-value" style="color: #ef4444">{{
-            overview.lost_deals || 0
-          }}</span>
-        </div>
-        <div class="kpi-divider" />
-        <div class="kpi-item">
-          <span class="kpi-item-label">Taxa de ganho</span>
-          <span class="kpi-item-value">{{ overview.win_rate || 0 }}%</span>
-        </div>
-        <div class="kpi-divider" />
-        <div class="kpi-item">
-          <span class="kpi-item-label">Score médio</span>
-          <span class="kpi-item-value"
-            >{{ overview.avg_score || 0
-            }}<span class="kpi-item-unit">/100</span></span
+          <DsInput
+            v-model="analystQuestion"
+            type="search"
+            :label="$t('CRM.METRICS.ANALYST.QUESTION_LABEL')"
+            hide-label
+            :placeholder="$t('CRM.METRICS.ANALYST.PLACEHOLDER')"
+            class="min-w-0 flex-1"
           >
+            <template #prefix>
+              <Icon icon="i-lucide-search" class="size-4" />
+            </template>
+          </DsInput>
+          <DsButton
+            type="submit"
+            variant="primary"
+            :label="
+              analystLoading
+                ? $t('CRM.METRICS.ANALYST.ASKING')
+                : $t('CRM.METRICS.ANALYST.ASK')
+            "
+            :loading="analystLoading"
+            :disabled="!analystQuestion.trim()"
+          />
+        </form>
+        <div class="mt-3 flex flex-wrap gap-2">
+          <DsButton
+            v-for="example in analystExamples"
+            :key="example"
+            size="sm"
+            variant="secondary"
+            :label="example"
+            @click="askAnalyst(example)"
+          />
         </div>
-        <div class="kpi-divider" />
-        <div class="kpi-item">
-          <span class="kpi-item-label">Pipeline</span>
-          <span class="kpi-item-value">{{
-            formatCurrency(overview.total_value)
-          }}</span>
+        <div
+          v-if="analystResult"
+          aria-live="polite"
+          class="mt-4 rounded-ui-control bg-ui-sunken p-3"
+        >
+          <p class="m-0 text-ui-body text-ui-text">
+            {{ analystResult.answer }}
+          </p>
+          <pre
+            v-if="analystResult.metrics"
+            class="m-0 mt-3 max-h-56 overflow-auto rounded-ui-control bg-ui-surface p-3 text-ui-caption text-ui-text-muted"
+          >{{ JSON.stringify(analystResult.metrics, null, 2) }}</pre>
         </div>
-        <div class="kpi-divider" />
-        <div class="kpi-item">
-          <span class="kpi-item-label">Valor ganho</span>
-          <span class="kpi-item-value" style="color: #16a34a">{{
-            formatCurrency(overview.won_value)
-          }}</span>
+      </DsCard>
+
+      <div
+        v-if="loading"
+        role="status"
+        :aria-label="$t('CRM.METRICS.LOADING')"
+        class="flex flex-col gap-4"
+      >
+        <span class="sr-only">{{ $t('CRM.METRICS.LOADING') }}</span>
+        <DsSkeleton shape="block" class="h-28" />
+        <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+          <DsSkeleton
+            v-for="card in 4"
+            :key="card"
+            shape="block"
+            class="h-64"
+          />
         </div>
-        <div class="kpi-divider" />
-        <div class="kpi-item">
-          <span class="kpi-item-label">Tempo médio</span>
-          <span class="kpi-item-value"
-            >{{ overview.avg_time_to_close || 0
-            }}<span class="kpi-item-unit">d</span></span
+      </div>
+
+      <DsEmptyState
+        v-else-if="!overview.total_deals"
+        :title="$t('CRM.METRICS.EMPTY_TITLE')"
+      >
+        <template #action>
+          <p class="m-0 max-w-md text-ui-body-sm text-ui-text-muted">
+            {{ $t('CRM.METRICS.EMPTY_DESCRIPTION') }}
+          </p>
+        </template>
+      </DsEmptyState>
+
+      <div v-else class="flex flex-col gap-4">
+        <DsCard
+          as="section"
+          padding="none"
+          :aria-label="$t('CRM.METRICS.KPI.TITLE')"
+        >
+          <dl
+            class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 2xl:grid-cols-9"
           >
-        </div>
-      </div>
-
-      <!-- Funil de conversão + Win/Loss -->
-      <div class="charts-row">
-        <!-- Funil -->
-        <div class="chart-card">
-          <h3 class="chart-title">Funil de Conversão</h3>
-          <div v-if="funnel.length === 0" class="empty-chart">
-            <span
-              class="i-lucide-filter"
-              style="
-                display: block;
-                margin: 0 auto 0.5rem;
-                width: 1.5rem;
-                height: 1.5rem;
-                opacity: 0.3;
-              "
-            />
-            Crie etapas no pipeline para ver o funil
-          </div>
-          <div v-else class="funnel-chart">
             <div
-              v-for="stage in funnel"
-              :key="stage.stage_id"
-              class="funnel-row"
+              v-for="kpi in kpis"
+              :key="kpi.key"
+              class="flex min-w-0 flex-col gap-1 p-3 sm:p-4"
             >
-              <div class="funnel-label">{{ stage.stage_name }}</div>
-              <div class="funnel-bar-track">
-                <div
-                  class="funnel-bar"
-                  :style="{ width: funnelBarPct(stage.deal_count) + '%' }"
-                />
-              </div>
-              <div class="funnel-count">{{ stage.deal_count }}</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Win/Loss Trend -->
-        <div class="chart-card">
-          <h3 class="chart-title">Ganhos vs Perdidos (mensal)</h3>
-          <div
-            v-if="winLoss.length === 0 || winLoss.every(m => !m.won && !m.lost)"
-            class="empty-chart"
-          >
-            <span
-              class="i-lucide-trending-up"
-              style="
-                display: block;
-                margin: 0 auto 0.5rem;
-                width: 1.5rem;
-                height: 1.5rem;
-                opacity: 0.3;
-              "
-            />
-            Nenhum deal ganho ou perdido no período
-          </div>
-          <div v-else class="winloss-chart">
-            <div v-for="m in winLoss" :key="m.month" class="winloss-row">
-              <div class="winloss-label">{{ m.month_label }}</div>
-              <div class="winloss-bars">
-                <div
-                  class="winloss-bar won"
-                  :style="{ width: winLossBarPct(m.won) + '%' }"
-                  :title="`Ganhos: ${m.won}`"
-                />
-                <div
-                  class="winloss-bar lost"
-                  :style="{ width: winLossBarPct(m.lost) + '%' }"
-                  :title="`Perdidos: ${m.lost}`"
-                />
-              </div>
-              <div class="winloss-rate">{{ m.win_rate }}%</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Motivos de perda + Distribuição por área -->
-      <div class="charts-row">
-        <div class="chart-card">
-          <h3 class="chart-title">Top Motivos de Perda</h3>
-          <div v-if="lossReasons.length === 0" class="empty-chart">
-            Nenhum motivo de perda registrado
-          </div>
-          <div v-else class="loss-reasons-list">
-            <div v-for="(r, i) in lossReasons" :key="i" class="loss-reason-row">
-              <span class="loss-reason-rank">#{{ i + 1 }}</span>
-              <span class="loss-reason-name">{{ r.reason }}</span>
-              <span class="loss-reason-count">{{ r.count }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="chart-card">
-          <h3 class="chart-title">Distribuição por Área Jurídica</h3>
-          <div v-if="areaDistribution.length === 0" class="empty-chart">
-            Nenhum deal com área jurídica definida
-          </div>
-          <div v-else class="area-list">
-            <div v-for="(a, i) in areaDistribution" :key="i" class="area-row">
-              <span class="area-name">{{ a.area }}</span>
-              <div class="area-bar-track">
-                <div
-                  class="area-bar"
-                  :style="{ width: funnelBarPct(a.count) + '%' }"
-                />
-              </div>
-              <span class="area-count">{{ a.count }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Score por estágio + Tempo por estágio -->
-      <div class="charts-row">
-        <div class="chart-card">
-          <h3 class="chart-title">Score Médio por Estágio</h3>
-          <div v-if="scoreByStage.length === 0" class="empty-chart">
-            Sem dados
-          </div>
-          <div v-else class="score-stage-list">
-            <div
-              v-for="(s, i) in scoreByStage"
-              :key="i"
-              class="score-stage-row"
-            >
-              <span class="score-stage-name">{{ s.stage_name }}</span>
-              <div class="score-stage-bar-track">
-                <div
-                  class="score-stage-bar"
-                  :style="{ width: s.avg_score + '%' }"
-                  :class="{
-                    'bg-red-500': s.avg_score >= 75,
-                    'bg-orange-400': s.avg_score >= 50 && s.avg_score < 75,
-                    'bg-yellow-400': s.avg_score >= 25 && s.avg_score < 50,
-                    'bg-gray-300': s.avg_score < 25,
-                  }"
-                />
-              </div>
-              <span class="score-stage-value">{{ s.avg_score }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="chart-card">
-          <h3 class="chart-title">Tempo Médio por Estágio</h3>
-          <div v-if="timeInStage.length === 0" class="empty-chart">
-            Sem dados de transição
-          </div>
-          <div v-else class="time-stage-list">
-            <div v-for="(s, i) in timeInStage" :key="i" class="time-stage-row">
-              <span class="time-stage-name">{{ s.stage_name }}</span>
-              <span class="time-stage-value">{{
-                formatHours(s.avg_hours)
-              }}</span>
-              <span v-if="s.sample_size > 0" class="time-stage-detail">
-                ({{ s.sample_size }} amostras, min
-                {{ formatHours(s.min_hours) }}, max
-                {{ formatHours(s.max_hours) }})
-              </span>
-              <span v-else class="time-stage-detail text-n-slate-8">
-                Sem dados
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Top deals + Stale deals -->
-      <div class="charts-row">
-        <div class="chart-card">
-          <h3 class="chart-title">Top Deals por Score</h3>
-          <div v-if="topDeals.length === 0" class="empty-chart">
-            Nenhum deal aberto
-          </div>
-          <div v-else class="top-deals-table">
-            <div class="top-deals-header">
-              <span>Título</span>
-              <span>Contato</span>
-              <span>Etapa</span>
-              <span>Score</span>
-              <span>Urgência</span>
-            </div>
-            <div
-              v-for="deal in topDeals"
-              :key="deal.id"
-              class="top-deals-row cursor-pointer hover:bg-n-slate-2"
-              @click="
-                router.push({
-                  name: 'crm_deal_details',
-                  params: {
-                    accountId: route.params.accountId,
-                    dealId: deal.id,
-                  },
-                })
-              "
-            >
-              <span class="font-medium">{{ deal.title }}</span>
-              <span>{{ deal.contact || '-' }}</span>
-              <span>{{ deal.stage || '-' }}</span>
-              <span class="font-semibold">{{ deal.score }}</span>
-              <span>
-                <span
-                  class="inline-block px-2 py-0.5 rounded text-xs font-medium text-white"
-                  :style="{ backgroundColor: urgencyColor(deal.urgency) }"
-                >
-                  {{ deal.urgency || 'normal' }}
-                </span>
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div class="chart-card">
-          <h3 class="chart-title">Deals Stale (sem atividade há 7+ dias)</h3>
-          <div v-if="staleDeals.length === 0" class="empty-chart">
-            Nenhum deal stale
-          </div>
-          <div v-else class="stale-deals-list">
-            <div
-              v-for="deal in staleDeals"
-              :key="deal.id"
-              class="stale-deal-row cursor-pointer hover:bg-n-slate-2"
-              @click="
-                router.push({
-                  name: 'crm_deal_details',
-                  params: {
-                    accountId: route.params.accountId,
-                    dealId: deal.id,
-                  },
-                })
-              "
-            >
-              <span class="font-medium">{{ deal.title }}</span>
-              <span class="text-n-slate-10">{{ deal.stage || '-' }}</span>
-              <span class="text-n-slate-10">{{ deal.contact || '-' }}</span>
-              <span
-                class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700"
+              <dt
+                class="truncate text-ui-caption font-medium uppercase tracking-wide text-ui-text-muted"
               >
-                {{ deal.days_stale ? deal.days_stale + 'd' : 'Nunca' }}
-              </span>
+                {{ kpi.label }}
+              </dt>
+              <dd
+                class="m-0 truncate font-manrope text-ui-heading font-semibold text-ui-text"
+                :class="kpi.valueClass"
+                :title="String(kpi.value) + (kpi.unit || '')"
+              >
+                {{ kpi.value
+                }}<span
+                  v-if="kpi.unit"
+                  class="text-ui-caption font-normal text-ui-text-muted"
+                  >{{ kpi.unit }}</span
+                >
+              </dd>
             </div>
-          </div>
+          </dl>
+        </DsCard>
+
+        <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+          <DsCard as="section" aria-labelledby="funnel-title">
+            <h3
+              id="funnel-title"
+              class="m-0 mb-4 font-manrope text-ui-label font-semibold text-ui-text"
+            >
+              {{ $t('CRM.METRICS.FUNNEL.TITLE') }}
+            </h3>
+            <DsEmptyState
+              v-if="!funnel.length"
+              :title="$t('CRM.METRICS.FUNNEL.EMPTY')"
+            />
+            <div v-else class="flex flex-col gap-2">
+              <div
+                v-for="stage in funnel"
+                :key="stage.stage_id"
+                class="flex items-center gap-3"
+              >
+                <span
+                  class="w-24 shrink-0 truncate text-right text-ui-caption text-ui-text-muted sm:w-32"
+                >
+                  {{ stage.stage_name }}
+                </span>
+                <div
+                  class="h-5 min-w-0 flex-1 overflow-hidden rounded-ui-control bg-ui-sunken"
+                >
+                  <div
+                    aria-hidden="true"
+                    class="h-full rounded-ui-control bg-ui-chart-brand transition-[width] duration-500"
+                    :class="barWidthClass(funnelBarPct(stage.deal_count))"
+                  />
+                </div>
+                <span
+                  class="w-10 shrink-0 text-right text-ui-caption font-semibold text-ui-text"
+                >
+                  {{ stage.deal_count }}
+                </span>
+              </div>
+            </div>
+          </DsCard>
+
+          <DsCard as="section" aria-labelledby="winloss-title">
+            <h3
+              id="winloss-title"
+              class="m-0 mb-4 font-manrope text-ui-label font-semibold text-ui-text"
+            >
+              {{ $t('CRM.METRICS.WIN_LOSS.TITLE') }}
+            </h3>
+            <DsEmptyState
+              v-if="!winLoss.length || winLoss.every(m => !m.won && !m.lost)"
+              :title="$t('CRM.METRICS.WIN_LOSS.EMPTY')"
+            />
+            <div v-else class="flex flex-col gap-2">
+              <div
+                v-for="m in winLoss"
+                :key="m.month"
+                class="flex items-center gap-3"
+              >
+                <span
+                  class="w-16 shrink-0 truncate text-right text-ui-caption text-ui-text-muted"
+                >
+                  {{ m.month_label }}
+                </span>
+                <div class="flex h-5 min-w-0 flex-1 gap-0.5">
+                  <div
+                    aria-hidden="true"
+                    class="h-full rounded-ui-control bg-ui-chart-success transition-[width] duration-500"
+                    :class="barWidthClass(winLossBarPct(m.won))"
+                  />
+                  <div
+                    aria-hidden="true"
+                    class="h-full rounded-ui-control bg-ui-chart-danger transition-[width] duration-500"
+                    :class="barWidthClass(winLossBarPct(m.lost))"
+                  />
+                </div>
+                <span
+                  class="w-10 shrink-0 text-right text-ui-caption font-semibold text-ui-text"
+                  >{{ m.win_rate }}%</span
+                >
+                <span class="sr-only">
+                  {{
+                    $t('CRM.METRICS.WIN_LOSS.SUMMARY', {
+                      won: m.won,
+                      lost: m.lost,
+                    })
+                  }}
+                </span>
+              </div>
+            </div>
+          </DsCard>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+          <section aria-labelledby="loss-reasons-title">
+            <h3
+              id="loss-reasons-title"
+              class="m-0 mb-2 font-manrope text-ui-label font-semibold text-ui-text"
+            >
+              {{ $t('CRM.METRICS.LOSS_REASONS.TITLE') }}
+            </h3>
+            <DsTable
+              :caption="$t('CRM.METRICS.LOSS_REASONS.TITLE')"
+              :headers="lossReasonHeaders"
+              :items="lossReasons"
+              :empty-title="$t('CRM.METRICS.LOSS_REASONS.EMPTY')"
+              min-width-class="min-w-[20rem]"
+            >
+              <template #row="{ item: reason, index }">
+                <tr class="bg-ui-surface">
+                  <td class="px-3 py-2 text-ui-caption text-ui-text-subtle">
+                    #{{ index + 1 }}
+                  </td>
+                  <td class="px-3 py-2 text-ui-body-sm text-ui-text">
+                    {{ reason.reason }}
+                  </td>
+                  <td
+                    class="px-3 py-2 text-right text-ui-body-sm font-semibold text-ui-text"
+                  >
+                    {{ reason.count }}
+                  </td>
+                </tr>
+              </template>
+            </DsTable>
+          </section>
+
+          <DsCard as="section" aria-labelledby="area-title">
+            <h3
+              id="area-title"
+              class="m-0 mb-4 font-manrope text-ui-label font-semibold text-ui-text"
+            >
+              {{ $t('CRM.METRICS.AREA.TITLE') }}
+            </h3>
+            <DsEmptyState
+              v-if="!areaDistribution.length"
+              :title="$t('CRM.METRICS.AREA.EMPTY')"
+            />
+            <div v-else class="flex flex-col gap-2">
+              <div
+                v-for="(a, i) in areaDistribution"
+                :key="i"
+                class="flex items-center gap-3"
+              >
+                <span
+                  class="w-24 shrink-0 truncate text-right text-ui-caption text-ui-text-muted sm:w-32"
+                >
+                  {{ a.area }}
+                </span>
+                <div
+                  class="h-5 min-w-0 flex-1 overflow-hidden rounded-ui-control bg-ui-sunken"
+                >
+                  <div
+                    aria-hidden="true"
+                    class="h-full rounded-ui-control bg-ui-chart-violet transition-[width] duration-500"
+                    :class="barWidthClass(funnelBarPct(a.count))"
+                  />
+                </div>
+                <span
+                  class="w-10 shrink-0 text-right text-ui-caption font-semibold text-ui-text"
+                >
+                  {{ a.count }}
+                </span>
+              </div>
+            </div>
+          </DsCard>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+          <DsCard as="section" aria-labelledby="score-stage-title">
+            <h3
+              id="score-stage-title"
+              class="m-0 mb-4 font-manrope text-ui-label font-semibold text-ui-text"
+            >
+              {{ $t('CRM.METRICS.SCORE_BY_STAGE.TITLE') }}
+            </h3>
+            <DsEmptyState
+              v-if="!scoreByStage.length"
+              :title="$t('CRM.METRICS.SCORE_BY_STAGE.EMPTY')"
+            />
+            <div v-else class="flex flex-col gap-2">
+              <div
+                v-for="(s, i) in scoreByStage"
+                :key="i"
+                class="flex items-center gap-3"
+              >
+                <span
+                  class="w-24 shrink-0 truncate text-right text-ui-caption text-ui-text-muted sm:w-32"
+                >
+                  {{ s.stage_name }}
+                </span>
+                <div
+                  class="h-5 min-w-0 flex-1 overflow-hidden rounded-ui-control bg-ui-sunken"
+                >
+                  <div
+                    aria-hidden="true"
+                    class="h-full rounded-ui-control transition-[width] duration-500"
+                    :class="[
+                      barWidthClass(s.avg_score),
+                      scoreBarClass(s.avg_score),
+                    ]"
+                  />
+                </div>
+                <span
+                  class="w-10 shrink-0 text-right text-ui-caption font-semibold text-ui-text"
+                >
+                  {{ s.avg_score }}
+                </span>
+              </div>
+            </div>
+          </DsCard>
+
+          <section aria-labelledby="time-stage-title">
+            <h3
+              id="time-stage-title"
+              class="m-0 mb-2 font-manrope text-ui-label font-semibold text-ui-text"
+            >
+              {{ $t('CRM.METRICS.TIME_IN_STAGE.TITLE') }}
+            </h3>
+            <DsTable
+              :caption="$t('CRM.METRICS.TIME_IN_STAGE.TITLE')"
+              :headers="timeInStageHeaders"
+              :items="timeInStage"
+              :empty-title="$t('CRM.METRICS.TIME_IN_STAGE.EMPTY')"
+              min-width-class="min-w-[24rem]"
+            >
+              <template #row="{ item: s }">
+                <tr class="bg-ui-surface">
+                  <td class="px-3 py-2 text-ui-body-sm font-medium text-ui-text">
+                    {{ s.stage_name }}
+                  </td>
+                  <td
+                    class="px-3 py-2 text-ui-body-sm font-semibold text-ui-text"
+                  >
+                    {{ formatHours(s.avg_hours) }}
+                  </td>
+                  <td class="px-3 py-2 text-ui-caption text-ui-text-muted">
+                    <span v-if="s.sample_size > 0">
+                      {{
+                        $t('CRM.METRICS.TIME_IN_STAGE.SAMPLES', {
+                          count: s.sample_size,
+                          min: formatHours(s.min_hours),
+                          max: formatHours(s.max_hours),
+                        })
+                      }}
+                    </span>
+                    <span v-else>
+                      {{ $t('CRM.METRICS.TIME_IN_STAGE.NO_DATA') }}
+                    </span>
+                  </td>
+                </tr>
+              </template>
+            </DsTable>
+          </section>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+          <section aria-labelledby="top-deals-title">
+            <h3
+              id="top-deals-title"
+              class="m-0 mb-2 font-manrope text-ui-label font-semibold text-ui-text"
+            >
+              {{ $t('CRM.METRICS.TOP_DEALS.TITLE') }}
+            </h3>
+            <DsTable
+              :caption="$t('CRM.METRICS.TOP_DEALS.TITLE')"
+              :headers="topDealsHeaders"
+              :items="topDeals"
+              :empty-title="$t('CRM.METRICS.TOP_DEALS.EMPTY')"
+              min-width-class="min-w-[36rem]"
+            >
+              <template #row="{ item: deal }">
+                <tr
+                  tabindex="0"
+                  class="cursor-pointer bg-ui-surface transition-colors duration-ui-fast hover:bg-ui-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-border-focus"
+                  :aria-label="
+                    $t('CRM.METRICS.TOP_DEALS.OPEN', { title: deal.title })
+                  "
+                  @click="openDeal(deal)"
+                  @keydown.enter="openDeal(deal)"
+                >
+                  <td class="px-3 py-2 text-ui-body-sm font-medium text-ui-text">
+                    {{ deal.title }}
+                  </td>
+                  <td class="px-3 py-2 text-ui-body-sm text-ui-text-muted">
+                    {{ deal.contact || '-' }}
+                  </td>
+                  <td class="px-3 py-2 text-ui-body-sm text-ui-text-muted">
+                    {{ deal.stage || '-' }}
+                  </td>
+                  <td
+                    class="px-3 py-2 text-ui-body-sm font-semibold text-ui-text"
+                  >
+                    {{ deal.score }}
+                  </td>
+                  <td class="px-3 py-2">
+                    <span
+                      class="inline-flex items-center gap-1.5 text-ui-caption font-medium text-ui-text"
+                    >
+                      <span
+                        aria-hidden="true"
+                        class="size-2 shrink-0 rounded-full"
+                        :class="urgencyDotClass(deal.urgency)"
+                      />
+                      {{ urgencyLabel(deal.urgency) }}
+                    </span>
+                  </td>
+                </tr>
+              </template>
+            </DsTable>
+          </section>
+
+          <section aria-labelledby="stale-deals-title">
+            <h3
+              id="stale-deals-title"
+              class="m-0 mb-2 font-manrope text-ui-label font-semibold text-ui-text"
+            >
+              {{ $t('CRM.METRICS.STALE_DEALS.TITLE') }}
+            </h3>
+            <DsTable
+              :caption="$t('CRM.METRICS.STALE_DEALS.TITLE')"
+              :headers="staleDealsHeaders"
+              :items="staleDeals"
+              :empty-title="$t('CRM.METRICS.STALE_DEALS.EMPTY')"
+              min-width-class="min-w-[28rem]"
+            >
+              <template #row="{ item: deal }">
+                <tr
+                  tabindex="0"
+                  class="cursor-pointer bg-ui-surface transition-colors duration-ui-fast hover:bg-ui-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-border-focus"
+                  :aria-label="
+                    $t('CRM.METRICS.STALE_DEALS.OPEN', { title: deal.title })
+                  "
+                  @click="openDeal(deal)"
+                  @keydown.enter="openDeal(deal)"
+                >
+                  <td class="px-3 py-2 text-ui-body-sm font-medium text-ui-text">
+                    {{ deal.title }}
+                  </td>
+                  <td class="px-3 py-2 text-ui-body-sm text-ui-text-muted">
+                    {{ deal.stage || '-' }}
+                  </td>
+                  <td class="px-3 py-2 text-ui-body-sm text-ui-text-muted">
+                    {{ deal.contact || '-' }}
+                  </td>
+                  <td class="px-3 py-2">
+                    <DsBadge
+                      variant="danger"
+                      :label="
+                        deal.days_stale
+                          ? $t('CRM.METRICS.STALE_DEALS.DAYS', {
+                              days: deal.days_stale,
+                            })
+                          : $t('CRM.METRICS.STALE_DEALS.NEVER')
+                      "
+                    />
+                  </td>
+                </tr>
+              </template>
+            </DsTable>
+          </section>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 </template>
-
-<style scoped>
-.crm-metrics-page {
-  width: 100%;
-  min-width: 0;
-  padding: 1rem;
-  max-width: 100%;
-  overflow-x: hidden;
-}
-
-.crm-metrics-page * {
-  min-width: 0;
-}
-
-.metrics-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.metrics-header > * {
-  min-width: 0;
-}
-
-.analyst-card {
-  background: var(--n-surface-1, #fff);
-  border: 1px solid var(--n-border, #e5e7eb);
-  border-radius: 0.75rem;
-  margin-bottom: 1rem;
-  padding: 1rem;
-}
-
-.analyst-card__header {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.75rem;
-}
-
-.analyst-card__title {
-  margin: 0;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--n-slate-12, #111827);
-}
-
-.analyst-card__subtitle {
-  margin: 0.2rem 0 0;
-  font-size: 0.8125rem;
-  color: var(--n-slate-9, #6b7280);
-}
-
-.analyst-card__form {
-  display: flex;
-  min-width: 0;
-  gap: 0.5rem;
-}
-
-.analyst-card__input {
-  min-width: 0;
-  flex: 1;
-  height: 2.5rem;
-  border: 1px solid var(--n-border, #e5e7eb);
-  border-radius: 0.625rem;
-  background: var(--n-surface-2, #f9fafb);
-  color: var(--n-slate-12, #111827);
-  padding: 0 0.75rem;
-  font-size: 0.875rem;
-  outline: none;
-}
-
-.analyst-card__button {
-  height: 2.5rem;
-  border: 0;
-  border-radius: 0.625rem;
-  background: var(--n-brand, #3b82f6);
-  color: #fff;
-  font-size: 0.8125rem;
-  font-weight: 700;
-  padding: 0 1rem;
-}
-
-.analyst-card__button:disabled {
-  opacity: 0.55;
-}
-
-.analyst-card__examples {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-top: 0.75rem;
-}
-
-.analyst-card__example {
-  border: 1px solid var(--n-border, #e5e7eb);
-  border-radius: 999px;
-  background: var(--n-surface-2, #f9fafb);
-  color: var(--n-slate-11, #374151);
-  font-size: 0.75rem;
-  padding: 0.3rem 0.6rem;
-}
-
-.analyst-card__answer {
-  margin-top: 0.75rem;
-  border-radius: 0.625rem;
-  background: var(--n-slate-2, #f8fafc);
-  padding: 0.75rem;
-}
-
-.analyst-card__answer p {
-  margin: 0;
-  color: var(--n-slate-12, #111827);
-  font-size: 0.875rem;
-}
-
-.analyst-card__answer pre {
-  max-height: 14rem;
-  overflow: auto;
-  margin: 0.65rem 0 0;
-  border-radius: 0.5rem;
-  background: var(--n-slate-1, #fff);
-  color: var(--n-slate-11, #374151);
-  padding: 0.65rem;
-  font-size: 0.75rem;
-}
-
-/* Empty state global */
-.empty-state-global {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 1rem;
-  text-align: center;
-}
-.empty-state-icon {
-  width: 3rem;
-  height: 3rem;
-  opacity: 0.25;
-  margin-bottom: 1rem;
-}
-.empty-state-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--n-slate-12, #111827);
-  margin-bottom: 0.5rem;
-}
-.empty-state-desc {
-  font-size: 0.875rem;
-  color: var(--n-slate-9, #6b7280);
-  max-width: 28rem;
-}
-
-/* KPI strip compacto */
-.kpi-strip {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0;
-  background: var(--n-surface-1, #fff);
-  border: 1px solid var(--n-border, #e5e7eb);
-  border-radius: 0.75rem;
-  margin-bottom: 1.25rem;
-  overflow: hidden;
-}
-.kpi-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0.75rem 1rem;
-  flex: 1;
-  min-width: 90px;
-}
-.kpi-item-label {
-  font-size: 0.6875rem;
-  color: var(--n-slate-9, #6b7280);
-  white-space: nowrap;
-  margin-bottom: 0.2rem;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-.kpi-item-value {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--n-slate-12, #111827);
-}
-.kpi-item-unit {
-  font-size: 0.75rem;
-  font-weight: 400;
-  color: var(--n-slate-9, #6b7280);
-}
-.kpi-divider {
-  width: 1px;
-  height: 2.5rem;
-  background: var(--n-border, #e5e7eb);
-  flex-shrink: 0;
-}
-
-.charts-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr));
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.chart-card {
-  background: var(--n-surface-1, #fff);
-  border: 1px solid var(--n-border, #e5e7eb);
-  border-radius: 0.75rem;
-  padding: 1.25rem;
-}
-
-.chart-title {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--n-slate-12, #111827);
-  margin-bottom: 1rem;
-}
-
-.empty-chart {
-  text-align: center;
-  padding: 2rem;
-  color: var(--n-slate-8, #9ca3af);
-  font-size: 0.8125rem;
-}
-
-/* Funnel */
-.funnel-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
-}
-
-.funnel-label {
-  width: 140px;
-  font-size: 0.75rem;
-  color: var(--n-slate-11, #4b5563);
-  text-align: right;
-  flex-shrink: 0;
-}
-
-.funnel-bar-track {
-  flex: 1;
-  height: 1.25rem;
-  background: var(--n-slate-3, #f3f4f6);
-  border-radius: 0.375rem;
-  overflow: hidden;
-}
-
-.funnel-bar {
-  height: 100%;
-  background: var(--n-brand, #3b82f6);
-  border-radius: 0.375rem;
-  transition: width 0.5s ease;
-  min-width: 2px;
-}
-
-.funnel-count {
-  width: 40px;
-  text-align: right;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--n-slate-12, #111827);
-}
-
-/* Win/Loss */
-.winloss-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
-}
-
-.winloss-label {
-  width: 70px;
-  font-size: 0.75rem;
-  color: var(--n-slate-11, #4b5563);
-  text-align: right;
-  flex-shrink: 0;
-}
-
-.winloss-bars {
-  flex: 1;
-  display: flex;
-  gap: 2px;
-  height: 1.25rem;
-}
-
-.winloss-bar {
-  height: 100%;
-  border-radius: 0.25rem;
-  transition: width 0.5s ease;
-  min-width: 2px;
-}
-
-.winloss-bar.won {
-  background: #10b981;
-}
-.winloss-bar.lost {
-  background: #ef4444;
-}
-
-.winloss-rate {
-  width: 40px;
-  text-align: right;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--n-slate-12, #111827);
-}
-
-/* Loss reasons */
-.loss-reason-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--n-slate-3, #f3f4f6);
-}
-
-.loss-reason-row:last-child {
-  border-bottom: none;
-}
-
-.loss-reason-rank {
-  font-size: 0.75rem;
-  color: var(--n-slate-8, #9ca3af);
-  width: 24px;
-}
-
-.loss-reason-name {
-  flex: 1;
-  font-size: 0.8125rem;
-  color: var(--n-slate-12, #111827);
-}
-
-.loss-reason-count {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--n-slate-12, #111827);
-}
-
-/* Área distribution */
-.area-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
-}
-
-.area-name {
-  width: 120px;
-  font-size: 0.75rem;
-  color: var(--n-slate-11, #4b5563);
-  text-align: right;
-  flex-shrink: 0;
-}
-
-.area-bar-track {
-  flex: 1;
-  height: 1.25rem;
-  background: var(--n-slate-3, #f3f4f6);
-  border-radius: 0.375rem;
-  overflow: hidden;
-}
-
-.area-bar {
-  height: 100%;
-  background: #8b5cf6;
-  border-radius: 0.375rem;
-  transition: width 0.5s ease;
-  min-width: 2px;
-}
-
-.area-count {
-  width: 32px;
-  text-align: right;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-/* Score by stage */
-.score-stage-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
-}
-
-.score-stage-name {
-  width: 120px;
-  font-size: 0.75rem;
-  color: var(--n-slate-11, #4b5563);
-  text-align: right;
-  flex-shrink: 0;
-}
-
-.score-stage-bar-track {
-  flex: 1;
-  height: 1.25rem;
-  background: var(--n-slate-3, #f3f4f6);
-  border-radius: 0.375rem;
-  overflow: hidden;
-}
-
-.score-stage-bar {
-  height: 100%;
-  border-radius: 0.375rem;
-  transition: width 0.5s ease;
-  min-width: 2px;
-}
-
-.score-stage-value {
-  width: 32px;
-  text-align: right;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-/* Time in stage */
-.time-stage-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--n-slate-3, #f3f4f6);
-}
-
-.time-stage-row:last-child {
-  border-bottom: none;
-}
-
-.time-stage-name {
-  width: 120px;
-  font-size: 0.8125rem;
-  color: var(--n-slate-12, #111827);
-  font-weight: 500;
-  flex-shrink: 0;
-}
-
-.time-stage-value {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--n-slate-12, #111827);
-  width: 60px;
-}
-
-.time-stage-detail {
-  font-size: 0.6875rem;
-  color: var(--n-slate-8, #9ca3af);
-}
-
-/* Top deals table */
-.top-deals-header {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 60px 80px;
-  gap: 0.5rem;
-  padding: 0.5rem 0;
-  border-bottom: 2px solid var(--n-border, #e5e7eb);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  color: var(--n-slate-10, #6b7280);
-  text-transform: uppercase;
-}
-
-.top-deals-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 60px 80px;
-  gap: 0.5rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--n-slate-3, #f3f4f6);
-  font-size: 0.8125rem;
-  color: var(--n-slate-12, #111827);
-}
-
-/* Stale deals */
-.stale-deal-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 80px;
-  gap: 0.5rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--n-slate-3, #f3f4f6);
-  font-size: 0.8125rem;
-  color: var(--n-slate-12, #111827);
-}
-
-@media (max-width: 768px) {
-  .crm-metrics-page {
-    padding: 0.75rem;
-  }
-
-  .charts-row {
-    grid-template-columns: 1fr;
-  }
-
-  .kpi-row {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .metrics-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .metrics-header > div:last-child {
-    flex-wrap: wrap;
-  }
-
-  .analyst-card__form {
-    flex-direction: column;
-  }
-
-  .analyst-card__button {
-    width: 100%;
-  }
-
-  .top-deals-header,
-  .top-deals-row {
-    grid-template-columns: 1.5fr 1fr 60px;
-  }
-
-  .top-deals-header span:nth-child(3),
-  .top-deals-header span:nth-child(5),
-  .top-deals-row span:nth-child(3),
-  .top-deals-row span:nth-child(5) {
-    display: none;
-  }
-
-  .stale-deal-row {
-    grid-template-columns: 2fr 1fr 80px;
-  }
-
-  .stale-deal-row span:nth-child(3) {
-    display: none;
-  }
-
-  .funnel-label,
-  .winloss-label,
-  .area-name,
-  .score-stage-name,
-  .time-stage-name {
-    width: 80px;
-    font-size: 0.6875rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .kpi-row {
-    grid-template-columns: 1fr;
-  }
-
-  .kpi-value {
-    font-size: 1.25rem;
-  }
-}
-</style>

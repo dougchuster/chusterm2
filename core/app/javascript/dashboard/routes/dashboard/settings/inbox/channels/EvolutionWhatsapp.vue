@@ -4,6 +4,7 @@ import { mapGetters } from 'vuex';
 import { useVuelidate } from '@vuelidate/core';
 import { useAlert } from 'dashboard/composables';
 import { required } from '@vuelidate/validators';
+import { useBranding } from 'shared/composables/useBranding';
 import router from '../../../../index';
 import NextButton from 'dashboard/components-next/button/Button.vue';
 
@@ -12,7 +13,8 @@ export default {
     NextButton,
   },
   setup() {
-    return { v$: useVuelidate() };
+    const { replaceInstallationName } = useBranding();
+    return { v$: useVuelidate(), replaceInstallationName };
   },
   data() {
     return {
@@ -26,9 +28,9 @@ export default {
         automaticInstance:
           'A instância será criada automaticamente na Evolution API.',
         automaticWebhook:
-          'O webhook será configurado automaticamente para o Chatwoot.',
+          'O webhook será configurado automaticamente para o ChusteRM.',
         qrInsideChatwoot:
-          'Após criar, escaneie o QR Code dentro do próprio Chatwoot.',
+          'Após criar, escaneie o QR Code dentro do próprio ChusteRM.',
       },
     };
   },
@@ -144,8 +146,8 @@ export default {
       </p>
       <ul class="list-disc pl-4 space-y-1">
         <li>{{ labels.automaticInstance }}</li>
-        <li>{{ labels.automaticWebhook }}</li>
-        <li>{{ labels.qrInsideChatwoot }}</li>
+        <li>{{ replaceInstallationName(labels.automaticWebhook) }}</li>
+        <li>{{ replaceInstallationName(labels.qrInsideChatwoot) }}</li>
       </ul>
     </div>
 

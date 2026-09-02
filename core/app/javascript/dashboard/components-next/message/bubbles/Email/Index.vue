@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { computed, useTemplateRef, ref, onMounted } from 'vue';
 import { Letter } from 'vue-letter';
 import { sanitizeTextForRender } from '@ChusteRM/utils';
@@ -106,16 +106,16 @@ const handleSeeOriginal = () => {
   <BaseBubble
     class="w-full"
     :class="{
-      'bg-n-slate-4': isIncoming,
-      'bg-n-solid-blue': isOutgoing,
+      'bg-ds-bg-elevated': isIncoming,
+      'bg-ds-state-info-soft': isOutgoing,
     }"
     data-bubble-name="email"
   >
     <EmailMeta
       class="p-3"
       :class="{
-        'border-b border-n-strong': isIncoming,
-        'border-b border-n-slate-8/20': isOutgoing,
+        'border-b border-ds-border-subtle': isIncoming,
+        'border-b border-ds-state-info/20': isOutgoing,
       }"
     />
     <section ref="contentContainer" class="p-3">
@@ -129,14 +129,16 @@ const handleSeeOriginal = () => {
           v-if="isExpandable && !isExpanded"
           class="absolute left-0 right-0 bottom-0 h-40 px-8 flex items-end"
           :class="{
-            'bg-gradient-to-t from-n-slate-4 via-n-slate-4 via-20% to-transparent':
+            'bg-gradient-to-t from-ds-bg-elevated via-ds-bg-elevated via-20% to-transparent':
               isIncoming,
-            'bg-gradient-to-t from-n-solid-blue via-n-solid-blue via-20% to-transparent':
+            'bg-gradient-to-t from-ds-state-info-soft via-ds-state-info-soft via-20% to-transparent':
               isOutgoing,
           }"
         >
           <button
-            class="text-n-slate-12 py-2 px-8 mx-auto text-center flex items-center gap-2"
+            type="button"
+            :aria-expanded="isExpanded"
+            class="mx-auto flex items-center gap-2 rounded-lg px-8 py-2 text-center font-medium text-ds-fg-default outline-none transition-colors hover:bg-ds-bg-hover focus-visible:ring-2 focus-visible:ring-ds-border-focus"
             @click="isExpanded = true"
           >
             <Icon icon="i-lucide-maximize-2" />
@@ -145,14 +147,14 @@ const handleSeeOriginal = () => {
         </div>
         <FormattedContent
           v-if="isOutgoing && content && !hasEmailContent"
-          class="text-n-slate-12"
+          class="text-ds-fg-default"
           :content="messageContent"
         />
         <template v-else>
           <Letter
             v-if="showQuotedMessage"
             :key="`letter-quoted-${translationKeySuffix}`"
-            class-name="prose prose-bubble !max-w-none letter-render"
+            class-name="prose prose-bubble !max-w-none letter-render [&_[class*=gmail\_drive\_chip]]:box-content [&_[class*=gmail\_drive\_chip]]:rounded-md [&_[class*=gmail\_drive\_chip]]:border [&_[class*=gmail\_drive\_chip]]:border-ds-border-subtle [&_[class*=gmail\_drive\_chip]]:bg-ds-bg-sunken [&_[class*=gmail\_drive\_chip]_a]:text-ds-fg-default [&_[class*=gmail\_drive\_chip]_img]:inline-block"
             :allowed-css-properties="[
               ...allowedCssProperties,
               'transform',
@@ -164,7 +166,7 @@ const handleSeeOriginal = () => {
           <Letter
             v-else
             :key="`letter-unquoted-${translationKeySuffix}`"
-            class-name="prose prose-bubble !max-w-none letter-render"
+            class-name="prose prose-bubble !max-w-none letter-render [&_[class*=gmail\_drive\_chip]]:box-content [&_[class*=gmail\_drive\_chip]]:rounded-md [&_[class*=gmail\_drive\_chip]]:border [&_[class*=gmail\_drive\_chip]]:border-ds-border-subtle [&_[class*=gmail\_drive\_chip]]:bg-ds-bg-sunken [&_[class*=gmail\_drive\_chip]_a]:text-ds-fg-default [&_[class*=gmail\_drive\_chip]_img]:inline-block"
             :html="unquotedHTML"
             :allowed-css-properties="[
               ...allowedCssProperties,
@@ -176,7 +178,9 @@ const handleSeeOriginal = () => {
         </template>
         <button
           v-if="hasQuotedMessage"
-          class="text-n-slate-11 px-1 leading-none text-sm bg-n-alpha-black2 text-center flex items-center gap-1 mt-2"
+          type="button"
+          :aria-expanded="showQuotedMessage"
+          class="mt-2 flex items-center gap-1 rounded-md px-1 py-1 text-center text-sm leading-none text-ds-fg-muted outline-none transition-colors hover:bg-ds-bg-hover hover:text-ds-fg-default focus-visible:ring-2 focus-visible:ring-ds-border-focus"
           @click="showQuotedMessage = !showQuotedMessage"
         >
           <template v-if="showQuotedMessage">
@@ -209,21 +213,3 @@ const handleSeeOriginal = () => {
     </section>
   </BaseBubble>
 </template>
-
-<style lang="scss">
-// Tailwind resets break the rendering of google drive link in Gmail messages
-// This fixes it using https://developer.mozilla.org/en-US/docs/Web/CSS/Attribute_selectors
-
-.letter-render [class*='gmail_drive_chip'] {
-  box-sizing: initial;
-  @apply bg-n-slate-4 border-n-slate-6 rounded-md !important;
-
-  a {
-    @apply text-n-slate-12 !important;
-
-    img {
-      display: inline-block;
-    }
-  }
-}
-</style>

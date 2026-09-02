@@ -1,63 +1,31 @@
-﻿class Captain::Llm::PdfProcessingService < Llm::LegacyBaseOpenAiService
-  include Integrations::LlmInstrumentation
+# frozen_string_literal: true
+
+# OpenRouter processes PDFs inline through its chat-completions API. This service
+# keeps the historical openai_file_id column as a local readiness marker so the
+# surrounding Captain document pipeline remains backward compatible.
+class Captain::Llm::PdfProcessingService
+  INLINE_MARKER_PREFIX = 'openrouter-inline'
 
   def initialize(document)
-    super()
     @document = document
   end
 
   def process
-    return if document.openai_file_id.present?
+    return if document.openai_file_id.to_s.start_with?("#{INLINE_MARKER_PREFIX}:")
 
-    file_id = upload_pdf_to_openai
-    raise CustomExceptions::Pdf::UploadError, I18n.t('captain.documents.pdf_upload_failed') if file_id.blank?
+    blob = document.pdf_file&.blob
+    raise_upload_error if blob.blank? || blob.byte_size > Llm::OpenRouterMultimodalService::MAX_INLINE_BYTES
+    raise_upload_error unless blob.content_type == 'application/pdf'
+    raise_upload_error unless Llm::MediaConfig.media_configured?
 
-    document.store_openai_file_id(file_id)
+    document.store_openai_file_id("#{INLINE_MARKER_PREFIX}:#{blob.checksum}")
   end
 
   private
 
   attr_reader :document
 
-  def upload_pdf_to_openai
-    with_tempfile do |temp_file|
-      instrument_file_upload do
-        response = @client.files.upload(
-          parameters: {
-            file: temp_file,
-            purpose: 'assistants'
-          }
-        )
-        response['id']
-      end
-    end
-  end
-
-  def instrument_file_upload(&)
-    return yield unless ChusteRMApp.otel_enabled?
-
-    tracer.in_span('llm.file.upload') do |span|
-      span.set_attribute('gen_ai.provider', 'openai')
-      span.set_attribute('file.purpose', 'assistants')
-      span.set_attribute(ATTR_LANGFUSE_USER_ID, document.account_id.to_s)
-      span.set_attribute(ATTR_LANGFUSE_TAGS, ['pdf_upload'].to_json)
-      span.set_attribute(format(ATTR_LANGFUSE_METADATA, 'document_id'), document.id.to_s)
-      file_id = yield
-      span.set_attribute('file.id', file_id) if file_id
-      file_id
-    end
-  end
-
-  def with_tempfile
-    Tempfile.create(['pdf_upload', '.pdf'], binmode: true) do |temp_file|
-      document.pdf_file.blob.open do |blob_file|
-        IO.copy_stream(blob_file, temp_file)
-      end
-
-      temp_file.flush
-      temp_file.rewind
-
-      yield temp_file
-    end
+  def raise_upload_error
+    raise CustomExceptions::Pdf::UploadError, I18n.t('captain.documents.pdf_upload_failed')
   end
 end

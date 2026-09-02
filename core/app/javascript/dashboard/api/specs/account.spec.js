@@ -1,4 +1,4 @@
-﻿import accountAPI from '../account';
+import accountAPI from '../account';
 import ApiClient from '../ApiClient';
 
 describe('#accountAPI', () => {

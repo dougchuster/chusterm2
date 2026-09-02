@@ -4,7 +4,7 @@ ruby '3.4.4'
 
 ##-- base gems for rails --##
 gem 'rack-cors', '2.0.0', require: 'rack/cors'
-gem 'rails', '~> 7.1'
+gem 'rails', '~> 7.2.3', '>= 7.2.3.1'
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', require: false
 
@@ -73,15 +73,16 @@ gem 'faraday_middleware-aws-sigv4'
 ##--- gems for server & infra configuration ---##
 gem 'dotenv-rails', '>= 3.0.0'
 gem 'foreman'
-gem 'puma'
+gem 'puma', '~> 7.2', '>= 7.2.1'
 gem 'vite_rails'
 # metrics on heroku
 gem 'barnes'
 
 ##--- gems for authentication & authorization ---##
-gem 'devise', '>= 4.9.4'
-gem 'devise-secure_password', git: 'https://github.com/chatwoot/devise-secure_password', branch: 'chatwoot'
-gem 'devise_token_auth', '>= 1.2.3'
+gem 'devise', '>= 5.0.4'
+gem 'devise_token_auth',
+    git: 'https://github.com/lynndylanhurley/devise_token_auth',
+    ref: 'bcdc3a5964086b6a08f3f98eb878a107af1334da'
 # two-factor authentication
 gem 'devise-two-factor', '>= 5.0.0'
 # authorization
@@ -110,7 +111,10 @@ gem 'koala'
 gem 'slack-ruby-client', '~> 2.7.0'
 # for dialogflow integrations
 gem 'google-cloud-dialogflow-v2', '>= 0.24.0'
-gem 'grpc'
+# Keep the musl container on the native version shipped by the pinned upstream
+# image. Newer releases currently compile from source and exceed local build
+# resources because no x86_64-linux-musl package is published in the lockfile.
+gem 'grpc', '1.72.0'
 # Translate integrations
 # 'google-cloud-translate' gem depends on faraday 2.0 version
 # this dependency breaks the slack-ruby-client gem

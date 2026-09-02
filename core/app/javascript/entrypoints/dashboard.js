@@ -12,6 +12,7 @@ import WootUiKit from 'dashboard/components';
 import App from 'dashboard/App.vue';
 import i18nMessages from 'dashboard/i18n';
 import createAxios from 'dashboard/helper/APIHelper';
+import { setColorTheme } from 'dashboard/helper/themeHelper';
 
 import commonHelpers, { isJSONValid } from 'dashboard/helper/commons';
 import { sync } from 'vuex-router-sync';
@@ -32,8 +33,6 @@ import { vResizeObserver } from '@vueuse/components';
 import { directive as onClickaway } from 'vue3-click-away';
 
 // ChusteRM Theme — Purple-Teal identity on Chatwoot CE base
-import 'dashboard/assets/css/chusterm-theme.css';
-
 import 'floating-vue/dist/style.css';
 
 const i18n = createI18n({
@@ -42,6 +41,8 @@ const i18n = createI18n({
   fallbackLocale: 'pt_BR',
   messages: i18nMessages,
 });
+
+setColorTheme(window.matchMedia('(prefers-color-scheme: dark)').matches);
 
 sync(store, router);
 

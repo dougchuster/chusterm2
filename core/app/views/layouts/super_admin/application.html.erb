@@ -22,11 +22,11 @@ By default, it renders:
     <%= content_for(:title) %> - <%= application_title %>
   </title>
   <script>
-    if (localStorage.getItem('color_scheme') === 'dark' || (!('color_scheme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        document.documentElement.classList.add('dark');
-    } else {
-        document.documentElement.classList.remove('dark');
-    }
+    // Superadmin has its own dark-only operational theme. Apply it before
+    // styles load so the page never flashes an unsupported light palette.
+    document.documentElement.classList.add('dark');
+    document.documentElement.dataset.theme = 'dark';
+    document.documentElement.style.colorScheme = 'dark';
   </script>
   <%= render "stylesheet" %>
   <%= vite_client_tag %>

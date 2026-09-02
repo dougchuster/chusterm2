@@ -1,7 +1,8 @@
 Rails.application.routes.draw do
   # Evolution API Manager — login customizado vinculado ao super admin
-  get  '/manager/login', to: 'evo_manager#login'
-  post '/manager/login', to: 'evo_manager#authenticate'
+  # O Evolution Manager é administrativo e fica acessível somente por túnel
+  # SSH à porta loopback 8085. Nunca entregue a chave global ao navegador pela
+  # aplicação pública.
 
   # AUTH STARTS
   mount_devise_token_auth_for 'User', at: 'auth', controllers: {
@@ -60,6 +61,8 @@ Rails.application.routes.draw do
             post :bulk_create, on: :collection
           end
           namespace :captain do
+            # UX-04: Central de IA — visão consolidada do estado da IA por conta
+            get :ai_center, to: 'ai_center#index'
             resource :preferences, only: [:show, :update]
             resources :assistants do
               member do
@@ -81,7 +84,7 @@ Rails.application.routes.draw do
             resources :documents, only: [:index, :show, :create, :destroy]
             resources :document_versions, only: [:index, :show]
             resources :playbooks, only: [:index, :show, :create, :update, :destroy]
-            resources :conversation_states, only: [:show, :update], param: :conversation_id
+            resources :conversation_states, only: [:show, :update], param: :conversation_display_id
             resources :score_settings, only: [:index, :update], param: :campaign_id do
               collection do
                 patch 'conversation_states/:id', action: :update_conversation_state
@@ -146,12 +149,19 @@ Rails.application.routes.draw do
             resource :google_authorization, only: [:show, :create]
             get :agenda_events, to: 'agenda_events#index'
             get :dashboard, to: 'dashboard#index'
+            get :options, to: 'options#index'
             resource :health, only: [:show], controller: :health
+
+            # F2.7: visoes salvas do board (lacuna K-05).
+            resources :board_views, only: [:index, :create, :update, :destroy]
 
             resources :pipelines, only: [:index, :create, :update, :destroy] do
               member do
                 delete :purge
                 patch :restore
+                # F1.5: o board pinta com uma requisicao. Vai para o
+                # DealsController porque a coluna devolve cards.
+                get :board, to: 'deals#board'
               end
               collection do
                 get :archived
@@ -176,6 +186,7 @@ Rails.application.routes.draw do
 
               member do
                 post :move
+                patch :move
                 post :mark_won
                 post :mark_lost
                 post :reopen

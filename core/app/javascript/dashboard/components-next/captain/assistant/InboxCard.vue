@@ -39,7 +39,7 @@ const localConfig = reactive({
   enabled: true,
   autoReplyEnabled: true,
   aiMode: 'auto',
-  handoffStrategy: 'human_request_or_score',
+  handoffStrategy: 'human_request',
   routingConfig: {},
   areaOwnerIds: {},
 });
@@ -106,16 +106,8 @@ const aiModeOptions = computed(() => [
 
 const handoffStrategyOptions = computed(() => [
   {
-    value: 'human_request_or_score',
-    label: t('CAPTAIN.INBOXES.FORM.HANDOFF.HUMAN_REQUEST_OR_SCORE'),
-  },
-  {
     value: 'human_request',
     label: t('CAPTAIN.INBOXES.FORM.HANDOFF.HUMAN_REQUEST'),
-  },
-  {
-    value: 'score_threshold',
-    label: t('CAPTAIN.INBOXES.FORM.HANDOFF.SCORE_THRESHOLD'),
   },
   {
     value: 'manual_only',
@@ -200,8 +192,7 @@ watch(
     localConfig.enabled = config.enabled ?? true;
     localConfig.autoReplyEnabled = config.auto_reply_enabled ?? true;
     localConfig.aiMode = config.ai_mode || 'auto';
-    localConfig.handoffStrategy =
-      config.handoff_strategy || 'human_request_or_score';
+    localConfig.handoffStrategy = config.handoff_strategy || 'human_request';
     applyRoutingConfig(config.routing_config);
   },
   { immediate: true }

@@ -1,6 +1,7 @@
 const { slateDark } = require('@radix-ui/colors');
 import { colors } from './theme/colors';
 import { icons } from './theme/icons';
+import { operationalTokens } from './app/javascript/dashboard/design-system/tokens';
 const defaultTheme = require('tailwindcss/defaultTheme');
 const {
   iconsPlugin,
@@ -16,7 +17,7 @@ const defaultSansFonts = [
   '"Helvetica Neue"',
   'Tahoma',
   'Arial',
-  'sans-serif !important',
+  'sans-serif',
 ];
 
 const tailwindConfig = {
@@ -40,8 +41,9 @@ const tailwindConfig = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', ...defaultSansFonts],
-        manrope: ['Manrope', ...defaultSansFonts],
+        sans: operationalTokens.fontFamily.sans,
+        // Local display face used for editorial headings (no network font flash).
+        manrope: ['InterDisplay', ...defaultSansFonts],
         inter: ['Inter', ...defaultSansFonts],
         interDisplay: ['InterDisplay', ...defaultSansFonts],
       },
@@ -51,6 +53,10 @@ const tailwindConfig = {
         460: '460',
         520: '520',
       },
+      borderRadius: operationalTokens.borderRadius,
+      boxShadow: operationalTokens.boxShadow,
+      transitionDuration: operationalTokens.transitionDuration,
+      zIndex: operationalTokens.zIndex,
       typography: {
         bubble: {
           css: {
@@ -200,6 +206,7 @@ const tailwindConfig = {
     fontSize: {
       ...defaultTheme.fontSize,
       xxs: '0.625rem',
+      ...operationalTokens.fontSize,
     },
     colors: {
       transparent: 'transparent',
@@ -208,6 +215,7 @@ const tailwindConfig = {
       'modal-backdrop-dark': 'rgba(0, 0, 0, 0.6)',
       current: 'currentColor',
       ...colors,
+      ui: operationalTokens.colors,
       body: slateDark.slate7,
     },
     keyframes: {

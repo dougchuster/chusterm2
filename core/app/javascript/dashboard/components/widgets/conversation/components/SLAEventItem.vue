@@ -16,20 +16,21 @@ const formatDate = timestamp =>
 </script>
 
 <template>
-  <div class="flex justify-between w-full">
+  <div class="flex w-full justify-between gap-4">
     <span
-      class="text-sm sticky top-0 h-fit font-normal tracking-[-0.6%] min-w-[140px] truncate text-n-slate-11"
+      class="sticky top-0 h-fit min-w-[140px] truncate text-sm font-medium text-ds-fg-muted"
     >
       {{ label }}
     </span>
-    <div class="flex flex-col w-full gap-2">
-      <span
+    <div class="flex w-full flex-col gap-2">
+      <time
         v-for="item in items"
         :key="item.id"
-        class="text-sm font-normal text-n-slate-12 text-right tabular-nums"
+        :datetime="new Date(item.created_at * 1000).toISOString()"
+        class="text-right text-sm font-normal tabular-nums text-ds-fg-default"
       >
         {{ formatDate(item.created_at) }}
-      </span>
+      </time>
       <slot name="showMore" />
     </div>
   </div>

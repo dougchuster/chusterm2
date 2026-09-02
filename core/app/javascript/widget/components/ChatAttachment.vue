@@ -1,4 +1,4 @@
-﻿<script>
+<script>
 import FileUpload from 'vue-upload-component';
 import Spinner from 'shared/components/Spinner.vue';
 import {

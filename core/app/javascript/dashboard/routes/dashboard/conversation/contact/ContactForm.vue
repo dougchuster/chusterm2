@@ -287,13 +287,13 @@ export default {
 
 <template>
   <form
-    class="w-full px-8 pt-6 pb-8 contact--form"
+    class="w-full bg-ds-bg-elevated px-4 pb-8 pt-6 text-ds-fg-default sm:px-6 [&_.error_input]:border-ds-state-danger [&_.error_textarea]:border-ds-state-danger [&_.message]:mt-1 [&_.message]:block [&_.message]:text-xs [&_.message]:text-ds-state-danger [&_input]:rounded-lg [&_input]:border-ds-border-subtle [&_input]:bg-ds-bg-sunken [&_input]:text-ds-fg-default [&_input]:outline-none [&_input]:transition-shadow [&_input]:placeholder:text-ds-fg-subtle [&_input]:focus:border-ds-border-focus [&_input]:focus:ring-2 [&_input]:focus:ring-ds-border-focus/30 [&_label]:mb-1.5 [&_label]:block [&_label]:text-sm [&_label]:font-medium [&_label]:text-ds-fg-muted [&_textarea]:min-h-24 [&_textarea]:rounded-lg [&_textarea]:border-ds-border-subtle [&_textarea]:bg-ds-bg-sunken [&_textarea]:text-ds-fg-default [&_textarea]:outline-none [&_textarea]:transition-shadow [&_textarea]:placeholder:text-ds-fg-subtle [&_textarea]:focus:border-ds-border-focus [&_textarea]:focus:ring-2 [&_textarea]:focus:ring-ds-border-focus/30"
     @submit.prevent="handleSubmit"
   >
-    <div class="flex flex-col mb-4 items-start gap-1 w-full">
-      <label class="mb-0.5 text-sm font-medium text-n-slate-12">
+    <div class="mb-5 flex w-full flex-col items-start gap-1">
+      <span class="mb-0.5 text-sm font-medium text-ds-fg-default">
         {{ $t('CONTACT_FORM.FORM.AVATAR.LABEL') }}
-      </label>
+      </span>
       <Avatar
         :src="avatarUrl"
         :size="72"
@@ -311,6 +311,9 @@ export default {
           <input
             v-model="name"
             type="text"
+            autocomplete="name"
+            aria-required="true"
+            :aria-invalid="v$.name.$error"
             :placeholder="$t('CONTACT_FORM.FORM.NAME.PLACEHOLDER')"
             @input="v$.name.$touch"
           />
@@ -320,11 +323,16 @@ export default {
           {{ $t('CONTACT_FORM.FORM.EMAIL_ADDRESS.LABEL') }}
           <input
             v-model="email"
-            type="text"
+            type="email"
+            autocomplete="email"
+            :aria-invalid="v$.email.$error"
+            :aria-describedby="
+              v$.email.$error ? 'contact-email-error' : undefined
+            "
             :placeholder="$t('CONTACT_FORM.FORM.EMAIL_ADDRESS.PLACEHOLDER')"
             @input="v$.email.$touch"
           />
-          <span v-if="v$.email.$error" class="message">
+          <span v-if="v$.email.$error" id="contact-email-error" class="message">
             {{ $t('CONTACT_FORM.FORM.EMAIL_ADDRESS.ERROR') }}
           </span>
         </label>
@@ -335,7 +343,6 @@ export default {
         {{ $t('CONTACT_FORM.FORM.BIO.LABEL') }}
         <textarea
           v-model="description"
-          type="text"
           :placeholder="$t('CONTACT_FORM.FORM.BIO.PLACEHOLDER')"
           @input="v$.description.$touch"
         />
@@ -353,17 +360,26 @@ export default {
             v-model="phoneNumber"
             :value="phoneNumber"
             :error="isPhoneNumberNotValid"
+            :aria-invalid="isPhoneNumberNotValid"
+            :aria-describedby="
+              isPhoneNumberNotValid ? 'contact-phone-error' : undefined
+            "
             :placeholder="$t('CONTACT_FORM.FORM.PHONE_NUMBER.PLACEHOLDER')"
             @blur="v$.phoneNumber.$touch"
             @set-code="setPhoneCode"
           />
-          <span v-if="isPhoneNumberNotValid" class="message">
+          <span
+            v-if="isPhoneNumberNotValid"
+            id="contact-phone-error"
+            class="message"
+          >
             {{ phoneNumberError }}
           </span>
         </label>
         <div
           v-if="isPhoneNumberNotValid || !phoneNumber"
-          class="relative mx-0 mt-0 mb-2.5 p-2 rounded-md text-sm border border-solid border-n-amber-5 text-n-amber-12 bg-n-amber-3"
+          role="note"
+          class="relative mx-0 mb-2.5 mt-0 rounded-lg bg-ds-state-warning-soft p-2 text-sm text-ds-state-warning ring-1 ring-inset ring-ds-state-warning/20"
         >
           {{ $t('CONTACT_FORM.FORM.PHONE_NUMBER.HELP') }}
         </div>
@@ -376,10 +392,12 @@ export default {
       :placeholder="$t('CONTACT_FORM.FORM.COMPANY_NAME.PLACEHOLDER')"
     />
     <div class="w-full mb-4">
-      <label>
+      <label for="contact-country">
         {{ $t('CONTACT_FORM.FORM.COUNTRY.LABEL') }}
       </label>
       <ComboBox
+        id="contact-country"
+        :aria-label="$t('CONTACT_FORM.FORM.COUNTRY.LABEL')"
         :model-value="country.id"
         :options="
           countries.map(c => ({
@@ -387,7 +405,7 @@ export default {
             label: countryNameWithCode(c),
           }))
         "
-        class="[&>div>button]:!bg-n-alpha-black2"
+        class="[&>div>button]:bg-ds-bg-sunken [&>div>button]:text-ds-fg-default [&>div>button]:ring-ds-border-subtle"
         :placeholder="$t('CONTACT_FORM.FORM.COUNTRY.PLACEHOLDER')"
         :search-placeholder="$t('CONTACT_FORM.FORM.COUNTRY.SELECT_PLACEHOLDER')"
         @update:model-value="onCountryChange"
@@ -405,17 +423,19 @@ export default {
       <div
         v-for="socialProfile in socialProfileKeys"
         :key="socialProfile.key"
-        class="flex items-stretch w-full mb-4"
+        class="mb-4 flex w-full items-stretch"
       >
         <span
-          class="flex items-center h-10 px-2 text-sm border-solid border-y ltr:border-l rtl:border-r ltr:rounded-l-md rtl:rounded-r-md bg-n-solid-3 text-n-slate-11 border-n-weak"
+          class="flex h-10 max-w-[45%] items-center truncate bg-ds-bg-sunken px-2 text-sm text-ds-fg-muted ring-1 ring-inset ring-ds-border-subtle ltr:rounded-l-lg rtl:rounded-r-lg"
         >
           {{ socialProfile.prefixURL }}
         </span>
         <input
           v-model="socialProfileUserNames[socialProfile.key]"
-          class="input-group-field ltr:!rounded-l-none rtl:!rounded-r-none !mb-0"
+          :aria-label="socialProfile.key"
+          class="mb-0 min-w-0 flex-1 ltr:rounded-l-none rtl:rounded-r-none"
           type="text"
+          autocomplete="off"
         />
       </div>
     </div>
@@ -426,8 +446,8 @@ export default {
         :is-loading="inProgress"
       />
       <NextButton
-        faded
-        slate
+        color="tertiary"
+        variant="faded"
         type="reset"
         :label="$t('CONTACT_FORM.FORM.CANCEL')"
         @click.prevent="onCancel"

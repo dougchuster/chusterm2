@@ -15,11 +15,11 @@ defineProps({
 
 <template>
   <div
-    class="flex items-center gap-2.5 px-3 py-1.5 rounded-lg min-h-8 text-n-slate-9 select-none pointer-events-none"
+    class="pointer-events-none flex min-h-8 select-none items-center gap-2.5 rounded-lg px-3 py-1.5 text-ds-shell-muted"
   >
     <Icon v-if="icon" :icon="icon" class="size-[18px]" />
     <span
-      class="text-[0.7rem] font-semibold uppercase leading-4 flex-grow opacity-60"
+      class="flex-grow text-[0.7rem] font-semibold uppercase leading-4 tracking-wide"
     >
       {{ label }}
     </span>

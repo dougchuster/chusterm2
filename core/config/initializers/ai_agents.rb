@@ -6,45 +6,18 @@ require 'agents'
 # OpenRouter) across all RubyLLM callers, including the Agents gem internals.
 module RubyLLMModelsResolvePatch
   def resolve(model_id, provider: nil, assume_exists: false, config: nil)
-    if provider.nil? && openai_compatible_gemini_model?(model_id, config)
-      return super(model_id, provider: :openai, assume_exists: true, config: config)
-    end
-
-    if provider.nil? && anthropic_model?(model_id)
-      return super(model_id, provider: :anthropic, assume_exists: true, config: config)
+    if provider.nil? || provider.to_sym != :openai
+      return super(
+        Llm::Config.resolve_model(model_id),
+        provider: :openai,
+        assume_exists: true,
+        config: config
+      )
     end
 
     super
   rescue RubyLLM::ModelNotFoundError
-    if provider.nil? && anthropic_model?(model_id)
-      return super(model_id, provider: :anthropic, assume_exists: true, config: config)
-    end
-
-    # If model is unknown and no provider was forced, retry as an OpenAI-compatible
-    # model id so gateways like OpenRouter can route custom model names.
-    raise unless provider.nil? && model_id.to_s.include?('/')
-
-    super(model_id, provider: :openai, assume_exists: true, config: config)
-  end
-
-  private
-
-  def openai_compatible_gemini_model?(model_id, config)
-    return false unless model_id.to_s.start_with?('gemini-')
-
-    endpoint = if config&.respond_to?(:openai_api_base)
-                 config.openai_api_base
-               elsif defined?(InstallationConfig)
-                 InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_ENDPOINT')&.value
-               end
-
-    endpoint.to_s.include?('generativelanguage.googleapis.com') && endpoint.to_s.include?('/openai/')
-  rescue StandardError
-    false
-  end
-
-  def anthropic_model?(model_id)
-    model_id.to_s.start_with?('claude-')
+    super(Llm::Config.resolve_model(model_id), provider: :openai, assume_exists: true, config: config)
   end
 end
 
@@ -110,6 +83,21 @@ RubyLLM::Providers::OpenAI::Chat.prepend(RubyLLMOpenAIChatResponsePatch)
 # which is broadly supported, whenever the model id uses the provider/model notation.
 module RubyLLMOpenAIJsonObjectPatch
   def render_payload(messages, tools:, temperature:, model:, stream: false, schema: nil)
+    # Sonnet 5 rejects non-default sampling parameters and supports strict
+    # json_schema through OpenRouter. Preserve the native schema and omit
+    # temperature instead of degrading the response to prompt-only JSON.
+    if model.id.to_s == 'anthropic/claude-sonnet-5'
+      return super(messages, tools: tools, temperature: nil, model: model, stream: stream, schema: schema)
+    end
+
+    # Gemini 3.6 Flash supports strict JSON Schema, but spends the output budget
+    # on hidden reasoning unless OpenRouter receives an explicit low-effort policy.
+    if model.id.to_s == 'google/gemini-3.6-flash'
+      payload = super(messages, tools: tools, temperature: temperature, model: model, stream: stream, schema: schema)
+      payload[:reasoning] = { effort: 'low', exclude: true }
+      return payload
+    end
+
     if schema && model.id.to_s.include?('/')
       payload = super(messages, tools: tools, temperature: temperature, model: model, stream: stream, schema: nil)
       payload[:response_format] = { type: 'json_object' }
@@ -122,20 +110,14 @@ end
 RubyLLM::Providers::OpenAI::Chat.prepend(RubyLLMOpenAIJsonObjectPatch)
 
 Rails.application.config.after_initialize do
-  api_key = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_API_KEY')&.value
-  anthropic_api_key = InstallationConfig.find_by(name: 'CAPTAIN_ANTHROPIC_API_KEY')&.value
+  api_key = Llm::Config.system_api_key
   model = Llm::Config.resolve_model(InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_MODEL')&.value)
-  api_endpoint = Llm::Config.normalize_endpoint(
-    InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_ENDPOINT')&.value
-  )
+  api_endpoint = Llm::Config.normalize_endpoint(Llm::Config.openai_endpoint)
 
-  if api_key.present? || anthropic_api_key.present?
+  if api_key.present?
     Agents.configure do |config|
-      config.openai_api_key = api_key if api_key.present?
-      config.anthropic_api_key = anthropic_api_key if anthropic_api_key.present?
-      if api_endpoint.present? && api_key.present?
-        config.openai_api_base = api_endpoint
-      end
+      config.openai_api_key = api_key
+      config.openai_api_base = api_endpoint
       config.default_model = model
       config.debug = false
     end
