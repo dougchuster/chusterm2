@@ -77,7 +77,6 @@ COPY app/javascript/survey/ ./app/javascript/survey/
 COPY app/javascript/entrypoints/sdk.js ./app/javascript/entrypoints/sdk.js
 COPY app/javascript/entrypoints/widget.js ./app/javascript/entrypoints/widget.js
 COPY app/views/layouts/vueapp.html.erb ./app/views/layouts/vueapp.html.erb
-COPY app/views/evo_manager/ ./app/views/evo_manager/
 COPY theme/ ./theme/
 
 # Enterprise Features - Enable Captain
