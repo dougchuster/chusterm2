@@ -48,15 +48,14 @@ const onKeydown = event => {
     class="group/sidebar-menu-item relative flex min-h-11 min-w-0 items-center gap-2.5 rounded-xl border-0 px-3 py-2 font-inter no-underline transition duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-shell-focus"
     draggable="false"
     :to="to || undefined"
-    :title="label"
     :aria-current="isActive && !hasActiveChild ? 'page' : undefined"
     :aria-expanded="expandable ? isExpanded : undefined"
     :class="[
       isActive && !hasActiveChild
-        ? 'bg-ds-shell-active text-ds-shell-fg shadow-sm shadow-ds-shell-accent/10 font-medium'
+        ? 'bg-ds-shell-active text-ds-shell-fg shadow-sm shadow-ds-shell-accent/10 font-medium before:absolute before:inset-y-2 before:w-0.5 before:rounded-full before:bg-ds-shell-accent ltr:before:left-0 rtl:before:right-0'
         : '',
       hasActiveChild
-        ? 'bg-ds-shell-panel-strong text-ds-shell-fg font-medium'
+        ? 'bg-ds-shell-panel-strong text-ds-shell-fg font-medium before:absolute before:inset-y-2 before:w-0.5 before:rounded-full before:bg-ds-shell-accent/70 ltr:before:left-0 rtl:before:right-0'
         : '',
       !isActive && !hasActiveChild
         ? 'text-ds-shell-muted hover:bg-ds-shell-hover hover:text-ds-shell-fg'

@@ -96,7 +96,9 @@ const {
   saveWidth,
   snapToCollapsed,
   snapToExpanded,
+  snapToMinimumExpanded,
   MIN_WIDTH,
+  MIN_EXPANDED_WIDTH,
   MAX_WIDTH,
   COLLAPSED_THRESHOLD,
 } = useSidebarResize();
@@ -260,6 +262,8 @@ const onResizeEnd = () => {
 
   if (sidebarWidth.value < COLLAPSED_THRESHOLD) {
     snapToCollapsed();
+  } else if (sidebarWidth.value < MIN_EXPANDED_WIDTH) {
+    snapToMinimumExpanded();
   } else {
     saveWidth();
   }
@@ -1184,7 +1188,7 @@ watch(
     @click="emit('closeMobileSidebar')"
   />
   <aside
-    class="fixed top-0 z-40 flex h-full w-[260px] flex-col bg-ds-shell-canvas pb-px font-inter text-sm text-ds-shell-fg ltr:left-0 rtl:right-0 md:relative md:w-auto md:flex-shrink-0 md:ltr:translate-x-0 md:rtl:translate-x-0"
+    class="fixed top-0 z-40 flex h-full w-[min(88vw,288px)] flex-col bg-ds-shell-canvas/95 pb-px font-inter text-sm text-ds-shell-fg backdrop-blur-xl ltr:left-0 rtl:right-0 md:relative md:w-auto md:flex-shrink-0 md:bg-ds-shell-canvas md:backdrop-blur-none md:ltr:translate-x-0 md:rtl:translate-x-0"
     :class="[
       {
         'shadow-2xl shadow-black/30 md:shadow-none': isMobileSidebarOpen,
@@ -1198,7 +1202,7 @@ watch(
     <!-- Sidebar Header & Account Switcher -->
     <section
       class="grid"
-      :class="isEffectivelyCollapsed ? 'mb-4 mt-3 gap-3' : 'mb-3 mt-3 gap-2.5'"
+      :class="isEffectivelyCollapsed ? 'mb-4 mt-3 gap-3' : 'mb-4 mt-4 gap-3'"
     >
       <div
         class="flex min-w-0 items-center gap-2.5"
@@ -1256,7 +1260,7 @@ watch(
         <button
           v-if="!isEffectivelyCollapsed"
           type="button"
-          class="flex min-h-11 w-full items-center gap-3 rounded-xl bg-ds-shell-panel px-3 py-2 text-ds-shell-fg ring-1 ring-inset ring-ds-shell-border transition duration-150 ease-out hover:bg-ds-shell-hover hover:ring-ds-shell-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-shell-focus cursor-pointer"
+          class="flex min-h-10 w-full cursor-pointer items-center gap-2.5 rounded-xl bg-ds-shell-panel px-3 py-1.5 text-ds-shell-fg shadow-sm shadow-black/5 transition duration-150 ease-out hover:bg-ds-shell-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-shell-focus"
           :aria-label="t('COMBOBOX.SEARCH_PLACEHOLDER')"
           @click="openCommandPalette"
         >
@@ -1310,9 +1314,9 @@ watch(
 
     <!-- Navigation Area -->
     <nav
-      class="grid min-w-0 flex-grow gap-2 overflow-y-scroll pb-6 no-scrollbar"
+      class="grid min-w-0 flex-grow content-start gap-2 overflow-y-auto pb-6 no-scrollbar"
       :aria-label="productName"
-      :class="isEffectivelyCollapsed ? 'px-1' : 'px-2'"
+      :class="isEffectivelyCollapsed ? 'px-1' : 'px-3'"
     >
       <!-- Pinned Favorites Block (Expanded Mode) -->
       <div
@@ -1414,12 +1418,12 @@ watch(
           <!-- Section Header / Collapse Toggle -->
           <button
             type="button"
-            class="group/section-btn flex w-full items-center justify-between rounded-lg px-2.5 py-1 text-start transition duration-150 hover:bg-ds-shell-hover/60 focus-visible:outline-none"
+            class="group/section-btn flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-start transition duration-150 hover:bg-ds-shell-hover/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-shell-focus"
             :aria-expanded="isSectionOpen(block.id)"
             @click="toggleSection(block.id)"
           >
             <span
-              class="text-[0.66rem] font-bold uppercase tracking-wider text-ds-shell-muted transition group-hover/section-btn:text-ds-shell-fg"
+              class="font-manrope text-[0.65rem] font-bold uppercase tracking-[0.11em] text-ds-shell-muted transition group-hover/section-btn:text-ds-shell-fg"
             >
               {{ block.label }}
             </span>

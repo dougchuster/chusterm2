@@ -78,7 +78,7 @@ const emitNewAccount = () => {
         :aria-expanded="isOpen"
         :aria-disabled="!showAccountSwitcher"
         :disabled="!showAccountSwitcher"
-        class="flex min-h-14 w-full items-center justify-between gap-3 rounded-2xl border-0 bg-ds-shell-panel px-3 py-2.5 text-ds-shell-fg ring-1 ring-inset ring-ds-shell-border transition duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-shell-focus disabled:cursor-default"
+        class="flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border-0 bg-ds-shell-panel px-3 py-1.5 text-ds-shell-fg shadow-sm shadow-black/5 transition duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-shell-focus disabled:cursor-default"
         :class="[
           isOpen && 'bg-ds-shell-hover ring-ds-shell-accent/40',
           showAccountSwitcher
@@ -89,7 +89,7 @@ const emitNewAccount = () => {
       >
         <span class="flex min-w-0 flex-col text-start">
           <span
-            class="font-inter text-[0.6rem] font-semibold uppercase leading-4 tracking-[0.14em] text-ds-shell-muted"
+            class="font-inter text-[0.625rem] font-semibold uppercase leading-4 tracking-[0.12em] text-ds-shell-muted"
           >
             {{ t('SIDEBAR.WORKSPACE') }}
           </span>
