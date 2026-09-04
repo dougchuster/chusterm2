@@ -179,6 +179,54 @@ Os itens do roadmap com suporte real no backend foram **implementados, testados 
 
 **Não é correto declarar o projeto "100% concluído e verificado"** enquanto a validação em navegador não ocorrer e enquanto a ressalva 6.1 permanecer aberta. O que se pode afirmar com precisão é: *toda a lógica entregue está coberta por testes automatizados verdes, em conformidade com o design system e sem regressões detectáveis pelas ferramentas disponíveis nesta sessão.*
 
+---
+
+## 10. Adendo — Entregabilidade e o Sync Upstream v4.17.1
+
+Ao preparar o deploy, a validação em container revelou que o **sync upstream v4.12.1→v4.17.1 presente na árvore de trabalho está incompleto e não inicializa**. A entrega de UI/UX foi, por isso, rebaseada sobre a base estável v4.12.1.
+
+### 10.1 Evidências
+
+| Evidência | Constatação |
+|---|---|
+| Arquivos no sync vs. diff upstream | **266** commitados contra **4.365** alterados no upstream (~6%) |
+| `core/VERSION_CW` | permanece **4.12.1** — a versão nunca foi promovida |
+| `account_settings_schema.rb` | atualizado pelo sync; chama `Llm::Models.model_feature_keys` |
+| `lib/llm/models.rb` | **nunca atualizado** desde o commit inicial; o método não existe |
+| Erro em `db:migrate` | `NoMethodError: undefined method 'model_feature_keys'` |
+
+O sync trouxe arquivos novos que dependem de versões atualizadas de outros arquivos que **não** foram atualizados. Não é falha pontual: é inconsistência estrutural da árvore.
+
+### 10.2 Defeitos de build corrigidos no caminho
+
+1. **`libffi-dev` ausente** no `core/Dockerfile` — os gems nativos `ffi`/`fiddle` não compilavam e o build abortava.
+2. **`ruby-vips 2.1.4`** — o Rails 7.2.3.2 recusa inicializar o Active Storage abaixo de 2.2.1, quebrando `rake vite:build`. Atualizado para 2.3.0.
+3. **COPY seletivo no Dockerfile** — ~200 arquivos individuais sobre imagem base fixada geravam imagem em estado misto (`uninitialized constant Inbox::InboxBrandedEmailLayoutable`). Corrigido copiando a árvore completa.
+
+### 10.3 Estratégia de entrega adotada
+
+- **`feat/ui-ux-master-plan`** — UI/UX das Fases 1–3 sobre a base estável v4.12.1. **Validada e entregável.**
+- **`refactor/design-system-phase-5-crm-rollout-1`** — contém o sync upstream. **Não deployável** até ser concluído e auditado.
+
+O cherry-pick da UI/UX para a base estável ocorreu **sem nenhum conflito**, confirmando que o trabalho de interface não depende do sync upstream.
+
+### 10.4 Validação da branch entregável
+
+| Verificação | Resultado |
+|---|---|
+| Suíte de testes | **401 arquivos / 3852 testes — 100% verde** |
+| ESLint | **0 erros** |
+| Build da imagem Docker | ✅ completo, com assets Vite |
+| `db:schema:load` | ✅ |
+| `db:migrate` | ✅ todas as migrations aplicadas |
+| Higiene do commit | ✅ sem `artifacts/`, `tmp/` ou material de token |
+
+### 10.5 Pendência do upstream
+
+Concluir o sync v4.17.1 exige promover a imagem base para a release correspondente e reauditar toda a sobreposição do fork — exatamente a *"explicit upstream-compatibility audit"* que o próprio `core/Dockerfile` exige em seu cabeçalho.
+
+---
+
 ### Próximos passos recomendados
 
 1. Executar a aplicação e percorrer o checklist da Seção 7.
