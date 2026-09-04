@@ -115,7 +115,7 @@ COPY lib/filters/filter_keys.yml ./lib/filters/filter_keys.yml
 COPY enterprise/app/jobs/enterprise/internal/check_new_versions_job.rb ./enterprise/app/jobs/enterprise/internal/check_new_versions_job.rb
 COPY enterprise/app/services/internal/reconcile_plan_config_service.rb ./enterprise/app/services/internal/reconcile_plan_config_service.rb
 COPY public/brand-assets/ ./public/brand-assets/
-COPY public/favicon*.png ./public/
+COPY public/favicon*.png public/favicon.ico ./public/
 COPY public/apple*.png ./public/
 COPY public/android*.png ./public/
 COPY public/ms-icon*.png ./public/

@@ -1,9 +1,13 @@
+const FAVICON_VERSION = 'minimal-c-20260904';
+
+const versionedFavicon = path => `${path}?v=${FAVICON_VERSION}`;
+
 export const showBadgeOnFavicon = () => {
   const favicons = document.querySelectorAll('.favicon');
 
   favicons.forEach(favicon => {
     const newFileName = `/favicon-badge-${favicon.sizes[[0]]}.png`;
-    favicon.href = newFileName;
+    favicon.href = versionedFavicon(newFileName);
   });
 };
 
@@ -14,7 +18,7 @@ export const initFaviconSwitcher = () => {
     if (document.visibilityState === 'visible') {
       favicons.forEach(favicon => {
         const oldFileName = `/favicon-${favicon.sizes[[0]]}.png`;
-        favicon.href = oldFileName;
+        favicon.href = versionedFavicon(oldFileName);
       });
     }
   });
