@@ -21,10 +21,13 @@ export function useSidebarResize() {
   const storedWidth = uiSettings.value.sidebar_width;
   let initialWidth = DEFAULT_WIDTH;
   if (storedWidth) {
-    initialWidth =
-      storedWidth < COLLAPSED_THRESHOLD
-        ? MIN_WIDTH
-        : Math.max(storedWidth, MIN_EXPANDED_WIDTH);
+    if (storedWidth < COLLAPSED_THRESHOLD) {
+      initialWidth = MIN_WIDTH;
+    } else if (storedWidth < MIN_EXPANDED_WIDTH) {
+      initialWidth = DEFAULT_WIDTH;
+    } else {
+      initialWidth = storedWidth;
+    }
   }
   const sidebarWidth = ref(initialWidth);
   const isCollapsed = computed(() => sidebarWidth.value < COLLAPSED_THRESHOLD);
