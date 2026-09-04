@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 
+import { useDsTranslate } from '../useDsTranslate';
 import DsButton from './DsButton.vue';
 
 const props = defineProps({
@@ -12,9 +13,18 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:currentPage']);
-const NAVIGATION_LABEL = 'Paginação';
-const PREVIOUS_PAGE_LABEL = 'Página anterior';
-const NEXT_PAGE_LABEL = 'Próxima página';
+
+const { translate } = useDsTranslate();
+
+const navigationLabel = computed(() =>
+  translate('PAGINATION.NAVIGATION', 'Pagination')
+);
+const previousPageLabel = computed(() =>
+  translate('PAGINATION.PREVIOUS_PAGE', 'Previous page')
+);
+const nextPageLabel = computed(() =>
+  translate('PAGINATION.NEXT_PAGE', 'Next page')
+);
 
 const totalPages = computed(() =>
   Math.max(1, Math.ceil(props.totalItems / props.itemsPerPage))
@@ -42,7 +52,7 @@ const changePage = page => {
 
 <template>
   <nav
-    :aria-label="NAVIGATION_LABEL"
+    :aria-label="navigationLabel"
     :aria-busy="loading || undefined"
     class="flex flex-wrap items-center justify-between gap-3 border-t border-ui-border-subtle bg-ui-surface p-3"
   >
@@ -54,7 +64,7 @@ const changePage = page => {
         icon="i-lucide-chevron-left"
         variant="ghost"
         size="sm"
-        :aria-label="PREVIOUS_PAGE_LABEL"
+        :aria-label="previousPageLabel"
         :disabled="disabled || currentPage <= 1"
         :loading="loading"
         @click="changePage(currentPage - 1)"
@@ -68,7 +78,7 @@ const changePage = page => {
         icon="i-lucide-chevron-right"
         variant="ghost"
         size="sm"
-        :aria-label="NEXT_PAGE_LABEL"
+        :aria-label="nextPageLabel"
         :disabled="disabled || currentPage >= totalPages"
         :loading="loading"
         @click="changePage(currentPage + 1)"

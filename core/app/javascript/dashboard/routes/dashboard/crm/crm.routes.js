@@ -17,6 +17,7 @@ const ScoringConfig = () => import('./pages/ScoringConfig.vue');
 const Cadences = () => import('./pages/Cadences.vue');
 const DealDetails = () => import('./pages/DealDetails.vue');
 const CrmMetrics = () => import('./pages/CrmMetrics.vue');
+const AnalyticsCenter = () => import('./pages/AnalyticsCenter.vue');
 const AiCenter = () => import('./pages/AiCenter.vue');
 const PageTemplatesGallery = () => import('./pages/PageTemplatesGallery.vue');
 
@@ -96,6 +97,12 @@ export const routes = [
     path: frontendURL('accounts/:accountId/crm/deals/:dealId'),
     name: 'crm_deal_details',
     component: DealDetails,
+    meta: commonMeta,
+  },
+  {
+    path: frontendURL('accounts/:accountId/crm/analytics'),
+    name: 'crm_analytics',
+    component: AnalyticsCenter,
     meta: commonMeta,
   },
   {

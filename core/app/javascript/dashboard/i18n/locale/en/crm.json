@@ -30,10 +30,31 @@
     },
     "COLUMN": {
       "AVERAGE_AGE": "Average time in this stage",
+      "WEIGHTED_VALUE": "Weighted value: {value}",
       "WIP_TITLE": "Work in progress in this stage",
       "WIP": "WIP {current}/{limit}",
       "LOADING_MORE": "Loading more…",
       "CREATE_IN_STAGE": "Create deal in {stage}"
+    },
+    "VIEW_SWITCHER": {
+      "LABEL": "View mode",
+      "KANBAN": "Kanban board",
+      "TABLE": "Table view"
+    },
+    "TABLE": {
+      "DEAL": "Deal",
+      "CONTACT": "Contact",
+      "STAGE": "Stage",
+      "VALUE": "Value",
+      "OWNER": "Owner",
+      "EXPECTED_CLOSE": "Expected close",
+      "DAYS_INACTIVE": "Inactive",
+      "ACTIONS": "Actions",
+      "NO_DATE": "No date"
+    },
+    "ROTTING": {
+      "BADGE": "Sitting for {days}d",
+      "TOOLTIP": "Deal inactive for {days} days (threshold: {threshold} days)"
     },
     "DENSITY": {
       "LABEL": "Card density",
@@ -223,6 +244,336 @@
         "NORMAL": "normal",
         "BAIXA": "low"
       }
+    },
+    "ANALYTICS": {
+      "TITLE": "Analytics Center",
+      "BREADCRUMB": "CRM",
+      "BACK": "Back to CRM",
+      "EYEBROW": "Intelligence & Reports",
+      "SUBTITLE": "Unified cockpit connecting sales metrics, funnel velocity, and customer support performance.",
+      "REFRESH": "Refresh metrics",
+      "LOADING": "Loading analytics...",
+      "ERROR_LOAD": "Unable to load some analytics data. Showing available indicators.",
+      "EXPORT": {
+        "BUTTON": "Export CSV",
+        "EXPORTING": "Exporting...",
+        "SUCCESS": "Export started. You will receive an email once ready.",
+        "ERROR": "Failed to export data."
+      },
+      "PERIOD": {
+        "LABEL": "Period",
+        "TODAY": "Today",
+        "LAST_7_DAYS": "Last 7 days",
+        "LAST_30_DAYS": "Last 30 days",
+        "THIS_MONTH": "This month",
+        "CUSTOM": "Custom range",
+        "START_DATE": "Start date",
+        "END_DATE": "End date",
+        "APPLY": "Apply filter"
+      },
+      "TABS": {
+        "LABEL": "Analytics Sections",
+        "EXECUTIVE": "Executive Overview",
+        "FUNNEL": "Sales Funnel",
+        "SUPPORT": "Support & SLA"
+      },
+      "EXECUTIVE": {
+        "TITLE": "Executive Overview",
+        "SUBTITLE": "High-level indicators across revenue, sales conversions, and conversation response times.",
+        "KPIS": {
+          "REVENUE_WON": "Generated Revenue",
+          "CONVERSATIONS": "Conversation Volume",
+          "CONVERSION_RATE": "Sales Conversion Rate",
+          "AVG_FIRST_RESPONSE": "Avg First Response Time",
+          "AVG_TIME_TO_CLOSE": "Avg Sales Cycle",
+          "OPEN_DEALS": "Open Deals",
+          "WON_DEALS": "Won Deals",
+          "PIPELINE_VALUE": "Active Pipeline Value"
+        },
+        "TRENDS": {
+          "TITLE": "Monthly Win / Loss Trend",
+          "EMPTY": "No closed deals recorded in the period",
+          "WON_LABEL": "Won",
+          "LOST_LABEL": "Lost"
+        },
+        "INSIGHTS": {
+          "TITLE": "Operational Alerts & Actionable Insights",
+          "OVERDUE_TITLE": "Overdue Activities",
+          "OVERDUE_BODY": "{count} overdue activities require immediate follow-up.",
+          "HOT_LEADS_TITLE": "Priority Opportunities",
+          "HOT_LEADS_BODY": "{count} high/critical priority deals waiting in pipeline.",
+          "QUALIFICATION_TITLE": "Qualification Attention",
+          "QUALIFICATION_BODY": "Open deals need initial qualification assessment.",
+          "HEALTHY_TITLE": "Operations On Track",
+          "HEALTHY_BODY": "No critical bottlenecks detected for the active period."
+        },
+        "TOP_DEALS": {
+          "TITLE": "Top High-Score Deals",
+          "EMPTY": "No deals found",
+          "DEAL": "Deal",
+          "CONTACT": "Contact",
+          "STAGE": "Stage",
+          "SCORE": "Score",
+          "URGENCY": "Urgency",
+          "OPEN": "Open deal {title}"
+        }
+      },
+      "FUNNEL": {
+        "TITLE": "Sales Funnel & Stage Efficiency",
+        "SUBTITLE": "Stage-by-stage drop-off rates, velocity, and top loss drivers.",
+        "EMPTY": "No pipeline stages found.",
+        "CONVERSION_FROM_PREV": "Pass-through from previous stage",
+        "ENTRY_STAGE": "Entry Stage",
+        "TOTAL_DEALS": "{count} total deals in funnel",
+        "STAGE_VALUE": "Value: {value}",
+        "TIME_IN_STAGE": {
+          "TITLE": "Average Duration by Stage",
+          "EMPTY": "No transition time data available",
+          "STAGE": "Stage",
+          "AVG_TIME": "Avg time",
+          "SAMPLES": "{count} deals analyzed (min {min}, max {max})"
+        },
+        "LOSS_REASONS": {
+          "TITLE": "Top Loss Reasons",
+          "EMPTY": "No loss reasons recorded in this period",
+          "RANK": "#",
+          "REASON": "Reason",
+          "COUNT": "Deals lost"
+        },
+        "SCORE_BY_STAGE": {
+          "TITLE": "Average Lead Score by Stage",
+          "EMPTY": "No scoring data available for stages"
+        },
+        "AREA_DISTRIBUTION": {
+          "TITLE": "Deals by Legal Area",
+          "EMPTY": "No legal area recorded"
+        },
+        "STALE_DEALS": {
+          "TITLE": "Stagnant Deals (7+ days without activity)",
+          "EMPTY": "No stagnant deals in this period",
+          "DAYS": "{days}d inactive",
+          "NEVER": "Never contacted"
+        },
+        "ANALYST": {
+          "TITLE": "AI Sales & Funnel Analyst",
+          "SUBTITLE": "Ask questions about conversion bottlenecks, unassigned leads, and stage drop-offs.",
+          "QUESTION_LABEL": "Ask AI Analyst",
+          "PLACEHOLDER": "E.g.: Which stage has the highest drop-off rate?",
+          "ASK": "Ask Analyst",
+          "ASKING": "Analyzing data…",
+          "ERROR": "Could not contact the CRM analyst right now."
+        }
+      },
+      "SUPPORT": {
+        "TITLE": "Support Performance & SLA Compliance",
+        "SUBTITLE": "Customer satisfaction, resolution metrics, and SLA breach tracking.",
+        "KPIS": {
+          "CSAT_SCORE": "CSAT Satisfaction Score",
+          "CSAT_RESPONSES": "Total CSAT Responses",
+          "CSAT_RESPONSE_RATE": "CSAT Response Rate",
+          "SLA_HIT_RATE": "SLA Compliance Rate",
+          "SLA_MISSES": "SLA Breaches",
+          "SLA_CONVERSATIONS": "SLA Conversations",
+          "FRT": "Avg First Response Time",
+          "RESOLUTION_TIME": "Avg Resolution Time",
+          "RESOLUTIONS_COUNT": "Resolved Conversations"
+        },
+        "CSAT_DISTRIBUTION": {
+          "TITLE": "CSAT Rating Breakdown",
+          "EMPTY": "No survey responses recorded in the selected period",
+          "STARS": "{rating} Stars",
+          "RESPONSES": "{count} responses ({pct}%)"
+        },
+        "INBOXES": {
+          "TITLE": "Performance by Channel & Inbox",
+          "EMPTY": "No channel activity recorded in this period",
+          "INBOX": "Inbox / Channel",
+          "CONVERSATIONS": "Conversations",
+          "FRT": "Avg First Response",
+          "RESOLUTION_TIME": "Avg Resolution"
+        }
+      }
+    },
+    "AUTOMATION_RULES": {
+      "BREADCRUMB": "CRM",
+      "TITLE": "Automation Rules",
+      "EYEBROW": "Workflow Automation",
+      "SUBTITLE": "Visual node-based automations for deals, stages, and CRM triggers.",
+      "NEW_RULE": "New automation",
+      "LOADING": "Loading automation rules...",
+      "ERROR_LOAD": "Unable to load automation rules.",
+      "ERROR_SAVE": "Unable to save automation rule.",
+      "ERROR_TOGGLE": "Unable to update automation rule status.",
+      "ERROR_DELETE": "Unable to delete automation rule.",
+      "EMPTY_TITLE": "No automation rules configured",
+      "EMPTY_DESCRIPTION": "Build visual workflows to automate tasks when deals change stages or events occur.",
+      "EMPTY_ACTION": "Create first automation",
+      "SUMMARY": {
+        "TITLE": "Summary of automations",
+        "TOTAL": "Total",
+        "ACTIVE": "Active",
+        "PAUSED": "Paused",
+        "FAST": "Fast response (≤12h)",
+        "CRITICAL": "Critical priority"
+      },
+      "FILTERS": {
+        "SEARCH_LABEL": "Search rules",
+        "SEARCH_PLACEHOLDER": "Search automations...",
+        "STATUS_LABEL": "Filter by status",
+        "STATUS_ALL": "All statuses",
+        "STATUS_ACTIVE": "Active",
+        "STATUS_PAUSED": "Paused",
+        "STAGE_LABEL": "Filter by stage",
+        "STAGE_ALL": "All stages",
+        "CLEAR": "Clear filters"
+      },
+      "CARD": {
+        "STATUS_ACTIVE": "Active",
+        "STATUS_PAUSED": "Paused",
+        "TRIGGER_PREFIX": "Trigger: When entered stage ",
+        "STAGE_UNLINKED": "Unlinked stage",
+        "DUE": "Due in {hours}h",
+        "CONDITIONS_COUNT": "No conditions | 1 condition | {count} conditions",
+        "UNTITLED": "Untitled task",
+        "ACTIVATE": "Activate",
+        "PAUSE": "Pause",
+        "EDIT": "Edit flow",
+        "DELETE": "Delete"
+      },
+      "DELETE_MODAL": {
+        "TITLE": "Delete automation rule",
+        "DESCRIPTION": "Are you sure you want to delete the automation rule \"{name}\"? This action cannot be undone.",
+        "CONFIRM": "Delete rule",
+        "CANCEL": "Cancel"
+      },
+      "ACTION_TYPES": {
+        "CREATE_ACTIVITY": "Create Activity",
+        "SET_CAPTAIN_MODE": "Set Captain AI Mode",
+        "MOVE_TO_STAGE": "Move to Stage",
+        "ASSIGN_OWNER": "Assign Owner"
+      },
+      "TRIGGER_EVENTS": {
+        "STAGE_ENTERED": "Deal enters stage",
+        "SCORE_CHANGED": "Lead score changed",
+        "STALE_DETECTED": "Deal inactive / stale detected",
+        "HANDOFF": "Attendant handoff",
+        "MESSAGE_RECEIVED": "Message received"
+      },
+      "ACTION_KINDS": {
+        "LIGACAO": "Phone call",
+        "SOLICITACAO_DOCUMENTOS": "Request documents",
+        "FOLLOW_UP": "Follow-up",
+        "REUNIAO": "Meeting",
+        "REVISAO_JURIDICA": "Legal review",
+        "ANALISE_DOCUMENTAL": "Document analysis",
+        "RETORNO_CLIENTE": "Customer feedback",
+        "ENVIO_PROPOSTA": "Send proposal",
+        "ENVIO_CONTRATO": "Send contract",
+        "ARQUIVAMENTO": "Archive"
+      },
+      "PRIORITIES": {
+        "BAIXA": "Low",
+        "NORMAL": "Normal",
+        "ALTA": "High",
+        "CRITICA": "Critical"
+      },
+      "CONDITION_FIELDS": {
+        "LEGAL_AREA": "Legal area",
+        "CASE_TYPE": "Case type",
+        "URGENCY_LEVEL": "Urgency level",
+        "SCORE_TOTAL": "Total score",
+        "RELATIONSHIP_STATUS": "Relationship status",
+        "LIFECYCLE_STAGE": "Lifecycle stage",
+        "HAS_PHONE": "Has phone number",
+        "CAMPAIGN_OPT_OUT": "Campaign opt-out",
+        "STAGE": "Deal stage",
+        "STATUS": "Deal status"
+      },
+      "CONDITION_OPERATORS": {
+        "EQ": "Equals (=)",
+        "NOT_EQ": "Does not equal (≠)",
+        "PRESENT": "Is present / not empty",
+        "BLANK": "Is blank / empty",
+        "GT": "Greater than (>)",
+        "GTE": "Greater than or equal (≥)",
+        "LT": "Less than (<)",
+        "LTE": "Less than or equal (≤)",
+        "IN": "In list",
+        "NOT_IN": "Not in list"
+      },
+      "BUILDER": {
+        "TITLE_NEW": "New visual automation",
+        "TITLE_EDIT": "Edit visual automation",
+        "DESCRIPTION": "Design the automation graph by configuring triggers, conditions, and actions.",
+        "SAVE": "Save automation",
+        "SAVING": "Saving...",
+        "CANCEL": "Cancel",
+        "CLOSE": "Close builder",
+        "ADD_TRIGGER": "Add Trigger",
+        "ADD_CONDITION": "Add Condition",
+        "ADD_ACTION": "Add Action",
+        "AUTO_LAYOUT": "Auto layout",
+        "ZOOM_IN": "Zoom in",
+        "ZOOM_OUT": "Zoom out",
+        "FIT_VIEW": "Fit to screen",
+        "EMPTY_CANVAS": "No nodes in flow. Add a trigger to begin.",
+        "NODE_TRIGGER_LABEL": "Trigger",
+        "NODE_CONDITION_LABEL": "Condition",
+        "NODE_ACTION_LABEL": "Action",
+        "DRAWER_TITLE": "Node Settings",
+        "DRAWER_DESCRIPTION": "Configure properties for the selected node.",
+        "RULE_NAME_LABEL": "Rule Name",
+        "RULE_NAME_PLACEHOLDER": "e.g. Follow-up after entering qualification stage",
+        "TRIGGER_EVENT_LABEL": "Trigger Event",
+        "TRIGGER_STAGE_LABEL": "Pipeline Stage",
+        "TRIGGER_STAGE_PLACEHOLDER": "Select a pipeline stage...",
+        "ACTION_TYPE_LABEL": "Action Type",
+        "ACTION_KIND_LABEL": "Activity Type",
+        "ACTION_TITLE_LABEL": "Task Title",
+        "ACTION_TITLE_PLACEHOLDER": "e.g. Schedule call with client",
+        "ACTION_DESC_LABEL": "Task Description",
+        "ACTION_DESC_PLACEHOLDER": "Details and context for the assignee...",
+        "ACTION_PRIORITY_LABEL": "Priority",
+        "ACTION_DUE_HOURS_LABEL": "Due in (hours)",
+        "ACTION_AI_MODE_LABEL": "Captain AI Mode",
+        "ACTION_AI_MODE_COPILOT": "Copilot (Assisted)",
+        "ACTION_AI_MODE_AUTONOMOUS": "Autonomous",
+        "ACTION_AI_MODE_DISABLED": "Disabled",
+        "ACTION_AI_MODE_ASSIST": "Assist",
+        "ACTION_REASON_LABEL": "Reason / Justification",
+        "ACTION_REASON_PLACEHOLDER": "Why AI mode is changing...",
+        "ACTION_TARGET_STAGE_LABEL": "Target Stage",
+        "ACTION_TARGET_STAGE_PLACEHOLDER": "Select target stage...",
+        "ACTION_USER_LABEL": "Assign to User",
+        "ACTION_USER_PLACEHOLDER": "Select user...",
+        "CONDITION_FIELD_LABEL": "Field",
+        "CONDITION_OPERATOR_LABEL": "Operator",
+        "CONDITION_VALUE_LABEL": "Value",
+        "CONDITION_VALUE_PLACEHOLDER": "Comparison value...",
+        "VALIDATION_NAME_REQUIRED": "Automation name is required.",
+        "VALIDATION_STAGE_REQUIRED": "Pipeline stage is required for stage-based trigger.",
+        "VALIDATION_ACTION_TITLE_REQUIRED": "Activity title is required.",
+        "VALIDATION_TRIGGER_REQUIRED": "The workflow must contain a trigger node.",
+        "VALIDATION_ACTION_REQUIRED": "The workflow must contain at least one action node.",
+        "DELETE_NODE": "Delete node"
+      }
+    },
+    "DEAL_INSIGHTS": {
+      "TITLE": "AI Deal Insights",
+      "SUBTITLE": "Contextual intelligence & next best action",
+      "SUMMARY_TITLE": "Deal Summary",
+      "NO_SUMMARY": "No AI summary generated for this deal yet.",
+      "NEXT_ACTION_TITLE": "Next Best Action",
+      "NO_NEXT_ACTION": "No next best action suggested yet.",
+      "SCORE_TITLE": "Lead Score & Qualification",
+      "RECOMPUTE_SCORE": "Recompute score",
+      "RECOMPUTING_SCORE": "Recomputing...",
+      "SCORE_REASON": "Score rationale",
+      "AI_STATUS_TITLE": "Captain AI Mode",
+      "HANDOFF_REASON": "Handoff reason",
+      "OPEN_CONVERSATION": "Open conversation with Copilot",
+      "SCORE_UPDATED": "Lead score updated successfully.",
+      "SCORE_UPDATE_ERROR": "Could not recompute score. Please try again."
     }
   }
 }

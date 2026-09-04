@@ -81,6 +81,13 @@ redis-data/
 evolution-instances/
 evolution-store/
 
+# Build/deploy artifacts and scratch directories (may contain tokens — SEC-06)
+artifacts/
+tmp/
+
+# Third-party repository cloned into the workspace (has its own .git)
+everything-claude-code/
+
 # Test and coverage artifacts
 coverage/
 .nyc_output/

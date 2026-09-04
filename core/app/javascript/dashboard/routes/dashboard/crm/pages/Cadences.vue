@@ -1,3 +1,4 @@
+<!-- eslint-disable @intlify/vue-i18n/no-dynamic-keys -->
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';

@@ -1,4 +1,4 @@
-﻿{
+{
   "CONVERSATION": {
     "SELECT_A_CONVERSATION": "Please select a conversation from left pane",
     "CSAT_REPLY_MESSAGE": "Please rate the conversation",
@@ -306,6 +306,10 @@
       "CONTACT": "Contact",
       "COPILOT": "Copilot"
     },
+    "RESIZE": {
+      "RESIZE_LIST": "Resize conversation list",
+      "RESIZE_SIDEBAR": "Resize contact sidebar"
+    },
     "VOICE_WIDGET": {
       "INCOMING_CALL": "Incoming call",
       "OUTGOING_CALL": "Outgoing call",
@@ -462,7 +466,49 @@
     "MULTIPLE": "{user} and {count} others are typing"
   },
   "COPILOT": {
-    "TRY_THESE_PROMPTS": "Try these prompts"
+    "TRY_THESE_PROMPTS": "Try these prompts",
+    "SIDEBAR_TITLE": "Captain AI Copilot",
+    "SUBTITLE": "Contextual AI tools for faster resolution",
+    "HEADER_BADGE": "AI Powered",
+    "SMART_SUMMARY": {
+      "TITLE": "Smart Summary",
+      "DESCRIPTION": "Generate a concise AI summary of this conversation.",
+      "GENERATE_BUTTON": "Generate summary",
+      "REFRESH_BUTTON": "Refresh summary",
+      "EMPTY": "No summary generated yet. Click above to analyze this conversation.",
+      "COPIED": "Summary copied to clipboard",
+      "COPY": "Copy summary",
+      "INSERT": "Insert into editor",
+      "ERROR": "Could not generate summary. Please try again."
+    },
+    "REPLY_ASSISTANT": {
+      "TITLE": "Reply Assistant",
+      "DESCRIPTION": "Draft answers based on your knowledge base and conversation context.",
+      "GENERATE_BUTTON": "Suggest response",
+      "REFRESH_BUTTON": "New suggestion",
+      "EMPTY": "Click above to draft a suggested response based on the conversation context.",
+      "COPIED": "Reply copied to clipboard",
+      "COPY": "Copy response",
+      "INSERT": "Insert into editor",
+      "REFINE_LABEL": "Refine response",
+      "TONE_PROFESSIONAL": "Professional",
+      "TONE_CASUAL": "Friendly",
+      "TONE_SHORTEN": "Shorten",
+      "TONE_EXPAND": "Expand",
+      "TONE_GRAMMAR": "Fix grammar",
+      "ERROR": "Could not generate reply suggestion. Please try again."
+    },
+    "TABS": {
+      "ASSISTANT": "Contextual Tools",
+      "CHAT": "Ask Copilot"
+    },
+    "AI_MODE": {
+      "TITLE": "AI Status",
+      "AUTO": "AI active",
+      "SUPERVISED": "Supervised",
+      "PAUSED": "AI paused",
+      "HUMAN_ONLY": "Human in control"
+    }
   },
   "GALLERY_VIEW": {
     "ERROR_DOWNLOADING": "Unable to download attachment. Please try again"

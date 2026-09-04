@@ -34,8 +34,8 @@ const isScrollable = computed(() => {
 
 const scrollEnd = ref(false);
 
-// set scrollEnd to true when the scroll reaches the end
 useEventListener(scrollableContainer, 'scroll', () => {
+  if (!scrollableContainer.value) return;
   const { scrollHeight, scrollTop, clientHeight } = scrollableContainer.value;
   scrollEnd.value = scrollHeight - scrollTop === clientHeight;
 });
@@ -46,13 +46,11 @@ useEventListener(scrollableContainer, 'scroll', () => {
     <SidebarGroupSeparator
       v-if="hasAccessibleItems"
       v-show="isExpanded"
-      :label
-      :icon
+      :label="label"
+      :icon="icon"
       class="my-1"
     />
     <div class="group reset-base relative min-w-0">
-      <!-- Each element has h-8, which is 32px, we will show 7 items with one hidden at the end,
-      which is 14rem. Then we add 16px so that we have some text visible from the next item  -->
       <ul
         ref="scrollableContainer"
         class="m-0 min-w-0 list-none"
@@ -73,7 +71,7 @@ useEventListener(scrollableContainer, 'scroll', () => {
       <div
         v-if="isScrollable && isExpanded"
         v-show="!scrollEnd"
-        class="pointer-events-none absolute -bottom-1 flex h-12 w-full animate-fade-in-up items-end justify-end bg-gradient-to-t from-ds-shell-canvas px-2 to-transparent"
+        class="pointer-events-none absolute -bottom-1 flex h-12 w-full animate-fade-in-up items-end justify-end bg-gradient-to-t from-ds-shell-canvas to-transparent px-2"
       >
         <Icon
           icon="i-lucide-chevrons-down"

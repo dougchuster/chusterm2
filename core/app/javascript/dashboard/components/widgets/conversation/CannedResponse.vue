@@ -1,6 +1,7 @@
 <script>
 import { mapGetters } from 'vuex';
 import MentionBox from '../mentions/MentionBox.vue';
+import { filterCannedResponses } from 'dashboard/helper/cannedResponseHelper';
 
 export default {
   components: { MentionBox },
@@ -15,8 +16,11 @@ export default {
     ...mapGetters({
       cannedMessages: 'getCannedResponses',
     }),
+    filteredCannedResponses() {
+      return filterCannedResponses(this.cannedMessages, this.searchKey);
+    },
     items() {
-      return this.cannedMessages.map(cannedMessage => ({
+      return this.filteredCannedResponses.map(cannedMessage => ({
         label: cannedMessage.short_code,
         key: cannedMessage.short_code,
         description: cannedMessage.content,

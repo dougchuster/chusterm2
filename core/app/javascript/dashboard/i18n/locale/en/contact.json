@@ -665,5 +665,52 @@
         "SEND": "Send ({keyCode})"
       }
     }
+  },
+  "CONTACTS_DATA_GRID": {
+    "TITLE": "Contacts",
+    "SUBTITLE": "Manage and inspect your contacts with inline editing and bulk actions.",
+    "SEARCH_PLACEHOLDER": "Search contacts...",
+    "UPDATE_SUCCESS": "Contact updated successfully.",
+    "UPDATE_ERROR": "Could not update contact. Please try again.",
+    "COLUMNS": {
+      "NAME": "Name",
+      "EMAIL": "Email",
+      "PHONE": "Phone",
+      "COMPANY": "Company",
+      "RELATIONSHIP": "Relationship",
+      "LIFECYCLE_STAGE": "Lifecycle Stage",
+      "LOCATION": "Location",
+      "LAST_ACTIVITY": "Last Activity"
+    },
+    "FIELDS": {
+      "NAME": "Full Name",
+      "EMAIL": "Email Address",
+      "PHONE": "Phone Number",
+      "COMPANY": "Company",
+      "RELATIONSHIP": "Relationship",
+      "LIFECYCLE_STAGE": "Lifecycle Stage",
+      "LOCATION": "Location"
+    },
+    "RELATIONSHIPS": {
+      "LEAD": "Lead",
+      "CUSTOMER": "Customer"
+    },
+    "STAGES": {
+      "VISITOR": "Visitor",
+      "LEAD": "Lead",
+      "QUALIFIED_LEAD": "Qualified Lead",
+      "TRIAGE": "Triage",
+      "CONSULTATION_SCHEDULED": "Consultation Scheduled",
+      "CUSTOMER": "Customer",
+      "ACTIVE_CUSTOMER": "Active Customer",
+      "RECURRING_CUSTOMER": "Recurring Customer",
+      "EX_CUSTOMER": "Ex-Customer",
+      "LOST": "Lost"
+    },
+    "DRAWER": {
+      "BLOCK_CONTACT": "Block Contact",
+      "UNBLOCK_CONTACT": "Unblock Contact",
+      "SEND_MESSAGE": "Send Message"
+    }
   }
 }

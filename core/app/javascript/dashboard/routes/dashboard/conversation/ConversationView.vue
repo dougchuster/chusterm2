@@ -1,6 +1,8 @@
 <script>
+import { computed } from 'vue';
 import { mapGetters } from 'vuex';
 import { useUISettings } from 'dashboard/composables/useUISettings';
+import { useCockpitResize } from 'dashboard/composables/useCockpitResize';
 import ChatList from '../../../components/ChatList.vue';
 import ConversationBox from '../../../components/widgets/conversation/ConversationBox.vue';
 import wootConstants from 'dashboard/constants/globals';
@@ -57,11 +59,44 @@ export default {
   setup() {
     const { uiSettings, updateUISettings } = useUISettings();
     const { width: windowWidth } = useWindowSize();
+    const {
+      conversationListWidth,
+      contactSidebarWidth,
+      isResizingList,
+      isResizingSidebar,
+      onListResizeStart,
+      onSidebarResizeStart,
+      onListResizeKeydown,
+      onSidebarResizeKeydown,
+      resetListWidth,
+      resetSidebarWidth,
+      MIN_LIST_WIDTH,
+      MAX_LIST_WIDTH,
+      MIN_SIDEBAR_WIDTH,
+      MAX_SIDEBAR_WIDTH,
+    } = useCockpitResize();
+
+    const isStaticSidebar = computed(() => windowWidth.value >= 1440);
 
     return {
       uiSettings,
       updateUISettings,
       windowWidth,
+      conversationListWidth,
+      contactSidebarWidth,
+      isResizingList,
+      isResizingSidebar,
+      onListResizeStart,
+      onSidebarResizeStart,
+      onListResizeKeydown,
+      onSidebarResizeKeydown,
+      resetListWidth,
+      resetSidebarWidth,
+      MIN_LIST_WIDTH,
+      MAX_LIST_WIDTH,
+      MIN_SIDEBAR_WIDTH,
+      MAX_SIDEBAR_WIDTH,
+      isStaticSidebar,
     };
   },
   computed: {
@@ -89,8 +124,11 @@ export default {
         return false;
       }
 
-      const { is_contact_sidebar_open: isContactSidebarOpen } = this.uiSettings;
-      return isContactSidebarOpen;
+      const {
+        is_contact_sidebar_open: isContactSidebarOpen,
+        is_copilot_panel_open: isCopilotPanelOpen,
+      } = this.uiSettings;
+      return isContactSidebarOpen || isCopilotPanelOpen;
     },
   },
   watch: {
@@ -218,8 +256,29 @@ export default {
         :conversation-type="conversationType"
         :folders-id="foldersId"
         :is-on-expanded-layout="isOnExpandedLayout"
+        :custom-width="isOnExpandedLayout ? undefined : conversationListWidth"
         @conversation-load="onConversationLoad"
       />
+      <div
+        v-if="!isOnExpandedLayout && showConversationList && showMessageView"
+        class="group relative z-30 hidden w-2 -ml-1 -mr-1 cursor-col-resize select-none sm:block focus-visible:outline-none"
+        role="separator"
+        aria-orientation="vertical"
+        tabindex="0"
+        :aria-label="$t('CONVERSATION.RESIZE.RESIZE_LIST')"
+        :aria-valuemin="MIN_LIST_WIDTH"
+        :aria-valuemax="MAX_LIST_WIDTH"
+        :aria-valuenow="Math.round(conversationListWidth)"
+        @mousedown="onListResizeStart"
+        @touchstart="onListResizeStart"
+        @dblclick="resetListWidth"
+        @keydown="onListResizeKeydown"
+      >
+        <div
+          class="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-ds-border-subtle transition-colors group-hover:bg-ds-accent group-focus-visible:bg-ds-border-focus"
+          :class="{ '!bg-ds-accent': isResizingList }"
+        />
+      </div>
       <ConversationBox
         v-if="showMessageView"
         :inbox-id="inboxId"
@@ -227,9 +286,30 @@ export default {
       >
         <SidepanelSwitch v-if="currentChat.id" />
       </ConversationBox>
+      <div
+        v-if="shouldShowSidebar && isStaticSidebar"
+        class="group relative z-30 hidden w-2 -ml-1 -mr-1 cursor-col-resize select-none min-[1440px]:block focus-visible:outline-none"
+        role="separator"
+        aria-orientation="vertical"
+        tabindex="0"
+        :aria-label="$t('CONVERSATION.RESIZE.RESIZE_SIDEBAR')"
+        :aria-valuemin="MIN_SIDEBAR_WIDTH"
+        :aria-valuemax="MAX_SIDEBAR_WIDTH"
+        :aria-valuenow="Math.round(contactSidebarWidth)"
+        @mousedown="onSidebarResizeStart"
+        @touchstart="onSidebarResizeStart"
+        @dblclick="resetSidebarWidth"
+        @keydown="onSidebarResizeKeydown"
+      >
+        <div
+          class="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-ds-border-subtle transition-colors group-hover:bg-ds-accent group-focus-visible:bg-ds-border-focus"
+          :class="{ '!bg-ds-accent': isResizingSidebar }"
+        />
+      </div>
       <ConversationSidebar
         v-if="shouldShowSidebar"
         :current-chat="currentChat"
+        :custom-width="contactSidebarWidth"
       />
       <CmdBarConversationSnooze />
     </div>

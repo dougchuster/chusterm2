@@ -20,6 +20,7 @@ defineProps({
 const emit = defineEmits(['remove', 'clear']);
 </script>
 
+<!-- eslint-disable vue/no-root-v-if, @intlify/vue-i18n/no-dynamic-keys -->
 <template>
   <div
     v-if="pills.length"

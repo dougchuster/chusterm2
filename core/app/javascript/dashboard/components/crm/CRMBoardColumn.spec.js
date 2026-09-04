@@ -77,6 +77,24 @@ describe('CRMBoardColumn', () => {
       expect(wrapper.text()).toContain('120.000,00');
     });
 
+    it('shows the weighted money when stage has probability defined', () => {
+      const wrapper = mountColumn({
+        column: {
+          id: '10',
+          stage_id: 10,
+          name: 'Proposta',
+          count: 2,
+          sum_value_cents: 10000000, // R$ 100.000,00
+          probability_pct: 50, // 50% => R$ 50.000,00
+          deals: [],
+        },
+      });
+
+      expect(
+        wrapper.find('[data-testid="crm-column-weighted"]').text()
+      ).toContain('50.000,00');
+    });
+
     it('says nothing about WIP when the stage has no limit', () => {
       const wrapper = mountColumn();
 

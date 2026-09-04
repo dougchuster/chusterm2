@@ -231,9 +231,7 @@ const shouldShowVariables = computed(() => {
 });
 
 const shouldShowCannedResponses = computed(() => {
-  return (
-    props.enableCannedResponses && showCannedMenu.value && !props.isPrivate
-  );
+  return props.enableCannedResponses && showCannedMenu.value;
 });
 
 function createSuggestionPlugin({
@@ -293,7 +291,6 @@ const plugins = computed(() => {
       trigger: '/',
       showMenu: showCannedMenu,
       searchTerm: cannedSearchTerm,
-      isAllowed: () => !props.isPrivate,
     }),
     createSuggestionPlugin({
       trigger: '{{',
@@ -324,7 +321,7 @@ watch(showUserMentions, updatedValue => {
   emit('toggleUserMention', props.isPrivate && updatedValue);
 });
 watch(showCannedMenu, updatedValue => {
-  emit('toggleCannedMenu', !props.isPrivate && updatedValue);
+  emit('toggleCannedMenu', updatedValue);
 });
 watch(showVariables, updatedValue => {
   emit('toggleVariablesMenu', !props.isPrivate && updatedValue);

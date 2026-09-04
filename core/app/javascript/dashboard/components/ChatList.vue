@@ -31,6 +31,7 @@ import TeleportWithDirection from 'dashboard/components-next/TeleportWithDirecti
 import Spinner from 'dashboard/components-next/spinner/Spinner.vue';
 import IntersectionObserver from 'dashboard/components/IntersectionObserver.vue';
 import ConversationResolveAttributesModal from 'dashboard/components-next/ConversationWorkflow/ConversationResolveAttributesModal.vue';
+import { useWindowSize } from '@vueuse/core';
 
 import { useUISettings } from 'dashboard/composables/useUISettings';
 import { useAlert } from 'dashboard/composables';
@@ -73,11 +74,24 @@ const props = defineProps({
   foldersId: { type: [String, Number], default: 0 },
   showConversationList: { default: true, type: Boolean },
   isOnExpandedLayout: { default: false, type: Boolean },
+  customWidth: { type: Number, default: 0 },
 });
 
 const emit = defineEmits(['conversationLoad']);
 const { uiSettings } = useUISettings();
+const { width: windowWidth } = useWindowSize();
 const { t } = useI18n();
+
+const isMobile = computed(() => windowWidth.value < 640);
+
+const chatListStyle = computed(() => {
+  if (props.isOnExpandedLayout || isMobile.value || !props.customWidth) {
+    return undefined;
+  }
+  return {
+    width: `${props.customWidth}px`,
+  };
+});
 const router = useRouter();
 const route = useRoute();
 const store = useStore();
@@ -1002,6 +1016,7 @@ watch(conversationFilters, (newVal, oldVal) => {
         ? 'basis-full'
         : 'w-full sm:w-[360px] xl:w-[380px] 3xl:w-[420px]',
     ]"
+    :style="chatListStyle"
   >
     <slot />
     <ChatListHeader

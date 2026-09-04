@@ -201,4 +201,18 @@ describe('useConversationHotKeys', () => {
 
     expect(conversationHotKeys.value.length).toBe(0);
   });
+
+  it('should expose keyboardNavigation manager with standard Inbox actions', () => {
+    const { keyboardNavigation } = useConversationHotKeys();
+
+    expect(keyboardNavigation).toBeDefined();
+    expect(keyboardNavigation.navigateNext).toBeInstanceOf(Function);
+    expect(keyboardNavigation.navigatePrevious).toBeInstanceOf(Function);
+    expect(keyboardNavigation.resolveActiveConversation).toBeInstanceOf(
+      Function
+    );
+    expect(keyboardNavigation.focusMessageComposer).toBeInstanceOf(Function);
+    expect(keyboardNavigation.openCannedResponses).toBeInstanceOf(Function);
+    expect(keyboardNavigation.toggleReplyNoteMode).toBeInstanceOf(Function);
+  });
 });

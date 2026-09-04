@@ -4,18 +4,16 @@ import { useI18n } from 'vue-i18n';
 
 import CrmAPI from 'dashboard/api/crm';
 import Icon from 'dashboard/components-next/icon/Icon.vue';
-import {
-  DsBadge,
-  DsButton,
-  DsCard,
-  DsEmptyState,
-  DsInput,
-  DsModal,
-  DsSelect,
-  DsSkeleton,
-  DsTextarea,
-} from 'dashboard/design-system/components';
+import DsBadge from 'dashboard/design-system/components/DsBadge.vue';
+import DsButton from 'dashboard/design-system/components/DsButton.vue';
+import DsCard from 'dashboard/design-system/components/DsCard.vue';
+import DsEmptyState from 'dashboard/design-system/components/DsEmptyState.vue';
+import DsInput from 'dashboard/design-system/components/DsInput.vue';
+import DsModal from 'dashboard/design-system/components/DsModal.vue';
+import DsSelect from 'dashboard/design-system/components/DsSelect.vue';
+import DsSkeleton from 'dashboard/design-system/components/DsSkeleton.vue';
 import { DsPageHeader } from 'dashboard/design-system/templates';
+import AutomationFlowBuilder from '../components/automation/AutomationFlowBuilder.vue';
 
 const { t } = useI18n();
 
@@ -24,8 +22,8 @@ const pipelines = ref([]);
 const loading = ref(true);
 const saving = ref(false);
 const error = ref('');
-const showModal = ref(false);
-const editingId = ref(null);
+const isBuilderOpen = ref(false);
+const editingRule = ref(null);
 const deletingRule = ref(null);
 
 const filters = reactive({
@@ -39,19 +37,6 @@ const PRIORITY_BADGE_VARIANTS = {
   alta: 'warning',
   baixa: 'neutral',
 };
-
-const form = reactive({
-  name: '',
-  crm_pipeline_stage_id: '',
-  action_config: {
-    kind: 'follow_up',
-    title: '',
-    description: '',
-    priority: 'normal',
-    due_in_hours: 24,
-    conditions: [],
-  },
-});
 
 const extractData = response => {
   const payload = response?.data ?? response;
@@ -238,13 +223,6 @@ const summary = computed(() => {
   ];
 });
 
-const isFormValid = computed(
-  () =>
-    form.name.trim() &&
-    form.crm_pipeline_stage_id &&
-    form.action_config.title.trim()
-);
-
 function labelFor(options, value) {
   return options.find(opt => opt.value === value)?.label || value;
 }
@@ -270,71 +248,38 @@ function conditionLabel(condition) {
   return `${field} ${operator} ${condition.value || '-'}`;
 }
 
-function cleanConditions(conditions) {
-  return (conditions || [])
-    .filter(condition => condition.field && condition.operator)
-    .map(condition => ({
-      field: condition.field,
-      operator: condition.operator,
-      value: ['present', 'blank'].includes(condition.operator)
-        ? null
-        : condition.value,
-    }));
-}
-
-function resetForm() {
-  editingId.value = null;
-  form.name = '';
-  form.crm_pipeline_stage_id = '';
-  form.action_config.kind = 'follow_up';
-  form.action_config.title = '';
-  form.action_config.description = '';
-  form.action_config.priority = 'normal';
-  form.action_config.due_in_hours = 24;
-  form.action_config.conditions = [];
-}
-
 function openNew() {
-  resetForm();
-  showModal.value = true;
+  editingRule.value = {
+    name: '',
+    trigger_event: 'stage_entered',
+    crm_pipeline_stage_id: allStages.value[0]?.id || '',
+    action_type: 'create_activity',
+    action_config: {
+      kind: 'follow_up',
+      title: '',
+      description: '',
+      priority: 'normal',
+      due_in_hours: 24,
+      conditions: [],
+    },
+  };
+  isBuilderOpen.value = true;
 }
 
 function openEdit(rule) {
-  editingId.value = rule.id;
-  form.name = rule.name || '';
-  form.crm_pipeline_stage_id = rule.crm_pipeline_stage_id || '';
-  form.action_config.kind = rule.action_config?.kind || 'follow_up';
-  form.action_config.title = rule.action_config?.title || '';
-  form.action_config.description = rule.action_config?.description || '';
-  form.action_config.priority = rule.action_config?.priority || 'normal';
-  form.action_config.due_in_hours = rule.action_config?.due_in_hours ?? 24;
-  form.action_config.conditions = cleanConditions(
-    rule.action_config?.conditions || []
-  );
-  showModal.value = true;
+  editingRule.value = { ...rule };
+  isBuilderOpen.value = true;
 }
 
-function closeModal() {
-  showModal.value = false;
-  resetForm();
+function closeBuilder() {
+  isBuilderOpen.value = false;
+  editingRule.value = null;
 }
 
 function clearFilters() {
   filters.search = '';
   filters.status = '';
   filters.stage_id = '';
-}
-
-function addCondition() {
-  form.action_config.conditions.push({
-    field: 'legal_area',
-    operator: 'eq',
-    value: '',
-  });
-}
-
-function removeCondition(index) {
-  form.action_config.conditions.splice(index, 1);
 }
 
 async function loadData() {
@@ -354,33 +299,17 @@ async function loadData() {
   }
 }
 
-async function saveRule() {
-  if (!isFormValid.value) return;
+async function handleSaveRule(payload) {
   saving.value = true;
   error.value = '';
 
-  const payload = {
-    name: form.name.trim(),
-    trigger_event: 'stage_entered',
-    action_type: 'create_activity',
-    crm_pipeline_stage_id: form.crm_pipeline_stage_id,
-    action_config: {
-      kind: form.action_config.kind,
-      title: form.action_config.title.trim(),
-      description: form.action_config.description.trim() || null,
-      priority: form.action_config.priority,
-      due_in_hours: Number(form.action_config.due_in_hours),
-      conditions: cleanConditions(form.action_config.conditions),
-    },
-  };
-
   try {
-    if (editingId.value) {
-      await CrmAPI.updateAutomationRule(editingId.value, payload);
+    if (editingRule.value?.id) {
+      await CrmAPI.updateAutomationRule(editingRule.value.id, payload);
     } else {
       await CrmAPI.createAutomationRule(payload);
     }
-    closeModal();
+    closeBuilder();
     await loadData();
   } catch (err) {
     error.value =
@@ -426,411 +355,275 @@ onMounted(loadData);
     class="flex min-h-0 w-full min-w-0 flex-1 flex-col bg-ui-canvas text-ui-text"
     :aria-busy="loading || undefined"
   >
-    <DsPageHeader
-      :title="$t('CRM.AUTOMATION_RULES.TITLE')"
-      :breadcrumbs="[
-        { label: $t('CRM.AUTOMATION_RULES.BREADCRUMB') },
-        { label: $t('CRM.AUTOMATION_RULES.TITLE') },
-      ]"
-    >
-      <template #actions>
-        <DsButton
-          icon="i-lucide-plus"
-          variant="primary"
-          :label="$t('CRM.AUTOMATION_RULES.NEW_RULE')"
-          @click="openNew"
-        />
-      </template>
-    </DsPageHeader>
+    <!-- Builder View -->
+    <AutomationFlowBuilder
+      v-if="isBuilderOpen"
+      :initial-rule="editingRule"
+      :pipelines="pipelines"
+      :saving="saving"
+      @save="handleSaveRule"
+      @cancel="closeBuilder"
+    />
 
-    <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4 sm:p-6">
-      <div>
-        <p
-          class="m-0 text-ui-caption font-medium uppercase tracking-wide text-ui-brand"
-        >
-          {{ $t('CRM.AUTOMATION_RULES.EYEBROW') }}
-        </p>
-        <p class="m-0 mt-1 max-w-2xl text-ui-body-sm text-ui-text-muted">
-          {{ $t('CRM.AUTOMATION_RULES.SUBTITLE') }}
-        </p>
-      </div>
-
-      <DsCard
-        as="section"
-        padding="none"
-        :aria-label="$t('CRM.AUTOMATION_RULES.SUMMARY.TITLE')"
+    <!-- List View -->
+    <template v-else>
+      <DsPageHeader
+        :title="$t('CRM.AUTOMATION_RULES.TITLE')"
+        :breadcrumbs="[
+          { label: $t('CRM.AUTOMATION_RULES.BREADCRUMB') },
+          { label: $t('CRM.AUTOMATION_RULES.TITLE') },
+        ]"
       >
-        <dl class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
-          <div
-            v-for="item in summary"
-            :key="item.key"
-            class="flex min-w-0 flex-col gap-1 p-3 sm:p-4"
-          >
-            <dt
-              class="truncate text-ui-caption font-medium uppercase tracking-wide text-ui-text-muted"
-            >
-              {{ item.label }}
-            </dt>
-            <dd
-              class="m-0 truncate font-manrope text-ui-heading font-semibold text-ui-text"
-            >
-              {{ item.value }}
-            </dd>
-          </div>
-        </dl>
-      </DsCard>
-
-      <div
-        class="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_auto_auto_auto] xl:items-end"
-      >
-        <DsInput
-          v-model="filters.search"
-          type="search"
-          :label="$t('CRM.AUTOMATION_RULES.FILTERS.SEARCH_LABEL')"
-          hide-label
-          :placeholder="$t('CRM.AUTOMATION_RULES.FILTERS.SEARCH_PLACEHOLDER')"
-        >
-          <template #prefix>
-            <Icon icon="i-lucide-search" class="size-4" />
-          </template>
-        </DsInput>
-        <DsSelect
-          v-model="filters.status"
-          :label="$t('CRM.AUTOMATION_RULES.FILTERS.STATUS_LABEL')"
-          hide-label
-          :options="statusFilterOptions"
-          class="xl:w-44"
-        />
-        <DsSelect
-          v-model="filters.stage_id"
-          :label="$t('CRM.AUTOMATION_RULES.FILTERS.STAGE_LABEL')"
-          hide-label
-          :options="stageFilterOptions"
-          class="xl:w-64"
-        />
-        <DsButton
-          variant="ghost"
-          :label="$t('CRM.AUTOMATION_RULES.FILTERS.CLEAR')"
-          @click="clearFilters"
-        />
-      </div>
-
-      <div
-        v-if="error"
-        role="alert"
-        class="rounded-ui-control border border-ui-danger/20 bg-ui-danger-soft px-3 py-2 text-ui-body-sm text-ui-danger-foreground"
-      >
-        {{ error }}
-      </div>
-
-      <div
-        v-if="loading"
-        role="status"
-        :aria-label="$t('CRM.AUTOMATION_RULES.LOADING')"
-        class="flex flex-col gap-3"
-      >
-        <span class="sr-only">{{ $t('CRM.AUTOMATION_RULES.LOADING') }}</span>
-        <DsSkeleton v-for="row in 3" :key="row" shape="block" class="h-28" />
-      </div>
-
-      <DsEmptyState
-        v-else-if="filteredRules.length === 0"
-        :title="$t('CRM.AUTOMATION_RULES.EMPTY_TITLE')"
-      >
-        <template #action>
-          <p class="m-0 max-w-md text-ui-body-sm text-ui-text-muted">
-            {{ $t('CRM.AUTOMATION_RULES.EMPTY_DESCRIPTION') }}
-          </p>
+        <template #actions>
           <DsButton
             icon="i-lucide-plus"
             variant="primary"
-            :label="$t('CRM.AUTOMATION_RULES.EMPTY_ACTION')"
+            :label="$t('CRM.AUTOMATION_RULES.NEW_RULE')"
             @click="openNew"
           />
         </template>
-      </DsEmptyState>
+      </DsPageHeader>
 
-      <div v-else class="flex flex-col gap-3">
-        <DsCard v-for="rule in filteredRules" :key="rule.id" as="article">
-          <div class="flex flex-col gap-3 sm:flex-row sm:items-start">
+      <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4 sm:p-6">
+        <div>
+          <p
+            class="m-0 text-ui-caption font-medium uppercase tracking-wide text-ui-brand"
+          >
+            {{ $t('CRM.AUTOMATION_RULES.EYEBROW') }}
+          </p>
+          <p class="m-0 mt-1 max-w-2xl text-ui-body-sm text-ui-text-muted">
+            {{ $t('CRM.AUTOMATION_RULES.SUBTITLE') }}
+          </p>
+        </div>
+
+        <DsCard
+          as="section"
+          padding="none"
+          :aria-label="$t('CRM.AUTOMATION_RULES.SUMMARY.TITLE')"
+        >
+          <dl class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
             <div
-              aria-hidden="true"
-              class="grid size-10 shrink-0 place-items-center rounded-ui-control bg-ui-brand-soft text-ui-brand"
+              v-for="item in summary"
+              :key="item.key"
+              class="flex min-w-0 flex-col gap-1 p-3 sm:p-4"
             >
-              <Icon icon="i-lucide-zap" class="size-5" />
-            </div>
-            <div class="min-w-0 flex-1">
-              <div class="flex flex-wrap items-center gap-2">
-                <h2
-                  class="m-0 min-w-0 truncate font-manrope text-ui-heading font-semibold text-ui-text"
-                >
-                  {{ rule.name }}
-                </h2>
-                <DsBadge
-                  :variant="rule.is_active ? 'success' : 'neutral'"
-                  :label="
-                    rule.is_active
-                      ? $t('CRM.AUTOMATION_RULES.CARD.STATUS_ACTIVE')
-                      : $t('CRM.AUTOMATION_RULES.CARD.STATUS_PAUSED')
-                  "
-                />
-              </div>
-              <p class="m-0 mt-1 text-ui-body-sm text-ui-text-muted">
-                {{ $t('CRM.AUTOMATION_RULES.CARD.TRIGGER_PREFIX') }}
-                <strong class="font-medium text-ui-text">
-                  {{
-                    stageMap[rule.crm_pipeline_stage_id] ||
-                    $t('CRM.AUTOMATION_RULES.CARD.STAGE_UNLINKED')
-                  }}
-                </strong>
-              </p>
-              <div class="mt-2 flex flex-wrap gap-1.5">
-                <DsBadge
-                  variant="brand"
-                  :label="actionKindLabel(rule.action_config?.kind)"
-                />
-                <DsBadge
-                  :variant="priorityBadgeVariant(rule.action_config?.priority)"
-                  :label="priorityLabel(rule.action_config?.priority)"
-                />
-                <DsBadge
-                  variant="neutral"
-                  :label="
-                    $t('CRM.AUTOMATION_RULES.CARD.DUE', {
-                      hours: rule.action_config?.due_in_hours ?? 24,
-                    })
-                  "
-                />
-                <DsBadge
-                  v-if="rule.action_config?.conditions?.length"
-                  variant="neutral"
-                  :label="
-                    $t(
-                      'CRM.AUTOMATION_RULES.CARD.CONDITIONS_COUNT',
-                      rule.action_config.conditions.length
-                    )
-                  "
-                />
-              </div>
-              <ul
-                v-if="rule.action_config?.conditions?.length"
-                class="m-0 mt-2 flex list-disc flex-col gap-1 pl-4 text-ui-caption text-ui-text-muted"
+              <dt
+                class="truncate text-ui-caption font-medium uppercase tracking-wide text-ui-text-muted"
               >
-                <li
-                  v-for="(condition, index) in rule.action_config.conditions"
-                  :key="`${rule.id}-condition-${index}`"
-                >
-                  {{ conditionLabel(condition) }}
-                </li>
-              </ul>
-              <p class="m-0 mt-2 text-ui-body-sm font-medium text-ui-text">
-                {{
-                  rule.action_config?.title ||
-                  $t('CRM.AUTOMATION_RULES.CARD.UNTITLED')
-                }}
-              </p>
-              <p
-                v-if="rule.action_config?.description"
-                class="m-0 mt-1 text-ui-body-sm text-ui-text-muted"
+                {{ item.label }}
+              </dt>
+              <dd
+                class="m-0 truncate font-manrope text-ui-heading font-semibold text-ui-text"
               >
-                {{ rule.action_config.description }}
-              </p>
+                {{ item.value }}
+              </dd>
             </div>
-            <div class="flex shrink-0 flex-wrap gap-2 sm:flex-col sm:items-stretch">
-              <DsButton
-                size="sm"
-                variant="secondary"
-                :icon="rule.is_active ? 'i-lucide-pause' : 'i-lucide-play'"
-                :label="
-                  rule.is_active
-                    ? $t('CRM.AUTOMATION_RULES.CARD.PAUSE')
-                    : $t('CRM.AUTOMATION_RULES.CARD.ACTIVATE')
-                "
-                @click="toggleActive(rule)"
-              />
-              <DsButton
-                size="sm"
-                variant="secondary"
-                icon="i-lucide-pencil"
-                :label="$t('CRM.AUTOMATION_RULES.CARD.EDIT')"
-                @click="openEdit(rule)"
-              />
-              <DsButton
-                size="sm"
-                variant="danger"
-                icon="i-lucide-trash-2"
-                :label="$t('CRM.AUTOMATION_RULES.CARD.DELETE')"
-                @click="requestDelete(rule)"
-              />
-            </div>
-          </div>
+          </dl>
         </DsCard>
-      </div>
-    </div>
 
-    <DsModal
-      :open="showModal"
-      :title="
-        editingId
-          ? $t('CRM.AUTOMATION_RULES.FORM.TITLE_EDIT')
-          : $t('CRM.AUTOMATION_RULES.FORM.TITLE_NEW')
-      "
-      :description="$t('CRM.AUTOMATION_RULES.FORM.DESCRIPTION')"
-      :confirm-label="
-        saving
-          ? $t('CRM.AUTOMATION_RULES.FORM.SAVING')
-          : $t('CRM.AUTOMATION_RULES.FORM.SAVE')
-      "
-      :cancel-label="$t('CRM.AUTOMATION_RULES.FORM.CANCEL')"
-      :disabled="saving || !isFormValid"
-      :loading="saving"
-      class="sm:max-w-2xl"
-      @close="closeModal"
-      @confirm="saveRule"
-    >
-      <div class="flex flex-col gap-4">
-        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div
+          class="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_auto_auto_auto] xl:items-end"
+        >
           <DsInput
-            v-model="form.name"
-            :label="$t('CRM.AUTOMATION_RULES.FORM.NAME')"
-            :placeholder="$t('CRM.AUTOMATION_RULES.FORM.NAME_PLACEHOLDER')"
-            required
+            v-model="filters.search"
+            type="search"
+            :label="$t('CRM.AUTOMATION_RULES.FILTERS.SEARCH_LABEL')"
+            hide-label
+            :placeholder="$t('CRM.AUTOMATION_RULES.FILTERS.SEARCH_PLACEHOLDER')"
+          >
+            <template #prefix>
+              <Icon icon="i-lucide-search" class="size-4" />
+            </template>
+          </DsInput>
+          <DsSelect
+            v-model="filters.status"
+            :label="$t('CRM.AUTOMATION_RULES.FILTERS.STATUS_LABEL')"
+            hide-label
+            :options="statusFilterOptions"
+            class="xl:w-44"
           />
           <DsSelect
-            v-model="form.crm_pipeline_stage_id"
-            :label="$t('CRM.AUTOMATION_RULES.FORM.STAGE')"
-            :placeholder="$t('CRM.AUTOMATION_RULES.FORM.STAGE_PLACEHOLDER')"
-            :options="stageOptions"
-            required
+            v-model="filters.stage_id"
+            :label="$t('CRM.AUTOMATION_RULES.FILTERS.STAGE_LABEL')"
+            hide-label
+            :options="stageFilterOptions"
+            class="xl:w-64"
+          />
+          <DsButton
+            variant="ghost"
+            :label="$t('CRM.AUTOMATION_RULES.FILTERS.CLEAR')"
+            @click="clearFilters"
           />
         </div>
 
-        <section
-          class="flex flex-col gap-3 rounded-ui-surface bg-ui-sunken p-4"
-          :aria-label="$t('CRM.AUTOMATION_RULES.FORM.ACTIVITY_TITLE')"
+        <div
+          v-if="error"
+          role="alert"
+          class="rounded-ui-control border border-ui-danger/20 bg-ui-danger-soft px-3 py-2 text-ui-body-sm text-ui-danger-foreground"
         >
-          <h3
-            class="m-0 font-manrope text-ui-label font-semibold text-ui-text"
-          >
-            {{ $t('CRM.AUTOMATION_RULES.FORM.ACTIVITY_TITLE') }}
-          </h3>
-          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <DsSelect
-              v-model="form.action_config.kind"
-              :label="$t('CRM.AUTOMATION_RULES.FORM.KIND')"
-              :options="actionKindOptions"
-            />
-            <DsSelect
-              v-model="form.action_config.priority"
-              :label="$t('CRM.AUTOMATION_RULES.FORM.PRIORITY')"
-              :options="priorityOptions"
-            />
-            <DsInput
-              v-model="form.action_config.title"
-              :label="$t('CRM.AUTOMATION_RULES.FORM.TITLE')"
-              :placeholder="$t('CRM.AUTOMATION_RULES.FORM.TITLE_PLACEHOLDER')"
-              required
-            />
-            <DsInput
-              v-model="form.action_config.due_in_hours"
-              type="number"
-              min="1"
-              :label="$t('CRM.AUTOMATION_RULES.FORM.DUE_HOURS')"
-            />
-          </div>
-          <DsTextarea
-            v-model="form.action_config.description"
-            :label="$t('CRM.AUTOMATION_RULES.FORM.DESCRIPTION')"
-            :placeholder="
-              $t('CRM.AUTOMATION_RULES.FORM.DESCRIPTION_PLACEHOLDER')
-            "
-          />
-        </section>
+          {{ error }}
+        </div>
 
-        <section
-          class="flex flex-col gap-3 rounded-ui-surface bg-ui-sunken p-4"
-          :aria-label="$t('CRM.AUTOMATION_RULES.CONDITIONS.TITLE')"
+        <div
+          v-if="loading"
+          role="status"
+          :aria-label="$t('CRM.AUTOMATION_RULES.LOADING')"
+          class="flex flex-col gap-3"
         >
-          <div
-            class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between"
-          >
-            <div class="min-w-0">
-              <h3
-                class="m-0 font-manrope text-ui-label font-semibold text-ui-text"
-              >
-                {{ $t('CRM.AUTOMATION_RULES.CONDITIONS.TITLE') }}
-              </h3>
-              <p class="m-0 mt-1 text-ui-body-sm text-ui-text-muted">
-                {{ $t('CRM.AUTOMATION_RULES.CONDITIONS.SUBTITLE') }}
-              </p>
-            </div>
+          <span class="sr-only">{{ $t('CRM.AUTOMATION_RULES.LOADING') }}</span>
+          <DsSkeleton v-for="row in 3" :key="row" shape="block" class="h-28" />
+        </div>
+
+        <DsEmptyState
+          v-else-if="filteredRules.length === 0"
+          :title="$t('CRM.AUTOMATION_RULES.EMPTY_TITLE')"
+        >
+          <template #action>
+            <p class="m-0 max-w-md text-ui-body-sm text-ui-text-muted">
+              {{ $t('CRM.AUTOMATION_RULES.EMPTY_DESCRIPTION') }}
+            </p>
             <DsButton
-              size="sm"
-              variant="secondary"
               icon="i-lucide-plus"
-              :label="$t('CRM.AUTOMATION_RULES.CONDITIONS.ADD')"
-              @click="addCondition"
+              variant="primary"
+              :label="$t('CRM.AUTOMATION_RULES.EMPTY_ACTION')"
+              @click="openNew"
             />
-          </div>
-          <div
-            v-if="form.action_config.conditions.length"
-            class="flex flex-col gap-2"
-          >
-            <div
-              v-for="(condition, index) in form.action_config.conditions"
-              :key="`condition-${index}`"
-              class="grid grid-cols-1 items-end gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto]"
-            >
-              <DsSelect
-                v-model="condition.field"
-                :label="$t('CRM.AUTOMATION_RULES.CONDITIONS.FIELD_LABEL')"
-                hide-label
-                :options="conditionFieldOptions"
-              />
-              <DsSelect
-                v-model="condition.operator"
-                :label="$t('CRM.AUTOMATION_RULES.CONDITIONS.OPERATOR_LABEL')"
-                hide-label
-                :options="conditionOperatorOptions"
-              />
-              <DsInput
-                v-model="condition.value"
-                :label="$t('CRM.AUTOMATION_RULES.CONDITIONS.VALUE_LABEL')"
-                hide-label
-                :disabled="['present', 'blank'].includes(condition.operator)"
-                :placeholder="
-                  $t('CRM.AUTOMATION_RULES.CONDITIONS.VALUE_PLACEHOLDER')
-                "
-              />
-              <DsButton
-                icon="i-lucide-trash-2"
-                variant="ghost"
-                :aria-label="$t('CRM.AUTOMATION_RULES.CONDITIONS.REMOVE')"
-                @click="removeCondition(index)"
-              />
-            </div>
-          </div>
-          <p v-else class="m-0 text-ui-body-sm text-ui-text-muted">
-            {{ $t('CRM.AUTOMATION_RULES.CONDITIONS.EMPTY') }}
-          </p>
-        </section>
-      </div>
-    </DsModal>
+          </template>
+        </DsEmptyState>
 
-    <DsModal
-      :open="!!deletingRule"
-      dangerous
-      :title="$t('CRM.AUTOMATION_RULES.DELETE_MODAL.TITLE')"
-      :description="
-        $t('CRM.AUTOMATION_RULES.DELETE_MODAL.DESCRIPTION', {
-          name: deletingRule?.name || '',
-        })
-      "
-      :confirm-label="$t('CRM.AUTOMATION_RULES.DELETE_MODAL.CONFIRM')"
-      :cancel-label="$t('CRM.AUTOMATION_RULES.DELETE_MODAL.CANCEL')"
-      :loading="saving"
-      @close="deletingRule = null"
-      @confirm="confirmDelete"
-    />
+        <div v-else class="flex flex-col gap-3">
+          <DsCard v-for="rule in filteredRules" :key="rule.id" as="article">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-start">
+              <div
+                aria-hidden="true"
+                class="grid size-10 shrink-0 place-items-center rounded-ui-control bg-ui-brand-soft text-ui-brand"
+              >
+                <Icon icon="i-lucide-zap" class="size-5" />
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-2">
+                  <h2
+                    class="m-0 min-w-0 truncate font-manrope text-ui-heading font-semibold text-ui-text"
+                  >
+                    {{ rule.name }}
+                  </h2>
+                  <DsBadge
+                    :variant="rule.is_active ? 'success' : 'neutral'"
+                    :label="
+                      rule.is_active
+                        ? $t('CRM.AUTOMATION_RULES.CARD.STATUS_ACTIVE')
+                        : $t('CRM.AUTOMATION_RULES.CARD.STATUS_PAUSED')
+                    "
+                  />
+                </div>
+                <p class="m-0 mt-1 text-ui-body-sm text-ui-text-muted">
+                  {{ $t('CRM.AUTOMATION_RULES.CARD.TRIGGER_PREFIX') }}
+                  <strong class="font-medium text-ui-text">
+                    {{
+                      stageMap[rule.crm_pipeline_stage_id] ||
+                      $t('CRM.AUTOMATION_RULES.CARD.STAGE_UNLINKED')
+                    }}
+                  </strong>
+                </p>
+                <div class="mt-2 flex flex-wrap gap-1.5">
+                  <DsBadge
+                    variant="brand"
+                    :label="actionKindLabel(rule.action_config?.kind)"
+                  />
+                  <DsBadge
+                    :variant="priorityBadgeVariant(rule.action_config?.priority)"
+                    :label="priorityLabel(rule.action_config?.priority)"
+                  />
+                  <DsBadge
+                    variant="neutral"
+                    :label="
+                      $t('CRM.AUTOMATION_RULES.CARD.DUE', {
+                        hours: rule.action_config?.due_in_hours ?? 24,
+                      })
+                    "
+                  />
+                  <DsBadge
+                    v-if="rule.action_config?.conditions?.length"
+                    variant="neutral"
+                    :label="
+                      $t(
+                        'CRM.AUTOMATION_RULES.CARD.CONDITIONS_COUNT',
+                        rule.action_config.conditions.length
+                      )
+                    "
+                  />
+                </div>
+                <ul
+                  v-if="rule.action_config?.conditions?.length"
+                  class="m-0 mt-2 flex list-disc flex-col gap-1 pl-4 text-ui-caption text-ui-text-muted"
+                >
+                  <li
+                    v-for="(condition, index) in rule.action_config.conditions"
+                    :key="`${rule.id}-condition-${index}`"
+                  >
+                    {{ conditionLabel(condition) }}
+                  </li>
+                </ul>
+                <p class="m-0 mt-2 text-ui-body-sm font-medium text-ui-text">
+                  {{
+                    rule.action_config?.title ||
+                    $t('CRM.AUTOMATION_RULES.CARD.UNTITLED')
+                  }}
+                </p>
+                <p
+                  v-if="rule.action_config?.description"
+                  class="m-0 mt-1 text-ui-body-sm text-ui-text-muted"
+                >
+                  {{ rule.action_config.description }}
+                </p>
+              </div>
+              <div class="flex shrink-0 flex-wrap gap-2 sm:flex-col sm:items-stretch">
+                <DsButton
+                  size="sm"
+                  variant="secondary"
+                  :icon="rule.is_active ? 'i-lucide-pause' : 'i-lucide-play'"
+                  :label="
+                    rule.is_active
+                      ? $t('CRM.AUTOMATION_RULES.CARD.PAUSE')
+                      : $t('CRM.AUTOMATION_RULES.CARD.ACTIVATE')
+                  "
+                  @click="toggleActive(rule)"
+                />
+                <DsButton
+                  size="sm"
+                  variant="secondary"
+                  icon="i-lucide-pencil"
+                  :label="$t('CRM.AUTOMATION_RULES.CARD.EDIT')"
+                  @click="openEdit(rule)"
+                />
+                <DsButton
+                  size="sm"
+                  variant="danger"
+                  icon="i-lucide-trash-2"
+                  :label="$t('CRM.AUTOMATION_RULES.CARD.DELETE')"
+                  @click="requestDelete(rule)"
+                />
+              </div>
+            </div>
+          </DsCard>
+        </div>
+      </div>
+
+      <DsModal
+        :open="!!deletingRule"
+        dangerous
+        :title="$t('CRM.AUTOMATION_RULES.DELETE_MODAL.TITLE')"
+        :description="
+          $t('CRM.AUTOMATION_RULES.DELETE_MODAL.DESCRIPTION', {
+            name: deletingRule?.name || '',
+          })
+        "
+        :confirm-label="$t('CRM.AUTOMATION_RULES.DELETE_MODAL.CONFIRM')"
+        :cancel-label="$t('CRM.AUTOMATION_RULES.DELETE_MODAL.CANCEL')"
+        :loading="saving"
+        @close="deletingRule = null"
+        @confirm="confirmDelete"
+      />
+    </template>
   </section>
 </template>

@@ -3,6 +3,7 @@ import { computed } from 'vue';
 
 import Icon from 'dashboard/components-next/icon/Icon.vue';
 
+import { useDsTranslate } from '../useDsTranslate';
 import DsButton from './DsButton.vue';
 
 const props = defineProps({
@@ -20,7 +21,12 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['dismiss']);
-const DISMISS_LABEL = 'Dispensar aviso';
+
+const { translate } = useDsTranslate();
+
+const dismissLabel = computed(() =>
+  translate('TOAST.DISMISS', 'Dismiss notification')
+);
 
 const variantClasses = computed(
   () =>
@@ -66,7 +72,7 @@ const icon = computed(
       icon="i-lucide-x"
       size="sm"
       variant="ghost"
-      :aria-label="DISMISS_LABEL"
+      :aria-label="dismissLabel"
       :disabled="disabled || loading"
       @click="emit('dismiss')"
     />

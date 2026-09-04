@@ -57,5 +57,101 @@
   },
   "CHANNEL_SELECTOR": {
     "COMING_SOON": "Coming Soon!"
+  },
+  "DATA_GRID": {
+    "EMPTY_TITLE": "No records found",
+    "EMPTY_DESCRIPTION": "There are no entries to display in this grid.",
+    "SELECT_ALL": "Select all rows",
+    "SELECT_ROW": "Select row",
+    "SORT_ASCENDING": "Sort ascending",
+    "SORT_DESCENDING": "Sort descending",
+    "SORT_CLEAR": "Clear sort",
+    "RESIZE_COLUMN": "Resize column",
+    "EDIT_CELL": "Edit cell",
+    "SAVE_EDIT": "Save edit",
+    "CANCEL_EDIT": "Cancel edit"
+  },
+  "BULK_ACTION_BAR": {
+    "SELECTED_COUNT": "{count} selected",
+    "CLEAR_SELECTION": "Clear selection"
+  },
+  "RECORD_DRAWER": {
+    "CLOSE": "Close record panel",
+    "TABS_LABEL": "Record details navigation",
+    "TABS": {
+      "OVERVIEW": "Overview",
+      "TIMELINE": "Timeline",
+      "NOTES": "Notes"
+    },
+    "FIELDS": {
+      "EMPTY_TITLE": "No fields to display",
+      "EMPTY_DESCRIPTION": "There are no fields configured for this record.",
+      "CLICK_TO_EDIT": "Click to edit",
+      "NOT_SET": "—",
+      "SAVE": "Save",
+      "CANCEL": "Cancel"
+    },
+    "TIMELINE": {
+      "EMPTY_TITLE": "No activity recorded",
+      "EMPTY_DESCRIPTION": "Activities, messages, and timeline events will appear here."
+    },
+    "NOTES": {
+      "EMPTY_TITLE": "No notes yet",
+      "EMPTY_DESCRIPTION": "Add notes to keep track of important context."
+    },
+    "CUSTOM_TAB": {
+      "EMPTY_TITLE": "No content",
+      "EMPTY_DESCRIPTION": "No content available for this tab."
+    },
+    "QUICK_ACTIONS_LABEL": "Quick actions"
+  },
+  "PAGINATION": {
+    "NAVIGATION": "Pagination",
+    "PREVIOUS_PAGE": "Previous page",
+    "NEXT_PAGE": "Next page"
+  },
+  "TOAST": {
+    "DISMISS": "Dismiss notification"
+  },
+  "DRAWER": {
+    "CLOSE": "Close panel"
+  },
+  "ONBOARDING_CHECKLIST": {
+    "TITLE": "Activation Guide",
+    "COLLAPSED_LABEL": "Getting Started",
+    "DEMO_DATA_LABEL": "Enable Demo Data",
+    "PROGRESS_SUBTITLE": "{completed} of {total} tasks completed ({percent}%)",
+    "EXPAND": "Expand Activation Guide",
+    "COLLAPSE": "Collapse",
+    "CLOSE": "Close",
+    "REGION": "Activation Guide",
+    "COMPLETION_TITLE": "All set!",
+    "COMPLETION_SUBTITLE": "You completed all activation steps.",
+    "MARK_PENDING": "Mark pending",
+    "MARK_COMPLETED": "Mark completed",
+    "MARK_STEP_PENDING": "Mark {title} as pending",
+    "MARK_STEP_COMPLETED": "Mark {title} as completed",
+    "STEPS": {
+      "CONNECT_CHANNEL": {
+        "TITLE": "Connect WhatsApp Channel",
+        "DESCRIPTION": "Connect your account via Evolution API, Baileys, or Cloud API to send and receive messages.",
+        "ACTION": "Connect Channel"
+      },
+      "IMPORT_CONTACTS": {
+        "TITLE": "Import Contacts",
+        "DESCRIPTION": "Upload your CSV lead spreadsheet or sync contacts to start sales cadences.",
+        "ACTION": "Import Contacts"
+      },
+      "CREATE_PIPELINE": {
+        "TITLE": "Create First Pipeline",
+        "DESCRIPTION": "Structure your sales process stages in CRM and configure sales cadences.",
+        "ACTION": "Create Pipeline"
+      },
+      "SEND_MESSAGE": {
+        "TITLE": "Send First Message",
+        "DESCRIPTION": "Start a direct chat in Inbox or test qualification for your active pipeline.",
+        "ACTION": "Open Inbox"
+      }
+    }
   }
 }

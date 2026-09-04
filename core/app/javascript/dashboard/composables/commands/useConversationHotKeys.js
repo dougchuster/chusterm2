@@ -41,6 +41,7 @@ import {
   isAConversationRoute,
   isAInboxViewRoute,
 } from 'dashboard/helper/routeHelpers';
+import { useKeyboardNavigation } from 'dashboard/composables/useKeyboardNavigation';
 
 const prepareActions = (actions, t) => {
   return actions.map(action => ({
@@ -397,7 +398,13 @@ export function useConversationHotKeys() {
     return [];
   });
 
+  const keyboardNavigation = useKeyboardNavigation({
+    store,
+    autoAttach: false,
+  });
+
   return {
     conversationHotKeys,
+    keyboardNavigation,
   };
 }

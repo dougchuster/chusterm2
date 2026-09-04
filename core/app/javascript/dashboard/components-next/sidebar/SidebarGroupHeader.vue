@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { useMapGetter } from 'dashboard/composables/store.js';
+import { useI18n } from 'vue-i18n';
 import Icon from 'next/icon/Icon.vue';
 
 const props = defineProps({
@@ -12,37 +13,57 @@ const props = defineProps({
   isActive: { type: Boolean, default: false },
   hasActiveChild: { type: Boolean, default: false },
   getterKeys: { type: Object, default: () => ({}) },
+  isPinned: { type: Boolean, default: false },
+  canPin: { type: Boolean, default: true },
 });
 
-const emit = defineEmits(['toggle']);
+const emit = defineEmits(['toggle', 'togglePin']);
+const { t } = useI18n();
 
 const showBadge = useMapGetter(props.getterKeys.badge);
 const dynamicCount = useMapGetter(props.getterKeys.count);
 const count = computed(() =>
   dynamicCount.value > 99 ? '99+' : dynamicCount.value
 );
+
+const pinActionTitle = computed(() =>
+  props.isPinned
+    ? t('SIDEBAR.UNPIN_FROM_FAVORITES')
+    : t('SIDEBAR.PIN_TO_FAVORITES')
+);
+
+const onKeydown = event => {
+  if (!props.to && (event.key === 'Enter' || event.key === ' ')) {
+    event.preventDefault();
+    emit('toggle');
+  }
+};
 </script>
 
 <template>
   <component
-    :is="to ? 'router-link' : 'button'"
-    class="group/sidebar-menu-item flex min-h-11 min-w-0 items-center gap-2.5 rounded-xl border-0 px-3 py-2 font-inter no-underline transition duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-shell-focus"
-    :type="to ? undefined : 'button'"
+    :is="to ? 'router-link' : 'div'"
+    :role="to ? undefined : 'button'"
+    :tabindex="to ? undefined : 0"
+    class="group/sidebar-menu-item relative flex min-h-11 min-w-0 items-center gap-2.5 rounded-xl border-0 px-3 py-2 font-inter no-underline transition duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-shell-focus"
     draggable="false"
-    :to="to"
+    :to="to || undefined"
     :title="label"
     :aria-current="isActive && !hasActiveChild ? 'page' : undefined"
     :aria-expanded="expandable ? isExpanded : undefined"
     :class="[
       isActive && !hasActiveChild
-        ? 'bg-ds-shell-active text-ds-shell-fg shadow-sm shadow-ds-shell-accent/10'
+        ? 'bg-ds-shell-active text-ds-shell-fg shadow-sm shadow-ds-shell-accent/10 font-medium'
         : '',
-      hasActiveChild ? 'bg-ds-shell-panel-strong text-ds-shell-fg' : '',
+      hasActiveChild
+        ? 'bg-ds-shell-panel-strong text-ds-shell-fg font-medium'
+        : '',
       !isActive && !hasActiveChild
         ? 'text-ds-shell-muted hover:bg-ds-shell-hover hover:text-ds-shell-fg'
         : '',
     ]"
     @click.stop="emit('toggle')"
+    @keydown="onKeydown"
   >
     <div
       v-if="icon"
@@ -67,6 +88,26 @@ const count = computed(() =>
         {{ count }}
       </span>
     </div>
+    <button
+      v-if="canPin"
+      type="button"
+      data-testid="pin-button"
+      class="size-6 flex-shrink-0 items-center justify-center rounded-md text-ds-shell-muted transition duration-150 hover:bg-ds-shell-hover hover:text-ds-shell-accent focus-visible:outline-none"
+      :class="[
+        isPinned
+          ? 'flex text-ds-shell-accent'
+          : 'hidden group-hover/sidebar-menu-item:flex opacity-60 hover:opacity-100',
+      ]"
+      :title="pinActionTitle"
+      :aria-label="pinActionTitle"
+      @click.stop.prevent="emit('togglePin')"
+    >
+      <span
+        :class="isPinned ? 'i-lucide-pin-off' : 'i-lucide-pin'"
+        class="size-3.5"
+        aria-hidden="true"
+      />
+    </button>
     <span
       v-if="expandable"
       class="size-4 flex-shrink-0 opacity-60 transition duration-150 group-hover/sidebar-menu-item:opacity-100"

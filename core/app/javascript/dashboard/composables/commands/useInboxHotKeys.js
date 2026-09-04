@@ -8,6 +8,7 @@ import { ICON_SNOOZE_NOTIFICATION } from 'dashboard/helper/commandbar/icons';
 import { emitter } from 'shared/helpers/mitt';
 
 import { isAInboxViewRoute } from 'dashboard/helper/routeHelpers';
+import { useKeyboardNavigation } from 'dashboard/composables/useKeyboardNavigation';
 
 const SNOOZE_OPTIONS = wootConstants.SNOOZE_OPTIONS;
 
@@ -82,7 +83,12 @@ export function useInboxHotKeys() {
     return [];
   });
 
+  const keyboardNavigation = useKeyboardNavigation({
+    autoAttach: false,
+  });
+
   return {
     inboxHotKeys,
+    keyboardNavigation,
   };
 }

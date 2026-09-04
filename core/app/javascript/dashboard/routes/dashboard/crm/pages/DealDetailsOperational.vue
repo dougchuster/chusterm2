@@ -6,6 +6,7 @@ import { useRoute, useRouter } from 'vue-router';
 import CrmAPI from 'dashboard/api/crm';
 import CRMDealDrawer from 'dashboard/components/crm/CRMDealDrawer.vue';
 import CRMScoreBadge from 'dashboard/components/crm/CRMScoreBadge.vue';
+import CRMDealAiInsightsCard from 'dashboard/components/crm/CRMDealAiInsightsCard.vue';
 import Icon from 'dashboard/components-next/icon/Icon.vue';
 import { useMapGetter, useStore } from 'dashboard/composables/store';
 import {
@@ -817,6 +818,13 @@ onMounted(async () => {
 
     <template #context>
       <div class="grid gap-4">
+        <CRMDealAiInsightsCard
+          v-if="deal"
+          :deal="deal"
+          @recompute="onDealSaved"
+          @deal-updated="onDealSaved"
+        />
+
         <DsCard padding="md">
           <h2 class="m-0 text-ui-body font-semibold">Controle do negócio</h2>
           <div class="mt-4 grid gap-4">

@@ -61,6 +61,55 @@ const money = computed(() => {
   }).format(cents / 100);
 });
 
+const weightedMoney = computed(() => {
+  if (props.column.weighted_value_cents != null) {
+    const cents = Number(props.column.weighted_value_cents || 0);
+    if (!cents) return '';
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(cents / 100);
+  }
+
+  let prob = null;
+  if (props.column.probability_pct != null) {
+    prob = Number(props.column.probability_pct);
+  } else if (props.column.probability != null) {
+    prob = Number(props.column.probability);
+  }
+
+  if (prob != null && prob > 0) {
+    const cents = Math.round(
+      Number(props.column.sum_value_cents || 0) * (prob / 100)
+    );
+    if (!cents) return '';
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(cents / 100);
+  }
+
+  if (
+    props.column.deals?.length &&
+    props.column.deals.some(
+      d => d.probability_pct != null && Number(d.probability_pct) > 0
+    )
+  ) {
+    const cents = props.column.deals.reduce((sum, d) => {
+      const p = Number(d.probability_pct || 0);
+      const val = Number(d.value_estimate_cents || 0);
+      return sum + Math.round(val * (p / 100));
+    }, 0);
+    if (!cents) return '';
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(cents / 100);
+  }
+
+  return '';
+});
+
 const averageAge = computed(() => {
   const days = Number(props.column.avg_days_in_stage || 0);
   if (!days) return '';
@@ -115,6 +164,14 @@ const onScroll = event => {
         class="flex w-full items-center gap-2 pt-0.5 text-ui-caption text-ui-text-muted"
       >
         <span v-if="money" class="font-medium text-ui-text/80">{{ money }}</span>
+        <span
+          v-if="weightedMoney"
+          data-testid="crm-column-weighted"
+          class="font-medium text-ui-text-muted"
+          :title="$t('CRM.COLUMN.WEIGHTED_VALUE', { value: weightedMoney })"
+        >
+          ({{ weightedMoney }})
+        </span>
         <span v-if="averageAge" class="flex items-center gap-1 font-medium" :title="$t('CRM.COLUMN.AVERAGE_AGE')">
           <Icon icon="i-lucide-clock" class="size-3 opacity-70" />
           {{ averageAge }}

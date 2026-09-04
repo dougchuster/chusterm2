@@ -8,6 +8,7 @@ import {
   watch,
 } from 'vue';
 import ContactPanel from 'dashboard/routes/dashboard/conversation/ContactPanel.vue';
+import CopilotSidebarPanel from './copilot/CopilotSidebarPanel.vue';
 import { useUISettings } from 'dashboard/composables/useUISettings';
 import { useEventListener, useWindowSize } from '@vueuse/core';
 import { chatConversationIdentifiers } from 'dashboard/helper/conversationIdentifier';
@@ -16,6 +17,10 @@ const props = defineProps({
   currentChat: {
     required: true,
     type: Object,
+  },
+  customWidth: {
+    type: Number,
+    default: 0,
   },
 });
 
@@ -41,10 +46,16 @@ const conversationIdentifiers = computed(() =>
 );
 
 const activeTab = computed(() => {
-  const { is_contact_sidebar_open: isContactSidebarOpen } = uiSettings.value;
+  const {
+    is_contact_sidebar_open: isContactSidebarOpen,
+    is_copilot_panel_open: isCopilotPanelOpen,
+  } = uiSettings.value;
 
   if (isContactSidebarOpen) {
     return 0;
+  }
+  if (isCopilotPanelOpen) {
+    return 1;
   }
   return null;
 });
@@ -53,8 +64,18 @@ const isOverlayLayout = computed(
   () => windowWidth.value < SIDEBAR_STATIC_BREAKPOINT
 );
 const isOverlayOpen = computed(
-  () => isOverlayLayout.value && activeTab.value === 0
+  () => isOverlayLayout.value && activeTab.value !== null
 );
+
+const sidebarStyle = computed(() => {
+  if (isOverlayLayout.value || !props.customWidth) {
+    return undefined;
+  }
+  return {
+    width: `${props.customWidth}px`,
+    minWidth: `${props.customWidth}px`,
+  };
+});
 
 const closeContactPanel = () => {
   if (isOverlayOpen.value) {
@@ -227,7 +248,7 @@ onBeforeUnmount(deactivateOverlay);
 
 <template>
   <div
-    v-if="isOverlayLayout && activeTab === 0"
+    v-if="isOverlayLayout && activeTab !== null"
     ref="backdropRef"
     class="fixed inset-0 z-30 bg-ds-bg-canvas/60 backdrop-blur-[2px] min-[1440px]:hidden"
     aria-hidden="true"
@@ -238,17 +259,26 @@ onBeforeUnmount(deactivateOverlay);
     class="conversation-sidebar-shell fixed inset-y-0 z-40 flex h-dvh w-full max-w-[430px] flex-col overflow-hidden bg-ds-bg-elevated shadow-[var(--ds-shadow-xl)] outline-none ltr:right-0 rtl:left-0 min-[1440px]:static min-[1440px]:z-auto min-[1440px]:h-full min-[1440px]:w-[400px] min-[1440px]:min-w-[400px] min-[1440px]:max-w-none min-[1440px]:shadow-none"
     :role="isOverlayOpen ? 'dialog' : 'complementary'"
     :aria-modal="isOverlayOpen ? 'true' : undefined"
-    :aria-label="$t('CONVERSATION.SIDEBAR.CONTACT')"
+    :aria-label="
+      activeTab === 1
+        ? $t('CONVERSATION.SIDEBAR.COPILOT')
+        : $t('CONVERSATION.SIDEBAR.CONTACT')
+    "
+    :style="sidebarStyle"
     tabindex="-1"
   >
     <div
       class="conversation-sidebar-body flex flex-1 overflow-y-auto bg-ds-bg-elevated"
     >
       <ContactPanel
-        v-show="activeTab === 0"
+        v-if="activeTab === 0"
         :conversation-id="conversationIdentifiers.displayId"
         :conversation-database-id="conversationIdentifiers.databaseId"
         :inbox-id="currentChat.inbox_id"
+      />
+      <CopilotSidebarPanel
+        v-else-if="activeTab === 1"
+        :conversation-id="conversationIdentifiers.displayId"
       />
     </div>
   </aside>

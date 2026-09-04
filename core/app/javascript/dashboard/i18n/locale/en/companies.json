@@ -23,6 +23,35 @@
     "CONTACTS_COUNT": "{n} contact | {n} contacts",
     "EMPTY_STATE": {
       "TITLE": "No companies found"
+    },
+    "UPDATE_SUCCESS": "Company updated successfully.",
+    "UPDATE_ERROR": "Could not update company. Please try again.",
+    "DATA_GRID": {
+      "COLUMNS": {
+        "NAME": "Company Name",
+        "DOMAIN": "Domain",
+        "DESCRIPTION": "Description",
+        "CONTACTS_COUNT": "Contacts",
+        "UPDATED_AT": "Last Updated"
+      }
+    },
+    "FIELDS": {
+      "NAME": "Company Name",
+      "DOMAIN": "Domain",
+      "DESCRIPTION": "Description",
+      "CONTACTS_COUNT": "Contacts Count"
+    },
+    "DRAWER": {
+      "TABS": {
+        "OVERVIEW": "Overview",
+        "CONTACTS": "Contacts",
+        "TIMELINE": "Timeline",
+        "NOTES": "Notes"
+      },
+      "CONTACTS": {
+        "EMPTY_TITLE": "No linked contacts",
+        "EMPTY_DESCRIPTION": "There are no contacts currently associated with this company."
+      }
     }
   },
   "COMPANIES_LAYOUT": {

@@ -20,6 +20,7 @@ import {
   toRequestParams,
 } from 'dashboard/helper/crmBoardFilters';
 import { useAccount } from 'dashboard/composables/useAccount';
+import { useUISettings } from 'dashboard/composables/useUISettings';
 import { messageFrom } from 'dashboard/helper/crmErrors';
 import {
   useBoardRealtime,
@@ -35,6 +36,7 @@ import {
 } from 'dashboard/design-system/components';
 import { BoardPageTemplate } from 'dashboard/design-system/templates';
 
+import CRMDealsTable from '../components/CRMDealsTable.vue';
 import { selectInitialCrmPipelineId } from './crmPipelineSelection';
 
 // Precisa casar com o `per_column` que o endpoint da F1.5 usa por padrao.
@@ -72,6 +74,43 @@ const showChatDrawer = ref(false);
 // dele — trocar de densidade nao e decisao que valha uma coluna no banco.
 const { cardDensity, densityOptions, readStoredDensity, setDensity } =
   useBoardDensity(t);
+
+const uiSettingsHolder = ref({});
+let updateUISettingsFn = () => {};
+
+try {
+  const { uiSettings, updateUISettings } = useUISettings();
+  watch(
+    () => uiSettings.value,
+    val => {
+      uiSettingsHolder.value = val || {};
+    },
+    { immediate: true }
+  );
+  updateUISettingsFn = updateUISettings;
+} catch {
+  // Safe fallback para testes que mockam a store sem useStoreGetters
+}
+
+const currentView = ref(
+  uiSettingsHolder.value?.crm_board_view_type || 'kanban'
+);
+
+watch(
+  () => uiSettingsHolder.value?.crm_board_view_type,
+  storedView => {
+    if (storedView === 'kanban' || storedView === 'table') {
+      currentView.value = storedView;
+    }
+  },
+  { immediate: true }
+);
+
+const setView = mode => {
+  if (!['kanban', 'table'].includes(mode)) return;
+  currentView.value = mode;
+  updateUISettingsFn({ crm_board_view_type: mode });
+};
 
 // Reusa o patch do realtime: ele ja sabe tirar o card de uma coluna, coloca-lo
 // na outra pela `position` e mesclar por cima do que o board tinha. Duplicar
@@ -622,6 +661,30 @@ onMounted(async () => {
     @empty-action="loadCrm"
   >
     <template #actions>
+      <div
+        class="inline-flex rounded-ui-control border border-ui-border-subtle bg-ui-sunken p-0.5"
+        role="group"
+        :aria-label="$t('CRM.VIEW_SWITCHER.LABEL')"
+      >
+        <DsButton
+          :variant="currentView === 'kanban' ? 'secondary' : 'ghost'"
+          size="sm"
+          icon="i-lucide-kanban"
+          :aria-label="$t('CRM.VIEW_SWITCHER.KANBAN')"
+          :title="$t('CRM.VIEW_SWITCHER.KANBAN')"
+          data-testid="crm-view-kanban"
+          @click="setView('kanban')"
+        />
+        <DsButton
+          :variant="currentView === 'table' ? 'secondary' : 'ghost'"
+          size="sm"
+          icon="i-lucide-table-2"
+          :aria-label="$t('CRM.VIEW_SWITCHER.TABLE')"
+          :title="$t('CRM.VIEW_SWITCHER.TABLE')"
+          data-testid="crm-view-table"
+          @click="setView('table')"
+        />
+      </div>
       <DsButton
         icon="i-lucide-refresh-cw"
         variant="secondary"
@@ -710,36 +773,54 @@ onMounted(async () => {
       />
     </section>
 
-      <CRMBoardColumn
-        v-for="column in columns"
-        :key="column.id"
-        :column="column"
-        :loading="loadingColumnIds.includes(column.id)"
-        :movable="isMovable"
-        @create="openCreate(column)"
-        @load-more="loadMoreInColumn(column)"
-        @drag-start="onDragStart($event.item?.__draggable_context?.element)"
-        @drag-end="onDragEnd"
-        @change="onColumnChanged(column, $event)"
-      >
-        <template #card="{ deal }">
-          <CRMDealCard
-            :deal="deal"
-            :stage="column"
-            :selected="selectedIds.includes(deal.id)"
-            :owner-name="ownerName(deal.owner_id)"
-            :density="cardDensity"
-            :href="dealUrl(deal)"
-            @open="openDeal(deal)"
-            @attend="openAttendance(deal)"
-            @select="toggleSelection(deal, $event)"
-            @recompute="recomputeScore(deal)"
-            @mark-base-client="markBaseClient(deal)"
-            @discard="discardTarget = deal"
-            @schedule-next-action="openDeal(deal)"
-          />
-        </template>
-      </CRMBoardColumn>
+      <template v-if="currentView === 'kanban'">
+        <CRMBoardColumn
+          v-for="column in columns"
+          :key="column.id"
+          :column="column"
+          :loading="loadingColumnIds.includes(column.id)"
+          :movable="isMovable"
+          @create="openCreate(column)"
+          @load-more="loadMoreInColumn(column)"
+          @drag-start="onDragStart($event.item?.__draggable_context?.element)"
+          @drag-end="onDragEnd"
+          @change="onColumnChanged(column, $event)"
+        >
+          <template #card="{ deal }">
+            <CRMDealCard
+              :deal="deal"
+              :stage="column"
+              :selected="selectedIds.includes(deal.id)"
+              :owner-name="ownerName(deal.owner_id)"
+              :density="cardDensity"
+              :href="dealUrl(deal)"
+              @open="openDeal(deal)"
+              @attend="openAttendance(deal)"
+              @select="toggleSelection(deal, $event)"
+              @recompute="recomputeScore(deal)"
+              @mark-base-client="markBaseClient(deal)"
+              @discard="discardTarget = deal"
+              @schedule-next-action="openDeal(deal)"
+            />
+          </template>
+        </CRMBoardColumn>
+      </template>
+
+      <div v-else class="w-full min-w-full flex-1 overflow-y-auto">
+        <CRMDealsTable
+          :deals="deals"
+          :stages="stages"
+          :agents="agents"
+          :loading="loading"
+          :selected-ids="selectedIds"
+          @open="openDeal"
+          @attend="openAttendance"
+          @select="toggleSelection"
+          @recompute="recomputeScore"
+          @mark-base-client="markBaseClient"
+          @discard="discardTarget = $event"
+        />
+      </div>
   </BoardPageTemplate>
 
 <CRMCreateDealDrawer

@@ -100,7 +100,7 @@ describe('CRM Activities operational pilot', () => {
     await flushPromises();
 
     expect(wrapper.findAll('tbody > tr')).toHaveLength(50);
-    expect(wrapper.get('nav[aria-label="Paginação"]').text()).toContain(
+    expect(wrapper.get('nav[aria-label="Pagination"]').text()).toContain(
       '1–50 de 120'
     );
 

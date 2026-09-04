@@ -34,4 +34,13 @@ describe('useInboxHotKeys', () => {
     );
     expect(snoozeNotificationAction).toBeDefined();
   });
+
+  it('should expose keyboardNavigation manager', () => {
+    const { keyboardNavigation } = useInboxHotKeys();
+    expect(keyboardNavigation).toBeDefined();
+    expect(keyboardNavigation.navigateNext).toBeInstanceOf(Function);
+    expect(keyboardNavigation.resolveActiveConversation).toBeInstanceOf(
+      Function
+    );
+  });
 });

@@ -4,6 +4,7 @@ import { useSidebarContext, usePopoverState } from './provider';
 import { useRoute, useRouter } from 'vue-router';
 import Policy from 'dashboard/components/policy.vue';
 import Icon from 'next/icon/Icon.vue';
+import DsTooltip from 'dashboard/design-system/components/DsTooltip.vue';
 import SidebarGroupHeader from './SidebarGroupHeader.vue';
 import SidebarGroupLeaf from './SidebarGroupLeaf.vue';
 import SidebarSubGroup from './SidebarSubGroup.vue';
@@ -18,6 +19,7 @@ const props = defineProps({
   activeOn: { type: Array, default: () => [] },
   children: { type: Array, default: undefined },
   getterKeys: { type: Object, default: () => ({}) },
+  canPin: { type: Boolean, default: true },
 });
 
 const {
@@ -29,6 +31,8 @@ const {
   isAllowed,
   isCollapsed,
   isResizing,
+  isPinned,
+  togglePin,
 } = useSidebarContext();
 
 const {
@@ -51,6 +55,13 @@ const hasChildren = computed(
   () => Array.isArray(props.children) && props.children.length > 0
 );
 
+const accessibleItems = computed(() => {
+  if (!hasChildren.value) return [];
+  return navigableChildren.value.filter(
+    child => child.to && isAllowed(child.to)
+  );
+});
+
 // Use shared popover state - only one popover can be open at a time
 const isPopoverOpen = computed(() => activePopover.value === props.name);
 const triggerRef = ref(null);
@@ -62,6 +73,25 @@ const popoverId = computed(
       .toLowerCase()
       .replace(/[^a-z0-9_-]+/g, '-')}`
 );
+
+const isCurrentPinned = computed(() =>
+  typeof isPinned === 'function' ? isPinned(props.name) : false
+);
+
+const handleTogglePin = () => {
+  if (typeof togglePin === 'function') {
+    // If props.to is present, pin it; otherwise find the first accessible child route
+    const targetTo = props.to || accessibleItems.value[0]?.to;
+    togglePin({
+      id: props.name,
+      name: props.name,
+      label: props.label,
+      icon: props.icon,
+      to: targetTo,
+      activeOn: props.activeOn,
+    });
+  }
+};
 
 const openPopover = async ({ focusFirst = false } = {}) => {
   if (triggerRef.value) {
@@ -116,13 +146,6 @@ const handleWindowBlur = () => {
   closeActivePopover();
 };
 
-const accessibleItems = computed(() => {
-  if (!hasChildren.value) return [];
-  return navigableChildren.value.filter(
-    child => child.to && isAllowed(child.to)
-  );
-});
-
 const hasTargetQuery = to => Object.keys(to?.query || {}).length > 0;
 
 const targetQueryMatchesRoute = to => {
@@ -146,9 +169,6 @@ const isActive = computed(() => {
   return false;
 });
 
-// We could use the RouterLink isActive too, but our routes are not always
-// nested correctly, so we need to check the active state ourselves
-// TODO: Audit the routes and fix the nesting and remove this
 const activeChild = computed(() => {
   const exactPathAndQuery = navigableChildren.value.find(child => {
     return (
@@ -168,29 +188,19 @@ const activeChild = computed(() => {
   );
   if (pathSame) return pathSame;
 
-  // Rank the activeOn Prop higher than the path match
-  // There will be cases where the path name is the same but the params are different
-  // So we need to rank them based on the params
-  // For example, contacts segment list in the sidebar effectively has the same name
-  // But the params are different
   const activeOnPages = navigableChildren.value.filter(child =>
     child.activeOn?.includes(route.name)
   );
 
   if (activeOnPages.length > 0) {
     const rankedPage = activeOnPages.find(child => {
-      return Object.keys(child.to.params)
+      return Object.keys(child.to?.params || {})
         .map(key => {
           return String(child.to.params[key]) === String(route.params[key]);
         })
         .every(match => match);
     });
 
-    // If there is no ranked page, return the first activeOn page anyway
-    // Since this takes higher precedence over the path match
-    // This is not perfect, ideally we should rank each route based on all the techniques
-    // and then return the highest ranked one
-    // But this is good enough for now
     return rankedPage ?? activeOnPages[0];
   }
 
@@ -247,9 +257,10 @@ const toggleTrigger = () => {
     !isExpanded.value &&
     !hasActiveChild.value
   ) {
-    // if not already expanded, navigate to the first child
     const firstItem = accessibleItems.value[0];
-    router.push(firstItem.to);
+    if (firstItem?.to) {
+      router.push(firstItem.to);
+    }
   }
   setExpandedItem(props.name);
 };
@@ -295,28 +306,30 @@ watch(
         @mouseenter="handleMouseEnter"
         @mouseleave="handleMouseLeave"
       >
-        <component
-          :is="to && !hasChildren ? 'router-link' : 'button'"
-          ref="triggerRef"
-          :to="to && !hasChildren ? to : undefined"
-          type="button"
-          class="flex size-11 items-center justify-center rounded-xl text-ds-shell-muted transition-colors duration-150 hover:bg-ds-shell-hover hover:text-ds-shell-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-shell-focus"
-          :class="
-            isActive || hasActiveChild
-              ? 'bg-ds-shell-active text-ds-shell-fg'
-              : ''
-          "
-          :title="label"
-          :aria-label="label"
-          :aria-current="isActive || hasActiveChild ? 'page' : undefined"
-          :aria-haspopup="hasChildren ? 'menu' : undefined"
-          :aria-expanded="hasChildren ? isPopoverOpen : undefined"
-          :aria-controls="hasChildren ? popoverId : undefined"
-          @click="hasChildren ? handleCollapsedClick() : undefined"
-          @keydown="handleCollapsedKeydown"
-        >
-          <Icon v-if="icon" :icon="icon" class="size-5" aria-hidden="true" />
-        </component>
+        <DsTooltip :text="label" placement="right" :disabled="isPopoverOpen">
+          <component
+            :is="to && !hasChildren ? 'router-link' : 'button'"
+            ref="triggerRef"
+            :to="to && !hasChildren ? to : undefined"
+            type="button"
+            class="flex size-11 items-center justify-center rounded-xl text-ds-shell-muted transition-colors duration-150 hover:bg-ds-shell-hover hover:text-ds-shell-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-shell-focus"
+            :class="
+              isActive || hasActiveChild
+                ? 'bg-ds-shell-active text-ds-shell-fg'
+                : ''
+            "
+            :title="label"
+            :aria-label="label"
+            :aria-current="isActive || hasActiveChild ? 'page' : undefined"
+            :aria-haspopup="hasChildren ? 'menu' : undefined"
+            :aria-expanded="hasChildren ? isPopoverOpen : undefined"
+            :aria-controls="hasChildren ? popoverId : undefined"
+            @click="hasChildren ? handleCollapsedClick() : undefined"
+            @keydown="handleCollapsedKeydown"
+          >
+            <Icon v-if="icon" :icon="icon" class="size-5" aria-hidden="true" />
+          </component>
+        </DsTooltip>
         <SidebarCollapsedPopover
           v-if="hasChildren && isPopoverOpen"
           :id="popoverId"
@@ -334,16 +347,18 @@ watch(
     <!-- Expanded State -->
     <template v-else>
       <SidebarGroupHeader
-        :icon
-        :name
-        :label
-        :to
+        :icon="icon"
+        :label="label"
+        :to="to"
         :getter-keys="getterKeys"
         :is-active="isActive"
         :has-active-child="hasActiveChild"
         :expandable="hasChildren"
         :is-expanded="isExpanded"
+        :is-pinned="isCurrentPinned"
+        :can-pin="canPin"
         @toggle="toggleTrigger"
+        @toggle-pin="handleTogglePin"
       />
       <ul
         v-if="hasChildren"

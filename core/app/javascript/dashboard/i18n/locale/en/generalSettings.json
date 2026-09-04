@@ -1,4 +1,4 @@
-﻿{
+{
   "GENERAL_SETTINGS": {
     "LIMIT_MESSAGES": {
       "CONVERSATION": "You have exceeded the conversation limit. Hacker plan allows only 500 conversations.",
@@ -185,6 +185,11 @@
     "SNOOZE_PLACEHOLDER": "Type a time e.g. tomorrow, 2 hours, next friday, jan 15...",
     "SECTIONS": {
       "GENERAL": "General",
+      "CRM": "CRM & Sales",
+      "CONTACTS": "Contacts & Companies",
+      "RECENT_CONTACTS": "Recent Contacts",
+      "DEALS": "Deals & Opportunities",
+      "RECENT_DEALS": "Recent Deals",
       "REPORTS": "Reports",
       "CONVERSATION": "Conversation",
       "BULK_ACTIONS": "Bulk Actions",
@@ -202,6 +207,20 @@
     "COMMANDS": {
       "GO_TO_CONVERSATION_DASHBOARD": "Go to Conversation Dashboard",
       "GO_TO_CONTACTS_DASHBOARD": "Go to Contacts Dashboard",
+      "GO_TO_COMPANIES_DASHBOARD": "Go to Companies Dashboard",
+      "GO_TO_CRM_DASHBOARD": "Go to Deals Board & Pipelines",
+      "GO_TO_CRM_LEADS": "Go to Leads & Deals",
+      "GO_TO_CRM_ACTIVITIES": "Go to CRM Activities",
+      "GO_TO_CRM_AGENDA": "Go to Calendar & Agenda",
+      "GO_TO_CRM_METRICS": "Go to CRM Sales Metrics",
+      "GO_TO_CRM_REPORTS": "Go to CRM Reports",
+      "GO_TO_CRM_CADENCES": "Go to Sales Cadences",
+      "GO_TO_CRM_AUTOMATIONS": "Go to CRM Automations",
+      "GO_TO_CRM_PIPELINE_SETTINGS": "Go to Pipeline Settings",
+      "GO_TO_CRM_LOSS_REASONS": "Go to Loss Reasons",
+      "GO_TO_CRM_CHECKLIST_TEMPLATES": "Go to Checklist Templates",
+      "GO_TO_CRM_SCORING_CONFIG": "Go to Lead Scoring Settings",
+      "GO_TO_CRM_AI_CENTER": "Go to CRM AI Center",
       "GO_TO_REPORTS_OVERVIEW": "Go to Reports Overview",
       "GO_TO_CONVERSATION_REPORTS": "Go to Conversation Reports",
       "GO_TO_AGENT_REPORTS": "Go to Agent Reports",
@@ -214,6 +233,11 @@
       "GO_TO_SETTINGS_LABELS": "Go to Label Settings",
       "GO_TO_SETTINGS_CANNED_RESPONSES": "Go to Canned Response Settings",
       "GO_TO_SETTINGS_APPLICATIONS": "Go to Application Settings",
+      "GO_TO_SETTINGS_AUTOMATIONS": "Go to Automation Settings",
+      "GO_TO_SETTINGS_MACROS": "Go to Macros Settings",
+      "GO_TO_SETTINGS_CUSTOM_ATTRIBUTES": "Go to Custom Attributes Settings",
+      "GO_TO_SETTINGS_SLA": "Go to SLA Settings",
+      "GO_TO_SETTINGS_AUDIT_LOGS": "Go to Audit Logs Settings",
       "GO_TO_SETTINGS_ACCOUNT": "Go to Account Settings",
       "GO_TO_SETTINGS_PROFILE": "Go to Profile Settings",
       "GO_TO_NOTIFICATIONS": "Go to Notifications",
