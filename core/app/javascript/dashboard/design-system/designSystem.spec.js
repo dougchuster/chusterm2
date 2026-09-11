@@ -35,13 +35,14 @@ const global = {
 
 describe('ChusteRM operational design system', () => {
   it('keeps the Phase 2 token contract intentionally small', () => {
-    expect(Object.keys(operationalTokens.fontFamily)).toHaveLength(1);
+    expect(Object.keys(operationalTokens.fontFamily)).toHaveLength(2);
+    expect(operationalTokens.fontFamily.heading[0]).toBe('"Manrope Variable"');
     expect(Object.keys(operationalTokens.fontSize)).toHaveLength(6);
     expect(Object.keys(operationalTokens.fontWeight)).toHaveLength(3);
     expect(Object.keys(operationalTokens.borderRadius)).toHaveLength(2);
     expect(Object.keys(operationalTokens.boxShadow)).toHaveLength(2);
     expect(operationalTokenContract).toMatchObject({
-      fontFamilies: 1,
+      fontFamilies: 2,
       fontSizes: 6,
       fontWeights: 3,
       spacingBase: 4,

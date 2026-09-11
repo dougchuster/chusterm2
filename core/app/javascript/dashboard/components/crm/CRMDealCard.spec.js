@@ -181,8 +181,9 @@ describe('CRMDealCard — rotting', () => {
   it('carries the stage colour on the left border', () => {
     const wrapper = mountCard();
 
-    // jsdom normaliza o hex para rgb; o que importa e a cor vir da etapa.
-    expect(wrapper.attributes('style')).toContain('rgb(37, 99, 235)');
+    // A cor da etapa continua disponível no tema claro; o tema escuro troca a
+    // borda por um neutro através da variante `dark:`.
+    expect(wrapper.attributes('style')).toContain('--crm-stage-color: #2563eb');
   });
 });
 
@@ -258,6 +259,50 @@ describe('CRMDealCard — badges', () => {
 });
 
 describe('CRMDealCard — o que ele pede ao board', () => {
+  it('provides a dedicated mouse and touch drag handle', () => {
+    const wrapper = mountCard();
+    const handle = wrapper.find('[data-testid="crm-card-drag-handle"]');
+
+    expect(handle.exists()).toBe(true);
+    expect(handle.attributes('draggable')).toBe('true');
+  });
+
+  it('reports the native mouse drag lifecycle to the board', async () => {
+    const wrapper = mountCard();
+    const handle = wrapper.get('[data-testid="crm-card-drag-handle"]');
+
+    await handle.trigger('dragstart');
+    await handle.trigger('dragend');
+
+    expect(wrapper.emitted('nativeDragStart')).toHaveLength(1);
+    expect(wrapper.emitted('nativeDragEnd')).toHaveLength(1);
+  });
+
+  it('hides the drag handle when the current board cannot move deals', () => {
+    const wrapper = mountCard({ canDrag: false });
+
+    expect(wrapper.find('[data-testid="crm-card-drag-handle"]').exists()).toBe(
+      false
+    );
+    expect(wrapper.classes()).toContain('cursor-default');
+  });
+
+  it('offers a non-drag action for moving to another stage', async () => {
+    const wrapper = mountCard({
+      stageOptions: [
+        { value: 10, label: 'Qualificação' },
+        { value: 11, label: 'Proposta' },
+      ],
+      deal: deal({ crm_pipeline_stage_id: 10 }),
+    });
+
+    const moveActions = wrapper.findAll('[data-testid="crm-card-move-stage"]');
+    expect(moveActions).toHaveLength(1);
+
+    await moveActions[0].trigger('click');
+    expect(wrapper.emitted('moveToStage')).toEqual([[11]]);
+  });
+
   it.each([
     ['crm-card-open', 'open'],
     ['crm-card-attend', 'attend'],

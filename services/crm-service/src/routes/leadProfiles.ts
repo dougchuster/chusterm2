@@ -7,7 +7,9 @@ import { writeAuditEvent } from '../lib/audit.js'
 import { leadScoringQueue } from '../queues/index.js'
 
 const createSchema = z.object({
-  accountId: z.number().int().positive(),
+  // Deprecated: accepted for backwards compatibility but IGNORED — the tenant
+  // is always derived from the verified JWT (request.auth.accountId).
+  accountId: z.number().int().positive().optional(),
   chatwootContactId: z.number().int().positive(),
   fullName: z.string().min(1).max(255),
   phone: z.string().min(1).max(30),
@@ -27,10 +29,12 @@ const createSchema = z.object({
   utmCampaign: z.string().max(255).optional(),
 })
 
-const updateSchema = createSchema.partial().omit({ accountId: true })
+// CRM-H3: chatwootContactId and score are server-controlled — not client-writable.
+const updateSchema = createSchema.partial().omit({ accountId: true, chatwootContactId: true, score: true })
 
 const listQuerySchema = z.object({
-  accountId: z.coerce.number().int().positive(),
+  // Deprecated: accepted but IGNORED in favor of the token claim.
+  accountId: z.coerce.number().int().positive().optional(),
   stage: z.string().optional(),
   relationshipStatus: z.enum(['lead', 'customer']).optional(),
   lifecycleStage: z.string().optional(),
@@ -41,11 +45,13 @@ const listQuerySchema = z.object({
 })
 
 const accountQuerySchema = z.object({
-  accountId: z.coerce.number().int().positive(),
+  // Deprecated: accepted but IGNORED in favor of the token claim.
+  accountId: z.coerce.number().int().positive().optional(),
 })
 
 const recomputeBodySchema = z.object({
-  accountId: z.number().int().positive(),
+  // Deprecated: accepted but IGNORED in favor of the token claim.
+  accountId: z.number().int().positive().optional(),
 })
 
 async function targetIdsForLabel(accountId: number, labelSlug: string) {
@@ -154,7 +160,8 @@ export async function leadProfileRoutes(app: FastifyInstance): Promise<void> {
         return reply.status(400).send({ error: 'ValidationError', message: query.error.message })
       }
 
-      const { accountId, stage, relationshipStatus, lifecycleStage, ownerId, label, page, limit } = query.data
+      const { stage, relationshipStatus, lifecycleStage, ownerId, label, page, limit } = query.data
+      const accountId = request.auth.accountId
       const offset = (page - 1) * limit
 
       const conditions = [
@@ -215,7 +222,7 @@ export async function leadProfileRoutes(app: FastifyInstance): Promise<void> {
       const [profile] = await db
         .select()
         .from(leadProfiles)
-        .where(and(eq(leadProfiles.id, id), isNull(leadProfiles.deletedAt)))
+        .where(and(eq(leadProfiles.id, id), eq(leadProfiles.accountId, request.auth.accountId), isNull(leadProfiles.deletedAt)))
         .limit(1)
 
       if (!profile) {
@@ -241,7 +248,7 @@ export async function leadProfileRoutes(app: FastifyInstance): Promise<void> {
       const [profile] = await db
         .select()
         .from(leadProfiles)
-        .where(and(eq(leadProfiles.id, id), eq(leadProfiles.accountId, query.data.accountId), isNull(leadProfiles.deletedAt)))
+        .where(and(eq(leadProfiles.id, id), eq(leadProfiles.accountId, request.auth.accountId), isNull(leadProfiles.deletedAt)))
         .limit(1)
 
       if (!profile) {
@@ -276,7 +283,7 @@ export async function leadProfileRoutes(app: FastifyInstance): Promise<void> {
       const [profile] = await db
         .select({ id: leadProfiles.id, accountId: leadProfiles.accountId })
         .from(leadProfiles)
-        .where(and(eq(leadProfiles.id, id), eq(leadProfiles.accountId, body.data.accountId), isNull(leadProfiles.deletedAt)))
+        .where(and(eq(leadProfiles.id, id), eq(leadProfiles.accountId, request.auth.accountId), isNull(leadProfiles.deletedAt)))
         .limit(1)
 
       if (!profile) {
@@ -307,6 +314,7 @@ export async function leadProfileRoutes(app: FastifyInstance): Promise<void> {
         .insert(leadProfiles)
         .values({
           ...body.data,
+          accountId: request.auth.accountId,
           relationshipStatus: body.data.relationshipStatus ?? 'lead',
           lifecycleStage: body.data.lifecycleStage ?? body.data.stage ?? 'lead',
           becameLeadAt: body.data.relationshipStatus === 'customer' ? undefined : new Date(),
@@ -357,7 +365,7 @@ export async function leadProfileRoutes(app: FastifyInstance): Promise<void> {
       const [existing] = await db
         .select()
         .from(leadProfiles)
-        .where(and(eq(leadProfiles.id, id), isNull(leadProfiles.deletedAt)))
+        .where(and(eq(leadProfiles.id, id), eq(leadProfiles.accountId, request.auth.accountId), isNull(leadProfiles.deletedAt)))
         .limit(1)
 
       if (!existing) {
@@ -369,7 +377,7 @@ export async function leadProfileRoutes(app: FastifyInstance): Promise<void> {
       const [updated] = await db
         .update(leadProfiles)
         .set(patch)
-        .where(eq(leadProfiles.id, id))
+        .where(and(eq(leadProfiles.id, id), eq(leadProfiles.accountId, request.auth.accountId)))
         .returning()
 
       if (updated.relationshipStatus !== existing.relationshipStatus) {
@@ -416,7 +424,7 @@ export async function leadProfileRoutes(app: FastifyInstance): Promise<void> {
       const [existing] = await db
         .select()
         .from(leadProfiles)
-        .where(and(eq(leadProfiles.id, id), isNull(leadProfiles.deletedAt)))
+        .where(and(eq(leadProfiles.id, id), eq(leadProfiles.accountId, request.auth.accountId), isNull(leadProfiles.deletedAt)))
         .limit(1)
 
       if (!existing) {
@@ -426,7 +434,7 @@ export async function leadProfileRoutes(app: FastifyInstance): Promise<void> {
       await db
         .update(leadProfiles)
         .set({ deletedAt: new Date(), updatedAt: new Date() })
-        .where(eq(leadProfiles.id, id))
+        .where(and(eq(leadProfiles.id, id), eq(leadProfiles.accountId, request.auth.accountId)))
 
       await writeAuditEvent({
         accountId: existing.accountId,

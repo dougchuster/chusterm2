@@ -18,23 +18,23 @@ const AREA_ALIASES = {
 
 const AREA_COLORS = {
   trabalhista:
-    'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-200',
+    'border-n-blue-6 bg-n-blue-3 text-n-blue-11 dark:border-ui-border dark:bg-ui-elevated dark:text-ui-text-muted',
   previdenciario:
-    'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200',
+    'border-n-teal-6 bg-n-teal-3 text-n-teal-11 dark:border-ui-border dark:bg-ui-elevated dark:text-ui-text-muted',
   civel:
-    'border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-900 dark:bg-purple-950 dark:text-purple-200',
+    'border-n-violet-6 bg-n-violet-3 text-n-violet-11 dark:border-ui-border dark:bg-ui-elevated dark:text-ui-text-muted',
   familia:
-    'border-pink-200 bg-pink-50 text-pink-700 dark:border-pink-900 dark:bg-pink-950 dark:text-pink-200',
+    'border-n-ruby-6 bg-n-ruby-3 text-n-ruby-11 dark:border-ui-border dark:bg-ui-elevated dark:text-ui-text-muted',
   consumidor:
-    'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200',
+    'border-n-amber-6 bg-n-amber-3 text-n-amber-11 dark:border-ui-border dark:bg-ui-elevated dark:text-ui-text-muted',
   empresarial:
-    'border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200',
+    'border-n-slate-6 bg-n-slate-3 text-n-slate-11 dark:border-ui-border dark:bg-ui-elevated dark:text-ui-text-muted',
   tributario:
-    'border-cyan-200 bg-cyan-50 text-cyan-700 dark:border-cyan-900 dark:bg-cyan-950 dark:text-cyan-200',
+    'border-n-blue-6 bg-n-blue-3 text-n-blue-11 dark:border-ui-border dark:bg-ui-elevated dark:text-ui-text-muted',
   imobiliario:
-    'border-lime-200 bg-lime-50 text-lime-700 dark:border-lime-900 dark:bg-lime-950 dark:text-lime-200',
+    'border-n-teal-6 bg-n-teal-3 text-n-teal-11 dark:border-ui-border dark:bg-ui-elevated dark:text-ui-text-muted',
   criminal:
-    'border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-200',
+    'border-n-ruby-6 bg-n-ruby-3 text-n-ruby-11 dark:border-ui-border dark:bg-ui-elevated dark:text-ui-text-muted',
 };
 
 const normalizedArea = computed(() => {

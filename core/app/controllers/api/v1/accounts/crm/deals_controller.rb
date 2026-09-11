@@ -395,24 +395,41 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
   end
 
   def deal_params
-    params.permit(:title, :contact_id, :conversation_id, :inbox_id, :team_id, :owner_id,
-                  :assignee_id, :crm_pipeline_id, :crm_pipeline_stage_id, :legal_area,
-                  :case_type, :urgency_level, :source, :source_detail, :operational_status,
-                  :value_estimate_cents, :lgpd_basis,
-                  :consent_status, :consent_channel, :consent_collected_at,
-                  :data_retention_until, :contact_name, :contact_phone_number, :contact_email,
-                  custom_fields: {}, attribution: {})
+    sanitize_custom_fields(
+      params.permit(:title, :contact_id, :conversation_id, :inbox_id, :team_id, :owner_id,
+                    :assignee_id, :crm_pipeline_id, :crm_pipeline_stage_id, :legal_area,
+                    :case_type, :urgency_level, :source, :source_detail, :operational_status,
+                    :value_estimate_cents, :lgpd_basis,
+                    :consent_status, :consent_channel, :consent_collected_at,
+                    :data_retention_until, :contact_name, :contact_phone_number, :contact_email,
+                    custom_fields: {}, attribution: {})
+    )
   end
 
   def deal_update_params
-    params.permit(:title, :contact_id, :conversation_id, :owner_id, :assignee_id,
-                  :legal_area, :case_type, :urgency_level, :source, :source_detail,
-                  :operational_status, :disposition_reason, :disposition_note,
-                  :value_estimate_cents,
-                  :probability_pct, :lgpd_basis, :consent_status, :summary,
-                  :next_best_action, :conflict_check_status, :documents_status,
-                  :consent_channel, :consent_collected_at, :data_retention_until,
-                  custom_fields: {}, attribution: {})
+    sanitize_custom_fields(
+      params.permit(:title, :contact_id, :conversation_id, :owner_id, :assignee_id,
+                    :legal_area, :case_type, :urgency_level, :source, :source_detail,
+                    :operational_status, :disposition_reason, :disposition_note,
+                    :value_estimate_cents,
+                    :probability_pct, :lgpd_basis, :consent_status, :summary,
+                    :next_best_action, :conflict_check_status, :documents_status,
+                    :consent_channel, :consent_collected_at, :data_retention_until,
+                    custom_fields: {}, attribution: {})
+    )
+  end
+
+  # `captain_triage` é uma chave reservada de custom_fields: só
+  # LegalTriageAnalyzer/TriageFromConversation podem gravá-la. Se a API
+  # aceitasse a chave, um atendente poderia inflar o próprio score ou forçar
+  # data_quality 'insufficient' (LeadScoreCalculator#captain_triage).
+  def sanitize_custom_fields(attributes)
+    custom_fields = attributes[:custom_fields]
+    return attributes unless custom_fields.respond_to?(:delete)
+
+    custom_fields.delete('captain_triage')
+    custom_fields.delete(:captain_triage)
+    attributes
   end
 
   def serialize_deal(deal, detailed: false, pending_activities_count: nil, is_stale: nil, next_activity_due_at: :not_loaded, ai_state: :not_loaded)

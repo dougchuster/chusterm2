@@ -3,11 +3,14 @@ import { z } from 'zod'
 import { eq, and, ilike, or } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import { knowledgeCollections, knowledgeArticles } from '../db/schema.js'
+import { requireServiceAuth, resolveAccountId } from '../plugins/auth.js'
 
 // ─── Collections ──────────────────────────────────────────────────────────────
 
 const CreateCollectionSchema = z.object({
-  accountId: z.number().int().positive(),
+  // Deprecated for JWT callers: the tenant comes from the token claim. Still
+  // accepted for trusted x-service-token (server-to-server) callers.
+  accountId: z.number().int().positive().optional(),
   name: z.string().min(1).max(255),
   description: z.string().default(''),
   scope: z.array(z.string()).default([]),
@@ -16,7 +19,8 @@ const CreateCollectionSchema = z.object({
 // ─── Articles ─────────────────────────────────────────────────────────────────
 
 const CreateArticleSchema = z.object({
-  accountId: z.number().int().positive(),
+  // Deprecated for JWT callers: the tenant comes from the token claim.
+  accountId: z.number().int().positive().optional(),
   collectionId: z.string().uuid(),
   title: z.string().min(1).max(500),
   content: z.string().min(1),
@@ -27,16 +31,28 @@ const CreateArticleSchema = z.object({
 // ─── Route plugin ─────────────────────────────────────────────────────────────
 
 const knowledgeRoute: FastifyPluginAsync = async (fastify) => {
+  // ORC-H1: knowledge content is later injected into LLM prompts — writes must
+  // be authenticated, and JWT callers are always scoped to their own tenant.
+  fastify.addHook('onRequest', requireServiceAuth)
+
   // GET /knowledge/collections?accountId=
   fastify.get('/knowledge/collections', async (request, reply) => {
     const queryResult = z
-      .object({ accountId: z.coerce.number().int().positive() })
+      .object({ accountId: z.coerce.number().int().positive().optional() })
       .safeParse(request.query)
 
     if (!queryResult.success) {
       return reply.status(400).send({
         error: 'VALIDATION_ERROR',
-        message: 'accountId is required and must be a positive integer',
+        message: 'accountId must be a positive integer',
+      })
+    }
+
+    const accountId = resolveAccountId(request, queryResult.data.accountId)
+    if (accountId === null) {
+      return reply.status(400).send({
+        error: 'VALIDATION_ERROR',
+        message: 'accountId is required',
       })
     }
 
@@ -44,7 +60,7 @@ const knowledgeRoute: FastifyPluginAsync = async (fastify) => {
       const collections = await db
         .select()
         .from(knowledgeCollections)
-        .where(eq(knowledgeCollections.accountId, queryResult.data.accountId))
+        .where(eq(knowledgeCollections.accountId, accountId))
         .orderBy(knowledgeCollections.createdAt)
 
       return reply.status(200).send({ data: collections })
@@ -67,10 +83,18 @@ const knowledgeRoute: FastifyPluginAsync = async (fastify) => {
       })
     }
 
+    const accountId = resolveAccountId(request, bodyResult.data.accountId)
+    if (accountId === null) {
+      return reply.status(400).send({
+        error: 'VALIDATION_ERROR',
+        message: 'accountId is required',
+      })
+    }
+
     try {
       const [created] = await db
         .insert(knowledgeCollections)
-        .values(bodyResult.data)
+        .values({ ...bodyResult.data, accountId })
         .returning()
 
       return reply.status(201).send({ data: created })
@@ -87,7 +111,7 @@ const knowledgeRoute: FastifyPluginAsync = async (fastify) => {
   fastify.get('/knowledge/articles', async (request, reply) => {
     const queryResult = z
       .object({
-        accountId: z.coerce.number().int().positive(),
+        accountId: z.coerce.number().int().positive().optional(),
         collectionId: z.string().uuid().optional(),
         q: z.string().optional(),
       })
@@ -96,11 +120,19 @@ const knowledgeRoute: FastifyPluginAsync = async (fastify) => {
     if (!queryResult.success) {
       return reply.status(400).send({
         error: 'VALIDATION_ERROR',
-        message: 'accountId is required and must be a positive integer',
+        message: 'accountId must be a positive integer',
       })
     }
 
-    const { accountId, collectionId, q } = queryResult.data
+    const accountId = resolveAccountId(request, queryResult.data.accountId)
+    if (accountId === null) {
+      return reply.status(400).send({
+        error: 'VALIDATION_ERROR',
+        message: 'accountId is required',
+      })
+    }
+
+    const { collectionId, q } = queryResult.data
 
     try {
       const conditions = [eq(knowledgeArticles.accountId, accountId)]
@@ -145,6 +177,14 @@ const knowledgeRoute: FastifyPluginAsync = async (fastify) => {
       })
     }
 
+    const accountId = resolveAccountId(request, bodyResult.data.accountId)
+    if (accountId === null) {
+      return reply.status(400).send({
+        error: 'VALIDATION_ERROR',
+        message: 'accountId is required',
+      })
+    }
+
     // Verify the collection exists and belongs to the same accountId
     try {
       const collection = await db
@@ -153,7 +193,7 @@ const knowledgeRoute: FastifyPluginAsync = async (fastify) => {
         .where(
           and(
             eq(knowledgeCollections.id, bodyResult.data.collectionId),
-            eq(knowledgeCollections.accountId, bodyResult.data.accountId),
+            eq(knowledgeCollections.accountId, accountId),
           ),
         )
         .limit(1)
@@ -175,7 +215,7 @@ const knowledgeRoute: FastifyPluginAsync = async (fastify) => {
     try {
       const [created] = await db
         .insert(knowledgeArticles)
-        .values(bodyResult.data)
+        .values({ ...bodyResult.data, accountId })
         .returning()
 
       return reply.status(201).send({ data: created })
@@ -200,11 +240,19 @@ const knowledgeRoute: FastifyPluginAsync = async (fastify) => {
       })
     }
 
+    // JWT callers are scoped to their own tenant; trusted x-service-token
+    // callers (request.auth undefined) may read any tenant's article.
+    const tokenAccountId = request.auth?.accountId
+
     try {
       const [article] = await db
         .select()
         .from(knowledgeArticles)
-        .where(eq(knowledgeArticles.id, id))
+        .where(
+          tokenAccountId !== undefined
+            ? and(eq(knowledgeArticles.id, id), eq(knowledgeArticles.accountId, tokenAccountId))
+            : eq(knowledgeArticles.id, id),
+        )
         .limit(1)
 
       if (!article) {

@@ -34,7 +34,7 @@ const variantClasses = computed(
       info: 'border-ui-info/30 bg-ui-info-soft text-ui-info',
       success: 'border-ui-success/30 bg-ui-success-soft text-ui-success',
       warning: 'border-ui-warning/30 bg-ui-warning-soft text-ui-warning',
-      danger: 'border-ui-danger/30 bg-ui-danger-soft text-ui-danger',
+      danger: 'border-ui-danger/30 bg-ui-danger-soft text-ui-danger-foreground',
     })[props.variant]
 );
 

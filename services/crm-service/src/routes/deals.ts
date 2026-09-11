@@ -7,7 +7,9 @@ import { writeAuditEvent } from '../lib/audit.js'
 import { leadScoringQueue } from '../queues/index.js'
 
 const createSchema = z.object({
-  accountId: z.number().int().positive(),
+  // Deprecated: accepted for backwards compatibility but IGNORED — the tenant
+  // is always derived from the verified JWT (request.auth.accountId).
+  accountId: z.number().int().positive().optional(),
   leadProfileId: z.string().uuid(),
   pipelineId: z.string().uuid().optional(),
   stageId: z.string().uuid().optional(),
@@ -22,12 +24,14 @@ const createSchema = z.object({
   lostReasonNote: z.string().max(500).optional(),
 })
 
-const updateSchema = createSchema.partial().omit({ accountId: true })
-type DealCreatePayload = z.infer<typeof createSchema>
+// CRM-H3: score and leadProfileId are server-controlled — not client-writable.
+const updateSchema = createSchema.partial().omit({ accountId: true, score: true, leadProfileId: true })
+type DealCreatePayload = z.infer<typeof createSchema> & { accountId: number }
 type DealUpdatePayload = z.infer<typeof updateSchema> & { accountId: number }
 
 const listQuerySchema = z.object({
-  accountId: z.coerce.number().int().positive(),
+  // Deprecated: accepted but IGNORED in favor of the token claim.
+  accountId: z.coerce.number().int().positive().optional(),
   stage: z.string().optional(),
   pipelineId: z.string().uuid().optional(),
   stageId: z.string().uuid().optional(),
@@ -158,7 +162,6 @@ export async function dealRoutes(app: FastifyInstance): Promise<void> {
       }
 
       const {
-        accountId,
         stage,
         pipelineId,
         stageId,
@@ -170,6 +173,7 @@ export async function dealRoutes(app: FastifyInstance): Promise<void> {
         page,
         limit,
       } = query.data
+      const accountId = request.auth.accountId
       const offset = (page - 1) * limit
 
       const conditions = [
@@ -231,7 +235,7 @@ export async function dealRoutes(app: FastifyInstance): Promise<void> {
       const [deal] = await db
         .select()
         .from(deals)
-        .where(and(eq(deals.id, id), isNull(deals.deletedAt)))
+        .where(and(eq(deals.id, id), eq(deals.accountId, request.auth.accountId), isNull(deals.deletedAt)))
         .limit(1)
 
       if (!deal) {
@@ -253,7 +257,7 @@ export async function dealRoutes(app: FastifyInstance): Promise<void> {
         return reply.status(400).send({ error: 'ValidationError', message: body.error.message })
       }
 
-      const hydratedPayload = await hydrateStage(body.data)
+      const hydratedPayload = await hydrateStage({ ...body.data, accountId: request.auth.accountId })
       if (!hydratedPayload) {
         return reply.status(400).send({ error: 'ValidationError', message: 'Stage does not belong to account' })
       }
@@ -302,7 +306,7 @@ export async function dealRoutes(app: FastifyInstance): Promise<void> {
       const [existing] = await db
         .select()
         .from(deals)
-        .where(and(eq(deals.id, id), isNull(deals.deletedAt)))
+        .where(and(eq(deals.id, id), eq(deals.accountId, request.auth.accountId), isNull(deals.deletedAt)))
         .limit(1)
 
       if (!existing) {
@@ -337,7 +341,7 @@ export async function dealRoutes(app: FastifyInstance): Promise<void> {
           ...(shouldClose ? { closedAt: new Date() } : {}),
           updatedAt: new Date(),
         })
-        .where(eq(deals.id, id))
+        .where(and(eq(deals.id, id), eq(deals.accountId, request.auth.accountId)))
         .returning()
 
       if (stageChanged) {
@@ -374,7 +378,7 @@ export async function dealRoutes(app: FastifyInstance): Promise<void> {
       const [existing] = await db
         .select()
         .from(deals)
-        .where(and(eq(deals.id, id), isNull(deals.deletedAt)))
+        .where(and(eq(deals.id, id), eq(deals.accountId, request.auth.accountId), isNull(deals.deletedAt)))
         .limit(1)
 
       if (!existing) {
@@ -384,7 +388,7 @@ export async function dealRoutes(app: FastifyInstance): Promise<void> {
       await db
         .update(deals)
         .set({ deletedAt: new Date(), updatedAt: new Date() })
-        .where(eq(deals.id, id))
+        .where(and(eq(deals.id, id), eq(deals.accountId, request.auth.accountId)))
 
       await writeAuditEvent({
         accountId: existing.accountId,

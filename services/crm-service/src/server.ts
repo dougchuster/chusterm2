@@ -15,7 +15,7 @@ async function start(): Promise<void> {
     app.log.warn({ err }, 'Migrations skipped or failed — continuing startup')
   }
 
-  const worker = startLeadScoringWorker()
+  const worker = startLeadScoringWorker(app.log)
 
   const shutdown = async (signal: string) => {
     app.log.info({ signal }, 'Shutting down...')

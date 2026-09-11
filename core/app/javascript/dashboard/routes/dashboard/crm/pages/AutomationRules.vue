@@ -313,7 +313,9 @@ async function handleSaveRule(payload) {
     await loadData();
   } catch (err) {
     error.value =
-      err?.response?.data?.message || t('CRM.AUTOMATION_RULES.ERROR_SAVE');
+      err?.response?.data?.error ||
+      err?.response?.data?.message ||
+      t('CRM.AUTOMATION_RULES.ERROR_SAVE');
   } finally {
     saving.value = false;
   }

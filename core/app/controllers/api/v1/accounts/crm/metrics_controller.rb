@@ -1,6 +1,10 @@
 class Api::V1::Accounts::Crm::MetricsController < Api::V1::Accounts::Crm::BaseController
   CACHE_TTL = 5.minutes
 
+  # Agregados seguem a mesma visibilidade da listagem de deals: se um dia a
+  # visibilidade for restringida (times/papéis), as métricas acompanham.
+  before_action -> { authorize CrmDeal, :index? }
+
   def overview
     render json: cached('overview', params[:period_days]) do
       metrics_service.overview(period_days: params[:period_days]&.to_i || 30)

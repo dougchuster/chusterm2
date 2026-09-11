@@ -1,5 +1,7 @@
 class Api::V1::Accounts::Crm::AnalystController < Api::V1::Accounts::Crm::BaseController
   def create
+    authorize CrmDeal, :index?
+
     render json: Crm::AnalystService.new(
       account: Current.account,
       question: params[:question],

@@ -648,9 +648,15 @@ ninja-keys {
   --ninja-icon-color: var(--ds-fg-muted);
   --ninja-secondary-text-color: var(--ds-fg-subtle);
   --ninja-border-radius: 14px;
-  --ninja-actions-height: 48px;
+  --ninja-actions-height: min(50vh, 420px);
+  --ninja-width: min(92vw, 640px);
+  --ninja-top: clamp(8vh, 15vh, 120px);
   --ninja-backdrop-filter: blur(12px);
   z-index: 9999;
+}
+
+ninja-keys::part(actions-list) {
+  min-height: min(32vh, 280px);
 }
 
 body.dark ninja-keys,

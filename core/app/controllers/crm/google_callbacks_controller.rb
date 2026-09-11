@@ -5,6 +5,14 @@ class Crm::GoogleCallbacksController < ApplicationController
       return
     end
 
+    # O state (message_verifier) é verificado ANTES de trocar o code: um state
+    # inválido/forjado não pode queimar o authorization code de uso único de
+    # um fluxo legítimo em andamento.
+    unless valid_state?
+      redirect_to safe_account ? callback_path('error') : '/'
+      return
+    end
+
     response = google_client.auth_code.get_token(
       params[:code],
       redirect_uri: "#{base_url}/crm/google/callback"
@@ -18,6 +26,13 @@ class Crm::GoogleCallbacksController < ApplicationController
   end
 
   private
+
+  def valid_state?
+    state_payload
+    true
+  rescue StandardError
+    false
+  end
 
   def store_connection!(response)
     token_payload = response.to_hash.with_indifferent_access
@@ -62,6 +77,8 @@ class Crm::GoogleCallbacksController < ApplicationController
   def users_data
     return {} if parsed_body[:id_token].blank?
 
+    # verify=false é tolerável aqui: o id_token chega dentro da resposta TLS
+    # server-to-server do token endpoint do Google, não do navegador.
     decoded_token = JWT.decode parsed_body[:id_token], nil, false
     decoded_token[0] || {}
   end

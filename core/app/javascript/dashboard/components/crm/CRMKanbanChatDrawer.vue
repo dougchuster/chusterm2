@@ -505,23 +505,38 @@ function messageDirectionLabel(message) {
   return 'Recebida';
 }
 
+// URLs de anexo vêm do canal/provider (external_url etc.) e são ligadas a
+// :href/:src. Só http(s) e caminhos relativos do app são permitidos —
+// javascript:/data: etc. caem no fallback inerte.
+function safeAttachmentUrl(url) {
+  const value = String(url || '');
+  if (value === '') return '';
+  if (value.startsWith('/')) return value;
+  try {
+    const { protocol } = new URL(value);
+    return protocol === 'http:' || protocol === 'https:' ? value : '#';
+  } catch {
+    return '#';
+  }
+}
+
 function attachmentUrl(attachment) {
-  return (
+  return safeAttachmentUrl(
     attachment.data_url ||
-    attachment.external_url ||
-    attachment.download_url ||
-    attachment.url ||
-    attachment.file_url ||
-    ''
+      attachment.external_url ||
+      attachment.download_url ||
+      attachment.url ||
+      attachment.file_url ||
+      ''
   );
 }
 
 function attachmentPreviewUrl(attachment) {
-  return (
+  return safeAttachmentUrl(
     attachment.thumb_url ||
-    attachment.thumbnail_url ||
-    attachment.preview_url ||
-    attachmentUrl(attachment)
+      attachment.thumbnail_url ||
+      attachment.preview_url ||
+      attachmentUrl(attachment)
   );
 }
 
@@ -707,8 +722,8 @@ async function loadContext() {
     scrollTimelineToBottom();
   } catch (e) {
     error.value =
-      e?.response?.data?.message ||
       e?.response?.data?.error ||
+      e?.response?.data?.message ||
       'Nao foi possivel carregar o atendimento.';
   } finally {
     if (token === loadToken) {
@@ -738,8 +753,8 @@ async function updateStage(stageId) {
   } catch (e) {
     mergeDeal({ crm_pipeline_stage_id: previousStageId });
     error.value =
-      e?.response?.data?.message ||
       e?.response?.data?.error ||
+      e?.response?.data?.message ||
       'Nao foi possivel mover o lead.';
   } finally {
     updatingStage.value = false;
@@ -766,8 +781,8 @@ async function updateOperationalStatus(status) {
   } catch (e) {
     mergeDeal({ operational_status: previousStatus });
     error.value =
-      e?.response?.data?.message ||
       e?.response?.data?.error ||
+      e?.response?.data?.message ||
       'Nao foi possivel atualizar a situacao.';
   } finally {
     updatingStatus.value = false;
@@ -785,8 +800,8 @@ async function markWon() {
     pushSystemEvent('Negócio marcado como ganho', '', 'i-lucide-trophy');
   } catch (e) {
     error.value =
-      e?.response?.data?.message ||
       e?.response?.data?.error ||
+      e?.response?.data?.message ||
       'Nao foi possivel marcar o negocio como ganho.';
   } finally {
     updatingOutcome.value = false;
@@ -808,8 +823,8 @@ async function markLost({ lossReasonId, note }) {
     pushSystemEvent('Negócio marcado como perdido', note, 'i-lucide-circle-x');
   } catch (e) {
     error.value =
-      e?.response?.data?.message ||
       e?.response?.data?.error ||
+      e?.response?.data?.message ||
       'Nao foi possivel marcar o negocio como perdido.';
   } finally {
     updatingOutcome.value = false;
@@ -827,8 +842,8 @@ async function reopenDeal() {
     pushSystemEvent('Negócio reaberto', '', 'i-lucide-rotate-ccw');
   } catch (e) {
     error.value =
-      e?.response?.data?.message ||
       e?.response?.data?.error ||
+      e?.response?.data?.message ||
       'Nao foi possivel reabrir o negocio.';
   } finally {
     updatingOutcome.value = false;
@@ -867,8 +882,8 @@ async function setAiMode(mode) {
     pushSystemEvent(aiModeLabel.value, reason, 'i-lucide-bot');
   } catch (e) {
     error.value =
-      e?.response?.data?.message ||
       e?.response?.data?.error ||
+      e?.response?.data?.message ||
       'Nao foi possivel alterar o controle da IA.';
   } finally {
     updatingAi.value = false;
@@ -908,8 +923,8 @@ async function sendDraft() {
   } catch (e) {
     draft.value = content;
     error.value =
-      e?.response?.data?.message ||
       e?.response?.data?.error ||
+      e?.response?.data?.message ||
       'Nao foi possivel enviar a mensagem.';
   } finally {
     sending.value = false;

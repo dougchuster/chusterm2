@@ -5,7 +5,8 @@ import { db } from '../db/client.js'
 import { auditEvents } from '../db/schema.js'
 
 const listQuerySchema = z.object({
-  accountId: z.coerce.number().int().positive(),
+  // Deprecated: accepted but IGNORED in favor of the token claim.
+  accountId: z.coerce.number().int().positive().optional(),
   entityType: z.string().max(100).optional(),
   entityId: z.string().max(100).optional(),
   action: z.string().max(100).optional(),
@@ -20,7 +21,7 @@ export async function auditEventRoutes(app: FastifyInstance): Promise<void> {
         return reply.status(400).send({ error: 'ValidationError', message: query.error.message })
       }
 
-      const conditions = [eq(auditEvents.accountId, query.data.accountId)]
+      const conditions = [eq(auditEvents.accountId, request.auth.accountId)]
 
       if (query.data.entityType) {
         conditions.push(eq(auditEvents.entityType, query.data.entityType))

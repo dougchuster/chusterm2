@@ -109,13 +109,13 @@ const handleAction = ({ action, value }) => {
       <span
         class="flex gap-1 items-center text-sm truncate shrink-0 text-n-slate-11"
       >
-        <i class="i-woot-captain" />
+        <i class="i-woot-captain size-4 shrink-0" aria-hidden="true" />
         {{ assistant?.name || '' }}
       </span>
       <span
         class="flex flex-1 gap-1 justify-start items-center text-sm truncate text-n-slate-11"
       >
-        <i :class="linkIcon" class="shrink-0" />
+        <i :class="linkIcon" class="size-4 shrink-0" aria-hidden="true" />
         <span class="truncate">{{ displayLink }}</span>
       </span>
       <div class="text-sm shrink-0 text-n-slate-11 line-clamp-1">

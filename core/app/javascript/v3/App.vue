@@ -74,6 +74,7 @@ export default {
 @tailwind components;
 @tailwind utilities;
 
+@import '@fontsource-variable/manrope/wght.css';
 @import 'shared/assets/fonts/InterDisplay/inter-display';
 @import 'shared/assets/fonts/inter';
 @import '../dashboard/assets/scss/next-colors';

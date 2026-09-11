@@ -261,7 +261,7 @@ const onToggleAll = event => {
                 class="inline-flex h-7 items-center rounded-full px-2.5 text-xs font-semibold"
                 :class="
                   relationshipStatus(contact) === 'customer'
-                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+                    ? 'bg-n-teal-3 text-n-teal-11'
                     : relationshipStatus(contact) === 'lead'
                       ? 'bg-n-blue-3 text-n-blue-11'
                       : 'bg-n-slate-3 text-n-slate-11'

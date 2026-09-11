@@ -42,25 +42,25 @@ const tierConfig = computed(() => {
     },
     prioridade_alta: {
       label: 'Alta prioridade',
-      bg: 'bg-red-100 dark:bg-red-950',
-      text: 'text-red-700 dark:text-red-300',
-      border: 'border-red-200 dark:border-red-900',
+      bg: 'bg-n-ruby-3',
+      text: 'text-n-ruby-11',
+      border: 'border-n-ruby-6',
       pulse: true,
       icon: 'i-lucide-zap',
     },
     qualificado: {
       label: 'Qualificado',
-      bg: 'bg-green-100 dark:bg-green-950',
-      text: 'text-green-900 dark:text-green-200',
-      border: 'border-green-200 dark:border-green-900',
+      bg: 'bg-n-teal-3',
+      text: 'text-n-teal-11',
+      border: 'border-n-teal-6',
       pulse: false,
       icon: 'i-lucide-star',
     },
     medio_potencial: {
       label: 'Médio potencial',
-      bg: 'bg-amber-100 dark:bg-amber-950',
-      text: 'text-amber-700 dark:text-amber-300',
-      border: 'border-amber-200 dark:border-amber-900',
+      bg: 'bg-n-amber-3',
+      text: 'text-n-amber-11',
+      border: 'border-n-amber-6',
       pulse: false,
       icon: 'i-lucide-trending-up',
     },
@@ -107,7 +107,7 @@ const iconSize = computed(() => {
       tierConfig.bg,
       tierConfig.text,
       tierConfig.border,
-      tier === 'prioridade_alta' ? 'ring-2 ring-red-400 dark:ring-red-700' : '',
+      tier === 'prioridade_alta' ? 'ring-2 ring-n-ruby-7/60' : '',
     ]"
     :title="`Score: ${score} - ${displayLabel}`"
   >

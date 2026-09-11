@@ -3,15 +3,53 @@ import OpenAI from 'openai'
 export const LLM_BASE_URL =
   process.env.LLM_BASE_URL ?? 'https://openrouter.ai/api/v1'
 
-if (new URL(LLM_BASE_URL).hostname !== 'openrouter.ai') {
-  throw new Error('LLM_BASE_URL must use the unified OpenRouter gateway')
+// ORC-L1: require the unified OpenRouter gateway over HTTPS (no plaintext).
+const llmBaseUrl = new URL(LLM_BASE_URL)
+if (llmBaseUrl.hostname !== 'openrouter.ai' || llmBaseUrl.protocol !== 'https:') {
+  throw new Error('LLM_BASE_URL must use the unified OpenRouter gateway over HTTPS')
 }
+
+const LLM_TIMEOUT_MS = Number(process.env.LLM_TIMEOUT_MS ?? 30_000)
 
 export const llm = new OpenAI({
   apiKey: process.env.LLM_API_KEY ?? '',
   baseURL: LLM_BASE_URL,
-  timeout: Number(process.env.LLM_TIMEOUT_MS ?? 60000),
+  timeout: LLM_TIMEOUT_MS,
+  // Bounded retries: the SDK retries 429/5xx with exponential backoff + jitter.
+  maxRetries: 2,
 })
+
+/**
+ * Typed error thrown when an LLM upstream call fails after all retries.
+ * Routes translate this to a 502 response.
+ */
+export class LlmUpstreamError extends Error {
+  readonly statusCode = 502
+
+  constructor(
+    message: string,
+    readonly cause?: unknown,
+  ) {
+    super(message)
+    this.name = 'LlmUpstreamError'
+  }
+}
+
+/**
+ * Executes a chat completion with a hard timeout (AbortSignal) and bounded
+ * retries (SDK-level, for 429/5xx). Throws LlmUpstreamError on final failure.
+ */
+export async function createChatCompletion(
+  params: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming,
+): Promise<OpenAI.Chat.Completions.ChatCompletion> {
+  try {
+    return await llm.chat.completions.create(params, {
+      signal: AbortSignal.timeout(LLM_TIMEOUT_MS),
+    })
+  } catch (err) {
+    throw new LlmUpstreamError('LLM upstream request failed', err)
+  }
+}
 
 export const LLM_MODEL = process.env.LLM_MODEL ?? 'google/gemini-3.7-flash'
 

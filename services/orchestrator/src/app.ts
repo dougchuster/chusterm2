@@ -1,6 +1,8 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
+import jwt from '@fastify/jwt'
 import { registerRoutes } from './routes/index.js'
+import { requireJwtSecret } from './plugins/auth.js'
 
 export async function buildApp() {
   const fastify = Fastify({
@@ -16,9 +18,36 @@ export async function buildApp() {
   // ─── CORS ──────────────────────────────────────────────────────────────────
   // Serviço interno: sem CORS_ORIGIN explícito, nenhuma origem cross-site é
   // permitida (SEC-07). Nunca refletir qualquer origem por default.
+  // CORS_ORIGIN é uma allowlist separada por vírgulas.
+  const corsOrigins = (process.env.CORS_ORIGIN ?? '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean)
   await fastify.register(cors, {
-    origin: process.env.CORS_ORIGIN ?? false,
+    origin: corsOrigins.length > 0 ? corsOrigins : false,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  })
+
+  // ─── JWT (ORC-H1) ──────────────────────────────────────────────────────────
+  // Sem fallback de segredo — requireJwtSecret() lança quando ausente.
+  // Opções de verificação espelham o sign do identity-bridge.
+  await fastify.register(jwt, {
+    secret: requireJwtSecret(),
+    verify: {
+      allowedIss: 'chusterm:identity-bridge',
+      allowedAud: 'chusterm:internal',
+      algorithms: ['HS256'],
+      // allowedIss/allowedAud só validam claims presentes — exigir a presença.
+      requiredClaims: ['iss', 'aud'],
+    },
+  })
+
+  // ─── Security headers ──────────────────────────────────────────────────────
+  // Conjunto mínimo (sem dependência de @fastify/helmet).
+  fastify.addHook('onSend', async (_request, reply) => {
+    reply.header('X-Content-Type-Options', 'nosniff')
+    reply.header('X-Frame-Options', 'DENY')
+    reply.header('Referrer-Policy', 'no-referrer')
   })
 
   // ─── Routes ────────────────────────────────────────────────────────────────

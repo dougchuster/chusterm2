@@ -14,7 +14,8 @@
     "start": "node dist/server.js",
     "db:migrate": "drizzle-kit migrate",
     "db:generate": "drizzle-kit generate",
-    "seed:dr-paula": "tsx src/seeds/drPaulaMatosKnowledge.ts"
+    "seed:dr-paula": "tsx src/seeds/drPaulaMatosKnowledge.ts",
+    "test:vitest": "vitest run"
   },
   "dependencies": {
     "@fastify/cors": "^10.1.0",
@@ -31,6 +32,7 @@
     "drizzle-kit": "^0.31.10",
     "pino-pretty": "^11.0.0",
     "tsx": "^4.7.2",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "vitest": "^3.0.5"
   }
 }

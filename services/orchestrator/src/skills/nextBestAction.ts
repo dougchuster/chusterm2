@@ -1,4 +1,5 @@
-import { llm, LLM_MODEL, isLlmConfigured } from '../llm/client.js'
+import { createChatCompletion, LLM_MODEL, isLlmConfigured } from '../llm/client.js'
+import { UNTRUSTED_DATA_INSTRUCTION, wrapUntrustedInput } from './promptGuards.js'
 
 export interface NextBestActionInput {
   contactId: string
@@ -19,7 +20,9 @@ export interface NextBestActionOutput {
 const SYSTEM_PROMPT = `You are a CRM sales intelligence assistant. Based on the deal context provided, suggest the single best next action for the sales rep to take.
 
 Respond in JSON only, with no markdown, no code fences, and no extra text.
-Format: { "action": "<short imperative sentence describing what to do>", "priority": "<high|medium|low>", "rationale": "<1-2 sentence explanation>", "dueInHours": <integer, hours from now> }`
+Format: { "action": "<short imperative sentence describing what to do>", "priority": "<high|medium|low>", "rationale": "<1-2 sentence explanation>", "dueInHours": <integer, hours from now> }
+
+${UNTRUSTED_DATA_INSTRUCTION}`
 
 // ─── Deterministic fallback (no LLM) ─────────────────────────────────────────
 
@@ -94,20 +97,24 @@ export async function runNextBestAction(
     return ruleBasedAction(input)
   }
 
-  const contextText = [
-    `Contact ID: ${input.contactId}`,
-    `Deal Stage: ${input.dealStage}`,
-    `Days Since Last Activity: ${input.daysSinceLastActivity}`,
-    `Lead Score: ${input.score}/100`,
-    input.conversationSummary
-      ? `Conversation Summary: ${input.conversationSummary}`
-      : null,
-  ]
-    .filter(Boolean)
-    .join('\n')
+  // ORC-H2: deal context includes free-form, unbounded user text
+  // (conversationSummary) — delimit and cap it before interpolating.
+  const contextText = wrapUntrustedInput(
+    [
+      `Contact ID: ${input.contactId}`,
+      `Deal Stage: ${input.dealStage}`,
+      `Days Since Last Activity: ${input.daysSinceLastActivity}`,
+      `Lead Score: ${input.score}/100`,
+      input.conversationSummary
+        ? `Conversation Summary: ${input.conversationSummary}`
+        : null,
+    ]
+      .filter(Boolean)
+      .join('\n'),
+  )
 
   try {
-    const completion = await llm.chat.completions.create({
+    const completion = await createChatCompletion({
       model: LLM_MODEL,
       max_tokens: 512,
       temperature: 0.3,

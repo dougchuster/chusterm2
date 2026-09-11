@@ -6,6 +6,7 @@ import { skillRuns } from '../db/schema.js'
 import { runIntentClassifier } from '../skills/intentClassifier.js'
 import { runLeadScorer } from '../skills/leadScorer.js'
 import { runNextBestAction } from '../skills/nextBestAction.js'
+import { LlmUpstreamError } from '../llm/client.js'
 import {
   buildMemorySummary,
   extractPrevidenciarioTriage,
@@ -13,12 +14,15 @@ import {
   scorePrevidenciarioLead,
   type PrevidenciarioTriageSnapshot,
 } from '../agents/drPaulaMatos.js'
+import { requireServiceAuth, resolveAccountId } from '../plugins/auth.js'
 
 // ─── Request schema ───────────────────────────────────────────────────────────
 
 const RunSkillBodySchema = z.object({
   input: z.record(z.unknown()),
-  accountId: z.number().int().positive(),
+  // Deprecated for JWT callers: the tenant comes from the token claim. Still
+  // accepted for trusted x-service-token (server-to-server) callers.
+  accountId: z.number().int().positive().optional(),
   triggeredBy: z.string().optional(),
   conversationId: z.string().optional(),
   dealId: z.string().optional(),
@@ -167,6 +171,9 @@ class UnknownSkillError extends Error {}
 // ─── Route plugin ─────────────────────────────────────────────────────────────
 
 const skillsRoute: FastifyPluginAsync = async (fastify) => {
+  // ORC-H1: skill execution burns paid LLM tokens — authentication required.
+  fastify.addHook('onRequest', requireServiceAuth)
+
   fastify.post<{ Params: { slug: string } }>('/skills/:slug/run', async (request, reply) => {
     const { slug } = request.params
 
@@ -179,7 +186,17 @@ const skillsRoute: FastifyPluginAsync = async (fastify) => {
       })
     }
 
-    const { input, accountId, triggeredBy, conversationId, dealId, contactId } = bodyResult.data
+    const { input, triggeredBy, conversationId, dealId, contactId } = bodyResult.data
+
+    // Tenant comes from the JWT claim; only trusted x-service-token callers
+    // may address an arbitrary tenant via the body field.
+    const accountId = resolveAccountId(request, bodyResult.data.accountId)
+    if (accountId === null) {
+      return reply.status(400).send({
+        error: 'VALIDATION_ERROR',
+        message: 'accountId is required',
+      })
+    }
 
     // Merge accountId into input so skill validators can access it
     const skillInput: Record<string, unknown> = { ...input, accountId }
@@ -248,6 +265,15 @@ const skillsRoute: FastifyPluginAsync = async (fastify) => {
         return reply.status(422).send({
           error: 'SKILL_INPUT_INVALID',
           message: (err as z.ZodError).issues.map((i) => i.message).join('; '),
+        })
+      }
+
+      // LLM upstream failures surface as 502 (bad gateway), not a generic 500.
+      if (err instanceof LlmUpstreamError) {
+        request.log.error({ err, slug, runId }, 'LLM upstream request failed')
+        return reply.status(502).send({
+          error: 'LLM_UPSTREAM_ERROR',
+          message: 'LLM provider request failed',
         })
       }
 

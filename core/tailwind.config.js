@@ -42,8 +42,8 @@ const tailwindConfig = {
     extend: {
       fontFamily: {
         sans: operationalTokens.fontFamily.sans,
-        // Local display face used for editorial headings (no network font flash).
-        manrope: ['InterDisplay', ...defaultSansFonts],
+        // Self-hosted variable display face used for editorial headings.
+        manrope: operationalTokens.fontFamily.heading,
         inter: ['Inter', ...defaultSansFonts],
         interDisplay: ['InterDisplay', ...defaultSansFonts],
       },

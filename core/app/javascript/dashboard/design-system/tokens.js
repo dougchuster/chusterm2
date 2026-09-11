@@ -77,6 +77,14 @@ export const operationalTokens = Object.freeze({
       'Roboto',
       'sans-serif',
     ],
+    heading: [
+      '"Manrope Variable"',
+      'Manrope',
+      'Inter',
+      '-apple-system',
+      'system-ui',
+      'sans-serif',
+    ],
   },
   fontSize: {
     'ui-caption': ['0.75rem', { lineHeight: '1rem' }],
@@ -108,10 +116,8 @@ export const operationalTokens = Object.freeze({
     'ui-surface': '0.625rem',
   },
   boxShadow: {
-    'ui-raised':
-      '0 1px 2px rgb(15 23 42 / 0.06), 0 4px 12px rgb(15 23 42 / 0.05)',
-    'ui-overlay':
-      '0 12px 32px rgb(15 23 42 / 0.16), 0 2px 8px rgb(15 23 42 / 0.08)',
+    'ui-raised': '0 1px 2px rgb(0 0 0 / 0.06), 0 4px 12px rgb(0 0 0 / 0.05)',
+    'ui-overlay': '0 12px 32px rgb(0 0 0 / 0.18), 0 2px 8px rgb(0 0 0 / 0.08)',
   },
   transitionDuration: {
     'ui-fast': '120ms',
@@ -131,7 +137,7 @@ export const operationalTokens = Object.freeze({
 });
 
 export const operationalTokenContract = Object.freeze({
-  fontFamilies: 1,
+  fontFamilies: 2,
   fontSizes: 6,
   fontWeights: 3,
   spacingBase: 4,

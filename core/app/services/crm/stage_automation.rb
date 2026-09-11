@@ -1,7 +1,12 @@
 class Crm::StageAutomation
-  def initialize(deal:, actor: nil)
+  # Teto de moves encadeados: uma regra em A movendo para B somada a uma regra
+  # em B movendo para A recursaria DealMover → StageAutomation sem fim.
+  MAX_AUTOMATION_DEPTH = 5
+
+  def initialize(deal:, actor: nil, automation_depth: 0)
     @deal = deal
     @actor = actor
+    @automation_depth = automation_depth
   end
 
   def perform
@@ -119,7 +124,23 @@ class Crm::StageAutomation
     return unless target_stage
     return if @deal.crm_pipeline_stage_id == target_stage.id
 
-    Crm::DealMover.new(deal: @deal, stage_id: target_stage.id, actor: @actor).perform
+    # Guarda de ciclo: cada move encadeado incrementa a profundidade; ao
+    # atingir o teto a automação é pulada (o comportamento de regras não
+    # cíclicas, que nunca chegam perto do teto, não muda).
+    if @automation_depth >= MAX_AUTOMATION_DEPTH
+      Rails.logger.warn(
+        "[CRM StageAutomation] move_to_stage ignorado: profundidade máxima #{MAX_AUTOMATION_DEPTH} " \
+        "atingida (possível ciclo) deal=#{@deal.id} etapa_destino=#{target_slug}"
+      )
+      return
+    end
+
+    Crm::DealMover.new(
+      deal: @deal,
+      stage_id: target_stage.id,
+      actor: @actor,
+      automation_depth: @automation_depth + 1
+    ).perform
   end
 
   # A coluna `assigned_to_id` nunca existiu em `crm_deals` (o schema tem

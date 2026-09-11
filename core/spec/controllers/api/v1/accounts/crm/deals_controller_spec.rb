@@ -142,6 +142,26 @@ RSpec.describe 'CRM Deals API', type: :request do
         expect(response).to have_http_status(:not_found)
       end
     end
+
+    it 'strips the reserved captain_triage key from custom_fields' do
+      post "/api/v1/accounts/#{account.id}/crm/deals",
+           params: {
+             title: 'Tentativa de inflar score',
+             crm_pipeline_id: pipeline.id,
+             crm_pipeline_stage_id: stage.id,
+             custom_fields: {
+               'captain_triage' => { 'economic_potential' => 'high' },
+               'origin_note' => 'indicação'
+             }
+           },
+           headers: headers,
+           as: :json
+
+      expect(response).to have_http_status(:created)
+      custom_fields = account.crm_deals.last.custom_fields
+      expect(custom_fields).not_to have_key('captain_triage')
+      expect(custom_fields['origin_note']).to eq('indicação')
+    end
   end
 
   describe 'PATCH /api/v1/accounts/:account_id/crm/deals/:id' do
@@ -172,6 +192,25 @@ RSpec.describe 'CRM Deals API', type: :request do
       get "/api/v1/accounts/#{account.id}/crm/deals/#{deal.id}", headers: headers, as: :json
       expect(response).to have_http_status(:success)
       expect(response.body).not_to include(secret)
+    end
+
+    it 'strips the reserved captain_triage key from custom_fields' do
+      deal = create_deal!(title: 'Lead com triagem', custom_fields: { 'existing' => 'value' })
+
+      patch "/api/v1/accounts/#{account.id}/crm/deals/#{deal.id}",
+            params: {
+              custom_fields: {
+                'captain_triage' => { 'economic_potential' => 'high', 'data_quality' => 'sufficient' },
+                'notes' => 'cliente pediu retorno'
+              }
+            },
+            headers: headers,
+            as: :json
+
+      expect(response).to have_http_status(:success)
+      custom_fields = deal.reload.custom_fields
+      expect(custom_fields).not_to have_key('captain_triage')
+      expect(custom_fields['notes']).to eq('cliente pediu retorno')
     end
   end
 

@@ -1,7 +1,15 @@
-﻿# Docker Compose — ChusteRM Completo
+# Docker Compose — ChusteRM Completo
 # Inclui Core (fork Chatwoot) + todos os serviços proprietários
 #
 # Uso: docker compose up -d
+#
+# ─── AVISO DE SEGURANÇA (F14) ────────────────────────────────────────────────
+# USO DEV/LOCAL APENAS. Todas as portas de infra (Postgres, Redis, Evolution,
+# Mailhog) estão bindadas SOMENTE em 127.0.0.1 — não exponha este arquivo em
+# hosts acessíveis pela rede. Segredos NÃO têm default: devem vir do .env
+# (copie .env.example para .env e preencha; veja .env.example). Para produção
+# use docker-compose.prod.yml.
+# ─────────────────────────────────────────────────────────────────────────────
 
 services:
 
@@ -11,11 +19,11 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: chusterm
-      POSTGRES_PASSWORD: chusterm_pass
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       POSTGRES_DB: chusterm_core
       POSTGRES_MULTIPLE_DATABASES: chusterm_crm,chusterm_ai,chusterm_identity
     ports:
-      - "5436:5432"
+      - "127.0.0.1:5436:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./scripts/docker/postgres-init.sh:/docker-entrypoint-initdb.d/init.sh:ro
@@ -29,13 +37,13 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
-    command: redis-server --requirepass chusterm_redis_pass --loglevel warning
+    command: redis-server --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD is required} --loglevel warning
     ports:
-      - "6382:6379"
+      - "127.0.0.1:6382:6379"
     volumes:
       - redis-data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "chusterm_redis_pass", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:?REDIS_PASSWORD is required}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -45,8 +53,8 @@ services:
     image: mailhog/mailhog:latest
     restart: unless-stopped
     ports:
-      - "8025:8025"
-      - "1025:1025"
+      - "127.0.0.1:8025:8025"
+      - "127.0.0.1:1025:1025"
 
   # ARQ-02: crm-service aposentado — CRM real vive no Rails (tabelas crm_*).
 
@@ -65,7 +73,7 @@ services:
     env_file:
       - .env
     ports:
-      - "4001:4001"
+      - "127.0.0.1:4001:4001"
     volumes:
       - ./services/orchestrator:/app
       - /app/node_modules
@@ -96,7 +104,7 @@ services:
       - SERVER_URL=http://localhost:8085
       - SERVER_PORT=8080
       - DATABASE_PROVIDER=postgresql
-      - DATABASE_CONNECTION_URI=postgresql://chusterm:${POSTGRES_PASSWORD:-chusterm_pass}@postgres:5432/evolution_api
+      - DATABASE_CONNECTION_URI=postgresql://chusterm:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/evolution_api
       - DATABASE_CONNECTION_CLIENT_NAME=evolution_api
       - DATABASE_SAVE_DATA_INSTANCE=true
       - DATABASE_SAVE_DATA_NEW_MESSAGE=true
@@ -107,10 +115,10 @@ services:
       - DATABASE_SAVE_IS_ON_WHATSAPP=true
       - DATABASE_SAVE_IS_ON_WHATSAPP_DAYS=7
       - CACHE_REDIS_ENABLED=true
-      - CACHE_REDIS_URI=redis://:${REDIS_PASSWORD:-chusterm_redis_pass}@redis:6379/3
+      - CACHE_REDIS_URI=redis://:${REDIS_PASSWORD:?REDIS_PASSWORD is required}@redis:6379/3
       - CACHE_REDIS_PREFIX_KEY=evolution
       - CACHE_LOCAL_ENABLED=false
-      - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY:-evo_chusterm_secret_key}
+      - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY:?EVOLUTION_API_KEY is required}
       - AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES=true
       - LOG_LEVEL=${EVOLUTION_LOG_LEVEL:-INFO}
       - DEL_INSTANCE=false
@@ -124,7 +132,7 @@ services:
       # URL do ChusteRM Core — usada pelo Patch 5 para redirecionar /manager/login
       - CHUSTERM_URL=${CHUSTERM_URL:-http://localhost:3010}
     ports:
-      - "8085:8080"
+      - "127.0.0.1:8085:8080"
     volumes:
       - evolution-instances:/evolution/instances
       - evolution-store:/evolution/store
@@ -160,12 +168,13 @@ services:
       - EVOLUTION_API_URL=http://evolution-api:8080
       - RACK_TIMEOUT_SERVICE_TIMEOUT=60
     ports:
-      - "3010:3000"
+      - "127.0.0.1:3010:3000"
     volumes:
       - core-vite-output:/app/public/vite
       - core-storage:/app/storage
     command: >
-      sh -c "cp -a /app/public/vite-image/. /app/public/vite/ &&
+      sh -c "rm -rf /app/public/vite/assets /app/public/vite/.vite &&
+      cp -a /app/public/vite-image/. /app/public/vite/ &&
       rm -f /app/tmp/pids/server.pid &&
       bundle exec rails s -b 0.0.0.0 -p 3000"
     healthcheck:

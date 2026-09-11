@@ -41,7 +41,11 @@ const mountColumn = (props = {}) =>
         DsBadge: { props: ['label'], template: '<span>{{ label }}</span>' },
         DsButton: { template: '<button v-bind="$attrs" />' },
         Draggable: {
-          props: ['modelValue'],
+          name: 'Draggable',
+          props: {
+            modelValue: { type: Array, default: () => [] },
+            handle: { type: String, default: '' },
+          },
           template:
             '<div><template v-for="item in modelValue"><slot name="item" :element="item" /></template></div>',
         },
@@ -184,6 +188,21 @@ describe('CRMBoardColumn', () => {
     const wrapper = mountColumn();
 
     expect(wrapper.findAll('[data-testid="crm-board-card"]')).toHaveLength(25);
+  });
+
+  it('uses the visible handle for mouse and touch drag', () => {
+    const wrapper = mountColumn();
+    const draggable = wrapper.getComponent({ name: 'Draggable' });
+
+    expect(draggable.props('handle')).toBe('.crm-drag-handle');
+  });
+
+  it('accepts a native mouse drop anywhere in the target column', async () => {
+    const wrapper = mountColumn();
+
+    await wrapper.get('[data-testid="crm-column-scroll"]').trigger('drop');
+
+    expect(wrapper.emitted('nativeDrop')).toHaveLength(1);
   });
 
   it('asks the board to create a deal in this stage', async () => {

@@ -74,8 +74,8 @@ const dispositionOptions = [
 ];
 
 const messageFrom = (exception, fallback) =>
-  exception?.response?.data?.message ||
   exception?.response?.data?.error ||
+  exception?.response?.data?.message ||
   fallback;
 
 const patchRow = (deal, changes) => {
@@ -207,8 +207,8 @@ const loadDeals = async ({ silent = false } = {}) => {
     await syncQuery();
   } catch (exception) {
     error.value =
-      exception?.response?.data?.message ||
       exception?.response?.data?.error ||
+      exception?.response?.data?.message ||
       'Não foi possível carregar os leads.';
   } finally {
     loading.value = false;
@@ -222,6 +222,7 @@ const loadAll = async () => {
     await loadDeals();
   } catch (exception) {
     error.value =
+      exception?.response?.data?.error ||
       exception?.response?.data?.message ||
       'Não foi possível carregar o CRM.';
     loading.value = false;
@@ -276,6 +277,7 @@ const applyBulkMove = async () => {
     await loadDeals({ silent: true });
   } catch (exception) {
     error.value =
+      exception?.response?.data?.error ||
       exception?.response?.data?.message ||
       'Não foi possível mover os leads selecionados.';
   } finally {
@@ -394,7 +396,9 @@ const createLead = async () => {
     }
   } catch (exception) {
     error.value =
-      exception?.response?.data?.message || 'Não foi possível criar o lead.';
+      exception?.response?.data?.error ||
+      exception?.response?.data?.message ||
+      'Não foi possível criar o lead.';
   } finally {
     saving.value = false;
   }

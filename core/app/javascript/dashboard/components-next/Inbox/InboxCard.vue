@@ -168,7 +168,7 @@ onBeforeMount(contextMenuActions.close);
       />
       <p v-dompurify-html="formattedMessage" class="mb-0 line-clamp-2" />
     </div>
-    <div class="flex items-center justify-between h-6 gap-2">
+    <div class="flex min-h-6 items-center justify-between gap-2">
       <div class="flex items-center flex-1 min-w-0 gap-1">
         <div
           v-if="snoozedUntilTime || hasLastSnoozed"

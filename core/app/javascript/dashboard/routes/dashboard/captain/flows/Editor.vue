@@ -35,11 +35,16 @@ const NODE_TYPES = [
 const nodeBadgeClass = type => {
   const map = {
     start: 'bg-n-teal-3 text-n-teal-11',
-    message: 'bg-blue-100 text-blue-700',
-    question: 'bg-yellow-100 text-yellow-700',
-    condition: 'bg-orange-100 text-orange-700',
-    score: 'bg-purple-100 text-purple-700',
-    crm_action: 'bg-cyan-100 text-cyan-700',
+    message:
+      'bg-n-blue-3 text-n-blue-11 dark:bg-n-slate-4 dark:text-n-slate-11',
+    question:
+      'bg-n-amber-3 text-n-amber-11 dark:bg-n-slate-4 dark:text-n-slate-11',
+    condition:
+      'bg-n-amber-3 text-n-amber-11 dark:bg-n-slate-4 dark:text-n-slate-11',
+    score:
+      'bg-n-violet-3 text-n-violet-11 dark:bg-n-slate-4 dark:text-n-slate-11',
+    crm_action:
+      'bg-n-blue-3 text-n-blue-11 dark:bg-n-slate-4 dark:text-n-slate-11',
     handoff: 'bg-n-ruby-3 text-n-ruby-11',
     end: 'bg-n-slate-3 text-n-slate-11',
   };

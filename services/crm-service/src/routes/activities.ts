@@ -8,7 +8,9 @@ import { writeAuditEvent } from '../lib/audit.js'
 const dateSchema = z.string().datetime().transform(value => new Date(value))
 
 const createSchema = z.object({
-  accountId: z.number().int().positive(),
+  // Deprecated: accepted for backwards compatibility but IGNORED — the tenant
+  // is always derived from the verified JWT (request.auth.accountId).
+  accountId: z.number().int().positive().optional(),
   leadProfileId: z.string().uuid(),
   dealId: z.string().uuid().optional(),
   activityType: z.string().min(1).max(100),
@@ -19,16 +21,18 @@ const createSchema = z.object({
   reminderAt: dateSchema.optional(),
 })
 
+// CRM-H3: leadProfileId/dealId re-pointing is not allowed via PATCH.
 const updateSchema = createSchema
   .partial()
-  .omit({ accountId: true })
+  .omit({ accountId: true, leadProfileId: true, dealId: true })
   .extend({
     completedAt: dateSchema.optional(),
     outcome: z.string().max(255).optional(),
   })
 
 const listQuerySchema = z.object({
-  accountId: z.coerce.number().int().positive(),
+  // Deprecated: accepted but IGNORED in favor of the token claim.
+  accountId: z.coerce.number().int().positive().optional(),
   leadProfileId: z.string().uuid().optional(),
   dealId: z.string().uuid().optional(),
   status: z.enum(['pending', 'completed', 'overdue', 'upcoming']).optional(),
@@ -44,7 +48,8 @@ export async function activityRoutes(app: FastifyInstance): Promise<void> {
         return reply.status(400).send({ error: 'ValidationError', message: query.error.message })
       }
 
-      const { accountId, leadProfileId, dealId, status, page, limit } = query.data
+      const { leadProfileId, dealId, status, page, limit } = query.data
+      const accountId = request.auth.accountId
       const offset = (page - 1) * limit
 
       const conditions = [
@@ -98,7 +103,7 @@ export async function activityRoutes(app: FastifyInstance): Promise<void> {
       const [activity] = await db
         .select()
         .from(activities)
-        .where(and(eq(activities.id, id), isNull(activities.deletedAt)))
+        .where(and(eq(activities.id, id), eq(activities.accountId, request.auth.accountId), isNull(activities.deletedAt)))
         .limit(1)
 
       if (!activity) {
@@ -119,7 +124,10 @@ export async function activityRoutes(app: FastifyInstance): Promise<void> {
         return reply.status(400).send({ error: 'ValidationError', message: body.error.message })
       }
 
-      const [created] = await db.insert(activities).values(body.data).returning()
+      const [created] = await db
+        .insert(activities)
+        .values({ ...body.data, accountId: request.auth.accountId })
+        .returning()
 
       await writeAuditEvent({
         accountId: created.accountId,
@@ -148,7 +156,7 @@ export async function activityRoutes(app: FastifyInstance): Promise<void> {
       const [existing] = await db
         .select()
         .from(activities)
-        .where(and(eq(activities.id, id), isNull(activities.deletedAt)))
+        .where(and(eq(activities.id, id), eq(activities.accountId, request.auth.accountId), isNull(activities.deletedAt)))
         .limit(1)
 
       if (!existing) {
@@ -158,7 +166,7 @@ export async function activityRoutes(app: FastifyInstance): Promise<void> {
       const [updated] = await db
         .update(activities)
         .set({ ...body.data, updatedAt: new Date() })
-        .where(eq(activities.id, id))
+        .where(and(eq(activities.id, id), eq(activities.accountId, request.auth.accountId)))
         .returning()
 
       await writeAuditEvent({
@@ -184,7 +192,7 @@ export async function activityRoutes(app: FastifyInstance): Promise<void> {
       const [existing] = await db
         .select()
         .from(activities)
-        .where(and(eq(activities.id, id), isNull(activities.deletedAt)))
+        .where(and(eq(activities.id, id), eq(activities.accountId, request.auth.accountId), isNull(activities.deletedAt)))
         .limit(1)
 
       if (!existing) {
@@ -194,7 +202,7 @@ export async function activityRoutes(app: FastifyInstance): Promise<void> {
       await db
         .update(activities)
         .set({ deletedAt: new Date(), updatedAt: new Date() })
-        .where(eq(activities.id, id))
+        .where(and(eq(activities.id, id), eq(activities.accountId, request.auth.accountId)))
 
       await writeAuditEvent({
         accountId: existing.accountId,

@@ -181,16 +181,11 @@ onMounted(async () => {
         <aside class="auth-hero" :aria-label="$t('LOGIN.SAML.INTRO.EYEBROW')">
           <div class="auth-hero-content">
             <div class="custom-logo">
-              <img
-                class="logo-icon"
-                :src="'/brand-assets/logo_thumbnail.svg'"
-                alt=""
-                aria-hidden="true"
-              />
               <span class="logo-text">
-                <span class="logo-name"
-                  >{{ logoParts.prefix }}{{ logoParts.middle }}</span
-                >
+                <span class="logo-name">
+                  <span class="logo-badge">{{ logoParts.prefix }}</span>
+                  <span>{{ logoParts.middle }}</span>
+                </span>
                 <span class="logo-badge">{{ logoParts.suffix }}</span>
               </span>
             </div>
@@ -213,9 +208,9 @@ onMounted(async () => {
               <div class="auth-brand-mobile">
                 <div class="custom-logo">
                   <span class="logo-text">
-                    <span class="logo-name"
-                      >{{ logoParts.prefix }}{{ logoParts.middle }}</span
-                    >
+                    <span class="logo-name">
+                      {{ logoParts.prefix }}{{ logoParts.middle }}
+                    </span>
                     <span class="logo-badge">{{ logoParts.suffix }}</span>
                   </span>
                 </div>
@@ -313,42 +308,58 @@ onMounted(async () => {
 }
 
 .auth-modern.light {
-  --bg-base: #f8fafc;
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --card-bg: rgba(255, 255, 255, 0.85);
-  --card-border: rgba(226, 232, 240, 0.9);
+  --bg-base: #f5f7fc;
+  --text-main: #18233b;
+  --text-muted: #53627c;
+  --card-bg: rgba(251, 252, 255, 0.88);
+  --card-border: rgba(220, 227, 240, 0.9);
   --form-bg: rgba(255, 255, 255, 0.95);
-  --hero-bg: #f8fafc;
-  --input-bg: rgba(248, 250, 252, 0.9);
-  --input-border: #e2e8f0;
-  --input-text: #0f172a;
+  --hero-bg: #ebeff8;
+  --input-bg: rgba(245, 247, 252, 0.9);
+  --input-border: #c5cfe0;
+  --input-text: #18233b;
   --btn-bg: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
   --btn-hover: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
   --btn-text: #ffffff;
   --btn-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.35);
-  --divider: #e2e8f0;
+  --btn-hover-shadow: 0 16px 32px -5px rgba(79, 70, 229, 0.4);
+  --divider: #dce3f0;
+  --focus: #4f46e5;
+  --focus-ring: rgba(79, 70, 229, 0.2);
+  --brand-gradient: linear-gradient(100deg, #4f46e5 0%, #7e22ce 100%);
+  --ambient-one: radial-gradient(circle, #6366f1 0%, transparent 70%);
+  --ambient-two: radial-gradient(circle, #8b5cf6 0%, transparent 70%);
+  --ambient-three: radial-gradient(circle, #c084fc 0%, transparent 70%);
+  --brand-shadow: rgba(79, 70, 229, 0.08);
   background-color: var(--bg-base);
   color: var(--text-main);
   color-scheme: light;
 }
 
 .auth-modern.dark {
-  --bg-base: #060e20;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --card-bg: rgba(15, 23, 42, 0.75);
-  --card-border: rgba(255, 255, 255, 0.1);
-  --form-bg: rgba(10, 15, 30, 0.85);
-  --hero-bg: #091226;
-  --input-bg: rgba(15, 23, 42, 0.65);
-  --input-border: rgba(255, 255, 255, 0.12);
-  --input-text: #f8fafc;
-  --btn-bg: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #df8eff 100%);
-  --btn-hover: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #c084fc 100%);
-  --btn-text: #ffffff;
-  --btn-shadow: 0 12px 30px -5px rgba(124, 58, 237, 0.45);
-  --divider: rgba(255, 255, 255, 0.1);
+  --bg-base: #0c0c0e;
+  --text-main: #f4f4f5;
+  --text-muted: #a1a1aa;
+  --card-bg: rgba(25, 25, 28, 0.82);
+  --card-border: rgba(133, 133, 143, 0.26);
+  --form-bg: rgba(17, 17, 19, 0.9);
+  --hero-bg: #111113;
+  --input-bg: rgba(25, 25, 28, 0.82);
+  --input-border: #3f3f46;
+  --input-text: #f4f4f5;
+  --btn-bg: #e4e4e7;
+  --btn-hover: #fafafa;
+  --btn-text: #0c0c0e;
+  --btn-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.55);
+  --btn-hover-shadow: 0 16px 32px -5px rgba(0, 0, 0, 0.65);
+  --divider: #343439;
+  --focus: #e4e4e7;
+  --focus-ring: rgba(228, 228, 231, 0.18);
+  --brand-gradient: linear-gradient(100deg, #fafafa 0%, #a1a1aa 100%);
+  --ambient-one: radial-gradient(circle, #52525b 0%, transparent 70%);
+  --ambient-two: radial-gradient(circle, #3f3f46 0%, transparent 70%);
+  --ambient-three: radial-gradient(circle, #71717a 0%, transparent 70%);
+  --brand-shadow: rgba(228, 228, 231, 0.05);
   background-color: var(--bg-base);
   color: var(--text-main);
   color-scheme: dark;
@@ -376,9 +387,9 @@ onMounted(async () => {
 
 .theme-toggle-btn:hover {
   color: var(--text-main);
-  border-color: #6366f1;
+  border-color: var(--focus);
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 8px 20px var(--focus-ring);
 }
 
 .auth-bg-elements {
@@ -403,7 +414,7 @@ onMounted(async () => {
 .orb-1 {
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, #6366f1 0%, rgba(99, 102, 241, 0) 70%);
+  background: var(--ambient-one);
   top: -10%;
   left: -5%;
 }
@@ -411,7 +422,7 @@ onMounted(async () => {
 .orb-2 {
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, #00eefc 0%, rgba(0, 238, 252, 0) 70%);
+  background: var(--ambient-two);
   bottom: -15%;
   right: -5%;
   animation-delay: -5s;
@@ -420,7 +431,7 @@ onMounted(async () => {
 .orb-3 {
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, #df8eff 0%, rgba(223, 142, 255, 0) 70%);
+  background: var(--ambient-three);
   top: 40%;
   left: 45%;
   animation-delay: -10s;
@@ -461,7 +472,7 @@ onMounted(async () => {
   backdrop-filter: blur(28px);
   box-shadow:
     0 25px 50px -12px rgba(0, 0, 0, 0.4),
-    0 0 40px rgba(99, 102, 241, 0.08);
+    0 0 40px var(--brand-shadow);
   overflow: hidden;
 }
 
@@ -490,34 +501,31 @@ onMounted(async () => {
   gap: 0.875rem;
 }
 
-.logo-icon {
-  width: 2.75rem;
-  height: 2.75rem;
-}
-
 .logo-text {
-  font-size: 1.625rem;
+  font-size: 1.75rem;
   font-weight: 700;
   display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  letter-spacing: -0.02em;
+  align-items: baseline;
+  gap: 0.2rem;
+  letter-spacing: -0.03em;
 }
 
 .logo-name {
   color: var(--text-main);
-  font-family: 'Plus Jakarta Sans', 'Manrope', sans-serif;
+  font-family: 'Manrope Variable', 'Manrope', sans-serif;
 }
 
 .logo-badge {
-  background: linear-gradient(135deg, #00eefc 0%, #df8eff 100%);
+  background: var(--brand-gradient);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   font-weight: 800;
+  padding-right: 0.06em;
 }
 
 .auth-headline {
-  font-family: 'Plus Jakarta Sans', 'Manrope', sans-serif;
+  font-family: 'Manrope Variable', 'Manrope', sans-serif;
   font-size: 2.25rem;
   line-height: 1.2;
   font-weight: 700;
@@ -526,7 +534,7 @@ onMounted(async () => {
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, #00eefc 0%, #a855f7 50%, #df8eff 100%);
+  background: var(--brand-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -567,12 +575,12 @@ onMounted(async () => {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #6366f1;
+  color: var(--focus);
   margin-bottom: 0.5rem;
 }
 
 .auth-title {
-  font-family: 'Plus Jakarta Sans', 'Manrope', sans-serif;
+  font-family: 'Manrope Variable', 'Manrope', sans-serif;
   font-size: 1.75rem;
   font-weight: 700;
   color: var(--text-main);
@@ -635,8 +643,8 @@ onMounted(async () => {
 }
 
 .modern-input:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px var(--focus-ring);
   background: var(--card-bg);
 }
 
@@ -666,7 +674,7 @@ onMounted(async () => {
 .auth-submit-btn:hover:not(:disabled) {
   background: var(--btn-hover);
   transform: translateY(-2px);
-  box-shadow: 0 16px 32px -5px rgba(124, 58, 237, 0.55);
+  box-shadow: var(--btn-hover-shadow);
 }
 
 .auth-sso-btn {
@@ -688,7 +696,7 @@ onMounted(async () => {
 
 .auth-sso-btn:hover {
   color: var(--text-main);
-  border-color: #6366f1;
+  border-color: var(--focus);
   background: var(--card-bg);
 }
 

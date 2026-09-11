@@ -187,50 +187,50 @@
   }
 
   .dark {
-    // ── ChusteRM – Purple-Teal Dark Palette ──
-    // Cool charcoal surfaces with purple accent + teal secondary
+    // ── ChusteRM – Obsidian Dark Palette ──
+    // Neutral structural colors keep attention on semantic states and content.
 
-    // Slate: Charcoal with purple undertone
-    --slate-1: 6 14 32;
-    --slate-2: 6 18 44;
-    --slate-3: 15 30 63;
-    --slate-4: 24 43 82;
-    --slate-5: 35 56 95;
-    --slate-6: 42 59 96;
-    --slate-7: 65 88 126;
-    --slate-8: 96 120 158;
-    --slate-9: 128 150 181;
-    --slate-10: 157 176 203;
-    --slate-11: 185 200 222;
-    --slate-12: 237 242 255;
+    // Slate: neutral graphite scale
+    --slate-1: 12 12 14;
+    --slate-2: 17 17 19;
+    --slate-3: 25 25 28;
+    --slate-4: 34 34 37;
+    --slate-5: 43 43 47;
+    --slate-6: 52 52 57;
+    --slate-7: 63 63 70;
+    --slate-8: 82 82 91;
+    --slate-9: 113 113 122;
+    --slate-10: 133 133 143;
+    --slate-11: 180 180 190;
+    --slate-12: 244 244 245;
 
-    // Iris: Purple accent (ChusteRM primary)
-    --iris-1: 12 17 48;
-    --iris-2: 20 24 69;
-    --iris-3: 31 35 91;
-    --iris-4: 43 47 113;
-    --iris-5: 55 59 120;
-    --iris-6: 70 73 145;
-    --iris-7: 88 91 181;
-    --iris-8: 115 118 222;
-    --iris-9: 99 102 241;
-    --iris-10: 139 141 247;
-    --iris-11: 189 194 255;
-    --iris-12: 235 236 255;
+    // Iris: neutral interaction scale in dark mode
+    --iris-1: 12 12 14;
+    --iris-2: 17 17 19;
+    --iris-3: 25 25 28;
+    --iris-4: 34 34 37;
+    --iris-5: 43 43 47;
+    --iris-6: 52 52 57;
+    --iris-7: 63 63 70;
+    --iris-8: 82 82 91;
+    --iris-9: 82 82 91;
+    --iris-10: 113 113 122;
+    --iris-11: 212 212 216;
+    --iris-12: 250 250 250;
 
-    // blue → informational, links
-    --blue-1: 7 19 43;
-    --blue-2: 9 29 61;
-    --blue-3: 11 43 84;
-    --blue-4: 14 57 107;
-    --blue-5: 18 75 133;
-    --blue-6: 28 97 163;
-    --blue-7: 46 124 194;
-    --blue-8: 75 151 221;
-    --blue-9: 59 130 246;
-    --blue-10: 96 165 250;
-    --blue-11: 147 197 253;
-    --blue-12: 219 234 254;
+    // Blue aliases are neutral in the Obsidian theme. Color is semantic only.
+    --blue-1: 12 12 14;
+    --blue-2: 17 17 19;
+    --blue-3: 25 25 28;
+    --blue-4: 34 34 37;
+    --blue-5: 43 43 47;
+    --blue-6: 52 52 57;
+    --blue-7: 63 63 70;
+    --blue-8: 82 82 91;
+    --blue-9: 82 82 91;
+    --blue-10: 113 113 122;
+    --blue-11: 212 212 216;
+    --blue-12: 244 244 245;
 
     --ruby-1: 26 18 20;
     --ruby-2: 32 22 24;
@@ -272,102 +272,102 @@
     --teal-11: 14 220 186;
     --teal-12: 178 244 224;
 
-    --gray-1: 6 14 32;
-    --gray-2: 8 18 39;
-    --gray-3: 15 30 55;
-    --gray-4: 24 43 70;
-    --gray-5: 35 56 82;
-    --gray-6: 50 70 97;
-    --gray-7: 72 93 121;
-    --gray-8: 101 122 151;
-    --gray-9: 128 150 181;
-    --gray-10: 157 176 203;
-    --gray-11: 185 200 222;
-    --gray-12: 237 242 255;
+    --gray-1: 12 12 14;
+    --gray-2: 17 17 19;
+    --gray-3: 25 25 28;
+    --gray-4: 34 34 37;
+    --gray-5: 43 43 47;
+    --gray-6: 52 52 57;
+    --gray-7: 63 63 70;
+    --gray-8: 82 82 91;
+    --gray-9: 113 113 122;
+    --gray-10: 133 133 143;
+    --gray-11: 180 180 190;
+    --gray-12: 244 244 245;
 
-    // Violet → tertiary purple
-    --violet-1: 20 15 38;
-    --violet-2: 30 19 53;
-    --violet-3: 48 25 75;
-    --violet-4: 65 32 96;
-    --violet-5: 84 42 121;
-    --violet-6: 105 55 147;
-    --violet-7: 130 72 177;
-    --violet-8: 157 94 207;
-    --violet-9: 200 144 255;
-    --violet-10: 214 169 255;
-    --violet-11: 228 194 255;
-    --violet-12: 247 235 255;
+    // Violet aliases remain neutral for legacy structural usage.
+    --violet-1: 12 12 14;
+    --violet-2: 17 17 19;
+    --violet-3: 25 25 28;
+    --violet-4: 34 34 37;
+    --violet-5: 43 43 47;
+    --violet-6: 52 52 57;
+    --violet-7: 63 63 70;
+    --violet-8: 82 82 91;
+    --violet-9: 161 161 170;
+    --violet-10: 180 180 190;
+    --violet-11: 212 212 216;
+    --violet-12: 244 244 245;
 
     // Background
-    --background-color: 6 14 32;
-    --surface-1: 6 18 44;
-    --surface-2: 15 30 63;
-    --surface-active: 24 43 82;
+    --background-color: 12 12 14;
+    --surface-1: 17 17 19;
+    --surface-2: 25 25 28;
+    --surface-active: 34 34 37;
     --background-input-box: 255, 255, 255, 0.04;
-    --text-blue: 189 194 255;
-    --text-purple: 200 144 255;
+    --text-blue: 212 212 216;
+    --text-purple: 212 212 216;
     --text-amber: 255 240 210;
-    --border-strong: 65 88 126;
-    --border-weak: 42 59 96;
-    --border-blue-strong: 115 118 222;
-    --solid-1: 6 18 44;
-    --solid-2: 15 30 63;
-    --solid-3: 24 43 82;
-    --solid-active: 35 56 95;
+    --border-strong: 63 63 70;
+    --border-weak: 52 52 57;
+    --border-blue-strong: 82 82 91;
+    --solid-1: 17 17 19;
+    --solid-2: 25 25 28;
+    --solid-3: 34 34 37;
+    --solid-active: 43 43 47;
     --solid-amber: 52 44 28;
-    --solid-blue: 14 36 56;
-    --solid-blue-2: 7 19 43;
-    --solid-iris: 31 35 91;
-    --solid-purple: 48 25 75;
+    --solid-blue: 34 34 37;
+    --solid-blue-2: 17 17 19;
+    --solid-iris: 34 34 37;
+    --solid-purple: 34 34 37;
     --solid-red: 72 20 36;
     --solid-amber-button: 255 210 120;
-    --card-color: 15 30 63;
+    --card-color: 25 25 28;
     --overlay: 0, 0, 0, 0.55;
     --overlay-avatar: 0, 0, 0, 0.1;
-    --button-color: 24 43 82;
-    --button-hover-color: 35, 56, 95, 1;
-    --label-background: 15 30 63;
+    --button-color: 34 34 37;
+    --button-hover-color: 43, 43, 47, 1;
+    --label-background: 25 25 28;
     --label-border: 255, 255, 255, 0.06;
 
-    --alpha-1: 6, 18, 44, 0.8;
-    --alpha-2: 99, 102, 241, 0.14;
-    --alpha-3: 6, 14, 32, 0.95;
+    --alpha-1: 17, 17, 19, 0.8;
+    --alpha-2: 228, 228, 231, 0.1;
+    --alpha-3: 12, 12, 14, 0.95;
     --black-alpha-1: 0, 0, 0, 0.3;
     --black-alpha-2: 0, 0, 0, 0.15;
-    --border-blue: 99, 102, 241, 0.3;
+    --border-blue: 161, 161, 170, 0.3;
     --border-container: 255, 255, 255, 0;
     --white-alpha: 255, 255, 255, 0.05;
-    --shell-panel: 6, 18, 44, 0.85;
-    --shell-panel-strong: 15, 30, 63, 0.92;
-    --shell-border: 189, 194, 255, 0.08;
-    --shell-border-strong: 189, 194, 255, 0.16;
-    --shell-glow-primary: 99, 102, 241, 0.16;
-    --shell-glow-tertiary: 200, 144, 255, 0.08;
+    --shell-panel: 17, 17, 19, 0.88;
+    --shell-panel-strong: 25, 25, 28, 0.94;
+    --shell-border: 228, 228, 231, 0.08;
+    --shell-border-strong: 228, 228, 231, 0.14;
+    --shell-glow-primary: 228, 228, 231, 0.08;
+    --shell-glow-tertiary: 200, 144, 255, 0.06;
     --shell-shadow: 0, 0, 0, 0.25;
 
-    // ── Design System v3.0 – Purple-Teal Tokens ──
-    --bg-app: 6 14 32;
-    --bg-surface: 6 18 44;
-    --bg-card: 15 30 63;
-    --bg-card-hover: 24 43 82;
-    --border-subtle: 29 44 78;
-    --border-strong-rgb: 42 59 96;
+    // ── Design System v3.0 – Obsidian Tokens ──
+    --bg-app: 12 12 14;
+    --bg-surface: 17 17 19;
+    --bg-card: 25 25 28;
+    --bg-card-hover: 34 34 37;
+    --border-subtle: 52 52 57;
+    --border-strong-rgb: 63 63 70;
 
-    // Primary (Purple)
-    --primary-main: 99 102 241;
-    --primary-hover: 139 141 247;
-    --primary-active: 189 194 255;
-    --primary-surface: 99, 102, 241, 0.16;
+    // Primary interaction
+    --primary-main: 228 228 231;
+    --primary-hover: 244 244 245;
+    --primary-active: 212 212 216;
+    --primary-surface: 228, 228, 231, 0.1;
 
     // Secondary (Readable text)
-    --secondary-main: 185 200 222;
-    --secondary-hover: 237 242 255;
+    --secondary-main: 161 161 170;
+    --secondary-hover: 212 212 216;
 
-    // Tertiary (Purple light)
+    // Tertiary: restrained AI accent
     --tertiary-main: 200 144 255;
     --tertiary-hover: 214 169 255;
-    --tertiary-surface: 200, 144, 255, 0.1;
+    --tertiary-surface: 200, 144, 255, 0.08;
 
     // Feedback
     --success: 16 185 129;
@@ -376,7 +376,7 @@
 
     // Typography
     --text-white: 255 255 255;
-    --text-on-primary: 255 255 255;
+    --text-on-primary: 12 12 14;
   }
 }
 // NEXT COLORS END

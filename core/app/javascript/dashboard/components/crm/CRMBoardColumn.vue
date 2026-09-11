@@ -38,6 +38,7 @@ const emit = defineEmits([
   'loadMore',
   'dragStart',
   'dragEnd',
+  'nativeDrop',
   'change',
 ]);
 
@@ -137,10 +138,12 @@ const onScroll = event => {
     >
       <div
         v-if="column.color"
-        class="size-2 rounded-full shadow-sm"
-        :style="{ backgroundColor: column.color }"
+        class="size-2 rounded-full bg-[var(--crm-stage-color)] shadow-sm dark:!bg-ui-text-muted"
+        :style="{ '--crm-stage-color': column.color }"
       />
-      <h2 class="m-0 min-w-0 flex-1 truncate text-ui-body-sm font-semibold text-ui-text">
+      <h2
+        class="m-0 min-w-0 flex-1 truncate text-ui-body-sm font-semibold text-ui-text"
+      >
         {{ column.name }}
       </h2>
       <DsBadge
@@ -163,7 +166,9 @@ const onScroll = event => {
       <div
         class="flex w-full items-center gap-2 pt-0.5 text-ui-caption text-ui-text-muted"
       >
-        <span v-if="money" class="font-medium text-ui-text/80">{{ money }}</span>
+        <span v-if="money" class="font-medium text-ui-text/80">{{
+          money
+        }}</span>
         <span
           v-if="weightedMoney"
           data-testid="crm-column-weighted"
@@ -172,7 +177,11 @@ const onScroll = event => {
         >
           ({{ weightedMoney }})
         </span>
-        <span v-if="averageAge" class="flex items-center gap-1 font-medium" :title="$t('CRM.COLUMN.AVERAGE_AGE')">
+        <span
+          v-if="averageAge"
+          class="flex items-center gap-1 font-medium"
+          :title="$t('CRM.COLUMN.AVERAGE_AGE')"
+        >
           <Icon icon="i-lucide-clock" class="size-3 opacity-70" />
           {{ averageAge }}
         </span>
@@ -182,7 +191,7 @@ const onScroll = event => {
           class="ml-auto rounded-ui-control px-2 py-0.5 font-medium"
           :class="
             column.over_wip
-              ? 'border border-rose-500/20 bg-ui-danger-subtle text-ui-danger'
+              ? 'border border-ui-danger/25 bg-ui-danger-soft text-ui-danger-foreground'
               : 'bg-ui-surface/50 text-ui-text-muted'
           "
           :title="$t('CRM.COLUMN.WIP_TITLE')"
@@ -201,12 +210,15 @@ const onScroll = event => {
       ref="scroller"
       data-testid="crm-column-scroll"
       class="min-h-24 flex-1 overflow-y-auto"
+      @dragover.prevent
+      @drop.stop.prevent="emit('nativeDrop', $event)"
       @scroll="onScroll"
     >
       <Draggable
         :model-value="column.deals"
         item-key="id"
         group="crm-pipeline"
+        handle=".crm-drag-handle"
         :sort="false"
         :disabled="!movable"
         class="space-y-2.5 p-2.5"
@@ -228,7 +240,10 @@ const onScroll = event => {
         v-if="loading"
         class="flex items-center justify-center gap-2 py-3 text-ui-caption text-ui-text-muted"
       >
-        <Icon icon="i-lucide-loader-circle" class="size-4 animate-spin text-ui-brand" />
+        <Icon
+          icon="i-lucide-loader-circle"
+          class="size-4 animate-spin text-ui-brand"
+        />
         {{ $t('CRM.COLUMN.LOADING_MORE') }}
       </p>
     </div>

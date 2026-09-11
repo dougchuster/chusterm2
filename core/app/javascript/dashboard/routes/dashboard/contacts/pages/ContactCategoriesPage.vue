@@ -808,7 +808,7 @@ onMounted(async () => {
                 </button>
                 <button
                   type="button"
-                  class="inline-flex h-8 items-center gap-1 rounded border border-ruby-200 px-2 text-sm font-medium text-ruby-700 hover:bg-ruby-50 dark:border-ruby-900 dark:text-ruby-300 dark:hover:bg-ruby-950/40"
+                  class="inline-flex h-8 items-center gap-1 rounded border border-n-ruby-6 px-2 text-sm font-medium text-n-ruby-11 hover:bg-n-ruby-3"
                   @click="openDeleteCategory(category)"
                 >
                   <span class="i-lucide-trash-2 size-4" />
@@ -956,7 +956,7 @@ onMounted(async () => {
                 </button>
                 <button
                   type="button"
-                  class="inline-flex h-9 items-center justify-center gap-2 rounded border border-ruby-200 px-3 text-sm font-medium text-ruby-700 hover:bg-ruby-50 dark:border-ruby-900 dark:text-ruby-300 dark:hover:bg-ruby-950/40"
+                  class="inline-flex h-9 items-center justify-center gap-2 rounded border border-n-ruby-6 px-3 text-sm font-medium text-n-ruby-11 hover:bg-n-ruby-3"
                   @click="openDeleteCategory(selectedCategory)"
                 >
                   <span class="i-lucide-trash-2 size-4" />

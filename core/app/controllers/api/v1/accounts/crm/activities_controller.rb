@@ -246,8 +246,10 @@ class Api::V1::Accounts::Crm::ActivitiesController < Api::V1::Accounts::Crm::Bas
     activities = filter_by_due_range(activities)
     activities = filter_by_search(activities)
     activities = activities.order(Arel.sql('due_at IS NULL, due_at ASC, created_at DESC'))
+    # Sem `limit` explícito aplica o mesmo teto do branch com limit (200):
+    # o índice nunca devolve a tabela inteira de atividades da conta.
     requested_limit = params[:limit].to_i
-    requested_limit.positive? ? activities.limit([requested_limit, 200].min) : activities
+    requested_limit.positive? ? activities.limit([requested_limit, 200].min) : activities.limit(200)
   end
 
   def activity_update_params

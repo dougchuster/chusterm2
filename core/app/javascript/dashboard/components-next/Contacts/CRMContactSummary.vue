@@ -66,8 +66,8 @@ const relationship = computed(() => {
     label: isCustomer ? 'Cliente' : 'Lead',
     icon: isCustomer ? 'i-lucide-handshake' : 'i-lucide-user-round',
     className: isCustomer
-      ? 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-900'
-      : 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:ring-sky-900',
+      ? 'bg-n-teal-3 text-n-teal-11 ring-n-teal-6'
+      : 'bg-n-blue-3 text-n-blue-11 ring-n-blue-6 dark:bg-ds-bg-elevated dark:text-ds-fg-muted dark:ring-ds-border-subtle',
   };
 });
 
@@ -89,7 +89,7 @@ const ownerLabel = computed(() => {
 const ownerClass = computed(() =>
   crmOwnerId.value
     ? 'bg-n-alpha-2 text-n-slate-11 ring-n-weak'
-    : 'bg-ruby-50 text-ruby-700 ring-ruby-200 dark:bg-ruby-950/40 dark:text-ruby-300 dark:ring-ruby-900'
+    : 'bg-n-ruby-3 text-n-ruby-11 ring-n-ruby-6'
 );
 
 const switchRelationship = status => {
@@ -132,7 +132,7 @@ const switchRelationship = status => {
         class="inline-flex min-w-20 items-center justify-center gap-1 rounded px-2 font-medium transition"
         :class="
           relationshipStatus === 'customer'
-            ? 'bg-n-surface-1 text-emerald-700 shadow-sm dark:text-emerald-300'
+            ? 'bg-n-surface-1 text-n-teal-11 shadow-sm'
             : 'text-n-slate-11 hover:text-n-slate-12'
         "
         :disabled="isUpdating"

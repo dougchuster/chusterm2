@@ -12,13 +12,16 @@
 # A posicao e sempre calculada no servidor (`Crm::DealPositioner`) a partir dos
 # vizinhos que o cliente reporta. O cliente nunca manda um numero.
 class Crm::DealMover
-  def initialize(deal:, stage_id:, actor: nil, before_id: nil, after_id: nil)
+  # rubocop:disable Metrics/ParameterLists
+  def initialize(deal:, stage_id:, actor: nil, before_id: nil, after_id: nil, automation_depth: 0)
     @deal = deal
     @stage_id = stage_id
     @actor = actor
     @before_id = before_id
     @after_id = after_id
+    @automation_depth = automation_depth
   end
+  # rubocop:enable Metrics/ParameterLists
 
   def perform
     from_stage_id = @deal.crm_pipeline_stage_id
@@ -32,7 +35,7 @@ class Crm::DealMover
     return @deal unless changed
 
     log_stage_change(from_stage_id)
-    Crm::StageAutomation.new(deal: @deal.reload, actor: @actor).perform
+    Crm::StageAutomation.new(deal: @deal.reload, actor: @actor, automation_depth: @automation_depth).perform
     @deal
   end
 

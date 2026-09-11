@@ -129,6 +129,11 @@ linters:
     ignore_unspecified: false
     min_properties: 2
     separate_groups: false
+    exclude:
+      # Manifesto de design tokens: sao custom properties agrupadas por
+      # semantica (cor, espacamento, tipografia), nao propriedades CSS.
+      # Ordem alfabetica destruiria o agrupamento sem ganho de leitura.
+      - 'app/javascript/dashboard/assets/scss/_design-tokens.scss'
 
   PropertySpelling:
     enabled: true

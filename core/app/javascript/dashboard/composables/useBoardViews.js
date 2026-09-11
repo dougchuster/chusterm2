@@ -20,7 +20,11 @@ export function useBoardViews({ t, readFilters, onApply, onError }) {
   const activeViewId = ref(null);
 
   const fail = exception =>
-    onError?.(exception?.response?.data?.message || t('CRM.VIEWS.SAVE_FAILED'));
+    onError?.(
+      exception?.response?.data?.error ||
+        exception?.response?.data?.message ||
+        t('CRM.VIEWS.SAVE_FAILED')
+    );
 
   const loadBoardViews = async () => {
     try {

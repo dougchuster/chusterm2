@@ -37,6 +37,8 @@ const props = defineProps({
   ownerName: { type: String, default: '' },
   density: { type: String, default: 'normal' },
   href: { type: String, default: '' },
+  stageOptions: { type: Array, default: () => [] },
+  canDrag: { type: Boolean, default: true },
   // Injetável para o teste não depender do relógio da máquina.
   now: { type: [Date, String], default: () => new Date() },
 });
@@ -49,6 +51,9 @@ const emit = defineEmits([
   'markBaseClient',
   'discard',
   'scheduleNextAction',
+  'moveToStage',
+  'nativeDragStart',
+  'nativeDragEnd',
 ]);
 
 const contactName = computed(
@@ -105,22 +110,41 @@ const displayName = computed(() => contactName.value);
 const label = computed(
   () => props.deal.title || contactName.value || String(props.deal.id)
 );
+const availableStageOptions = computed(() =>
+  props.stageOptions.filter(
+    option => String(option.value) !== String(props.deal.crm_pipeline_stage_id)
+  )
+);
 </script>
 
 <template>
   <article
     data-testid="crm-board-card"
     :data-rotting="rotting.level"
-    :style="{ borderLeftColor: stage.color || 'transparent' }"
-    class="group relative cursor-grab rounded-ui-surface border border-l-4 bg-ui-surface p-3.5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:cursor-grabbing"
+    :style="{ '--crm-stage-color': stage.color || 'transparent' }"
+    class="group relative rounded-ui-surface border border-l-4 border-l-[color:var(--crm-stage-color)] bg-ui-surface p-3.5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md dark:!border-l-ui-border-strong"
     :class="{
-      'border-ui-border hover:border-ui-border-strong hover:shadow-indigo-500/5': rotting.level !== 'late' && rotting.level !== 'warning',
+      'cursor-default': !canDrag,
+      'cursor-grab active:cursor-grabbing': canDrag,
+      'border-ui-border hover:border-ui-border-strong hover:shadow-ui-brand/5':
+        rotting.level !== 'late' && rotting.level !== 'warning',
       'border-ui-warning shadow-amber-500/5': rotting.level === 'warning',
       'border-ui-danger shadow-rose-500/10': rotting.level === 'late',
       'ring-2 ring-ui-border-focus': selected,
     }"
   >
     <div class="flex items-start gap-2">
+      <span
+        v-if="canDrag"
+        data-testid="crm-card-drag-handle"
+        class="crm-drag-handle -ml-2 mt-0.5 inline-flex min-h-7 w-5 shrink-0 cursor-grab touch-none items-center justify-center rounded-ui-control text-ui-text-subtle transition-colors hover:bg-ui-hover hover:text-ui-text active:cursor-grabbing"
+        draggable="true"
+        aria-hidden="true"
+        @dragstart.stop="emit('nativeDragStart', $event)"
+        @dragend.stop="emit('nativeDragEnd', $event)"
+      >
+        <Icon icon="i-lucide-grip-vertical" class="size-4" />
+      </span>
       <input
         type="checkbox"
         :checked="selected"
@@ -137,7 +161,7 @@ const label = computed(
       >
         <span
           data-testid="crm-card-name"
-          class="block truncate text-ui-body-sm font-semibold text-ui-text transition-colors group-hover:text-primary-400"
+          class="block truncate text-ui-body-sm font-semibold text-ui-text transition-colors group-hover:text-ui-brand"
         >
           {{ displayName || $t('CRM.CARD.NO_CONTACT') }}
         </span>
@@ -160,6 +184,18 @@ const label = computed(
       />
       <DsDropdown :aria-label="$t('CRM.CARD.MORE_ACTIONS', { name: label })">
         <button
+          v-for="option in availableStageOptions"
+          :key="option.value"
+          data-testid="crm-card-move-stage"
+          type="button"
+          role="menuitem"
+          class="flex min-h-10 w-full items-center gap-2 rounded-ui-control px-3 text-left text-ui-body-sm text-ui-text transition-colors hover:bg-ui-hover"
+          @click="emit('moveToStage', option.value)"
+        >
+          <Icon icon="i-lucide-arrow-right" class="size-4 text-ui-text-muted" />
+          {{ $t('CRM.FILTERS.STAGE') }}: {{ option.label }}
+        </button>
+        <button
           data-testid="crm-card-recompute"
           type="button"
           role="menuitem"
@@ -176,7 +212,10 @@ const label = computed(
           class="flex min-h-10 w-full items-center gap-2 rounded-ui-control px-3 text-left text-ui-body-sm text-ui-text transition-colors hover:bg-ui-hover"
           @click="emit('markBaseClient')"
         >
-          <Icon icon="i-lucide-contact-round" class="size-4 text-ui-text-muted" />
+          <Icon
+            icon="i-lucide-contact-round"
+            class="size-4 text-ui-text-muted"
+          />
           {{ $t('CRM.CARD.MARK_BASE_CLIENT') }}
         </button>
         <button
@@ -197,7 +236,7 @@ const label = computed(
     <div
       v-if="nextAction.tone === 'missing'"
       data-testid="crm-card-no-next-action"
-      class="mt-2.5 flex items-center gap-2 rounded-ui-control border border-rose-500/20 bg-ui-danger-subtle px-2.5 py-1.5 text-ui-caption font-medium text-ui-danger"
+      class="mt-2.5 flex items-center gap-2 rounded-ui-control border border-ui-danger/25 bg-ui-danger-soft px-2.5 py-1.5 text-ui-caption font-medium text-ui-danger-foreground"
     >
       <Icon icon="i-lucide-circle-alert" class="size-4 shrink-0" />
       <span class="min-w-0 flex-1 truncate">
@@ -226,7 +265,10 @@ const label = computed(
           nextAction.tone === 'future' || nextAction.tone === 'undated',
       }"
     >
-      <Icon icon="i-lucide-calendar-clock" class="size-3.5 shrink-0 opacity-80" />
+      <Icon
+        icon="i-lucide-calendar-clock"
+        class="size-3.5 shrink-0 opacity-80"
+      />
       <span class="min-w-0 flex-1 truncate">
         {{ dueLabel || $t('CRM.CARD.UNDATED') }}
       </span>
@@ -269,7 +311,9 @@ const label = computed(
       </span>
     </div>
 
-    <div class="mt-2.5 flex items-center gap-2 text-ui-caption text-ui-text-muted">
+    <div
+      class="mt-2.5 flex items-center gap-2 text-ui-caption text-ui-text-muted"
+    >
       <span
         v-if="!isCompact && deal.legal_area"
         data-testid="crm-card-area"

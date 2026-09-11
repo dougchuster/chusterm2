@@ -287,6 +287,7 @@ const loadAll = async ({ silent = false } = {}) => {
     await Promise.all([loadDeal(), loadAudit(), loadLossReasons()]);
   } catch (exception) {
     error.value =
+      exception?.response?.data?.error ||
       exception?.response?.data?.message ||
       exception?.response?.data?.error ||
       'Não foi possível carregar a ficha do negócio.';
@@ -303,6 +304,7 @@ const moveStage = async stageId => {
     deal.value = { ...deal.value, ...response.data };
   } catch (exception) {
     error.value =
+      exception?.response?.data?.error ||
       exception?.response?.data?.message ||
       'Não foi possível alterar a etapa.';
   } finally {
@@ -318,6 +320,7 @@ const updateOwner = async ownerId => {
     deal.value = { ...deal.value, ...response.data };
   } catch (exception) {
     error.value =
+      exception?.response?.data?.error ||
       exception?.response?.data?.message ||
       'Não foi possível alterar o responsável.';
   } finally {
@@ -331,6 +334,7 @@ const recalculateScore = async () => {
     await loadDeal();
   } catch (exception) {
     error.value =
+      exception?.response?.data?.error ||
       exception?.response?.data?.message ||
       'Não foi possível recalcular o score.';
   } finally {
@@ -345,6 +349,7 @@ const markWon = async () => {
     await loadAudit();
   } catch (exception) {
     error.value =
+      exception?.response?.data?.error ||
       exception?.response?.data?.message ||
       'Não foi possível marcar o negócio como ganho.';
   } finally {
@@ -365,6 +370,7 @@ const markLost = async () => {
     await loadAudit();
   } catch (exception) {
     error.value =
+      exception?.response?.data?.error ||
       exception?.response?.data?.message ||
       'Não foi possível marcar o negócio como perdido.';
   } finally {
@@ -379,6 +385,7 @@ const reopen = async () => {
     await loadAudit();
   } catch (exception) {
     error.value =
+      exception?.response?.data?.error ||
       exception?.response?.data?.message ||
       'Não foi possível reabrir o negócio.';
   } finally {
@@ -399,6 +406,7 @@ const discard = async () => {
     showDiscardModal.value = false;
   } catch (exception) {
     error.value =
+      exception?.response?.data?.error ||
       exception?.response?.data?.message ||
       exception?.response?.data?.error ||
       'Não foi possível descartar o negócio.';
@@ -414,6 +422,7 @@ const markBaseClient = async () => {
     deal.value = { ...deal.value, ...response.data };
   } catch (exception) {
     error.value =
+      exception?.response?.data?.error ||
       exception?.response?.data?.message ||
       'Não foi possível marcar como cliente da base.';
   } finally {
@@ -442,6 +451,7 @@ const createActivity = async () => {
     await loadDeal();
   } catch (exception) {
     error.value =
+      exception?.response?.data?.error ||
       exception?.response?.data?.message ||
       'Não foi possível criar a atividade.';
   } finally {
@@ -455,6 +465,7 @@ const completeActivity = async activity => {
     await loadDeal();
   } catch (exception) {
     error.value =
+      exception?.response?.data?.error ||
       exception?.response?.data?.message ||
       'Não foi possível concluir a atividade.';
   } finally {

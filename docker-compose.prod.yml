@@ -23,6 +23,8 @@ x-default-logging: &default-logging
 services:
 
   # ─── PostgreSQL ──────────────────────────────────────────────────────────────
+  # F19: cap_drop/security_opt NÃO aplicados aqui — o entrypoint da imagem
+  # postgres faz bootstrap como root (chown do datadir, su gosu) e quebraria.
   postgres:
     image: pgvector/pgvector:pg15
     restart: unless-stopped
@@ -44,6 +46,8 @@ services:
       retries: 5
 
   # ─── Redis ───────────────────────────────────────────────────────────────────
+  # F19: cap_drop/security_opt NÃO aplicados aqui — entrypoint da imagem redis
+  # pode exigir caps de bootstrap; avaliar antes de endurecer.
   redis:
     image: redis:7-alpine
     restart: unless-stopped
@@ -71,6 +75,14 @@ services:
       target: production
     restart: unless-stopped
     logging: *default-logging
+    # F19: hardening — processo Node não precisa de capabilities nem de
+    # escalar privilégio. (Sem `user:` por ora: o entrypoint da imagem pode
+    # precisar de root no bootstrap — recomendado avaliar `user: "node"` ou
+    # equivalente não-root em hardening futuro.)
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
     depends_on:
       postgres:
         condition: service_healthy
@@ -90,6 +102,9 @@ services:
   # ARQ-03: identity-bridge aposentado — nenhum consumidor no core.
 
   # ─── Evolution API (WhatsApp) ─────────────────────────────────────────────────
+  # F19: cap_drop/security_opt NÃO aplicados aqui — imagem de terceiro com
+  # entrypoint customizado (evolution-patch-start.sh); validar em staging
+  # antes de endurecer.
   evolution-api:
     image: evoapicloud/evolution-api:v2.3.0
     restart: unless-stopped
@@ -149,6 +164,11 @@ services:
     profiles: ["deploy"]
     restart: "no"
     logging: *default-logging
+    # F19: hardening — rails db:migrate não precisa de capabilities.
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
     depends_on:
       postgres:
         condition: service_healthy
@@ -171,6 +191,14 @@ services:
     image: chusterm-core:latest
     restart: unless-stopped
     logging: *default-logging
+    # F19: hardening — Rails serve em porta não-privilegiada (3000) e não
+    # precisa de capabilities. (Sem `user:` por ora: o bootstrap da imagem
+    # pode exigir root — recomendado avaliar usuário não-root no Dockerfile
+    # em hardening futuro.)
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
     depends_on:
       postgres:
         condition: service_healthy
@@ -204,6 +232,12 @@ services:
     image: chusterm-core:latest
     restart: unless-stopped
     logging: *default-logging
+    # F19: hardening — worker Sidekiq não precisa de capabilities nem de
+    # escalar privilégio.
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
     depends_on:
       postgres:
         condition: service_healthy

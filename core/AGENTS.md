@@ -34,11 +34,11 @@
 
 ## Styling
 
-- **Tailwind Only**:  
-  - Do not write custom CSS  
-  - Do not use scoped CSS  
-  - Do not use inline styles  
-  - Always use Tailwind utility classes  
+- **Tailwind Only**:
+  - Do not write custom CSS
+  - Do not use scoped CSS
+  - Do not use inline styles
+  - Always use Tailwind utility classes
 - **Colors**: Refer to `tailwind.config.js` for color definitions
 
 ## Frontend Design System
@@ -49,7 +49,7 @@
 - Login, super login, and the main system configuration access area must look like the same product family; distinguish them through copy, security cues, context, and information hierarchy, not through a separate design language.
 - Prefer tonal separation, spacing, glass blur, and surface layering over hard borders.
 - Use Manrope for headlines and Inter for body and dense UI copy.
-- Avoid generic SaaS patterns, default white surfaces, and ad hoc component styling that conflicts with Midnight Indigo / Nocturnal Architect.
+- Avoid generic SaaS patterns, default white surfaces, and ad hoc component styling that conflicts with Obsidian + Mineral / Nocturnal Architect.
 - In frontend edits, improve UX structure before adding visual decoration: fix hierarchy, reduce noise, clarify actions, then refine aesthetics.
 
 ## General Guidelines
@@ -109,6 +109,7 @@
   - https://ChusteRM.help/hc/handbook/articles/developing-enterprise-edition-features-38
 
 Practical checklist for any change impacting core logic or public APIs
+
 - Search for related files in both trees before editing (e.g., `rg -n "FooService|ControllerName|ModelName" app enterprise`).
 - If adding new endpoints, services, or models, consider whether Enterprise needs:
   - An override (e.g., `enterprise/app/...`), or

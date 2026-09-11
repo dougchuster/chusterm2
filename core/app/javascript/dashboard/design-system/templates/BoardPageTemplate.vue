@@ -38,6 +38,14 @@ const DETAILS_ASIDE_LABEL = 'Detalhes do item';
       <slot name="toolbar" />
     </div>
 
+    <div
+      v-if="$slots.mobileNavigation"
+      data-template-region="mobile-navigation"
+      class="shrink-0 bg-ui-canvas px-4 pt-3 md:hidden"
+    >
+      <slot name="mobileNavigation" />
+    </div>
+
     <div class="flex min-h-0 flex-1">
       <div
         data-template-region="board"

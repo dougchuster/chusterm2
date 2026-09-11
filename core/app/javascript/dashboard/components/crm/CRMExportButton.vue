@@ -1,7 +1,9 @@
-<!-- eslint-disable vue/no-static-inline-styles, @intlify/vue-i18n/no-raw-text -->
+<!-- eslint-disable @intlify/vue-i18n/no-raw-text -->
 <script setup>
 import { ref } from 'vue';
 import CrmAPI from 'dashboard/api/crm';
+import DsButton from 'dashboard/design-system/components/DsButton.vue';
+import Icon from 'dashboard/components-next/icon/Icon.vue';
 
 const props = defineProps({
   filters: {
@@ -44,114 +46,40 @@ const triggerExport = async () => {
 </script>
 
 <template>
-  <div class="crm-export-btn-wrapper">
-    <button
-      type="button"
-      class="crm-export-btn"
-      :disabled="exporting"
+  <div class="inline-flex min-w-0 flex-col gap-1.5">
+    <DsButton
+      :label="exporting ? 'Exportando...' : label"
+      icon="i-lucide-download"
+      variant="secondary"
+      size="sm"
+      :loading="exporting"
       :title="label"
       @click="triggerExport"
-    >
-      <span
-        v-if="exporting"
-        class="i-lucide-loader-2 crm-export-btn__icon crm-export-btn__icon--spin"
-      />
-      <span v-else class="i-lucide-download crm-export-btn__icon" />
-      {{ exporting ? 'Exportando...' : label }}
-    </button>
+    />
 
-    <p v-if="error" class="crm-export-btn__error">
-      <span
-        class="i-lucide-alert-triangle"
-        style="width: 0.875rem; height: 0.875rem; flex-shrink: 0"
+    <p
+      v-if="error"
+      role="alert"
+      class="m-0 flex max-w-[22rem] items-center gap-1.5 text-xs text-n-ruby-11"
+    >
+      <Icon
+        icon="i-lucide-triangle-alert"
+        class="size-3.5 shrink-0"
+        aria-hidden="true"
       />
       {{ error }}
     </p>
 
-    <p v-if="successMessage" class="crm-export-btn__success">
-      <span
-        class="i-lucide-mail-check"
-        style="width: 0.875rem; height: 0.875rem; flex-shrink: 0"
+    <p
+      v-if="successMessage"
+      class="m-0 flex max-w-[22rem] items-center gap-1.5 text-xs text-n-teal-11"
+    >
+      <Icon
+        icon="i-lucide-mail-check"
+        class="size-3.5 shrink-0"
+        aria-hidden="true"
       />
       {{ successMessage }}
     </p>
   </div>
 </template>
-
-<style scoped>
-.crm-export-btn-wrapper {
-  display: inline-flex;
-  flex-direction: column;
-  gap: 0.375rem;
-}
-
-.crm-export-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  height: 2.25rem;
-  padding: 0 0.875rem;
-  border-radius: 0.5rem;
-  border: 1px solid rgb(var(--slate-6));
-  background: rgb(var(--slate-1));
-  color: rgb(var(--slate-11));
-  font-size: 0.8125rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition:
-    background 0.15s,
-    border-color 0.15s,
-    color 0.15s;
-  white-space: nowrap;
-}
-
-.crm-export-btn:hover:not(:disabled) {
-  background: rgb(var(--slate-3));
-  border-color: rgb(var(--brand-8));
-  color: rgb(var(--brand-11));
-}
-
-.crm-export-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.crm-export-btn__icon {
-  width: 0.875rem;
-  height: 0.875rem;
-  flex-shrink: 0;
-}
-
-.crm-export-btn__icon--spin {
-  animation: crm-spin 1s linear infinite;
-}
-
-@keyframes crm-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.crm-export-btn__error {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  margin: 0;
-  font-size: 0.75rem;
-  color: rgb(var(--ruby-11));
-  max-width: 22rem;
-}
-
-.crm-export-btn__success {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  margin: 0;
-  font-size: 0.75rem;
-  color: rgb(var(--teal-11));
-  max-width: 22rem;
-}
-</style>

@@ -1,11 +1,21 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
+# O hook roda a partir da raiz do repositorio, mas as dependencias de lint
+# (lint-staged, eslint) e o Gemfile vivem em core/. Entrar em core/ e' o que
+# permite que npx e bundle resolvam o que precisam.
+core_dir="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$core_dir" || exit 1
+
 # lint js and vue files
-npx --no-install lint-staged
+npx --no-install lint-staged || exit 1
 
 # lint only staged ruby files that still exist (not deleted)
-git diff --name-only --cached | xargs -I {} sh -c 'test -f "{}" && echo "{}"' | grep '\.rb$' | xargs -I {} bundle exec rubocop --force-exclusion -a "{}" || true
+git diff --name-only --cached --relative | grep '\.rb$' | while read -r file; do
+  test -f "$file" && bundle exec rubocop --force-exclusion -a "$file"
+done || true
 
 # stage rubocop changes to files
-git diff --name-only --cached | xargs -I {} sh -c 'test -f "{}" && git add "{}"' || true
+git diff --name-only --cached --relative | while read -r file; do
+  test -f "$file" && git add "$file"
+done || true

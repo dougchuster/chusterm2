@@ -802,7 +802,7 @@ onBeforeUnmount(() => window.clearTimeout(searchTimer));
   <CRMConfirmDialog ref="confirmDialog" />
 
   <div class="pointer-events-none fixed bottom-4 left-1/2 z-ui-toast flex w-[min(92vw,32rem)] -translate-x-1/2 flex-col gap-2">
-    <div v-if="error" role="alert" class="pointer-events-auto rounded-ui-surface border border-ui-danger bg-ui-danger-soft px-4 py-3 text-ui-body-sm text-ui-danger">{{ error }}</div>
+    <div v-if="error" role="alert" class="pointer-events-auto rounded-ui-surface border border-ui-danger bg-ui-danger-soft px-4 py-3 text-ui-body-sm text-ui-danger-foreground">{{ error }}</div>
     <div v-if="success" role="status" class="pointer-events-auto rounded-ui-surface border border-ui-success bg-ui-success-soft px-4 py-3 text-ui-body-sm text-ui-success">{{ success }}</div>
   </div>
 </template>

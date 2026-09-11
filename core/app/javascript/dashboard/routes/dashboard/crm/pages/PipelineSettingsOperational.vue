@@ -165,14 +165,14 @@ function slugify(value) {
 function stageColorClass(color) {
   return (
     {
-      '#38bdf8': 'bg-sky-400',
-      '#3b82f6': 'bg-blue-500',
-      '#8b5cf6': 'bg-violet-500',
-      '#f59e0b': 'bg-amber-500',
-      '#22c55e': 'bg-green-500',
-      '#14b8a6': 'bg-teal-500',
-      '#f43f5e': 'bg-rose-500',
-      '#6366f1': 'bg-indigo-500',
+      '#38bdf8': 'bg-n-blue-9',
+      '#3b82f6': 'bg-n-blue-10',
+      '#8b5cf6': 'bg-n-violet-9',
+      '#f59e0b': 'bg-n-amber-9',
+      '#22c55e': 'bg-n-teal-9',
+      '#14b8a6': 'bg-n-teal-10',
+      '#f43f5e': 'bg-n-ruby-9',
+      '#6366f1': 'bg-n-violet-10',
     }[color] || 'bg-ui-brand'
   );
 }
@@ -672,7 +672,7 @@ onMounted(loadAll);
   </DsModal>
 
   <div class="pointer-events-none fixed bottom-4 left-1/2 z-ui-toast flex w-[min(92vw,32rem)] -translate-x-1/2 flex-col gap-2">
-    <div v-if="error" role="alert" class="rounded-ui-surface border border-ui-danger bg-ui-danger-soft px-4 py-3 text-ui-body-sm text-ui-danger">{{ error }}</div>
+    <div v-if="error" role="alert" class="rounded-ui-surface border border-ui-danger bg-ui-danger-soft px-4 py-3 text-ui-body-sm text-ui-danger-foreground">{{ error }}</div>
     <div v-if="success" role="status" class="rounded-ui-surface border border-ui-success bg-ui-success-soft px-4 py-3 text-ui-body-sm text-ui-success">{{ success }}</div>
   </div>
 </template>

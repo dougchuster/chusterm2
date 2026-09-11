@@ -26,7 +26,9 @@ class Crm::DealsExportJob < ApplicationJob
   end
 
   def send_mail
-    file_url = Rails.application.routes.url_helpers.rails_blob_url(@account.crm_deals_export)
+    # URL de serviço com expiração de 24h: o rails_blob_url permanente deixava
+    # o CSV (com dados LGPD) acessível para sempre a qualquer portador do link.
+    file_url = @account.crm_deals_export.blob.url(expires_in: 24.hours)
     mailer = AdministratorNotifications::AccountNotificationMailer.with(account: @account)
     mailer.crm_deals_export_complete(file_url, @user.email)&.deliver_later
   end
@@ -49,25 +51,25 @@ class Crm::DealsExportJob < ApplicationJob
         csv << [
           deal.id,
           csv_value(deal.title),
-          deal.status,
-          deal.legal_area,
-          deal.case_type,
-          deal.urgency_level,
+          csv_value(deal.status),
+          csv_value(deal.legal_area),
+          csv_value(deal.case_type),
+          csv_value(deal.urgency_level),
           deal.score_total,
-          deal.score_classification,
+          csv_value(deal.score_classification),
           (deal.value_estimate_cents.to_f / 100).round(2),
           deal.probability_pct,
-          deal.crm_pipeline_stage&.name,
-          deal.lgpd_basis,
-          deal.consent_status,
-          deal.consent_channel,
+          csv_value(deal.crm_pipeline_stage&.name),
+          csv_value(deal.lgpd_basis),
+          csv_value(deal.consent_status),
+          csv_value(deal.consent_channel),
           deal.consent_collected_at&.iso8601,
           deal.data_retention_until&.iso8601,
           csv_value(deal.summary),
           csv_value(deal.next_best_action),
           deal.contact_id,
           deal.conversation_id,
-          deal.crm_loss_reason&.name,
+          csv_value(deal.crm_loss_reason&.name),
           deal.created_at.iso8601,
           deal.updated_at.iso8601
         ]
@@ -79,6 +81,9 @@ class Crm::DealsExportJob < ApplicationJob
     return '' if text.blank?
 
     # Remove line breaks that would break CSV rows
-    text.to_s.gsub(/[\r\n]+/, ' ').strip
+    sanitized = text.to_s.gsub(/[\r\n]+/, ' ').strip
+    # Neutraliza fórmulas: células começando com = + - @ ou tab executam ao
+    # abrir o CSV no Excel/LibreOffice (formula injection).
+    sanitized.sub(/\A(?=[=+\-@\t])/, "'")
   end
 end

@@ -1,5 +1,17 @@
 class CrmAuditEventPolicy < ApplicationPolicy
+  # A trilha de auditoria carrega diffs antes/depois (inclusive campos LGPD),
+  # então a leitura é restrita a administradores.
   def index?
-    account_user.present?
+    administrator?
+  end
+
+  def show?
+    administrator?
+  end
+
+  private
+
+  def administrator?
+    account_user&.administrator?
   end
 end

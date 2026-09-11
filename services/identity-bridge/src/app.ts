@@ -12,9 +12,22 @@ export async function buildApp() {
 
   // ─── CORS ─────────────────────────────────────────────────────────────────
   // Internal service — restrict to service-network callers in production.
-  // The origin list can be tightened via environment variable if needed.
+  // Explicit comma-separated allowlist from CORS_ORIGIN; unset means no
+  // cross-site origin is allowed.
+  const corsOrigins = (process.env.CORS_ORIGIN ?? '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean)
   await app.register(cors, {
-    origin: process.env.CORS_ORIGIN ?? false,
+    origin: corsOrigins.length > 0 ? corsOrigins : false,
+  })
+
+  // ─── Security headers ───────────────────────────────────────────────────────
+  // Minimal set (no @fastify/helmet dependency available).
+  app.addHook('onSend', async (_request, reply) => {
+    reply.header('X-Content-Type-Options', 'nosniff')
+    reply.header('X-Frame-Options', 'DENY')
+    reply.header('Referrer-Policy', 'no-referrer')
   })
 
   // ─── Routes ───────────────────────────────────────────────────────────────

@@ -37,3 +37,9 @@ export const asyncSkillQueue = new Queue('async-skills', {
     removeOnFail: { count: 200 },
   },
 })
+
+// Without an 'error' listener, Redis connection errors are re-emitted as
+// unhandled EventEmitter 'error' events and crash the process.
+asyncSkillQueue.on('error', (err) => {
+  console.error('[async-skills] queue error:', err.message)
+})

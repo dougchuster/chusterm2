@@ -1,4 +1,5 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
+import crypto from 'node:crypto'
 import jwt, { type SignOptions } from 'jsonwebtoken'
 import { z } from 'zod'
 
@@ -8,11 +9,24 @@ const validateBodySchema = z.object({
   token: z.string().min(1, 'token is required'),
 })
 
+// IB-M1: role is restricted to an allowlist — never a free-form client string.
+const ROLE_ALLOWLIST = ['administrator', 'agent', 'service'] as const
+
 const tokenBodySchema = z.object({
   userId: z.number().int().positive(),
   accountId: z.number().int().positive(),
-  role: z.string().min(1, 'role is required'),
+  role: z.enum(ROLE_ALLOWLIST),
 })
+
+const JWT_ISSUER = 'chusterm:identity-bridge'
+const JWT_AUDIENCE = 'chusterm:internal'
+
+// IB-H1: verify enforces the same constraints used at sign time.
+const VERIFY_OPTIONS: jwt.VerifyOptions = {
+  algorithms: ['HS256'],
+  issuer: JWT_ISSUER,
+  audience: JWT_AUDIENCE,
+}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -35,9 +49,62 @@ function extractBearer(authHeader: string | undefined): string | null {
   return parts[1] ?? null
 }
 
+/**
+ * IB-C1: POST /auth/token is server-to-server only. Callers must present the
+ * shared SERVICE_AUTH_TOKEN in the x-service-token header. Comparison is
+ * constant-time. When SERVICE_AUTH_TOKEN is unset the endpoint fails closed
+ * (503) and never issues a token.
+ */
+function serviceTokenConfigured(): boolean {
+  return Boolean(process.env.SERVICE_AUTH_TOKEN)
+}
+
+function isValidServiceToken(header: string | undefined): boolean {
+  const expected = process.env.SERVICE_AUTH_TOKEN
+  if (!expected || !header) return false
+  const presented = Buffer.from(header)
+  const expectedBuf = Buffer.from(expected)
+  return presented.length === expectedBuf.length && crypto.timingSafeEqual(presented, expectedBuf)
+}
+
+// ─── Rate limiting (IB-H2) ────────────────────────────────────────────────────
+// @fastify/rate-limit is not a dependency, so a tiny fixed-window limiter is
+// implemented inline: max 30 requests/minute per client IP on /auth/*.
+const RATE_LIMIT_WINDOW_MS = 60_000
+const RATE_LIMIT_MAX = 30
+const rateBuckets = new Map<string, { count: number; resetAt: number }>()
+
+function rateLimitExceeded(ip: string): boolean {
+  const now = Date.now()
+
+  // Bound memory: sweep expired buckets when the map grows large.
+  if (rateBuckets.size > 5000) {
+    for (const [key, bucket] of rateBuckets) {
+      if (bucket.resetAt <= now) rateBuckets.delete(key)
+    }
+  }
+
+  const bucket = rateBuckets.get(ip)
+  if (!bucket || bucket.resetAt <= now) {
+    rateBuckets.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS })
+    return false
+  }
+  bucket.count += 1
+  return bucket.count > RATE_LIMIT_MAX
+}
+
 // ─── Route handler ───────────────────────────────────────────────────────────
 
 export async function authRoutes(app: FastifyInstance): Promise<void> {
+  app.addHook('onRequest', async (request: FastifyRequest, reply: FastifyReply) => {
+    if (rateLimitExceeded(request.ip)) {
+      return reply.status(429).send({
+        error: 'RATE_LIMITED',
+        message: 'Too many requests — try again later',
+      })
+    }
+  })
+
   /**
    * POST /auth/validate
    * Validates a JWT signed with SERVICE_JWT_SECRET.
@@ -68,7 +135,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     }
 
     try {
-      const payload = jwt.verify(token, secret)
+      const payload = jwt.verify(token, secret, VERIFY_OPTIONS)
       return reply.status(200).send({ valid: true, payload })
     } catch (err) {
       const message = err instanceof jwt.TokenExpiredError
@@ -84,9 +151,27 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
   /**
    * POST /auth/token
    * Issues a short-lived service-to-service JWT.
+   * Server-to-server only: requires the x-service-token shared secret.
    * Returns { token, expiresIn }.
    */
   app.post('/auth/token', async (request: FastifyRequest, reply: FastifyReply) => {
+    // Fail closed: without SERVICE_AUTH_TOKEN configured, never issue tokens.
+    if (!serviceTokenConfigured()) {
+      request.log.error('SERVICE_AUTH_TOKEN is not configured — token issuance disabled')
+      return reply.status(503).send({
+        error: 'SERVICE_UNAVAILABLE',
+        message: 'Token issuance is not configured',
+      })
+    }
+
+    if (!isValidServiceToken(request.headers['x-service-token'] as string | undefined)) {
+      request.log.warn({ ip: request.ip }, 'Rejected token mint attempt with invalid service token')
+      return reply.status(401).send({
+        error: 'UNAUTHORIZED',
+        message: 'Invalid or missing service token',
+      })
+    }
+
     const parseResult = tokenBodySchema.safeParse(request.body)
 
     if (!parseResult.success) {
@@ -114,11 +199,14 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     try {
       const signOptions: SignOptions = {
         expiresIn,
-        issuer: 'chusterm:identity-bridge',
-        audience: 'chusterm:internal',
+        issuer: JWT_ISSUER,
+        audience: JWT_AUDIENCE,
       }
 
       const token = jwt.sign({ userId, accountId, role }, secret, signOptions)
+
+      // IB-M3: audit trail for every issuance.
+      request.log.info({ userId, accountId, role, ip: request.ip }, 'token issued')
 
       return reply.status(200).send({ token, expiresIn })
     } catch (err) {
@@ -158,7 +246,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     }
 
     try {
-      const payload = jwt.verify(rawToken, secret)
+      const payload = jwt.verify(rawToken, secret, VERIFY_OPTIONS)
       return reply.status(200).send(payload)
     } catch (err) {
       const message = err instanceof jwt.TokenExpiredError

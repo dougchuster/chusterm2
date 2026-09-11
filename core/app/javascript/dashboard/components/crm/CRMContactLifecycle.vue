@@ -27,20 +27,18 @@ const STAGES = [
 ];
 
 const STAGE_COLORS = {
-  visitor: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300',
-  lead: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+  visitor: 'bg-n-slate-3 text-n-slate-11',
+  lead: 'bg-n-blue-3 text-n-blue-11 dark:bg-ui-elevated dark:text-ui-text-muted',
   lead_qualified:
-    'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300',
+    'bg-n-violet-3 text-n-violet-11 dark:bg-ui-elevated dark:text-ui-text-muted',
   in_triage:
-    'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+    'bg-n-amber-3 text-n-amber-11',
   consultation_scheduled:
-    'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
-  customer:
-    'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
-  active_customer:
-    'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
-  recurring: 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300',
-  ex_customer: 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-300',
+    'bg-n-violet-3 text-n-violet-11 dark:bg-ui-elevated dark:text-ui-text-muted',
+  customer: 'bg-n-teal-3 text-n-teal-11',
+  active_customer: 'bg-n-teal-3 text-n-teal-11',
+  recurring: 'bg-n-teal-3 text-n-teal-11',
+  ex_customer: 'bg-n-ruby-3 text-n-ruby-11',
 };
 
 const stage = computed(() => props.contact?.lifecycle_stage || 'visitor');
@@ -222,10 +220,10 @@ const lastInteraction = computed(() => {
 }
 
 .step-current .step-dot {
-  background: var(--n-brand, #3b82f6);
-  border-color: var(--n-brand, #3b82f6);
-  color: white;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  background: rgb(var(--ds-accent-primary));
+  border-color: rgb(var(--ds-accent-primary));
+  color: rgb(var(--ds-fg-on-accent));
+  box-shadow: 0 0 0 3px rgb(var(--ds-accent-primary) / 0.2);
 }
 
 .step-future .step-dot {
@@ -244,7 +242,7 @@ const lastInteraction = computed(() => {
 }
 
 .step-current .step-label {
-  color: var(--n-brand, #3b82f6);
+  color: rgb(var(--ds-accent-primary));
   font-weight: 600;
 }
 

@@ -5,7 +5,9 @@ import { db } from '../db/client.js'
 import { pipelines, pipelineStages } from '../db/schema.js'
 
 const createPipelineSchema = z.object({
-  accountId: z.number().int().positive(),
+  // Deprecated: accepted for backwards compatibility but IGNORED — the tenant
+  // is always derived from the verified JWT (request.auth.accountId).
+  accountId: z.number().int().positive().optional(),
   name: z.string().min(1).max(255),
   slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/),
   isDefault: z.boolean().optional(),
@@ -15,7 +17,8 @@ const createPipelineSchema = z.object({
 const updatePipelineSchema = createPipelineSchema.partial().omit({ accountId: true })
 
 const createStageSchema = z.object({
-  accountId: z.number().int().positive(),
+  // Deprecated: accepted but IGNORED in favor of the token claim (CRM-H4).
+  accountId: z.number().int().positive().optional(),
   name: z.string().min(1).max(255),
   position: z.number().int().min(0).optional(),
   probabilityPct: z.number().int().min(0).max(100).optional(),
@@ -26,7 +29,8 @@ const createStageSchema = z.object({
 const updateStageSchema = createStageSchema.partial().omit({ accountId: true })
 
 const listQuerySchema = z.object({
-  accountId: z.coerce.number().int().positive(),
+  // Deprecated: accepted but IGNORED in favor of the token claim.
+  accountId: z.coerce.number().int().positive().optional(),
 })
 
 export async function pipelineRoutes(app: FastifyInstance): Promise<void> {
@@ -40,7 +44,7 @@ export async function pipelineRoutes(app: FastifyInstance): Promise<void> {
       const data = await db
         .select()
         .from(pipelines)
-        .where(and(eq(pipelines.accountId, query.data.accountId), isNull(pipelines.archivedAt)))
+        .where(and(eq(pipelines.accountId, request.auth.accountId), isNull(pipelines.archivedAt)))
 
       return reply.send({ data, total: data.length, page: 1, limit: data.length })
     } catch (err) {
@@ -56,7 +60,7 @@ export async function pipelineRoutes(app: FastifyInstance): Promise<void> {
       const [pipeline] = await db
         .select()
         .from(pipelines)
-        .where(eq(pipelines.id, id))
+        .where(and(eq(pipelines.id, id), eq(pipelines.accountId, request.auth.accountId)))
         .limit(1)
 
       if (!pipeline) {
@@ -77,7 +81,10 @@ export async function pipelineRoutes(app: FastifyInstance): Promise<void> {
         return reply.status(400).send({ error: 'ValidationError', message: body.error.message })
       }
 
-      const [created] = await db.insert(pipelines).values(body.data).returning()
+      const [created] = await db
+        .insert(pipelines)
+        .values({ ...body.data, accountId: request.auth.accountId })
+        .returning()
 
       return reply.status(201).send(created)
     } catch (err) {
@@ -98,7 +105,7 @@ export async function pipelineRoutes(app: FastifyInstance): Promise<void> {
       const [existing] = await db
         .select({ id: pipelines.id })
         .from(pipelines)
-        .where(eq(pipelines.id, id))
+        .where(and(eq(pipelines.id, id), eq(pipelines.accountId, request.auth.accountId)))
         .limit(1)
 
       if (!existing) {
@@ -108,7 +115,7 @@ export async function pipelineRoutes(app: FastifyInstance): Promise<void> {
       const [updated] = await db
         .update(pipelines)
         .set({ ...body.data, updatedAt: new Date() })
-        .where(eq(pipelines.id, id))
+        .where(and(eq(pipelines.id, id), eq(pipelines.accountId, request.auth.accountId)))
         .returning()
 
       return reply.send(updated)
@@ -125,7 +132,7 @@ export async function pipelineRoutes(app: FastifyInstance): Promise<void> {
       const [existing] = await db
         .select({ id: pipelines.id })
         .from(pipelines)
-        .where(eq(pipelines.id, id))
+        .where(and(eq(pipelines.id, id), eq(pipelines.accountId, request.auth.accountId)))
         .limit(1)
 
       if (!existing) {
@@ -135,7 +142,7 @@ export async function pipelineRoutes(app: FastifyInstance): Promise<void> {
       await db
         .update(pipelines)
         .set({ archivedAt: new Date(), updatedAt: new Date() })
-        .where(eq(pipelines.id, id))
+        .where(and(eq(pipelines.id, id), eq(pipelines.accountId, request.auth.accountId)))
 
       return reply.status(204).send()
     } catch (err) {
@@ -153,7 +160,7 @@ export async function pipelineRoutes(app: FastifyInstance): Promise<void> {
       const [pipeline] = await db
         .select({ id: pipelines.id })
         .from(pipelines)
-        .where(eq(pipelines.id, id))
+        .where(and(eq(pipelines.id, id), eq(pipelines.accountId, request.auth.accountId)))
         .limit(1)
 
       if (!pipeline) {
@@ -163,7 +170,7 @@ export async function pipelineRoutes(app: FastifyInstance): Promise<void> {
       const data = await db
         .select()
         .from(pipelineStages)
-        .where(and(eq(pipelineStages.pipelineId, id), isNull(pipelineStages.archivedAt)))
+        .where(and(eq(pipelineStages.pipelineId, id), eq(pipelineStages.accountId, request.auth.accountId), isNull(pipelineStages.archivedAt)))
 
       return reply.send({ data, total: data.length, page: 1, limit: data.length })
     } catch (err) {
@@ -176,10 +183,12 @@ export async function pipelineRoutes(app: FastifyInstance): Promise<void> {
     try {
       const { id } = request.params as { id: string }
 
+      // CRM-H4: the pipeline must belong to the token's account, and the stage
+      // is always stamped with the token's accountId — never the body's.
       const [pipeline] = await db
         .select({ id: pipelines.id })
         .from(pipelines)
-        .where(eq(pipelines.id, id))
+        .where(and(eq(pipelines.id, id), eq(pipelines.accountId, request.auth.accountId)))
         .limit(1)
 
       if (!pipeline) {
@@ -193,7 +202,7 @@ export async function pipelineRoutes(app: FastifyInstance): Promise<void> {
 
       const [created] = await db
         .insert(pipelineStages)
-        .values({ ...body.data, pipelineId: id })
+        .values({ ...body.data, accountId: request.auth.accountId, pipelineId: id })
         .returning()
 
       return reply.status(201).send(created)
@@ -215,7 +224,7 @@ export async function pipelineRoutes(app: FastifyInstance): Promise<void> {
       const [existing] = await db
         .select({ id: pipelineStages.id })
         .from(pipelineStages)
-        .where(and(eq(pipelineStages.id, stageId), eq(pipelineStages.pipelineId, id)))
+        .where(and(eq(pipelineStages.id, stageId), eq(pipelineStages.pipelineId, id), eq(pipelineStages.accountId, request.auth.accountId)))
         .limit(1)
 
       if (!existing) {
@@ -225,7 +234,7 @@ export async function pipelineRoutes(app: FastifyInstance): Promise<void> {
       const [updated] = await db
         .update(pipelineStages)
         .set({ ...body.data, updatedAt: new Date() })
-        .where(eq(pipelineStages.id, stageId))
+        .where(and(eq(pipelineStages.id, stageId), eq(pipelineStages.accountId, request.auth.accountId)))
         .returning()
 
       return reply.send(updated)
@@ -242,7 +251,7 @@ export async function pipelineRoutes(app: FastifyInstance): Promise<void> {
       const [existing] = await db
         .select({ id: pipelineStages.id })
         .from(pipelineStages)
-        .where(and(eq(pipelineStages.id, stageId), eq(pipelineStages.pipelineId, id)))
+        .where(and(eq(pipelineStages.id, stageId), eq(pipelineStages.pipelineId, id), eq(pipelineStages.accountId, request.auth.accountId)))
         .limit(1)
 
       if (!existing) {
@@ -252,7 +261,7 @@ export async function pipelineRoutes(app: FastifyInstance): Promise<void> {
       await db
         .update(pipelineStages)
         .set({ archivedAt: new Date(), updatedAt: new Date() })
-        .where(eq(pipelineStages.id, stageId))
+        .where(and(eq(pipelineStages.id, stageId), eq(pipelineStages.accountId, request.auth.accountId)))
 
       return reply.status(204).send()
     } catch (err) {

@@ -198,6 +198,7 @@ watch(
 <template>
   <span
     class="relative inline-flex group/avatar z-0 flex-shrink-0 align-middle"
+    :class="borderRadiusClass"
     :style="containerStyles"
   >
     <!-- Status Badge -->
@@ -220,7 +221,7 @@ watch(
     <!-- Delete Avatar Button -->
     <div
       v-if="src && allowUpload"
-      class="absolute z-20 flex items-center justify-center invisible w-6 h-6 transition-all duration-300 ease-in-out opacity-0 cursor-pointer outline outline-1 outline-n-container -top-2 ltr:-right-2 rtl:-left-2 rounded-xl bg-n-solid-3 group-hover/avatar:visible group-hover/avatar:opacity-100"
+      class="absolute z-20 flex items-center justify-center invisible w-6 h-6 transition-all duration-300 ease-in-out opacity-0 cursor-pointer ring-1 ring-inset ring-n-container -top-2 ltr:-right-2 rtl:-left-2 rounded-xl bg-n-solid-3 group-hover/avatar:visible group-hover/avatar:opacity-100"
       @click="handleDismiss"
     >
       <Icon icon="i-lucide-x" class="text-n-slate-11 size-4" />
@@ -232,7 +233,7 @@ watch(
       :aria-label="
         $slots.overlay ? undefined : name || t('THUMBNAIL.AUTHOR.NOT_AVAILABLE')
       "
-      class="relative inline-flex items-center justify-center object-cover overflow-hidden font-medium outline outline-1 -outline-offset-1 outline-[rgb(0_0_0_/_0.03)] dark:outline-[rgb(255_255_255_/_0.04)]"
+      class="relative inline-flex items-center justify-center object-cover overflow-hidden font-medium ring-1 ring-inset ring-black/[0.03] dark:ring-white/[0.04]"
       :class="[
         borderRadiusClass,
         {

@@ -6,7 +6,9 @@ import { lossReasons } from '../db/schema.js'
 import { writeAuditEvent } from '../lib/audit.js'
 
 const createSchema = z.object({
-  accountId: z.number().int().positive(),
+  // Deprecated: accepted for backwards compatibility but IGNORED — the tenant
+  // is always derived from the verified JWT (request.auth.accountId).
+  accountId: z.number().int().positive().optional(),
   label: z.string().min(1).max(255),
   slug: z.string().min(1).max(120).optional(),
   position: z.number().int().min(0).optional(),
@@ -15,7 +17,8 @@ const createSchema = z.object({
 const updateSchema = createSchema.partial().omit({ accountId: true })
 
 const listQuerySchema = z.object({
-  accountId: z.coerce.number().int().positive(),
+  // Deprecated: accepted but IGNORED in favor of the token claim.
+  accountId: z.coerce.number().int().positive().optional(),
 })
 
 const slugify = (value: string) =>
@@ -38,7 +41,7 @@ export async function lossReasonRoutes(app: FastifyInstance): Promise<void> {
       const data = await db
         .select()
         .from(lossReasons)
-        .where(and(eq(lossReasons.accountId, query.data.accountId), isNull(lossReasons.archivedAt)))
+        .where(and(eq(lossReasons.accountId, request.auth.accountId), isNull(lossReasons.archivedAt)))
         .orderBy(asc(lossReasons.position), asc(lossReasons.label))
 
       return reply.send({ data, total: data.length, page: 1, limit: data.length })
@@ -57,6 +60,7 @@ export async function lossReasonRoutes(app: FastifyInstance): Promise<void> {
 
       const payload = {
         ...body.data,
+        accountId: request.auth.accountId,
         slug: body.data.slug ?? slugify(body.data.label),
       }
 
@@ -88,7 +92,7 @@ export async function lossReasonRoutes(app: FastifyInstance): Promise<void> {
       const [existing] = await db
         .select()
         .from(lossReasons)
-        .where(and(eq(lossReasons.id, id), isNull(lossReasons.archivedAt)))
+        .where(and(eq(lossReasons.id, id), eq(lossReasons.accountId, request.auth.accountId), isNull(lossReasons.archivedAt)))
         .limit(1)
 
       if (!existing) {
@@ -98,7 +102,7 @@ export async function lossReasonRoutes(app: FastifyInstance): Promise<void> {
       const [updated] = await db
         .update(lossReasons)
         .set({ ...body.data, updatedAt: new Date() })
-        .where(eq(lossReasons.id, id))
+        .where(and(eq(lossReasons.id, id), eq(lossReasons.accountId, request.auth.accountId)))
         .returning()
 
       await writeAuditEvent({
@@ -124,7 +128,7 @@ export async function lossReasonRoutes(app: FastifyInstance): Promise<void> {
       const [existing] = await db
         .select()
         .from(lossReasons)
-        .where(and(eq(lossReasons.id, id), isNull(lossReasons.archivedAt)))
+        .where(and(eq(lossReasons.id, id), eq(lossReasons.accountId, request.auth.accountId), isNull(lossReasons.archivedAt)))
         .limit(1)
 
       if (!existing) {
@@ -134,7 +138,7 @@ export async function lossReasonRoutes(app: FastifyInstance): Promise<void> {
       await db
         .update(lossReasons)
         .set({ archivedAt: new Date(), updatedAt: new Date() })
-        .where(eq(lossReasons.id, id))
+        .where(and(eq(lossReasons.id, id), eq(lossReasons.accountId, request.auth.accountId)))
 
       await writeAuditEvent({
         accountId: existing.accountId,

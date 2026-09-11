@@ -6,30 +6,35 @@ import { crmLabelgings, crmLabels } from '../db/schema.js'
 import { writeAuditEvent } from '../lib/audit.js'
 
 const listLabelsQuerySchema = z.object({
-  accountId: z.coerce.number().int().positive(),
+  // Deprecated: accepted but IGNORED in favor of the token claim.
+  accountId: z.coerce.number().int().positive().optional(),
   category: z.string().optional(),
   scope: z.string().optional(),
 })
 
 const createLabelSchema = z.object({
-  accountId: z.number().int().positive(),
+  // Deprecated: accepted for backwards compatibility but IGNORED — the tenant
+  // is always derived from the verified JWT (request.auth.accountId).
+  accountId: z.number().int().positive().optional(),
   category: z.string().min(1).max(80),
   slug: z.string().min(1).max(160),
   displayName: z.string().min(1).max(160),
   color: z.string().max(20).optional(),
   description: z.string().max(1000).nullable().optional(),
   scope: z.string().max(50).optional(),
-  isSystem: z.boolean().optional(),
+  // CRM-H3: isSystem removed — system labels are created by server code only.
 })
 
 const listLabelgingsQuerySchema = z.object({
-  accountId: z.coerce.number().int().positive(),
+  // Deprecated: accepted but IGNORED in favor of the token claim.
+  accountId: z.coerce.number().int().positive().optional(),
   targetType: z.string().min(1).max(50),
   targetId: z.string().min(1).max(100),
 })
 
 const createLabelgingSchema = z.object({
-  accountId: z.number().int().positive(),
+  // Deprecated: accepted but IGNORED in favor of the token claim.
+  accountId: z.number().int().positive().optional(),
   labelId: z.string().uuid().optional(),
   slug: z.string().max(160).optional(),
   targetType: z.string().min(1).max(50),
@@ -69,7 +74,8 @@ export async function labelRoutes(app: FastifyInstance): Promise<void> {
         return reply.status(400).send({ error: 'ValidationError', message: query.error.message })
       }
 
-      const { accountId, category, scope } = query.data
+      const { category, scope } = query.data
+      const accountId = request.auth.accountId
       const conditions = [eq(crmLabels.accountId, accountId), isNull(crmLabels.archivedAt)]
       if (category) conditions.push(eq(crmLabels.category, category))
       if (scope) conditions.push(eq(crmLabels.scope, scope))
@@ -97,9 +103,10 @@ export async function labelRoutes(app: FastifyInstance): Promise<void> {
         .insert(crmLabels)
         .values({
           ...body.data,
+          accountId: request.auth.accountId,
           color: body.data.color ?? '#8b8b99',
           scope: body.data.scope ?? 'all',
-          isSystem: body.data.isSystem ?? false,
+          isSystem: false,
         })
         .returning()
 
@@ -125,7 +132,8 @@ export async function labelRoutes(app: FastifyInstance): Promise<void> {
         return reply.status(400).send({ error: 'ValidationError', message: query.error.message })
       }
 
-      const { accountId, targetType, targetId } = query.data
+      const { targetType, targetId } = query.data
+      const accountId = request.auth.accountId
 
       const rows = await db
         .select({
@@ -163,7 +171,8 @@ export async function labelRoutes(app: FastifyInstance): Promise<void> {
         return reply.status(400).send({ error: 'ValidationError', message: body.error.message })
       }
 
-      const label = await resolveLabel(body.data.accountId, body.data.labelId, body.data.slug)
+      const accountId = request.auth.accountId
+      const label = await resolveLabel(accountId, body.data.labelId, body.data.slug)
       if (!label) {
         return reply.status(404).send({ error: 'NotFound', message: 'Label not found' })
       }
@@ -171,7 +180,7 @@ export async function labelRoutes(app: FastifyInstance): Promise<void> {
       const [created] = await db
         .insert(crmLabelgings)
         .values({
-          accountId: body.data.accountId,
+          accountId,
           labelId: label.id,
           targetType: body.data.targetType,
           targetId: body.data.targetId,
@@ -208,14 +217,16 @@ export async function labelRoutes(app: FastifyInstance): Promise<void> {
       const [existing] = await db
         .select()
         .from(crmLabelgings)
-        .where(eq(crmLabelgings.id, id))
+        .where(and(eq(crmLabelgings.id, id), eq(crmLabelgings.accountId, request.auth.accountId)))
         .limit(1)
 
       if (!existing) {
         return reply.status(404).send({ error: 'NotFound', message: 'Labelging not found' })
       }
 
-      await db.delete(crmLabelgings).where(eq(crmLabelgings.id, id))
+      await db
+        .delete(crmLabelgings)
+        .where(and(eq(crmLabelgings.id, id), eq(crmLabelgings.accountId, request.auth.accountId)))
 
       await writeAuditEvent({
         accountId: existing.accountId,

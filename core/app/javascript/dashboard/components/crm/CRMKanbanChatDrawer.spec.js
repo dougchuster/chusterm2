@@ -328,4 +328,51 @@ describe('CRMKanbanChatDrawer', () => {
     await wrapper.get('button[title="Ocultar resumo"]').trigger('click');
     expect(wrapper.text()).not.toContain('Resumo do atendimento');
   });
+
+  it('allows only http(s) and app-relative attachment URLs, falling back to # otherwise', async () => {
+    MessageApi.getPreviousMessages.mockResolvedValueOnce({
+      data: {
+        payload: [
+          {
+            id: 20,
+            content: 'Anexos suspeitos.',
+            message_type: 'incoming',
+            sender_name: 'Maria Cliente',
+            created_at: '2026-05-26T10:00:00.000Z',
+            attachments: [
+              {
+                id: 201,
+                file_type: 'file',
+                // eslint-disable-next-line no-script-url -- payload malicioso proposital: o teste garante que a URL e rejeitada
+                external_url: 'javascript:alert(1)',
+                fallback_title: 'poisoned.pdf',
+              },
+              {
+                id: 202,
+                file_type: 'file',
+                data_url: '/rails/active_storage/blobs/xyz/contrato.pdf',
+                fallback_title: 'contrato.pdf',
+              },
+            ],
+          },
+        ],
+      },
+    });
+
+    const wrapper = mountDrawer();
+    await flushPromises();
+    await nextTick();
+
+    const poisoned = wrapper
+      .findAll('a.crm-attendance-attachment__file')
+      .find(link => link.text().includes('poisoned.pdf'));
+    expect(poisoned.attributes('href')).toBe('#');
+
+    const relative = wrapper
+      .findAll('a.crm-attendance-attachment__file')
+      .find(link => link.text().includes('contrato.pdf'));
+    expect(relative.attributes('href')).toBe(
+      '/rails/active_storage/blobs/xyz/contrato.pdf'
+    );
+  });
 });

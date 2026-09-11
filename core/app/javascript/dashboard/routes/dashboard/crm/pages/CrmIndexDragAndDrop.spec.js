@@ -130,6 +130,25 @@ describe('CrmIndexOperational — arrastar entre colunas', () => {
     expect(CrmAPI.moveDeal).toHaveBeenCalledWith(1, 20);
   });
 
+  it('moves through the native mouse handle when the library drag does not start', async () => {
+    CrmAPI.moveDeal.mockResolvedValue({ data: card(1, 20) });
+    const wrapper = await mountBoard();
+    const moving = columnOf(wrapper, 10).deals[0];
+    const dataTransfer = {
+      effectAllowed: '',
+      setData: vi.fn(),
+    };
+
+    wrapper.vm.onNativeDragStart(moving, { dataTransfer });
+    await wrapper.vm.onNativeDrop(columnOf(wrapper, 20));
+    await flushPromises();
+
+    expect(dataTransfer.effectAllowed).toBe('move');
+    expect(dataTransfer.setData).toHaveBeenCalledWith('text/plain', '1');
+    expect(CrmAPI.moveDeal).toHaveBeenCalledWith(1, 20);
+    expect(columnOf(wrapper, 20).deals.map(deal => deal.id)).toContain(1);
+  });
+
   describe('os agregados do cabeçalho', () => {
     it('move the count from one column to the other', async () => {
       CrmAPI.moveDeal.mockResolvedValue({ data: card(1, 20) });

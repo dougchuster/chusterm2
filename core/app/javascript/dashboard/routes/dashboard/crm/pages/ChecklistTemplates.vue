@@ -368,7 +368,7 @@ onMounted(loadTemplates);
       <div
         v-if="error && !showModal"
         role="alert"
-        class="rounded-ui-surface border border-ui-danger bg-ui-danger-soft px-4 py-3 text-ui-body-sm text-ui-danger"
+        class="rounded-ui-surface border border-ui-danger bg-ui-danger-soft px-4 py-3 text-ui-body-sm text-ui-danger-foreground"
       >
         {{ error }}
       </div>
@@ -506,7 +506,7 @@ onMounted(loadTemplates);
       <div
         v-if="error"
         role="alert"
-        class="mb-3 rounded-ui-surface border border-ui-danger bg-ui-danger-soft px-4 py-3 text-ui-body-sm text-ui-danger"
+        class="mb-3 rounded-ui-surface border border-ui-danger bg-ui-danger-soft px-4 py-3 text-ui-body-sm text-ui-danger-foreground"
       >
         {{ error }}
       </div>

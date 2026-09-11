@@ -97,7 +97,7 @@ const helpURL = getHelpUrlForFeature(props.featureName);
 
     <div
       v-if="searchPlaceholder || slots.actions || slots.tabs"
-      class="flex flex-col justify-between gap-3 rounded-lg border border-n-weak bg-n-solid-2 p-3 sm:flex-row sm:items-center"
+      class="flex flex-col justify-between gap-3 rounded-xl border border-n-weak bg-n-solid-2 p-3 lg:flex-row lg:items-center"
       :class="{
         'hidden sm:flex': searchPlaceholder && !slots.actions && !slots.tabs,
       }"
@@ -128,15 +128,19 @@ const helpURL = getHelpUrlForFeature(props.featureName);
       </div>
 
       <div
-        class="flex min-w-0 items-center gap-3"
+        class="flex w-full min-w-0 items-center justify-between gap-3 lg:w-auto lg:justify-start"
         :class="{ 'flex-row-reverse sm:flex-row': !slots.tabs }"
       >
-        <slot name="count" />
+        <div v-if="slots.count" class="shrink-0 whitespace-nowrap">
+          <slot name="count" />
+        </div>
         <div
           v-if="slots.count"
           class="h-3 w-px flex-shrink-0 rounded-lg bg-n-weak ltr:ml-1 ltr:mr-2 rtl:ml-2 rtl:mr-1"
         />
-        <slot name="actions" />
+        <div v-if="slots.actions" class="shrink-0">
+          <slot name="actions" />
+        </div>
       </div>
     </div>
   </div>

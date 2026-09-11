@@ -64,7 +64,7 @@ const updateValue = event => {
         :aria-invalid="state === 'error' || undefined"
         :aria-describedby="message ? messageId : undefined"
         :aria-busy="loading || undefined"
-        class="reset-base m-0 h-10 w-full appearance-none rounded-ui-control border bg-ui-surface py-0 pl-3 pr-10 text-ui-body text-ui-text outline-none transition-colors duration-ui-fast focus:ring-2 focus:ring-ui-border-focus/20 disabled:cursor-not-allowed disabled:bg-ui-sunken disabled:text-ui-text-disabled max-sm:h-11"
+        class="reset-base m-0 h-10 w-full appearance-none truncate rounded-ui-control border !bg-none bg-ui-surface py-0 text-ui-body text-ui-text outline-none transition-colors duration-ui-fast [appearance:none] [-webkit-appearance:none] focus:ring-2 focus:ring-ui-border-focus/20 disabled:cursor-not-allowed disabled:bg-ui-sunken disabled:text-ui-text-disabled max-sm:h-11 ltr:pl-3 ltr:pr-10 rtl:pl-10 rtl:pr-3 [&::-ms-expand]:hidden"
         :class="stateClasses"
         @change="updateValue"
       >
@@ -81,7 +81,7 @@ const updateValue = event => {
         </option>
       </select>
       <span
-        class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3"
+        class="pointer-events-none absolute inset-y-0 flex items-center ltr:right-0 ltr:pr-3 rtl:left-0 rtl:pl-3"
       >
         <Icon
           :icon="loading ? 'i-lucide-loader-circle' : 'i-lucide-chevron-down'"

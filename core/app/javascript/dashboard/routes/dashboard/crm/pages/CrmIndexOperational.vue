@@ -22,9 +22,7 @@ import {
 import { useAccount } from 'dashboard/composables/useAccount';
 import { useUISettings } from 'dashboard/composables/useUISettings';
 import { messageFrom } from 'dashboard/helper/crmErrors';
-import {
-  useBoardRealtime,
-} from 'dashboard/composables/useBoardRealtime';
+import { useBoardRealtime } from 'dashboard/composables/useBoardRealtime';
 import { useBoardCards } from 'dashboard/composables/useBoardCards';
 import { useBoardDealActions } from 'dashboard/composables/useBoardDealActions';
 import { useBoardDensity } from 'dashboard/composables/useBoardDensity';
@@ -120,10 +118,12 @@ const setView = mode => {
 // nao so para os 25 cards carregados. Quando um card troca de coluna, esses
 // numeros precisam acompanhar; senao o cabecalho mente ate o proximo reload, e
 // o limite de WIP pode ser estourado sem o indicador acusar.
-const { moveAggregates, removeDealFromBoard, patchDeal } =
-  useBoardCards(columns, () => {
+const { moveAggregates, removeDealFromBoard, patchDeal } = useBoardCards(
+  columns,
+  () => {
     deals.value = flattenColumns();
-  });
+  }
+);
 
 const {
   discardTarget,
@@ -179,6 +179,23 @@ const stageOptions = computed(() =>
     value: String(stage.id),
     label: stage.name,
   }))
+);
+const mobileColumnId = ref('');
+const mobileColumnOptions = computed(() =>
+  columns.value.map(column => ({
+    value: String(column.id),
+    label: `${column.name} (${column.count ?? column.deals.length})`,
+  }))
+);
+
+watch(
+  mobileColumnOptions,
+  options => {
+    if (!options.some(option => option.value === mobileColumnId.value)) {
+      mobileColumnId.value = options[0]?.value || '';
+    }
+  },
+  { immediate: true }
 );
 const selectedPipeline = computed(() =>
   pipelines.value.find(item => String(item.id) === pipelineId.value)
@@ -340,6 +357,7 @@ const flattenColumns = () => columns.value.flatMap(column => column.deals);
 // estiver marcado, o evento espera na fila e entra quando ele soltar. Sem isso o
 // card salta por baixo do cursor.
 const draggingDealId = ref(null);
+const nativeDraggingDeal = ref(null);
 
 // Uma rajada (importacao, automacao em massa) viraria uma requisicao por
 // card. Enquanto um recarregamento esta em voo, os demais eventos apenas
@@ -419,6 +437,7 @@ const loadMoreInColumn = async column => {
     deals.value = flattenColumns();
   } catch (exception) {
     error.value =
+      exception?.response?.data?.error ||
       exception?.response?.data?.message ||
       'Não foi possível carregar mais negócios desta coluna.';
   } finally {
@@ -475,6 +494,21 @@ const onDragEnd = () => {
   flushPendingDealEvents();
 };
 
+const onNativeDragStart = (deal, event) => {
+  nativeDraggingDeal.value = deal;
+  onDragStart(deal);
+
+  if (event?.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', String(deal.id));
+  }
+};
+
+const onNativeDragEnd = () => {
+  nativeDraggingDeal.value = null;
+  onDragEnd();
+};
+
 const syncQuery = () =>
   router.replace({
     query: {
@@ -515,6 +549,7 @@ const loadCrm = async ({ silent = false } = {}) => {
     await syncQuery();
   } catch (exception) {
     error.value =
+      exception?.response?.data?.error ||
       exception?.response?.data?.message ||
       'Não foi possível carregar o pipeline.';
   } finally {
@@ -562,6 +597,24 @@ const onDealMoved = async (event, column) => {
     error.value = messageFrom(exception, 'Não foi possível mover o negócio.');
   }
 };
+const moveDealToStage = async (deal, stageId) => {
+  const targetStage = stages.value.find(
+    stage => String(stage.id) === String(stageId)
+  );
+  if (!targetStage) return;
+
+  await onDealMoved(
+    { added: { element: deal } },
+    { id: targetStage.id, stage_id: targetStage.id }
+  );
+};
+const onNativeDrop = async column => {
+  const deal = nativeDraggingDeal.value;
+  if (!deal || !column?.stage_id) return;
+
+  nativeDraggingDeal.value = null;
+  await moveDealToStage(deal, column.stage_id);
+};
 const toggleSelection = (deal, checked) => {
   selectedIds.value = checked
     ? [...new Set([...selectedIds.value, deal.id])]
@@ -580,6 +633,7 @@ const bulkMove = async stageId => {
     await loadCrm({ silent: true });
   } catch (exception) {
     error.value =
+      exception?.response?.data?.error ||
       exception?.response?.data?.message ||
       'Não foi possível mover os negócios selecionados.';
   } finally {
@@ -597,7 +651,11 @@ const onDealDeleted = dealId => {
   columns.value = columns.value.map(column => ({
     ...column,
     deals: column.deals.filter(item => item.id !== dealId),
-    count: Math.max(0, Number(column.count || 0) - (column.deals.some(item => item.id === dealId) ? 1 : 0)),
+    count: Math.max(
+      0,
+      Number(column.count || 0) -
+        (column.deals.some(item => item.id === dealId) ? 1 : 0)
+    ),
   }));
   deals.value = flattenColumns();
   showDealDrawer.value = false;
@@ -634,6 +692,7 @@ const createDeal = async () => {
     await loadCrm({ silent: true });
   } catch (exception) {
     error.value =
+      exception?.response?.data?.error ||
       exception?.response?.data?.message || 'Não foi possível criar o negócio.';
   } finally {
     saving.value = false;
@@ -700,37 +759,46 @@ onMounted(async () => {
       />
     </template>
 
-<template #toolbar>
-  <CRMBoardToolbar
-    v-model:search="search"
-    v-model:pipeline-id="pipelineId"
-    v-model:owner-id="ownerId"
-    v-model:priority="priority"
-    :views="boardViews"
-    :active-view-id="activeViewId"
-    :filter-pills="filterPills"
-    :filtered-total="filteredTotal"
-    :group-by="groupBy"
-    :group-by-options="groupByOptions"
-    :density="cardDensity"
-    :density-options="densityOptions"
-    :pipeline-options="pipelineOptions"
-    :owner-options="ownerOptions"
-    :priority-options="priorityOptions"
-    :has-filters="hasFilters"
-    :total-visible="totalVisible"
-    @update:group-by="changeGrouping"
-    @update:density="setDensity"
-    @apply-filters="applyFilters"
-    @change-pipeline="changePipeline"
-    @clear-filters="clearFilters"
-    @remove-filter="dropFilter"
-    @clear-all-filters="clearAllFilters"
-    @select-view="applyView"
-    @save-view="promptForViewName"
-    @share-view="toggleViewSharing"
-    @delete-view="confirmDeleteView"
-  />
+    <template #toolbar>
+      <CRMBoardToolbar
+        v-model:search="search"
+        v-model:pipeline-id="pipelineId"
+        v-model:owner-id="ownerId"
+        v-model:priority="priority"
+        :views="boardViews"
+        :active-view-id="activeViewId"
+        :filter-pills="filterPills"
+        :filtered-total="filteredTotal"
+        :group-by="groupBy"
+        :group-by-options="groupByOptions"
+        :density="cardDensity"
+        :density-options="densityOptions"
+        :pipeline-options="pipelineOptions"
+        :owner-options="ownerOptions"
+        :priority-options="priorityOptions"
+        :has-filters="hasFilters"
+        :total-visible="totalVisible"
+        @update:group-by="changeGrouping"
+        @update:density="setDensity"
+        @apply-filters="applyFilters"
+        @change-pipeline="changePipeline"
+        @clear-filters="clearFilters"
+        @remove-filter="dropFilter"
+        @clear-all-filters="clearAllFilters"
+        @select-view="applyView"
+        @save-view="promptForViewName"
+        @share-view="toggleViewSharing"
+        @delete-view="confirmDeleteView"
+      />
+    </template>
+
+    <template v-if="currentView === 'kanban'" #mobileNavigation>
+      <DsSelect
+        v-model="mobileColumnId"
+        :label="$t('CRM.GROUP_BY.LABEL')"
+        :options="mobileColumnOptions"
+        data-testid="crm-mobile-column-selector"
+      />
     </template>
 
     <div
@@ -773,64 +841,73 @@ onMounted(async () => {
       />
     </section>
 
-      <template v-if="currentView === 'kanban'">
-        <CRMBoardColumn
-          v-for="column in columns"
-          :key="column.id"
-          :column="column"
-          :loading="loadingColumnIds.includes(column.id)"
-          :movable="isMovable"
-          @create="openCreate(column)"
-          @load-more="loadMoreInColumn(column)"
-          @drag-start="onDragStart($event.item?.__draggable_context?.element)"
-          @drag-end="onDragEnd"
-          @change="onColumnChanged(column, $event)"
-        >
-          <template #card="{ deal }">
-            <CRMDealCard
-              :deal="deal"
-              :stage="column"
-              :selected="selectedIds.includes(deal.id)"
-              :owner-name="ownerName(deal.owner_id)"
-              :density="cardDensity"
-              :href="dealUrl(deal)"
-              @open="openDeal(deal)"
-              @attend="openAttendance(deal)"
-              @select="toggleSelection(deal, $event)"
-              @recompute="recomputeScore(deal)"
-              @mark-base-client="markBaseClient(deal)"
-              @discard="discardTarget = deal"
-              @schedule-next-action="openDeal(deal)"
-            />
-          </template>
-        </CRMBoardColumn>
-      </template>
+    <template v-if="currentView === 'kanban'">
+      <CRMBoardColumn
+        v-for="column in columns"
+        :key="column.id"
+        :column="column"
+        :loading="loadingColumnIds.includes(column.id)"
+        :movable="isMovable"
+        :class="{
+          'max-md:hidden': String(column.id) !== mobileColumnId,
+        }"
+        @create="openCreate(column)"
+        @load-more="loadMoreInColumn(column)"
+        @drag-start="onDragStart($event.item?.__draggable_context?.element)"
+        @drag-end="onDragEnd"
+        @native-drop="onNativeDrop(column)"
+        @change="onColumnChanged(column, $event)"
+      >
+        <template #card="{ deal }">
+          <CRMDealCard
+            :deal="deal"
+            :stage="column"
+            :selected="selectedIds.includes(deal.id)"
+            :owner-name="ownerName(deal.owner_id)"
+            :density="cardDensity"
+            :href="dealUrl(deal)"
+            :stage-options="stageOptions"
+            :can-drag="isMovable"
+            @native-drag-start="onNativeDragStart(deal, $event)"
+            @native-drag-end="onNativeDragEnd"
+            @open="openDeal(deal)"
+            @attend="openAttendance(deal)"
+            @select="toggleSelection(deal, $event)"
+            @recompute="recomputeScore(deal)"
+            @mark-base-client="markBaseClient(deal)"
+            @discard="discardTarget = deal"
+            @schedule-next-action="openDeal(deal)"
+            @move-to-stage="moveDealToStage(deal, $event)"
+          />
+        </template>
+      </CRMBoardColumn>
+    </template>
 
-      <div v-else class="w-full min-w-full flex-1 overflow-y-auto">
-        <CRMDealsTable
-          :deals="deals"
-          :stages="stages"
-          :agents="agents"
-          :loading="loading"
-          :selected-ids="selectedIds"
-          @open="openDeal"
-          @attend="openAttendance"
-          @select="toggleSelection"
-          @recompute="recomputeScore"
-          @mark-base-client="markBaseClient"
-          @discard="discardTarget = $event"
-        />
-      </div>
+    <div v-else class="w-full min-w-full flex-1 overflow-y-auto">
+      <CRMDealsTable
+        :deals="deals"
+        :stages="stages"
+        :agents="agents"
+        :loading="loading"
+        :selected-ids="selectedIds"
+        @open="openDeal"
+        @attend="openAttendance"
+        @select="toggleSelection"
+        @recompute="recomputeScore"
+        @mark-base-client="markBaseClient"
+        @discard="discardTarget = $event"
+      />
+    </div>
   </BoardPageTemplate>
 
-<CRMCreateDealDrawer
-  v-model="createForm"
-  :open="showCreateDrawer"
-  :saving="saving"
-  :stage-options="stageOptions"
-  @close="showCreateDrawer = false"
-  @submit="createDeal"
-/>
+  <CRMCreateDealDrawer
+    v-model="createForm"
+    :open="showCreateDrawer"
+    :saving="saving"
+    :stage-options="stageOptions"
+    @close="showCreateDrawer = false"
+    @submit="createDeal"
+  />
 
   <DsModal
     id="discard-board-deal-modal"

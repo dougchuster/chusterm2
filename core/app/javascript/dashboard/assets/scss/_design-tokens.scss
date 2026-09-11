@@ -8,33 +8,33 @@
 
 @layer base {
   :root {
-    // ── Surfaces (light) ────────────────────────────────────
-    --ds-bg-canvas: var(--gray-2);          // fundo geral da app
-    --ds-bg-surface: var(--gray-1);         // cards, painéis
-    --ds-bg-elevated: var(--gray-1);        // popovers, modais
-    --ds-bg-sunken: var(--gray-3);          // áreas recuadas (inputs)
-    --ds-bg-hover: var(--gray-3);
-    --ds-bg-active: var(--gray-4);
+    // ── Surfaces (light / Mineral) ───────────────────────────
+    --ds-bg-canvas: 245 247 252; // #f5f7fc
+    --ds-bg-surface: 251 252 255; // #fbfcff
+    --ds-bg-elevated: 255 255 255; // #ffffff
+    --ds-bg-sunken: 235 239 248; // #ebeff8
+    --ds-bg-hover: 230 235 245; // #e6ebf5
+    --ds-bg-active: 224 229 240;
 
     // ── Foreground / texto ──────────────────────────────────
-    --ds-fg-default: var(--slate-12);       // texto principal
-    --ds-fg-muted: var(--slate-11);         // texto secundário
-    --ds-fg-subtle: var(--slate-10);        // hint, placeholder
-    --ds-fg-disabled: var(--slate-8);
-    --ds-fg-on-accent: 255 255 255;         // texto em cima do accent
+    --ds-fg-default: 24 35 59; // #18233b
+    --ds-fg-muted: 83 98 124; // #53627c
+    --ds-fg-subtle: 123 136 163;
+    --ds-fg-disabled: 166 176 195;
+    --ds-fg-on-accent: 255 255 255; // texto em cima do accent
 
     // ── Bordas ──────────────────────────────────────────────
-    --ds-border-subtle: var(--slate-5);     // divisor leve
-    --ds-border-default: var(--slate-6);    // borda padrão
-    --ds-border-strong: var(--slate-7);     // borda em foco/hover
-    --ds-border-focus: var(--iris-9);
+    --ds-border-subtle: 220 227 240; // #dce3f0
+    --ds-border-default: 197 207 224;
+    --ds-border-strong: 123 136 163; // #7b88a3
+    --ds-border-focus: 79 70 229;
 
     // ── Accent (marca) ──────────────────────────────────────
-    --ds-accent-primary: var(--iris-9);
-    --ds-accent-primary-hover: var(--iris-10);
-    --ds-accent-primary-active: var(--iris-11);
-    --ds-accent-primary-soft: var(--iris-3);
-    --ds-accent-primary-fg: var(--iris-11);
+    --ds-accent-primary: 79 70 229; // #4f46e5
+    --ds-accent-primary-hover: 67 56 202;
+    --ds-accent-primary-active: 55 48 163;
+    --ds-accent-primary-soft: 230 232 255;
+    --ds-accent-primary-fg: 67 56 202;
 
     --ds-accent-secondary: var(--teal-9);
     --ds-accent-secondary-hover: var(--teal-10);
@@ -67,19 +67,19 @@
     --ds-chart-neutral: var(--slate-9);
 
     // ── Tipografia ──────────────────────────────────────────
-    --ds-font-sans: 'Inter', -apple-system, BlinkMacSystemFont,
-      'Segoe UI', Roboto, sans-serif;
-    --ds-font-heading: 'InterDisplay', 'Inter', -apple-system,
+    --ds-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+      Roboto, sans-serif;
+    --ds-font-heading: 'Manrope Variable', 'Manrope', 'Inter', -apple-system,
       BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --ds-font-mono: ui-monospace, 'SF Mono', Consolas, monospace;
 
-    --ds-text-xs: 0.75rem;      // 12px — caption
-    --ds-text-sm: 0.875rem;     // 14px — body small
-    --ds-text-base: 1rem;       // 16px — body
-    --ds-text-lg: 1.125rem;     // 18px — heading 3
-    --ds-text-xl: 1.25rem;      // 20px — heading 2
-    --ds-text-2xl: 1.5rem;      // 24px — heading 1
-    --ds-text-3xl: 1.875rem;    // 30px — display
+    --ds-text-xs: 0.75rem; // 12px — caption
+    --ds-text-sm: 0.875rem; // 14px — body small
+    --ds-text-base: 1rem; // 16px — body
+    --ds-text-lg: 1.125rem; // 18px — heading 3
+    --ds-text-xl: 1.25rem; // 20px — heading 2
+    --ds-text-2xl: 1.5rem; // 24px — heading 1
+    --ds-text-3xl: 1.875rem; // 30px — display
 
     --ds-leading-tight: 1.25;
     --ds-leading-snug: 1.375;
@@ -93,23 +93,23 @@
 
     // ── Espaçamento (4px base) ─────────────────────────────
     --ds-space-0: 0;
-    --ds-space-1: 0.25rem;   // 4
-    --ds-space-2: 0.5rem;    // 8
-    --ds-space-3: 0.75rem;   // 12
-    --ds-space-4: 1rem;      // 16
-    --ds-space-5: 1.25rem;   // 20
-    --ds-space-6: 1.5rem;    // 24
-    --ds-space-8: 2rem;      // 32
-    --ds-space-10: 2.5rem;   // 40
-    --ds-space-12: 3rem;     // 48
-    --ds-space-16: 4rem;     // 64
+    --ds-space-1: 0.25rem; // 4
+    --ds-space-2: 0.5rem; // 8
+    --ds-space-3: 0.75rem; // 12
+    --ds-space-4: 1rem; // 16
+    --ds-space-5: 1.25rem; // 20
+    --ds-space-6: 1.5rem; // 24
+    --ds-space-8: 2rem; // 32
+    --ds-space-10: 2.5rem; // 40
+    --ds-space-12: 3rem; // 48
+    --ds-space-16: 4rem; // 64
 
     // ── Raio ────────────────────────────────────────────────
-    --ds-radius-xs: 0.25rem;   // 4
-    --ds-radius-sm: 0.375rem;  // 6
-    --ds-radius-md: 0.5rem;    // 8
-    --ds-radius-lg: 0.75rem;   // 12
-    --ds-radius-xl: 1rem;      // 16
+    --ds-radius-xs: 0.25rem; // 4
+    --ds-radius-sm: 0.375rem; // 6
+    --ds-radius-md: 0.5rem; // 8
+    --ds-radius-lg: 0.75rem; // 12
+    --ds-radius-xl: 1rem; // 16
     --ds-radius-pill: 9999px;
 
     // ── Elevação ────────────────────────────────────────────
@@ -117,7 +117,7 @@
     --ds-shadow-sm: 0 1px 3px rgb(0 0 0 / 0.06), 0 1px 2px rgb(0 0 0 / 0.04);
     --ds-shadow-md: 0 4px 6px rgb(0 0 0 / 0.07), 0 2px 4px rgb(0 0 0 / 0.05);
     --ds-shadow-lg: 0 10px 15px rgb(0 0 0 / 0.08), 0 4px 6px rgb(0 0 0 / 0.05);
-    --ds-shadow-xl: 0 20px 25px rgb(0 0 0 / 0.10), 0 8px 10px rgb(0 0 0 / 0.06);
+    --ds-shadow-xl: 0 20px 25px rgb(0 0 0 / 0.1), 0 8px 10px rgb(0 0 0 / 0.06);
 
     // Operational shell tokens shared by CRM, conversations and settings.
     --ds-shell-canvas: 246 248 252;
@@ -176,34 +176,35 @@
     --ds-z-toast: 1300;
   }
 
-  // ── Surfaces (dark) ───────────────────────────────────────
-  // Os tokens semânticos são os mesmos; o que muda é o alvo
-  // das escalas Radix, já mapeadas para a paleta dark roxo-teal.
+  // ── Surfaces (dark / Obsidian) ─────────────────────────────
+  // Azul estrutural foi removido do tema escuro. Cinzas obsidiana,
+  // carvão e grafite criam profundidade; cor fica reservada a estados.
   .dark {
-    --ds-bg-canvas: var(--slate-1);         // 14 14 18
-    --ds-bg-surface: var(--slate-2);        // 20 20 26
-    --ds-bg-elevated: var(--slate-3);       // 28 28 36
-    --ds-bg-sunken: var(--slate-1);
-    --ds-bg-hover: var(--slate-3);
-    --ds-bg-active: var(--slate-4);
+    --ds-bg-canvas: 12 12 14; // #0c0c0e
+    --ds-bg-surface: 25 25 28; // #19191c
+    --ds-bg-elevated: 34 34 37; // #222225
+    --ds-bg-sunken: 17 17 19; // #111113
+    --ds-bg-hover: 43 43 47; // #2b2b2f
+    --ds-bg-active: 48 48 52; // #303034
 
-    --ds-fg-default: var(--slate-12);
-    --ds-fg-muted: var(--slate-11);
-    --ds-fg-subtle: var(--slate-10);
-    --ds-fg-disabled: var(--slate-7);
+    --ds-fg-default: 244 244 245; // #f4f4f5
+    --ds-fg-muted: 161 161 170; // #a1a1aa
+    --ds-fg-subtle: 133 133 143;
+    --ds-fg-disabled: 82 82 91;
+    --ds-fg-on-accent: 12 12 14;
 
-    --ds-border-subtle: var(--slate-4);
-    --ds-border-default: var(--slate-5);
-    --ds-border-strong: var(--slate-6);
-    --ds-border-focus: var(--iris-9);
+    --ds-border-subtle: 52 52 57; // #343439
+    --ds-border-default: 63 63 70;
+    --ds-border-strong: 133 133 143; // #85858f
+    --ds-border-focus: 228 228 231;
 
     // Recalcula os aliases no elemento que recebe o tema. Sem esta
     // sobrescrita, `var()` seria resolvido no :root usando a escala clara.
-    --ds-accent-primary: var(--iris-7);
-    --ds-accent-primary-hover: var(--iris-6);
-    --ds-accent-primary-active: var(--iris-5);
-    --ds-accent-primary-soft: var(--iris-3);
-    --ds-accent-primary-fg: var(--iris-11);
+    --ds-accent-primary: 228 228 231; // #e4e4e7
+    --ds-accent-primary-hover: 250 250 250;
+    --ds-accent-primary-active: 212 212 216;
+    --ds-accent-primary-soft: 48 48 52;
+    --ds-accent-primary-fg: 228 228 231;
     --ds-state-success: var(--teal-9);
     --ds-state-success-soft: var(--teal-3);
     --ds-state-success-fg: var(--teal-11);
@@ -214,49 +215,49 @@
     --ds-state-danger-soft: var(--ruby-3);
     --ds-state-danger-fg: var(--ruby-11);
     --ds-state-danger-solid: var(--ruby-7);
-    --ds-state-info: var(--blue-9);
-    --ds-state-info-soft: var(--blue-3);
-    --ds-state-info-fg: var(--blue-11);
+    --ds-state-info: 212 212 216;
+    --ds-state-info-soft: 39 39 42;
+    --ds-state-info-fg: 228 228 231;
 
     // Recalcula as séries de gráficos contra a escala dark.
-    --ds-chart-brand: var(--iris-7);
+    --ds-chart-brand: 228 228 231;
     --ds-chart-violet: var(--violet-9);
     --ds-chart-success: var(--teal-9);
     --ds-chart-danger: var(--ruby-9);
     --ds-chart-warning: var(--amber-9);
     --ds-chart-warning-strong: var(--amber-11);
-    --ds-chart-info: var(--blue-9);
+    --ds-chart-info: 161 161 170;
     --ds-chart-neutral: var(--slate-9);
 
-    --ds-shadow-xs: 0 1px 2px rgb(0 0 0 / 0.40);
-    --ds-shadow-sm: 0 1px 3px rgb(0 0 0 / 0.50), 0 1px 2px rgb(0 0 0 / 0.30);
+    --ds-shadow-xs: 0 1px 2px rgb(0 0 0 / 0.4);
+    --ds-shadow-sm: 0 1px 3px rgb(0 0 0 / 0.5), 0 1px 2px rgb(0 0 0 / 0.3);
     --ds-shadow-md: 0 4px 6px rgb(0 0 0 / 0.55), 0 2px 4px rgb(0 0 0 / 0.35);
-    --ds-shadow-lg: 0 10px 15px rgb(0 0 0 / 0.60), 0 4px 6px rgb(0 0 0 / 0.40);
+    --ds-shadow-lg: 0 10px 15px rgb(0 0 0 / 0.6), 0 4px 6px rgb(0 0 0 / 0.4);
     --ds-shadow-xl: 0 20px 25px rgb(0 0 0 / 0.65), 0 8px 10px rgb(0 0 0 / 0.45);
 
-    --ds-shell-canvas: 6 14 32;
-    --ds-shell-panel: 6 18 44;
-    --ds-shell-panel-glass: 6 18 44 / 0.82;
-    --ds-shell-panel-strong: 15 30 63;
-    --ds-shell-panel-sunken: 4 10 24;
-    --ds-shell-border: 42 59 96;
-    --ds-shell-divider: 29 44 78;
-    --ds-shell-fg: 237 242 255;
-    --ds-shell-muted: 185 200 222;
-    --ds-shell-subtle: 128 150 181;
-    --ds-shell-accent: 189 194 255;
-    --ds-shell-accent-soft: 55 59 120;
-    --ds-shell-accent-contrast: 6 14 32;
-    --ds-shell-hover: 24 43 82;
-    --ds-shell-active: 55 59 120;
+    --ds-shell-canvas: 12 12 14;
+    --ds-shell-panel: 25 25 28;
+    --ds-shell-panel-glass: 25 25 28 / 0.86;
+    --ds-shell-panel-strong: 34 34 37;
+    --ds-shell-panel-sunken: 17 17 19;
+    --ds-shell-border: 63 63 70;
+    --ds-shell-divider: 52 52 57;
+    --ds-shell-fg: 244 244 245;
+    --ds-shell-muted: 161 161 170;
+    --ds-shell-subtle: 133 133 143;
+    --ds-shell-accent: 228 228 231;
+    --ds-shell-accent-soft: 48 48 52;
+    --ds-shell-accent-contrast: 12 12 14;
+    --ds-shell-hover: 43 43 47;
+    --ds-shell-active: 48 48 52;
     --ds-shell-secondary: 94 234 212;
     --ds-shell-secondary-soft: 19 78 74;
     --ds-shell-warning: 251 191 36;
     --ds-shell-warning-soft: 86 56 18;
     --ds-shell-danger: 251 113 133;
     --ds-shell-danger-soft: 88 28 44;
-    --ds-shell-focus: 189 194 255;
-    --ds-shell-glow: 99 102 241 / 0.26;
+    --ds-shell-focus: 228 228 231;
+    --ds-shell-glow: 228 228 231 / 0.14;
     --ds-shell-shadow-soft: 0 0 0 / 0.28;
     --ds-shell-shadow-strong: 0 0 0 / 0.46;
   }

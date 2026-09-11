@@ -140,7 +140,7 @@ const areaOwnerOptions = computed(() => [
 
 const icon = computed(() => {
   const { medium, channel_type: type } = props.inbox;
-  return getInboxIconByType(type, medium, 'outline');
+  return getInboxIconByType(type, medium, 'line');
 });
 
 const handleAction = ({ action, value }) => {
@@ -209,11 +209,9 @@ onMounted(() => {
   <CardLayout>
     <div class="flex flex-col w-full gap-4">
       <div class="flex justify-between w-full gap-1">
-        <span
-          class="text-base text-n-slate-12 line-clamp-1 flex items-center gap-2"
-        >
-          <span :class="icon" />
-          {{ inboxName }}
+        <span class="flex min-w-0 items-center gap-2 text-base text-n-slate-12">
+          <span :class="icon" class="size-4 shrink-0" aria-hidden="true" />
+          <span class="truncate">{{ inboxName }}</span>
         </span>
         <div class="flex items-center gap-2">
           <Policy

@@ -150,7 +150,7 @@ async function loadDeal() {
     deal.value = list[0] || null;
     if (deal.value?.id) loadPendingActivities();
   } catch (e) {
-    error.value = e?.response?.data?.message || 'Erro ao carregar oportunidade';
+    error.value = e?.response?.data?.error || e?.response?.data?.message || 'Erro ao carregar oportunidade';
   } finally {
     loading.value = false;
   }
@@ -167,7 +167,7 @@ async function runTriage() {
     deal.value = data;
     window.setTimeout(loadDeal, 400);
   } catch (e) {
-    error.value = e?.response?.data?.message || 'Erro ao executar triagem';
+    error.value = e?.response?.data?.error || e?.response?.data?.message || 'Erro ao executar triagem';
   } finally {
     triageLoading.value = false;
   }
@@ -223,7 +223,7 @@ async function recalcScore() {
     };
     window.setTimeout(loadDeal, 400);
   } catch (e) {
-    error.value = e?.response?.data?.message || 'Erro ao recalcular score';
+    error.value = e?.response?.data?.error || e?.response?.data?.message || 'Erro ao recalcular score';
   } finally {
     scoreLoading.value = false;
   }

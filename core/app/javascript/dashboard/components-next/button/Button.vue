@@ -113,7 +113,7 @@ const STYLE_CONFIG = {
     },
     ruby: {
       solid:
-        'bg-n-ruby-9 text-white hover:enabled:bg-n-ruby-10 focus-visible:bg-n-ruby-10 outline-transparent',
+        'bg-n-ruby-9 text-white hover:enabled:bg-n-ruby-10 focus-visible:bg-n-ruby-10 dark:bg-n-ruby-7 dark:text-n-ruby-12 dark:hover:enabled:bg-n-ruby-8 dark:focus-visible:bg-n-ruby-8 outline-transparent',
       faded:
         'bg-n-ruby-9/10 text-n-ruby-11 hover:enabled:bg-n-ruby-9/20 focus-visible:bg-n-ruby-9/20 outline-transparent',
       outline:
@@ -124,7 +124,7 @@ const STYLE_CONFIG = {
     },
     amber: {
       solid:
-        'bg-n-amber-9 text-white hover:enabled:bg-n-amber-10 focus-visible:bg-n-amber-10 outline-transparent',
+        'bg-n-amber-9 text-n-amber-12 hover:enabled:bg-n-amber-10 focus-visible:bg-n-amber-10 dark:bg-n-amber-7 dark:text-n-amber-12 dark:hover:enabled:bg-n-amber-8 dark:focus-visible:bg-n-amber-8 outline-transparent',
       faded:
         'bg-n-amber-9/10 text-n-slate-12 hover:enabled:bg-n-amber-9/20 focus-visible:bg-n-amber-9/20 outline-transparent',
       outline:
@@ -146,7 +146,7 @@ const STYLE_CONFIG = {
     },
     teal: {
       solid:
-        'bg-n-teal-9 text-white hover:enabled:bg-n-teal-10 focus-visible:bg-n-teal-10 outline-transparent',
+        'bg-n-teal-9 text-white hover:enabled:bg-n-teal-10 focus-visible:bg-n-teal-10 dark:bg-n-teal-7 dark:text-n-teal-12 dark:hover:enabled:bg-n-teal-8 dark:focus-visible:bg-n-teal-8 outline-transparent',
       faded:
         'bg-n-teal-9/10 text-n-teal-11 hover:enabled:bg-n-teal-9/20 focus-visible:bg-n-teal-9/20 outline-transparent',
       outline:

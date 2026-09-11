@@ -178,17 +178,35 @@ async function processLeadScoring(job: Job<LeadScoringJobData>): Promise<void> {
     .where(and(eq(deals.accountId, accountId), eq(deals.leadProfileId, contactId), isNull(deals.deletedAt)))
 }
 
-export function startLeadScoringWorker(): Worker<LeadScoringJobData> {
+type WorkerLogger = {
+  error: (obj: unknown, msg?: string) => void
+}
+
+export function startLeadScoringWorker(logger?: WorkerLogger): Worker<LeadScoringJobData> {
+  const logError = (obj: unknown, msg: string) => {
+    if (logger) logger.error(obj, msg)
+    else console.error(msg, obj)
+  }
+
   const worker = new Worker<LeadScoringJobData>(
     'lead-scoring',
     processLeadScoring,
-    { connection: redisConnection, concurrency: 5 }
+    {
+      connection: redisConnection,
+      concurrency: 5,
+      // Bound job throughput so a scoring burst cannot starve the DB.
+      limiter: { max: 50, duration: 10_000 },
+    }
   )
 
   worker.on('failed', (job, err) => {
-    if (job) {
-      console.error(`[lead-scoring] job ${job.id} failed:`, err.message)
-    }
+    logError({ err: err.message, jobId: job?.id }, 'lead-scoring job failed')
+  })
+
+  // CRM-M4: without an 'error' listener, Redis connection errors are re-emitted
+  // as unhandled EventEmitter 'error' events and crash the process.
+  worker.on('error', (err) => {
+    logError({ err: err.message }, 'lead-scoring worker error')
   })
 
   return worker

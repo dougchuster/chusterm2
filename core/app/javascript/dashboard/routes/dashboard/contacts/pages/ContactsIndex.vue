@@ -1376,7 +1376,7 @@ onMounted(async () => {
                       </button>
                       <button
                         type="button"
-                        class="inline-flex h-8 items-center gap-1 rounded border border-ruby-200 px-2 font-medium text-ruby-700 hover:bg-ruby-50 dark:border-ruby-900 dark:text-ruby-300 dark:hover:bg-ruby-950/40"
+                        class="inline-flex h-8 items-center gap-1 rounded border border-n-ruby-6 px-2 font-medium text-n-ruby-11 hover:bg-n-ruby-3"
                         @click="openDeleteCategoryDialog(label)"
                       >
                         <span class="i-lucide-trash-2 size-3.5" />
@@ -1407,7 +1407,7 @@ onMounted(async () => {
                   crmFilters.crmOwnerId === owner.id
                     ? 'border-n-blue-8 bg-n-blue-3 text-n-blue-11'
                     : owner.unassigned
-                      ? 'border-ruby-200 bg-ruby-50 text-ruby-700 dark:border-ruby-900 dark:bg-ruby-950/40 dark:text-ruby-300'
+                      ? 'border-n-ruby-6 bg-n-ruby-3 text-n-ruby-11'
                       : 'border-n-weak text-n-slate-11'
                 "
                 @click="applyOwnerSummary(owner)"
@@ -1789,7 +1789,7 @@ onMounted(async () => {
                 crmFilters.crmOwnerId === owner.id
                   ? 'border-n-blue-8 bg-n-blue-3 text-n-blue-11'
                   : owner.unassigned
-                    ? 'border-ruby-200 bg-ruby-50 text-ruby-700 dark:border-ruby-900 dark:bg-ruby-950/40 dark:text-ruby-300'
+                    ? 'border-n-ruby-6 bg-n-ruby-3 text-n-ruby-11'
                     : 'border-n-weak text-n-slate-11'
               "
               @click="applyOwnerSummary(owner)"
@@ -1836,7 +1836,7 @@ onMounted(async () => {
             class="inline-flex h-8 items-center rounded border px-3 font-medium transition"
             :class="
               crmFilters.relationshipStatus === 'customer'
-                ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300'
+                ? 'border-n-teal-6 bg-n-teal-3 text-n-teal-11'
                 : 'border-n-weak text-n-slate-11 hover:bg-n-slate-2'
             "
             @click="applyRelationshipShortcut('customer')"
@@ -1848,7 +1848,7 @@ onMounted(async () => {
             class="inline-flex h-8 items-center rounded border px-3 font-medium transition"
             :class="
               crmFilters.withoutCrmOwner
-                ? 'border-ruby-300 bg-ruby-50 text-ruby-700 dark:border-ruby-900 dark:bg-ruby-950/40 dark:text-ruby-300'
+                ? 'border-n-ruby-6 bg-n-ruby-3 text-n-ruby-11'
                 : 'border-n-weak text-n-slate-11 hover:bg-n-slate-2'
             "
             @click="applyWithoutOwnerShortcut"

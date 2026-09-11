@@ -160,7 +160,7 @@ const availabilityLabel = computed(() => {
           :name="currentUser.available_name"
           :src="currentUser.avatar_url"
           :status="currentUserAvailability"
-          class="flex-shrink-0 ring-2 ring-ds-shell-accent/20"
+          class="flex-shrink-0 dark:[&_[role=img]]:!bg-ds-shell-accent-soft dark:[&_[role=img]]:!text-ds-shell-fg"
           rounded-full
         />
         <div v-if="!isCollapsed" class="min-w-0">

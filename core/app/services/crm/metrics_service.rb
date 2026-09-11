@@ -47,9 +47,12 @@ class Crm::MetricsService
   def time_in_stage(pipeline_id: nil, period_days: 90)
     since = period_days.days.ago
 
-    # Busca transições de estágio via audit events
+    # Busca transições de estágio via audit events. O nome da ação precisa ser
+    # o mesmo que Crm::DealMover#log_stage_change grava ('deal_stage_changed',
+    # payload com from_stage_id/to_stage_id) — qualquer divergência aqui zera
+    # a métrica silenciosamente.
     transitions = CrmAuditEvent
-      .where(account: account, action: 'deal_moved_to_stage')
+      .where(account: account, action: 'deal_stage_changed')
       .where('created_at >= ?', since)
 
     # Agrupa por estágio destino e calcula duração média
@@ -168,27 +171,38 @@ class Crm::MetricsService
   end
 
   # Deals stale (sem atividade há N dias)
+  #
+  # Um deal só é stale quando NENHUMA atividade é mais nova que o cutoff — a
+  # query antiga bastava uma atividade velha para marcar o deal, mesmo com
+  # atividade recente. O MAX por deal sai em uma única query agregada e o
+  # carregamento dos deals em um único where(id:), sem query por deal.
   def stale_deals(days: 7, limit: 20)
     cutoff = days.days.ago
-    account.crm_deals.open_deals
-      .joins(:crm_activities)
-      .where('crm_activities.created_at < ?', cutoff)
-      .or(account.crm_deals.open_deals.where.missing(:crm_activities))
+
+    max_activity_at = CrmActivity
+      .where(account: account, crm_deal_id: account.crm_deals.open_deals.select(:id))
+      .group(:crm_deal_id)
+      .maximum(:created_at)
+
+    recent_deal_ids = max_activity_at.select { |_deal_id, max_at| max_at >= cutoff }.keys
+
+    deals = account.crm_deals.open_deals
+      .where.not(id: recent_deal_ids)
       .includes(:crm_pipeline_stage, :contact)
       .order(updated_at: :asc)
       .limit(limit)
-      .distinct
-      .map do |deal|
-        last_activity = deal.crm_activities.order(created_at: :desc).first
-        {
-          id: deal.id,
-          title: deal.title,
-          stage: deal.crm_pipeline_stage&.name,
-          contact: deal.contact&.name,
-          days_stale: last_activity ? ((Time.current - last_activity.created_at) / 1.day).to_i : nil,
-          score: deal.score_total
-        }
-      end
+
+    deals.map do |deal|
+      last_activity_at = max_activity_at[deal.id]
+      {
+        id: deal.id,
+        title: deal.title,
+        stage: deal.crm_pipeline_stage&.name,
+        contact: deal.contact&.name,
+        days_stale: last_activity_at ? ((Time.current - last_activity_at) / 1.day).to_i : nil,
+        score: deal.score_total
+      }
+    end
   end
 
   private
@@ -214,9 +228,13 @@ class Crm::MetricsService
 
   def calc_avg_time_to_close(deals_scope)
     closed = deals_scope.where(status: %w[won lost]).where.not(closed_at: nil)
-    return 0 if closed.count.zero?
 
-    total_days = closed.sum { |d| ((d.closed_at - d.created_at) / 1.day).to_i }
-    (total_days.to_f / closed.count).round(1)
+    # Média em uma única query (PostgreSQL) em vez de carregar todos os deals
+    # fechados. O FLOOR por deal reproduz o `.to_i` do cálculo anterior em
+    # memória; o resultado continua em dias, arredondado a 1 casa.
+    avg_days = closed.pick(
+      Arel.sql('AVG(FLOOR(EXTRACT(EPOCH FROM (closed_at - created_at)) / 86400))')
+    )
+    avg_days ? avg_days.to_f.round(1) : 0
   end
 end

@@ -37,6 +37,25 @@ RSpec.describe 'CRM Activities API', type: :request do
       expect(response.parsed_body.length).to eq(2)
     end
 
+    it 'caps the response at 200 activities when no limit is given' do
+      201.times do |index|
+        CrmActivity.create!(
+          account: account,
+          kind: 'follow_up',
+          title: "Atividade #{index}",
+          priority: 'normal',
+          due_at: (index + 1).days.from_now
+        )
+      end
+
+      get "/api/v1/accounts/#{account.id}/crm/activities",
+          headers: headers,
+          as: :json
+
+      expect(response).to have_http_status(:success)
+      expect(response.parsed_body.length).to eq(200)
+    end
+
     it 'returns both conversation identifiers for agenda fallback data' do
       conversation = create(:conversation, account: account)
       conversation.update_column(:display_id, conversation.id + 100_000) # rubocop:disable Rails/SkipsModelValidations

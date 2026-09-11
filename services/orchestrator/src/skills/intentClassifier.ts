@@ -1,4 +1,5 @@
-import { llm, LLM_MODEL, isLlmConfigured } from '../llm/client.js'
+import { createChatCompletion, LLM_MODEL, isLlmConfigured } from '../llm/client.js'
+import { UNTRUSTED_DATA_INSTRUCTION, wrapUntrustedInput } from './promptGuards.js'
 
 export interface IntentClassifierInput {
   conversationId: string
@@ -44,7 +45,9 @@ Valid intents:
 - unknown: intent cannot be determined from the conversation
 
 Respond in JSON only, with no markdown, no code fences, and no extra text.
-Format: { "intent": "<one of the valid intents>", "confidence": <0.0 to 1.0>, "reasoning": "<brief explanation>" }`
+Format: { "intent": "<one of the valid intents>", "confidence": <0.0 to 1.0>, "reasoning": "<brief explanation>" }
+
+${UNTRUSTED_DATA_INSTRUCTION}`
 
 export async function runIntentClassifier(
   input: IntentClassifierInput,
@@ -57,12 +60,14 @@ export async function runIntentClassifier(
     }
   }
 
-  const userContent = input.messages
-    .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
-    .join('\n')
+  // ORC-H2: conversation text is untrusted — delimit and cap it before
+  // interpolating into the prompt.
+  const userContent = wrapUntrustedInput(
+    input.messages.map((m) => `${m.role.toUpperCase()}: ${m.content}`).join('\n'),
+  )
 
   try {
-    const completion = await llm.chat.completions.create({
+    const completion = await createChatCompletion({
       model: LLM_MODEL,
       max_tokens: 256,
       temperature: 0.1,
