@@ -134,7 +134,10 @@ services:
       - CACHE_REDIS_PREFIX_KEY=evolution
       - CACHE_LOCAL_ENABLED=false
       - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY}
-      - AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES=false
+      # Expoe o token de cada instancia em /instance/fetchInstances. Padrao
+      # seguro e' false; a KVM4 roda com true desde antes do layout de
+      # release. Vem do .env para que um deploy nao inverta isso em silencio.
+      - AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES=${EVOLUTION_EXPOSE_TOKEN_IN_FETCH:-false}
       - LOG_LEVEL=${EVOLUTION_LOG_LEVEL:-WARN}
       - DEL_INSTANCE=false
       - WEBHOOK_GLOBAL_ENABLED=false
