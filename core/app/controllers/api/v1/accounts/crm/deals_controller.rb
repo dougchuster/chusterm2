@@ -753,15 +753,21 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
         payload: { source: params[:source], source_detail: params[:source_detail] }
       )
     when 'assign_owner'
-      owner_id = params[:owner_id].present? ? Current.account.users.find(params[:owner_id]).id : nil
-      deal.update!(owner_id: owner_id, assignee_id: owner_id)
-      deal.contact&.update!(crm_owner_id: owner_id, crm_owner_source: 'manual', crm_owner_assigned_at: Time.current)
+      owner = params[:owner_id].present? ? Current.account.users.find(params[:owner_id]) : nil
+      Crm::DealOwnerAssigner.new(
+        deal: deal,
+        owner: owner,
+        actor: Current.user,
+        sync_assignee: :always,
+        sync_contact: true,
+        contact_source: 'manual'
+      ).perform
       Crm::AuditLogger.log(
         account: Current.account,
         actor: Current.user,
         action: 'deal_owner_assigned',
         target: deal,
-        payload: { owner_id: owner_id }
+        payload: { owner_id: owner&.id }
       )
     when 'apply_label'
       apply_label_to_deal!(deal, params[:label_title])

@@ -143,32 +143,22 @@ class Crm::StageAutomation
     ).perform
   end
 
-  # A coluna `assigned_to_id` nunca existiu em `crm_deals` (o schema tem
-  # `owner_id` e `assignee_id`), entao a guarda antiga era sempre falsa e a regra
-  # virava um no-op auditado como sucesso.
-  #
-  # O dono passa a ser gravado sempre. O responsavel acompanha o dono, como na
-  # acao manual em massa (Api::V1::Accounts::Crm::DealsController#assign_owner),
-  # exceto quando alguem o escolheu a dedo — ver `hand_picked_assignee?`.
-  # Diferente da acao manual, nao mexemos em `contact.crm_owner_id`: isso
-  # rerotearia todos os negocios futuros do contato.
+  # O dono é sempre gravado; o responsável acompanha o dono, exceto quando foi
+  # escolhido a dedo — regra centralizada em Crm::DealOwnerAssigner.
+  # Diferente da acao manual em massa, nao mexemos em `contact.crm_owner_id`:
+  # isso rerotearia todos os negocios futuros do contato.
   def execute_assign_owner(_rule, config)
     user = resolve_owner(config[:user_id])
     return false if user.nil?
 
-    current_assignee_id = @deal.assignee_id
-    keep_assignee = hand_picked_assignee?
-
-    @deal.update!(owner_id: user.id, assignee_id: keep_assignee ? current_assignee_id : user.id)
-    log_preserved_assignee(current_assignee_id) if keep_assignee
+    result = Crm::DealOwnerAssigner.new(
+      deal: @deal,
+      owner: user,
+      actor: @actor,
+      sync_assignee: :if_unmanaged
+    ).perform
+    log_preserved_assignee(result.preserved_assignee_id) if result.preserved_assignee_id
     true
-  end
-
-  # Um responsavel diferente do dono significa que alguem escolheu a dedo quem
-  # esta tocando o caso agora. Automacao nunca tira esse trabalho da pessoa: so
-  # sincroniza o responsavel quando ele esta vazio ou ja seguia o dono anterior.
-  def hand_picked_assignee?
-    @deal.assignee_id.present? && @deal.assignee_id != @deal.owner_id
   end
 
   def log_preserved_assignee(assignee_id)

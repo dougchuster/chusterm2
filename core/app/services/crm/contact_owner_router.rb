@@ -50,7 +50,14 @@ module Crm
       return if owner_id.blank?
       return if @deal.owner_id == owner_id
 
-      @deal.update!(owner_id: owner_id)
+      # O contato é a fonte do dono aqui — não reescrever crm_owner_id nem
+      # tocar no responsável: assignee pode estar tocando o caso a dedo.
+      Crm::DealOwnerAssigner.new(
+        deal: @deal,
+        owner: @contact.crm_owner,
+        actor: @actor,
+        sync_assignee: :never
+      ).perform
     end
 
     def sync_hot_lead_alert

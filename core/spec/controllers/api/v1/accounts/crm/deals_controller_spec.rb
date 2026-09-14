@@ -377,6 +377,50 @@ RSpec.describe 'CRM Deals API', type: :request do
       expect(account.crm_deals.exists?(other_area_deal.id)).to be(true)
       expect(account.crm_deals.exists?(other_stage_deal.id)).to be(true)
     end
+
+    it 'assigns owner, assignee and contact crm_owner through the shared assigner' do
+      contact = create(:contact, account: account)
+      deal = create_deal!(title: 'Lead para atribuir', contact: contact)
+
+      post "/api/v1/accounts/#{account.id}/crm/deals/bulk_action",
+           params: {
+             bulk_action: 'assign_owner',
+             deal_ids: [deal.id],
+             owner_id: admin.id
+           },
+           headers: headers,
+           as: :json
+
+      expect(response).to have_http_status(:success)
+      expect(deal.reload.owner_id).to eq(admin.id)
+      expect(deal.assignee_id).to eq(admin.id)
+      contact.reload
+      expect(contact.crm_owner_id).to eq(admin.id)
+      expect(contact.crm_owner_source).to eq('manual')
+      expect(
+        account.crm_audit_events.exists?(action: 'deal_owner_assigned', target_id: deal.id, target_type: 'CrmDeal')
+      ).to be(true)
+    end
+
+    it 'clears owner, assignee and contact crm_owner when owner_id is blank' do
+      contact = create(:contact, account: account)
+      deal = create_deal!(title: 'Lead para desatribuir', contact: contact, owner_id: admin.id, assignee_id: admin.id)
+      contact.assign_crm_owner!(admin, source: 'manual')
+
+      post "/api/v1/accounts/#{account.id}/crm/deals/bulk_action",
+           params: {
+             bulk_action: 'assign_owner',
+             deal_ids: [deal.id],
+             owner_id: ''
+           },
+           headers: headers,
+           as: :json
+
+      expect(response).to have_http_status(:success)
+      expect(deal.reload.owner_id).to be_nil
+      expect(deal.assignee_id).to be_nil
+      expect(contact.reload.crm_owner_id).to be_nil
+    end
   end
 
   describe 'DELETE /api/v1/accounts/:account_id/crm/deals/purge_orphans' do
