@@ -16,7 +16,7 @@ Colunas: `Backlog → Priorizado → Em andamento → Em revisão → QA → Con
 
 | ID | Título | Tipo | P | Esf. | Épico | Coluna | Depende de | Risco upstream |
 |---|---|---|---|---|---|---|---|---|
-| CRM-001 | Unificar atribuição de dono em `Crm::DealOwnerAssigner` (B-01) | refactor | P1 | M | E1 | Em andamento | — | 🟢 |
+| CRM-001 | Unificar atribuição de dono em `Crm::DealOwnerAssigner` (B-01) | refactor | P1 | M | E1 | Concluído | — | 🟢 |
 | CRM-002 | Auditoria verdadeira de automação: não logar `executed` em no-op (B-03) | bug | P1 | S | E1 | Priorizado | — | 🟢 |
 | CRM-003 | Criar `crm_automation_runs` (migration + model + escrita no StageAutomation) | feature | P1 | M | E1 | Priorizado | — | 🟢 |
 | CRM-004 | Listar runs de automação por deal/regra na UI | feature | P1 | M | E1 | Backlog | CRM-003 | 🟢 |
@@ -25,7 +25,7 @@ Colunas: `Backlog → Priorizado → Em andamento → Em revisão → QA → Con
 | CRM-011 | Baseline autenticado: p95 dos 10 endpoints + queries/request | infra | P1 | S | E2 | Priorizado | — | 🟢 |
 | CRM-012 | Deal rotting + soma de valor no topo da coluna Kanban | feature | P1 | S | E2 | Backlog | — | 🟢 |
 | CRM-013 | QA do épico E2: medir LCP das 5 telas e comparar bundle | débito | P1 | S | E2 | Backlog | CRM-010,011 | 🟢 |
-| CRM-020 | Spec de invariante cross-account (ler/escrever deal de outra conta → 404/403) (TENANCY-P0) | infra | P0 | S | E3 | Priorizado | — | 🟢 |
+| CRM-020 | Spec de invariante cross-account (ler/escrever deal de outra conta → 404/403) (TENANCY-P0) | infra | P0 | S | E3 | Concluído | — | 🟢 |
 | CRM-021 | Verificar/remover `captain_triage` de `custom_fields` nos strong params | bug | P1 | XS | E3 | Priorizado | — | 🟢 |
 | CRM-022 | E2E jornada Inbox → IA → CRM (E2E-P0-00) | infra | P1 | M | E3 | Backlog | — | 🟡 |
 | CRM-023 | Kanban 201+ deals: localizar 201º e reconciliar soma (CRM-201-01) | infra | P1 | S | E3 | Backlog | — | 🟢 |
