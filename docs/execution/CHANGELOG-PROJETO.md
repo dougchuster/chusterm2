@@ -130,3 +130,10 @@ então o arquivo vive em `docs/execution/` como os demais entregáveis.)
     filtro `?action=` e `created_at` explícito no helper (o model tem
     `record_timestamps = false`).
   Evidência: rspec 316/0; rubocop limpo. Rollback: revert do commit.
+- **CRM-012 (P1, E2)** — verificado, já implementado: cabeçalho de coluna
+  mostra contagem do servidor + soma `sum_value_cents` (BRL) + valor
+  ponderado + média de dias na etapa + WIP; cards envelhecem via
+  `rottingSignal` (warning ≥80% do `expected_duration_hours`, late >100%,
+  badge "STALE" + borda âmbar/vermelha). Evidência: vitest
+  crmCardSignals 16 + CRMBoardColumn 14 + CRMDealCard 31 = 61 verdes.
+  Nenhuma mudança de código.
