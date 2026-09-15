@@ -3,10 +3,13 @@ import OpenAI from 'openai'
 export const LLM_BASE_URL =
   process.env.LLM_BASE_URL ?? 'https://openrouter.ai/api/v1'
 
-// ORC-L1: require the unified OpenRouter gateway over HTTPS (no plaintext).
+// ORC-L1: exige HTTPS no gateway LLM (sem plaintext). Qualquer endpoint
+// OpenAI-compatible serve — OpenRouter é apenas o default. HTTP só é
+// aceito em loopback (desenvolvimento/local LLM, ex.: Ollama, LM Studio).
 const llmBaseUrl = new URL(LLM_BASE_URL)
-if (llmBaseUrl.hostname !== 'openrouter.ai' || llmBaseUrl.protocol !== 'https:') {
-  throw new Error('LLM_BASE_URL must use the unified OpenRouter gateway over HTTPS')
+const isLoopback = ['localhost', '127.0.0.1', '::1'].includes(llmBaseUrl.hostname)
+if (llmBaseUrl.protocol !== 'https:' && !isLoopback) {
+  throw new Error('LLM_BASE_URL must use HTTPS (HTTP only allowed on loopback)')
 }
 
 const LLM_TIMEOUT_MS = Number(process.env.LLM_TIMEOUT_MS ?? 30_000)

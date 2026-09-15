@@ -30,6 +30,7 @@ import {
   getAgentConversationMemory,
   upsertAgentConversationMemory,
 } from '../agents/memory.js'
+import { redis } from '../redis/client.js'
 import {
   AgentBotPayloadSchema,
   CONTACT_RELATIONSHIP_FACT,
@@ -71,8 +72,11 @@ const AUTOMATION_SOURCE = 'orchestrator'
 // second webhook while an LLM call is running. Each request waits for the
 // previous one and then reloads the complete, current Chatwoot history.
 const activeConversations = new Map<string, Promise<void>>()
-const recentWebhookEvents = new Map<string, number>()
+// Dedup de webhook vive no Redis (SET NX PX): sobrevive a restart e funciona
+// com mais de uma réplica do orchestrator — o Map em memória perdia o estado
+// a cada deploy e permitia reprocessar eventos em instâncias paralelas.
 const WEBHOOK_EVENT_TTL_MS = 10 * 60 * 1000
+const webhookEventRedisKey = (key: string) => `orchestrator:webhook-event:${key}`
 
 function isKnownAgentOpening(content: string): boolean {
   const normalized = normalizeText(content)
@@ -339,17 +343,21 @@ const agentRoute: FastifyPluginAsync<AgentRouteOptions> = async (fastify, option
       payload.id === undefined ? undefined : `${accountId}:${payload.id}`
 
     if (webhookEventKey) {
-      const now = Date.now()
-      for (const [key, seenAt] of recentWebhookEvents) {
-        if (now - seenAt > WEBHOOK_EVENT_TTL_MS) recentWebhookEvents.delete(key)
-      }
-      if (recentWebhookEvents.has(webhookEventKey)) {
+      // SET NX devolve 'OK' na primeira ocorrência e null se a chave já
+      // existe dentro do TTL — dedup atômico, sem janela de corrida.
+      const firstSeen = await redis.set(
+        webhookEventRedisKey(webhookEventKey),
+        '1',
+        'PX',
+        WEBHOOK_EVENT_TTL_MS,
+        'NX',
+      )
+      if (firstSeen === null) {
         return reply.status(200).send({
           ok: true,
           skipped: 'duplicate_webhook_event',
         })
       }
-      recentWebhookEvents.set(webhookEventKey, now)
     }
 
     const previousConversation = activeConversations.get(conversationKey)
@@ -725,7 +733,7 @@ const agentRoute: FastifyPluginAsync<AgentRouteOptions> = async (fastify, option
       }
     } finally {
       if (webhookEventKey && reply.statusCode >= 500) {
-        recentWebhookEvents.delete(webhookEventKey)
+        await redis.del(webhookEventRedisKey(webhookEventKey))
       }
       releaseConversation()
       if (activeConversations.get(conversationKey) === queueTail) {
