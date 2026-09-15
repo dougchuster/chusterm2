@@ -386,10 +386,8 @@
       "priority": "P2",
       "effort": "XS",
       "epic": "E5",
-      "column": "Priorizado",
-      "depends_on": [
-        "dúvida #3"
-      ],
+      "column": "Concluído",
+      "depends_on": [],
       "upstream_risk": "low"
     },
     {

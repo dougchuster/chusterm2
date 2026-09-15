@@ -21,7 +21,7 @@ services:
       POSTGRES_USER: chusterm
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       POSTGRES_DB: chusterm_core
-      POSTGRES_MULTIPLE_DATABASES: chusterm_crm,chusterm_ai,chusterm_identity
+      POSTGRES_MULTIPLE_DATABASES: chusterm_ai
     ports:
       - "127.0.0.1:5436:5432"
     volumes:
@@ -56,8 +56,6 @@ services:
       - "127.0.0.1:8025:8025"
       - "127.0.0.1:1025:1025"
 
-  # ARQ-02: crm-service aposentado — CRM real vive no Rails (tabelas crm_*).
-
   # ─── Agent Orchestrator (skills IA internas) ────────────────────────────────
   orchestrator:
     build:
@@ -84,8 +82,6 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
-
-  # ARQ-03: identity-bridge aposentado — nenhum consumidor no core.
 
   # ─── Evolution API (WhatsApp não-oficial via Baileys) ────────────────────────
   evolution-api:

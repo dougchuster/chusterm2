@@ -38,7 +38,7 @@ Colunas: `Backlog → Priorizado → Em andamento → Em revisão → QA → Con
 | CRM-033 | Estados vazio/erro/offline/permissão auditados em todas as telas CRM | design | P2 | M | E4 | Backlog | — | 🟢 |
 | CRM-034 | ⌘K unificado: busca global (contatos+conversas+deals) + ações | feature | P2 | M | E4 | Backlog | — | 🟡 |
 | CRM-035 | QA do épico E4: axe zero critical nas telas tocadas + antes/depois | débito | P2 | S | E4 | Backlog | CRM-030..034 | 🟢 |
-| CRM-040 | Deletar `services/crm-service` e `services/identity-bridge` + docs | infra | P2 | XS | E5 | Priorizado | dúvida #3 | 🟢 |
+| CRM-040 | Deletar `services/crm-service` e `services/identity-bridge` + docs | infra | P2 | XS | E5 | Concluído | — | 🟢 |
 | CRM-041 | Alinhar Node local ao alvo 24 | infra | P3 | XS | E5 | Backlog | — | 🟢 |
 | CRM-042 | Remover lock OpenRouter-only do `llm/client.ts` | refactor | P3 | XS | E5 | Backlog | — | 🟢 |
 | CRM-043 | Agente multi-perfil no orchestrator (sair do hardcode dr-paula-matos) | feature | P2 | L→3×M | E5 | Backlog | dúvida #5 | 🟢 |

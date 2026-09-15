@@ -23,7 +23,7 @@ echo ""
 
 # 1. Install dependencies
 echo "📦 Instalando dependências Node.js..."
-for svc in crm-service orchestrator identity-bridge; do
+for svc in orchestrator; do
   echo "  → $svc"
   (cd "services/$svc" && npm install --silent 2>&1 | tail -1)
 done
@@ -50,24 +50,15 @@ echo ""
 
 # 4. Run migrations
 echo "🗃️  Rodando migrations..."
-echo "  → CRM Service"
-cd services/crm-service && CRM_DB_URL="postgresql://chusterm:chusterm_pass@localhost:5436/chusterm_crm" npx tsx src/db/migrate.ts 2>&1 | grep -E "✅|❌|Running"
-cd ../..
-
 echo "  → Orchestrator"
 cd services/orchestrator && ORCHESTRATOR_DB_URL="postgresql://chusterm:chusterm_pass@localhost:5436/chusterm_ai" npx tsx src/db/migrate.ts 2>&1 | grep -E "✅|❌|Running"
-cd ../..
-
-echo "  → Identity Bridge"
-cd services/identity-bridge && IDENTITY_BRIDGE_DB_URL="postgresql://chusterm:chusterm_pass@localhost:5436/chusterm_identity" npx tsx src/db/migrate.ts 2>&1 | grep -E "✅|❌|Running"
 cd ../..
 echo "✅ Migrations concluídas"
 echo ""
 
 # 5. Seed data
-echo "🌱 Populando dados de exemplo..."
-cd services/crm-service && CRM_DB_URL="postgresql://chusterm:chusterm_pass@localhost:5436/chusterm_crm" npx tsx scripts/seed.ts 2>&1 | grep -E "✅|❌|🌱|🎉"
-cd ../..
+echo "🌱 Populando dados de exemplo (orchestrator knowledge)..."
+npx tsx scripts/seed.ts 2>&1 | grep -E "✅|❌|🌱|🎉"
 echo ""
 
 # 6. Start all services
@@ -93,9 +84,7 @@ check_health() {
   fi
 }
 
-check_health "http://localhost:4003/health" "CRM Service"
 check_health "http://localhost:4001/health" "Orchestrator"
-check_health "http://localhost:4002/health" "Identity Bridge"
 check_health "http://localhost:3001/" "CRM UI"
 check_health "http://localhost:8025/" "Mailhog"
 
@@ -104,9 +93,7 @@ echo "========================================="
 echo "  URLs Locais"
 echo "========================================="
 echo "  CRM UI:          http://localhost:3001"
-echo "  CRM API:         http://localhost:4003"
 echo "  Orchestrator:    http://localhost:4001"
-echo "  Identity Bridge: http://localhost:4002"
 echo "  Mailhog:         http://localhost:8025"
 echo "  PostgreSQL:      localhost:5436"
 echo "  Redis:           localhost:6382"

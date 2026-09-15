@@ -30,7 +30,9 @@ export async function buildApp() {
 
   // ─── JWT (ORC-H1) ──────────────────────────────────────────────────────────
   // Sem fallback de segredo — requireJwtSecret() lança quando ausente.
-  // Opções de verificação espelham o sign do identity-bridge.
+  // Opções de verificação espelham o formato de JWT do antigo identity-bridge
+  // (serviço removido em CRM-040) — o issuer é mantido por compatibilidade com
+  // tokens já emitidos; novos emissores devem usar o mesmo iss/aud.
   await fastify.register(jwt, {
     secret: requireJwtSecret(),
     verify: {

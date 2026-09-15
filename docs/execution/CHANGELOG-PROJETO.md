@@ -86,3 +86,18 @@ então o arquivo vive em `docs/execution/` como os demais entregáveis.)
   ícone (`i-lucide-play-circle`) em vez do texto hardcoded.
   Evidência: vitest 2/2, eslint limpo, `vite build` ok (AiCenter 8,5 kB).
   Rollback: revert do commit; a página volta à versão anterior.
+- **CRM-040 (P2, E5)** — remoção definitiva de `services/crm-service` e
+  `services/identity-bridge` (45 arquivos). Os dois já estavam aposentados
+  (ARQ-02/ARQ-03): sem serviço nos compose, sem consumidor no Core, CI só
+  referencia o orchestrator. Limpeza: `scripts/seed.ts` perde a seção CRM
+  (importava o schema do serviço morto — resta o seed de knowledge do
+  orchestrator); `setup.sh` perde install/migrate/seed/health-checks dos
+  dois; `POSTGRES_MULTIPLE_DATABASES` deixa de criar `chusterm_crm`/
+  `chusterm_identity` em instalações novas (volumes antigos preservam os
+  bancos para consulta histórica); `.env.example` perde `CRM_PORT`,
+  `CRM_DB_URL`, `CRM_REDIS_URL`, `IDENTITY_BRIDGE_PORT`; comentários do
+  orchestrator passam a documentar o formato JWT como legado (iss/aud
+  `chusterm:identity-bridge`/`chusterm:internal` mantidos por
+  compatibilidade com tokens emitidos). Evidência: vitest do orchestrator
+  10/10; compose sem referências ativas. Rollback: `git revert` restaura
+  os diretórios.

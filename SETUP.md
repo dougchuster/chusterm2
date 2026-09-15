@@ -15,7 +15,7 @@ Este guia descreve a stack Docker atual do ChusteRM. Execute os comandos a parti
 
 O `docker-compose.override.yml` altera o Core local para `8086:3000`. Use `docker compose config` para consultar a configuração efetiva, em vez de considerar apenas o mapeamento do arquivo base. Sidekiq faz parte da stack padrão. O `core-vite` é um watcher opcional, sem porta publicada, isolado no perfil `frontend-watch` porque uma recompilação completa pode usar bastante CPU e memória.
 
-O CRM vive no Core Rails e nas tabelas `crm_*`. Os antigos `crm-service` e `identity-bridge` estão aposentados e não devem ser iniciados, incluídos em deploys ou usados por novas integrações. O Orchestrator permanece como o único serviço Node.js da arquitetura atual.
+O CRM vive no Core Rails e nas tabelas `crm_*`. Os antigos `crm-service` e `identity-bridge` foram removidos do repositório (CRM-040) — os bancos `chusterm_crm`/`chusterm_identity` só existem em volumes antigos para consulta histórica. O Orchestrator permanece como o único serviço Node.js da arquitetura atual.
 
 ## Pré-requisitos e segredos
 

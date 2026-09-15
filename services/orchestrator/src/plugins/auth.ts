@@ -3,8 +3,9 @@ import crypto from 'node:crypto'
 import { z } from 'zod'
 
 // ─── Token claims ─────────────────────────────────────────────────────────────
-// JWTs are minted by identity-bridge (POST /auth/token) with these claims,
-// issuer 'chusterm:identity-bridge' and audience 'chusterm:internal'.
+// JWTs follow the format minted by the legacy identity-bridge service
+// (removed in CRM-040): issuer 'chusterm:identity-bridge' and audience
+// 'chusterm:internal'. Issuers are now internal callers sharing the secret.
 const tokenPayloadSchema = z.object({
   userId: z.number().int().positive(),
   accountId: z.number().int().positive(),
@@ -54,13 +55,14 @@ function isValidServiceToken(header: string | undefined): boolean {
 /**
  * ORC-H1: auth guard for /skills/:slug/run and /knowledge/*.
  *
- * The orchestrator is called server-to-server (Core / crm-service), so two
- * credentials are accepted — whichever is presented first that validates:
+ * The orchestrator is called server-to-server (Core), so two credentials
+ * are accepted — whichever is presented first that validates:
  *   1. x-service-token: the shared SERVICE_AUTH_TOKEN secret (constant-time
- *      comparison), consistent with identity-bridge's /auth/token protection.
- *      Trusted internal callers may address any tenant via accountId.
- *   2. Authorization: Bearer <JWT> minted by identity-bridge. The tenant is
- *      then derived exclusively from the token claims (request.auth).
+ *      comparison). Trusted internal callers may address any tenant via
+ *      accountId.
+ *   2. Authorization: Bearer <JWT> in the legacy identity-bridge format. The
+ *      tenant is then derived exclusively from the token claims
+ *      (request.auth).
  * The /agent/message webhook keeps its own ORCHESTRATOR_WEBHOOK_SECRET check
  * (fail-closed) and does not use this guard.
  */

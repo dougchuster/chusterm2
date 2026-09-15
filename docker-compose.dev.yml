@@ -18,7 +18,7 @@ services:
     environment:
       POSTGRES_USER: chusterm
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
-      POSTGRES_MULTIPLE_DATABASES: chusterm_core,chusterm_crm,chusterm_ai,chusterm_identity
+      POSTGRES_MULTIPLE_DATABASES: chusterm_core,chusterm_ai
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./scripts/docker/postgres-init.sh:/docker-entrypoint-initdb.d/init.sh:ro
@@ -53,8 +53,6 @@ services:
       - "127.0.0.1:8025:8025"
       - "127.0.0.1:1025:1025"
 
-  # ARQ-02: crm-service aposentado — CRM real vive no Rails (tabelas crm_*).
-
   # ─── Agent Orchestrator ──────────────────────────────────────────────────────
   orchestrator:
     build:
@@ -81,8 +79,6 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
-
-  # ARQ-03: identity-bridge aposentado — nenhum consumidor no core.
 
 volumes:
   postgres-data:
