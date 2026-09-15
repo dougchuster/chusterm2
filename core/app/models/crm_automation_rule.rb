@@ -4,6 +4,8 @@ class CrmAutomationRule < ApplicationRecord
   belongs_to :account
   belongs_to :crm_pipeline_stage
 
+  has_many :crm_automation_runs, dependent: :destroy
+
   scope :active, -> { where(is_active: true) }
   scope :ordered, -> { order(:position, :id) }
   scope :for_stage, ->(stage_id) { where(crm_pipeline_stage_id: stage_id) }

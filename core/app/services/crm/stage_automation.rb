@@ -13,39 +13,69 @@ class Crm::StageAutomation
     rules = CrmAutomationRule.active.for_stage(@deal.crm_pipeline_stage_id)
     return if rules.none?
 
-    rules.each do |rule|
-      config = rule.action_config&.with_indifferent_access || {}
-      unless conditions_match?(config)
-        log_skip(rule, 'automation_skipped_by_condition', config)
-        next
-      end
-
-      # Cada executor devolve :executed ou o motivo do skip — nunca logar
-      # `automation_executed_*` quando a regra foi no-op, senão a trilha de
-      # auditoria mente sobre o que aconteceu (B-03).
-      result = case rule.action_type
-               when 'create_activity' then execute_create_activity(config)
-               when 'set_captain_mode' then execute_set_captain_mode(config)
-               when 'move_to_stage' then execute_move_to_stage(config)
-               when 'assign_owner' then execute_assign_owner(config)
-               else :unknown_action_type
-               end
-
-      if result == :executed
-        Crm::AuditLogger.log(
-          account: @deal.account,
-          actor: @actor,
-          action: "automation_executed_#{rule.action_type}",
-          target: @deal,
-          payload: { automation: 'stage', stage_slug: @deal.crm_pipeline_stage&.slug, rule_id: rule.id, action_type: rule.action_type }
-        )
-      else
-        log_skip(rule, "automation_skipped_#{result}", config)
-      end
-    end
+    rules.each { |rule| process_rule(rule) }
   end
 
   private
+
+  # Cada executor devolve :executed ou o motivo do skip — nunca logar
+  # `automation_executed_*` quando a regra foi no-op, senão a trilha de
+  # auditoria mente sobre o que aconteceu (B-03). Cada avaliação vira um
+  # registro em crm_automation_runs (CRM-003).
+  def process_rule(rule)
+    config = rule.action_config&.with_indifferent_access || {}
+    unless conditions_match?(config)
+      record_run(rule, status: 'skipped', skip_reason: 'condition')
+      log_skip(rule, 'automation_skipped_by_condition', config)
+      return
+    end
+
+    started_at = Time.current
+    result = begin
+      case rule.action_type
+      when 'create_activity' then execute_create_activity(config)
+      when 'set_captain_mode' then execute_set_captain_mode(config)
+      when 'move_to_stage' then execute_move_to_stage(config)
+      when 'assign_owner' then execute_assign_owner(config)
+      else :unknown_action_type
+      end
+    rescue StandardError => e
+      record_run(rule, status: 'failed', error: "#{e.class}: #{e.message}", started_at: started_at)
+      raise
+    end
+
+    if result == :executed
+      record_run(rule, status: 'executed', started_at: started_at)
+      Crm::AuditLogger.log(
+        account: @deal.account,
+        actor: @actor,
+        action: "automation_executed_#{rule.action_type}",
+        target: @deal,
+        payload: { automation: 'stage', stage_slug: @deal.crm_pipeline_stage&.slug, rule_id: rule.id, action_type: rule.action_type }
+      )
+    else
+      record_run(rule, status: 'skipped', skip_reason: result.to_s, started_at: started_at)
+      log_skip(rule, "automation_skipped_#{result}", config)
+    end
+  end
+
+  def record_run(rule, status:, skip_reason: nil, error: nil, started_at: Time.current)
+    CrmAutomationRun.create!(
+      account: @deal.account,
+      crm_automation_rule: rule,
+      crm_deal: @deal,
+      status: status,
+      skip_reason: skip_reason,
+      error: error,
+      payload: { automation: 'stage', stage_slug: @deal.crm_pipeline_stage&.slug, action_type: rule.action_type },
+      started_at: started_at,
+      finished_at: Time.current
+    )
+  rescue StandardError => e
+    # A persistência do run nunca derruba a automação em si.
+    Rails.logger.error("[CRM StageAutomation] falha ao gravar run da regra #{rule.id}: #{e.class}: #{e.message}")
+    nil
+  end
 
   def log_skip(rule, action, config)
     Crm::AuditLogger.log(

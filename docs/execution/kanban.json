@@ -67,7 +67,7 @@
       "priority": "P1",
       "effort": "M",
       "epic": "E1",
-      "column": "Priorizado",
+      "column": "Concluído",
       "depends_on": [],
       "upstream_risk": "low",
       "files": [

@@ -64,3 +64,11 @@ então o arquivo vive em `docs/execution/` como os demais entregáveis.)
   ~0,53 s por custo de serialização (7 queries, sem N+1). Seção nova em
   `00-BASELINE-METRICAS.md` §7 com tabela e baseline pós-CRM-010.
   Rollback: n/a (medida).
+- **CRM-003 (P1, E1)** — nova tabela/model `crm_automation_runs`: cada
+  avaliação de regra de estágio persiste status (`executed`/`skipped`/
+  `failed`), `skip_reason` (vem dos motivos do CRM-002), `error`,
+  `started_at`/`finished_at` e payload com stage_slug+action_type. Falha do
+  executor é gravada antes de propagar; falha ao gravar o run nunca derruba
+  a automação. `has_many` em `CrmDeal` e `CrmAutomationRule`, validação
+  same-account. Evidência: 62 exemplos, 0 falhas; rubocop limpo; migration
+  aplicada e reversível. Rollback: `rails db:rollback` + revert.

@@ -16,6 +16,7 @@ class CrmDeal < ApplicationRecord
   has_many :crm_lead_scores, dependent: :destroy
   has_many :crm_audit_events, as: :target, dependent: :destroy
   has_many :crm_cadence_enrollments, dependent: :destroy
+  has_many :crm_automation_runs, dependent: :destroy
 
   validates :account, :crm_pipeline, :crm_pipeline_stage, :title, presence: true
   validates_same_account_for :crm_pipeline, :crm_pipeline_stage, :contact, :conversation, :inbox, :crm_loss_reason

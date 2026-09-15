@@ -182,4 +182,61 @@ RSpec.describe Crm::StageAutomation do
         .with(hash_including(action: 'automation_skipped_same_stage'))
     end
   end
+
+  describe 'crm_automation_runs persistence (CRM-003)' do
+    it 'records an executed run with started/finished timestamps' do
+      rule = build_rule('create_activity', { 'kind' => 'follow_up', 'title' => 'Ligar' })
+
+      described_class.new(deal: deal, actor: nil).perform
+
+      run = CrmAutomationRun.find_by(crm_automation_rule: rule, crm_deal: deal)
+      expect(run).to be_present
+      expect(run.status).to eq('executed')
+      expect(run.started_at).to be_present
+      expect(run.finished_at).to be_present
+      expect(run.account_id).to eq(account.id)
+    end
+
+    it 'records a skipped run with the reason' do
+      rule = build_rule('move_to_stage', { 'stage_slug' => stage.slug })
+
+      described_class.new(deal: deal, actor: nil).perform
+
+      run = CrmAutomationRun.find_by(crm_automation_rule: rule, crm_deal: deal)
+      expect(run.status).to eq('skipped')
+      expect(run.skip_reason).to eq('same_stage')
+    end
+
+    it 'records a skipped run when conditions do not match' do
+      rule = build_rule('create_activity', {
+                          'kind' => 'follow_up', 'title' => 'Ligar',
+                          'conditions' => [{ 'field' => 'legal_area', 'operator' => 'eq', 'value' => 'previdenciario' }]
+                        })
+
+      described_class.new(deal: deal, actor: nil).perform
+
+      run = CrmAutomationRun.find_by(crm_automation_rule: rule, crm_deal: deal)
+      expect(run.status).to eq('skipped')
+      expect(run.skip_reason).to eq('condition')
+    end
+
+    it 'rejects runs in a different account than the deal' do
+      rule = build_assign_owner_rule({ 'user_id' => owner.id })
+      foreign_account = create(:account)
+      foreign_pipeline = CrmPipeline.create!(account: foreign_account, name: 'P', position: 1)
+      foreign_stage = CrmPipelineStage.create!(account: foreign_account, crm_pipeline: foreign_pipeline,
+                                               name: 'Novo', position: 1)
+      other_deal = CrmDeal.create!(
+        account: foreign_account, title: 'Deal de outra conta', crm_pipeline: foreign_pipeline,
+        crm_pipeline_stage: foreign_stage
+      )
+
+      run = CrmAutomationRun.new(
+        account: account, crm_automation_rule: rule, crm_deal: other_deal,
+        status: 'executed', started_at: Time.current
+      )
+
+      expect(run).not_to be_valid
+    end
+  end
 end
