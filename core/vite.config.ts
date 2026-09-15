@@ -48,7 +48,9 @@ const manualChunks = (id: string) => {
   const normalizedId = id.replace(/\\/g, '/');
   if (normalizedId.includes('FluentIcon/dashboard-icons.json')) return 'icons-dashboard';
   if (normalizedId.includes('FluentIcon/icons.json')) return 'icons-base';
-  if (normalizedId.includes('dashboard/i18n/locale/')) return 'i18n-locales';
+  // i18n: desde que dashboard/i18n faz lazy-load por idioma (setI18nLocale),
+  // NÃO agrupar locales num chunk único — cada idioma vira um chunk assíncrono
+  // pequeno; en/pt_BR ficam no entry por serem import estático.
   if (!normalizedId.includes('node_modules')) return undefined;
   if (
     normalizedId.includes('node_modules/vue/') ||

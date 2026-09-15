@@ -10,6 +10,7 @@ import { useRouter } from 'vue-router';
 import { useStore } from 'dashboard/composables/store';
 import WootSnackbarBox from './components/SnackbarContainer.vue';
 import { setColorTheme } from './helper/themeHelper';
+import { setI18nLocale } from 'dashboard/i18n';
 import { isOnOnboardingView } from 'v3/helpers/RouteHelper';
 import { useAccount } from 'dashboard/composables/useAccount';
 import { useFontSize } from 'dashboard/composables/useFontSize';
@@ -98,7 +99,8 @@ export default {
       mql.onchange = e => setColorTheme(e.matches);
     },
     setLocale(locale) {
-      this.$root.$i18n.locale = !locale || locale === 'en' ? 'pt_BR' : locale;
+      const target = !locale || locale === 'en' ? 'pt_BR' : locale;
+      setI18nLocale(this.$root.$i18n, target);
     },
     async initializeAccount() {
       await this.$store.dispatch('accounts/get');

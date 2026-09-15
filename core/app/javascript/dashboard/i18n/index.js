@@ -1,83 +1,40 @@
-import ar from './locale/ar';
-import bg from './locale/bg';
-import ca from './locale/ca';
-import cs from './locale/cs';
-import da from './locale/da';
-import de from './locale/de';
-import el from './locale/el';
+// Apenas o fallback (en) e o locale padrão do produto (pt_BR) entram no chunk
+// inicial. Os outros 50+ idiomas viram chunks próprios carregados sob demanda
+// por setI18nLocale — tira ~10,5 MB de JS do primeiro load (CRM-010).
 import en from './locale/en';
-import es from './locale/es';
-import fa from './locale/fa';
-import fi from './locale/fi';
-import fr from './locale/fr';
-import he from './locale/he';
-import hi from './locale/hi';
-import hu from './locale/hu';
-import id from './locale/id';
-import it from './locale/it';
-import ja from './locale/ja';
-import ko from './locale/ko';
-import lv from './locale/lv';
-import ml from './locale/ml';
-import nl from './locale/nl';
-import no from './locale/no';
-import pl from './locale/pl';
-import pt from './locale/pt';
 import pt_BR from './locale/pt_BR';
-import ro from './locale/ro';
-import ru from './locale/ru';
-import sk from './locale/sk';
-import sr from './locale/sr';
-import sv from './locale/sv';
-import ta from './locale/ta';
-import th from './locale/th';
-import tr from './locale/tr';
-import uk from './locale/uk';
-import vi from './locale/vi';
-import zh_CN from './locale/zh_CN';
-import zh_TW from './locale/zh_TW';
-import is from './locale/is';
-import lt from './locale/lt';
+
+// 'zh' é um diretório parcial (index.js sem os JSONs) que nunca foi servido —
+// fica fora do glob até ser completado ou removido.
+const localeLoaders = import.meta.glob([
+  './locale/*/index.js',
+  '!./locale/zh/index.js',
+  // en/pt_BR já são import estático — fora do glob para não gerar chunk duplo.
+  '!./locale/en/index.js',
+  '!./locale/pt_BR/index.js',
+]);
+const loadedLocales = new Set(['en', 'pt_BR']);
+
+/**
+ * Carrega o locale sob demanda (se ainda não estiver no bundle) e o ativa.
+ * @param {object} composer - `this.$root.$i18n` no modo composition do vue-i18n
+ * @param {string} locale - código do locale (ex.: 'fr', 'zh_CN')
+ */
+export async function setI18nLocale(composer, locale) {
+  const target = locale || 'pt_BR';
+  if (!loadedLocales.has(target)) {
+    const loader = localeLoaders[`./locale/${target}/index.js`];
+    if (loader) {
+      const messages = (await loader()).default;
+      composer.setLocaleMessage(target, messages);
+      loadedLocales.add(target);
+    }
+    // Locale sem arquivo: vue-i18n cai no fallbackLocale ('en') com warning.
+  }
+  composer.locale = target;
+}
 
 export default {
-  ar,
-  bg,
-  ca,
-  cs,
-  da,
-  de,
-  el,
   en,
-  es,
-  fa,
-  fi,
-  fr,
-  he,
-  hi,
-  hu,
-  id,
-  it,
-  ja,
-  ko,
-  ml,
-  lv,
-  nl,
-  no,
-  pl,
   pt_BR,
-  pt,
-  ro,
-  ru,
-  sk,
-  sr,
-  sv,
-  ta,
-  th,
-  tr,
-  uk,
-  vi,
-  zh_CN,
-  zh_TW,
-  is,
-  lt,
 };

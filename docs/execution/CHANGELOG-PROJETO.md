@@ -38,3 +38,12 @@ então o arquivo vive em `docs/execution/` como os demais entregáveis.)
   inclusive bulk_action com id estrangeiro; audit-events admin-only e sem
   vazamento entre contas. Evidência: 8 exemplos, 0 falhas.
   Rollback: n/a (só spec).
+- **CRM-010 (P0, E2)** — o "chunk de 11 MB" era artefato de builds antigas; o
+  peso real era `i18n-locales` (14,6 MB minificado) com as 56 traduções no load
+  inicial. `dashboard/i18n` agora embute só `en` + `pt_BR` e carrega os demais
+  sob demanda via `setI18nLocale` (App.vue, settings/account/Index.vue,
+  v3/App.vue); removida a regra `manualChunks` que agrupava os locales; o dir
+  parcial `locale/zh` (index.js sem JSONs, nunca servido) fica fora do glob.
+  Evidência: `vite build` — `i18n-locales` eliminado, 51 chunks de idioma
+  assíncronos (~250-440 kB cada), JS inicial ~14,9 MB → ~4,5 MB. eslint limpo.
+  Rollback: revert do commit; volta o bundle único de traduções.

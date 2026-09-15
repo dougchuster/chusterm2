@@ -1,6 +1,7 @@
 <script>
 import SnackbarContainer from './components/SnackBar/Container.vue';
 import { setColorTheme } from 'dashboard/helper/themeHelper';
+import { setI18nLocale } from 'dashboard/i18n';
 
 const COLOR_SCHEME_STORAGE_KEY = 'color_scheme';
 const LEGACY_LOGIN_THEME_STORAGE_KEY = 'chusterm-login-theme';
@@ -54,7 +55,7 @@ export default {
       const isAuthRoute =
         window.location.pathname.startsWith('/app/login') ||
         window.location.pathname.startsWith('/app/auth');
-      this.$root.$i18n.locale = isAuthRoute ? 'pt_BR' : locale || 'pt_BR';
+      setI18nLocale(this.$root.$i18n, isAuthRoute ? 'pt_BR' : locale);
     },
   },
 };
