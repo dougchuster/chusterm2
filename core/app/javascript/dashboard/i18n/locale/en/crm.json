@@ -438,7 +438,12 @@
         "ACTIVATE": "Activate",
         "PAUSE": "Pause",
         "EDIT": "Edit flow",
-        "DELETE": "Delete"
+        "DELETE": "Delete",
+        "RUNS": "Executions",
+        "RUNS_EMPTY": "No executions recorded for this rule.",
+        "RUN_STATUS_EXECUTED": "Executed",
+        "RUN_STATUS_SKIPPED": "Skipped",
+        "RUN_STATUS_FAILED": "Failed"
       },
       "DELETE_MODAL": {
         "TITLE": "Delete automation rule",

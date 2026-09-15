@@ -34,6 +34,7 @@ const deal = ref(null);
 const stages = ref([]);
 const lossReasons = ref([]);
 const auditEvents = ref([]);
+const automationRuns = ref([]);
 const loading = ref(true);
 const refreshing = ref(false);
 const saving = ref(false);
@@ -83,6 +84,12 @@ const tabs = computed(() => [
     label: 'Arquivos',
     icon: 'i-lucide-paperclip',
     count: attachments.value.length,
+  },
+  {
+    value: 'automations',
+    label: 'Automações',
+    icon: 'i-lucide-workflow',
+    count: automationRuns.value.length,
   },
   {
     value: 'history',
@@ -246,6 +253,36 @@ const auditLabel = event =>
     /_/g,
     ' '
   );
+const SKIP_REASON_LABELS = {
+  duplicate_activity: 'Atividade já existia — nada a fazer',
+  no_conversation: 'Negócio sem conversa vinculada',
+  no_captain_state: 'Conversa sem estado de IA',
+  invalid_ai_mode: 'Modo de IA inválido na regra',
+  blank_stage_slug: 'Regra sem etapa de destino',
+  stage_not_found: 'Etapa de destino não encontrada',
+  same_stage: 'Negócio já estava na etapa de destino',
+  max_depth: 'Limite de automações em cadeia atingido',
+  invalid_owner: 'Responsável configurado não pertence à conta',
+};
+const skipReasonLabel = reason =>
+  SKIP_REASON_LABELS[reason] || String(reason || '').replace(/_/g, ' ');
+const automationRunLabel = run =>
+  ({ executed: 'Executada', skipped: 'Ignorada', failed: 'Falhou' })[
+    run.status
+  ] || run.status;
+const automationRunVariant = run =>
+  ({ executed: 'success', skipped: 'neutral', failed: 'danger' })[run.status] ||
+  'neutral';
+const automationRunIcon = run =>
+  ({
+    executed: 'i-lucide-check',
+    skipped: 'i-lucide-minus',
+    failed: 'i-lucide-x',
+  })[run.status] || 'i-lucide-workflow';
+const runDuration = run => {
+  const ms = new Date(run.finished_at) - new Date(run.started_at);
+  return ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${Math.max(ms, 0)}ms`;
+};
 
 const loadStages = async () => {
   if (!deal.value?.crm_pipeline_id) {
@@ -272,6 +309,14 @@ const loadAudit = async () => {
     auditEvents.value = [];
   }
 };
+const loadAutomationRuns = async () => {
+  try {
+    const response = await CrmAPI.getAutomationRuns({ deal_id: dealId.value });
+    automationRuns.value = extractData(response);
+  } catch {
+    automationRuns.value = [];
+  }
+};
 const loadLossReasons = async () => {
   try {
     lossReasons.value = extractData(await CrmAPI.getLossReasons());
@@ -284,7 +329,12 @@ const loadAll = async ({ silent = false } = {}) => {
   else loading.value = true;
   error.value = '';
   try {
-    await Promise.all([loadDeal(), loadAudit(), loadLossReasons()]);
+    await Promise.all([
+      loadDeal(),
+      loadAudit(),
+      loadLossReasons(),
+      loadAutomationRuns(),
+    ]);
   } catch (exception) {
     error.value =
       exception?.response?.data?.error ||
@@ -796,6 +846,58 @@ onMounted(async () => {
           </span>
           <Icon icon="i-lucide-arrow-up-right" class="size-4 shrink-0" />
         </a>
+      </div>
+
+      <div
+        v-else-if="activeTab === 'automations'"
+        class="divide-y divide-ui-border-subtle"
+      >
+        <p
+          v-if="!automationRuns.length"
+          class="m-0 p-8 text-center text-ui-body-sm text-ui-text-muted"
+        >
+          Nenhuma automação executada neste negócio.
+        </p>
+        <article
+          v-for="run in automationRuns"
+          :key="run.id"
+          class="flex items-start gap-3 p-4"
+        >
+          <span
+            class="flex size-8 shrink-0 items-center justify-center rounded-full bg-ui-sunken text-ui-text-muted"
+          >
+            <Icon :icon="automationRunIcon(run)" class="size-4" />
+          </span>
+          <div class="min-w-0 flex-1">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <strong class="text-ui-body-sm">
+                {{ run.automation_rule?.name || 'Regra removida' }}
+              </strong>
+              <DsBadge
+                :label="automationRunLabel(run)"
+                :variant="automationRunVariant(run)"
+              />
+            </div>
+            <p
+              v-if="run.error"
+              class="mb-0 mt-1 text-ui-body-sm text-ui-danger"
+            >
+              {{ run.error }}
+            </p>
+            <p
+              v-else-if="run.skip_reason"
+              class="mb-0 mt-1 text-ui-body-sm text-ui-text-muted"
+            >
+              {{ skipReasonLabel(run.skip_reason) }}
+            </p>
+            <p class="mb-0 mt-1 text-ui-caption text-ui-text-muted">
+              {{ formatDate(run.started_at, true) }}
+              <template v-if="run.finished_at">
+                · {{ runDuration(run) }}
+              </template>
+            </p>
+          </div>
+        </article>
       </div>
 
       <div v-else class="divide-y divide-ui-border-subtle">

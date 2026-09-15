@@ -25,6 +25,9 @@ const error = ref('');
 const isBuilderOpen = ref(false);
 const editingRule = ref(null);
 const deletingRule = ref(null);
+const expandedRunsRuleId = ref(null);
+const ruleRuns = ref({});
+const runsLoading = ref(false);
 
 const filters = reactive({
   search: '',
@@ -334,6 +337,48 @@ function requestDelete(rule) {
   deletingRule.value = rule;
 }
 
+const RUN_BADGE_VARIANTS = {
+  executed: 'success',
+  skipped: 'neutral',
+  failed: 'danger',
+};
+
+const RUN_STATUS_I18N_KEYS = {
+  executed: 'CRM.AUTOMATION_RULES.CARD.RUN_STATUS_EXECUTED',
+  skipped: 'CRM.AUTOMATION_RULES.CARD.RUN_STATUS_SKIPPED',
+  failed: 'CRM.AUTOMATION_RULES.CARD.RUN_STATUS_FAILED',
+};
+
+function runStatusLabel(status) {
+  const key = RUN_STATUS_I18N_KEYS[status];
+  return key ? t(key) : status;
+}
+
+function formatRunTime(value) {
+  if (!value) return '';
+  return new Date(value).toLocaleString();
+}
+
+async function toggleRuns(rule) {
+  if (expandedRunsRuleId.value === rule.id) {
+    expandedRunsRuleId.value = null;
+    return;
+  }
+  expandedRunsRuleId.value = rule.id;
+  if (ruleRuns.value[rule.id]) return;
+  runsLoading.value = true;
+  try {
+    const response = await CrmAPI.getAutomationRuns({
+      automation_rule_id: rule.id,
+    });
+    ruleRuns.value = { ...ruleRuns.value, [rule.id]: extractData(response) };
+  } catch {
+    ruleRuns.value = { ...ruleRuns.value, [rule.id]: [] };
+  } finally {
+    runsLoading.value = false;
+  }
+}
+
 async function confirmDelete() {
   if (!deletingRule.value) return;
   saving.value = true;
@@ -594,6 +639,14 @@ onMounted(loadData);
                 <DsButton
                   size="sm"
                   variant="secondary"
+                  icon="i-lucide-history"
+                  :label="$t('CRM.AUTOMATION_RULES.CARD.RUNS')"
+                  :aria-expanded="expandedRunsRuleId === rule.id"
+                  @click="toggleRuns(rule)"
+                />
+                <DsButton
+                  size="sm"
+                  variant="secondary"
                   icon="i-lucide-pencil"
                   :label="$t('CRM.AUTOMATION_RULES.CARD.EDIT')"
                   @click="openEdit(rule)"
@@ -606,6 +659,48 @@ onMounted(loadData);
                   @click="requestDelete(rule)"
                 />
               </div>
+            </div>
+            <div
+              v-if="expandedRunsRuleId === rule.id"
+              class="mt-3 border-t border-ui-border-subtle pt-3"
+            >
+              <DsSkeleton
+                v-if="runsLoading && !ruleRuns[rule.id]"
+                shape="block"
+                class="h-10"
+              />
+              <p
+                v-else-if="!ruleRuns[rule.id]?.length"
+                class="m-0 text-ui-body-sm text-ui-text-muted"
+              >
+                {{ $t('CRM.AUTOMATION_RULES.CARD.RUNS_EMPTY') }}
+              </p>
+              <ul v-else class="m-0 flex list-none flex-col gap-2 p-0">
+                <li
+                  v-for="run in ruleRuns[rule.id]"
+                  :key="run.id"
+                  class="flex flex-wrap items-center justify-between gap-2"
+                >
+                  <span class="min-w-0 text-ui-body-sm">
+                    <span class="text-ui-text-muted">
+                      {{ formatRunTime(run.started_at) }}
+                    </span>
+                    <template v-if="run.deal?.title">
+                      · {{ run.deal.title }}
+                    </template>
+                    <template v-if="run.skip_reason">
+                      · {{ run.skip_reason }}
+                    </template>
+                    <span v-if="run.error" class="text-ui-danger">
+                      · {{ run.error }}
+                    </span>
+                  </span>
+                  <DsBadge
+                    :label="runStatusLabel(run.status)"
+                    :variant="RUN_BADGE_VARIANTS[run.status] || 'neutral'"
+                  />
+                </li>
+              </ul>
             </div>
           </DsCard>
         </div>

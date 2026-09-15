@@ -329,6 +329,10 @@ class CrmAPI {
     return axios.get(crmUrl('audit-events'), { params });
   }
 
+  getAutomationRuns(params = {}) {
+    return axios.get(crmUrl('automation-runs'), { params });
+  }
+
   // PERF-04: o export roda em job no backend; a resposta é JSON (202) e o
   // arquivo chega por email — não é mais um download direto (blob).
   exportDeals(params = {}) {

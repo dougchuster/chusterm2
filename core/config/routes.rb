@@ -209,6 +209,7 @@ Rails.application.routes.draw do
             resources :audit_events, path: 'audit-events', only: [:index]
             resources :checklist_templates, path: 'checklist-templates', only: [:index, :create, :update, :destroy]
             resources :automation_rules, path: 'automation-rules', only: [:index, :create, :update, :destroy]
+            resources :automation_runs, path: 'automation-runs', only: [:index]
             resources :cadences, only: [:index, :create, :update, :destroy] do
               collection do
                 post :enroll_deal

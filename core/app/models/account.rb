@@ -158,6 +158,7 @@ class Account < ApplicationRecord
   has_many :crm_audit_events, dependent: :destroy
   has_many :crm_checklist_templates, dependent: :destroy
   has_many :crm_automation_rules, dependent: :destroy
+  has_many :crm_automation_runs, dependent: :destroy
   has_many :crm_cadences, dependent: :destroy
   has_many :crm_cadence_steps, dependent: :destroy
 

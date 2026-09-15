@@ -19,7 +19,7 @@ Colunas: `Backlog → Priorizado → Em andamento → Em revisão → QA → Con
 | CRM-001 | Unificar atribuição de dono em `Crm::DealOwnerAssigner` (B-01) | refactor | P1 | M | E1 | Concluído | — | 🟢 |
 | CRM-002 | Auditoria verdadeira de automação: não logar `executed` em no-op (B-03) | bug | P1 | S | E1 | Concluído | — | 🟢 |
 | CRM-003 | Criar `crm_automation_runs` (migration + model + escrita no StageAutomation) | feature | P1 | M | E1 | Concluído | — | 🟢 |
-| CRM-004 | Listar runs de automação por deal/regra na UI | feature | P1 | M | E1 | Backlog | CRM-003 | 🟢 |
+| CRM-004 | Listar runs de automação por deal/regra na UI | feature | P1 | M | E1 | Concluído | CRM-003 | 🟢 |
 | CRM-005 | QA do épico E1: specs + passagem manual de automações | débito | P1 | S | E1 | Backlog | CRM-001..004 | 🟢 |
 | CRM-010 | Investigar e quebrar chunk `DashboardIcon` de 11 MB | infra | P0 | S | E2 | Concluído | — | 🟡 |
 | CRM-011 | Baseline autenticado: p95 dos 10 endpoints + queries/request | infra | P1 | S | E2 | Concluído | — | 🟢 |

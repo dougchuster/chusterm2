@@ -101,3 +101,15 @@ então o arquivo vive em `docs/execution/` como os demais entregáveis.)
   compatibilidade com tokens emitidos). Evidência: vitest do orchestrator
   10/10; compose sem referências ativas. Rollback: `git revert` restaura
   os diretórios.
+- **CRM-004 (P1, E1)** — runs de automação visíveis na UI. Novo endpoint
+  `GET /crm/automation-runs` (`AutomationRunsController` + policy +
+  `Account#has_many`), filtros `deal_id`/`automation_rule_id`/`status`,
+  serializer com nome da regra e título do deal, escopo `Current.account`.
+  Front: `CrmAPI.getAutomationRuns`; aba "Automações" na ficha do negócio
+  (`DealDetailsOperational`) com status/skip_reason/erro/duração por run;
+  botão "Execuções" por regra em `AutomationRules` expandindo lista sob
+  demanda. Chaves `CARD.RUNS*` em `en/crm.json` (pt_BR usa fallback, como
+  as demais chaves de AUTOMATION_RULES). Evidência: request spec 5/5
+  (filtros, isolamento cross-account, não-membro→401); vitest
+  AutomationRules 8/8 e DealDetails 18/18; rubocop+eslint limpos.
+  Rollback: revert do commit.
