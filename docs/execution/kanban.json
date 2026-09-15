@@ -482,7 +482,7 @@
       "priority": "P2",
       "effort": "S",
       "epic": "E5",
-      "column": "Backlog",
+      "column": "Concluído",
       "depends_on": [
         "CRM-040",
         "CRM-041",
@@ -493,7 +493,8 @@
         "CRM-046",
         "CRM-047"
       ],
-      "upstream_risk": "low"
+      "upstream_risk": "low",
+      "notes": "QA E5 consolidado + relatorio final em docs/execution/05-RELATORIO-FINAL.md. 31/31 cards concluidos."
     }
   ]
 }
