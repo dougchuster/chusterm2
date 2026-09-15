@@ -72,9 +72,10 @@ describe('AiCenter conversation identifiers', () => {
       },
     ]);
 
+    // Seletor por ícone: o rótulo é i18n e muda com o locale do teste.
     const resumeButton = wrapper
       .findAll('button')
-      .find(button => button.text() === 'Retomar IA');
+      .find(button => button.html().includes('i-lucide-play-circle'));
     expect(resumeButton.attributes('disabled')).toBeUndefined();
 
     await resumeButton.trigger('click');
@@ -101,7 +102,7 @@ describe('AiCenter conversation identifiers', () => {
 
     const resumeButton = wrapper
       .findAll('button')
-      .find(button => button.text() === 'Retomar IA');
+      .find(button => button.html().includes('i-lucide-play-circle'));
     expect(resumeButton.attributes('disabled')).toBeDefined();
 
     await resumeButton.trigger('click');

@@ -223,6 +223,42 @@
         "NORMAL": "normal",
         "BAIXA": "baixa"
       }
+    },
+    "AI_CENTER": {
+      "BREADCRUMB": "CRM",
+      "TITLE": "Central de IA",
+      "SUBTITLE": "Estado da IA por conversa, motivos de pausa e saúde de mídia.",
+      "REFRESH": "Atualizar",
+      "ERROR_GENERIC": "Não foi possível carregar a Central de IA.",
+      "DURATION_MINUTES": "{count} min",
+      "DURATION_HOURS": "{count} h",
+      "METRICS_LABEL": "Métricas de resumo da IA",
+      "METRICS": {
+        "DEFLECTION": "Deflection (resolvidas pela IA)",
+        "TIME_TO_HANDOFF": "Tempo médio até handoff",
+        "AUTO": "IA respondendo",
+        "HUMAN": "Humano no controle",
+        "MEDIA_FAILED": "Falhas de mídia",
+        "STALE_MEDIA": "Mídia processando (parada)"
+      },
+      "PAUSE_REASONS": "Pausas por motivo",
+      "PAUSED_TITLE": "Conversas com IA pausada",
+      "EMPTY_TITLE": "Nenhuma conversa pausada",
+      "EMPTY_DESCRIPTION": "A IA está respondendo todas as conversas.",
+      "OPEN": "Abrir",
+      "RESUME": "Retomar IA",
+      "RESUMED": "IA retomada para a conversa.",
+      "RESUME_ERROR": "Não foi possível retomar a IA.",
+      "NO_DISPLAY_ID": "Esta conversa não possui um identificador público válido.",
+      "NO_REASON": "Motivo não registrado",
+      "PAUSED_BY": "por {name}",
+      "CONVERSATION_FALLBACK": "Conversa #{id}",
+      "MODE": {
+        "AUTO": "IA ativa",
+        "SUPERVISED": "Supervisionada",
+        "PAUSED": "Pausada",
+        "HUMAN_ONLY": "Humano no controle"
+      }
     }
   }
 }

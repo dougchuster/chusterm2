@@ -32,7 +32,7 @@ Colunas: `Backlog → Priorizado → Em andamento → Em revisão → QA → Con
 | CRM-024 | Revalidar `time_in_stage`/`stale_deals` (mismatch + N+1 do audit) | bug | P2 | XS | E3 | Backlog | — | 🟢 |
 | CRM-025 | Passagem visual das 161 rotas (VISUAL-F0, 5 viewports × light/dark) | design | P2 | L→2×M | E3 | Backlog | CRM-040 | 🟡 |
 | CRM-026 | QA do épico E3: matriz atualizada + evidências sanitizadas | débito | P1 | S | E3 | Backlog | CRM-020..025 | 🟢 |
-| CRM-030 | Expandir Obsidian+Mineral aos módulos CRM secundários (plano ativo) | design | P1 | M | E4 | Priorizado | — | 🟡 |
+| CRM-030 | Expandir Obsidian+Mineral aos módulos CRM secundários (plano ativo) | design | P1 | M | E4 | Concluído | — | 🟡 |
 | CRM-031 | Toggle de densidade compacta/confortável persistido | feature | P2 | M | E4 | Backlog | — | 🟡 |
 | CRM-032 | Painéis laterais redimensionáveis com largura persistida | feature | P2 | M | E4 | Backlog | — | 🟡 |
 | CRM-033 | Estados vazio/erro/offline/permissão auditados em todas as telas CRM | design | P2 | M | E4 | Backlog | — | 🟢 |

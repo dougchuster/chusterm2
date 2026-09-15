@@ -924,6 +924,42 @@
       "OPEN_CONVERSATION": "Open conversation with Copilot",
       "SCORE_UPDATED": "Lead score updated successfully.",
       "SCORE_UPDATE_ERROR": "Could not recompute score. Please try again."
+    },
+    "AI_CENTER": {
+      "BREADCRUMB": "CRM",
+      "TITLE": "AI Center",
+      "SUBTITLE": "AI status per conversation, pause reasons and media health.",
+      "REFRESH": "Refresh",
+      "ERROR_GENERIC": "Could not load the AI Center.",
+      "DURATION_MINUTES": "{count} min",
+      "DURATION_HOURS": "{count} h",
+      "METRICS_LABEL": "AI summary metrics",
+      "METRICS": {
+        "DEFLECTION": "Deflection (resolved by AI)",
+        "TIME_TO_HANDOFF": "Avg. time to handoff",
+        "AUTO": "AI responding",
+        "HUMAN": "Human in control",
+        "MEDIA_FAILED": "Media failures",
+        "STALE_MEDIA": "Media processing (stuck)"
+      },
+      "PAUSE_REASONS": "Pauses by reason",
+      "PAUSED_TITLE": "Conversations with AI paused",
+      "EMPTY_TITLE": "No paused conversations",
+      "EMPTY_DESCRIPTION": "AI is handling every conversation.",
+      "OPEN": "Open",
+      "RESUME": "Resume AI",
+      "RESUMED": "AI resumed for the conversation.",
+      "RESUME_ERROR": "Could not resume AI.",
+      "NO_DISPLAY_ID": "This conversation has no valid public identifier.",
+      "NO_REASON": "Reason not recorded",
+      "PAUSED_BY": "by {name}",
+      "CONVERSATION_FALLBACK": "Conversation #{id}",
+      "MODE": {
+        "AUTO": "AI active",
+        "SUPERVISED": "Supervised",
+        "PAUSED": "Paused",
+        "HUMAN_ONLY": "Human in control"
+      }
     }
   }
 }

@@ -72,3 +72,17 @@ então o arquivo vive em `docs/execution/` como os demais entregáveis.)
   a automação. `has_many` em `CrmDeal` e `CrmAutomationRule`, validação
   same-account. Evidência: 62 exemplos, 0 falhas; rubocop limpo; migration
   aplicada e reversível. Rollback: `rails db:rollback` + revert.
+- **CRM-030 (P1, E4)** — auditoria dos módulos CRM secundários: páginas
+  operacionais (Reports, LossReasons, ChecklistTemplates, AutomationRules,
+  ScoringConfig, Cadences, CrmMetrics, AnalyticsCenter, PageTemplatesGallery)
+  já estavam no design system; `AiCenter.vue` era a exceção — zero
+  componentes DS, strings pt-BR hardcoded e paleta `n-slate` legada.
+  Reescrita completa com `DsPageHeader`/`DsCard`/`DsBadge`/`DsButton`/
+  `DsSkeleton`, tokens semânticos `ui-*` e i18n integral — novo namespace
+  `CRM.AI_CENTER` em `en` e `pt_BR` (título, métricas, estados, ações,
+  modos de IA e motivos de handoff). Comportamento preservado: summary,
+  métricas, media status, conversas pausadas, abrir/retomar IA.
+  Spec existente atualizada: seletor do botão "Retomar IA" passa a usar o
+  ícone (`i-lucide-play-circle`) em vez do texto hardcoded.
+  Evidência: vitest 2/2, eslint limpo, `vite build` ok (AiCenter 8,5 kB).
+  Rollback: revert do commit; a página volta à versão anterior.

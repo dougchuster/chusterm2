@@ -314,7 +314,7 @@
       "priority": "P1",
       "effort": "M",
       "epic": "E4",
-      "column": "Priorizado",
+      "column": "Concluído",
       "depends_on": [],
       "upstream_risk": "medium"
     },
