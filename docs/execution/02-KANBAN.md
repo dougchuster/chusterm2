@@ -26,7 +26,7 @@ Colunas: `Backlog → Priorizado → Em andamento → Em revisão → QA → Con
 | CRM-012 | Deal rotting + soma de valor no topo da coluna Kanban | feature | P1 | S | E2 | Backlog | — | 🟢 |
 | CRM-013 | QA do épico E2: medir LCP das 5 telas e comparar bundle | débito | P1 | S | E2 | Backlog | CRM-010,011 | 🟢 |
 | CRM-020 | Spec de invariante cross-account (ler/escrever deal de outra conta → 404/403) (TENANCY-P0) | infra | P0 | S | E3 | Concluído | — | 🟢 |
-| CRM-021 | Verificar/remover `captain_triage` de `custom_fields` nos strong params | bug | P1 | XS | E3 | Priorizado | — | 🟢 |
+| CRM-021 | Verificar/remover `captain_triage` de `custom_fields` nos strong params | bug | P1 | XS | E3 | Concluído | — | 🟢 |
 | CRM-022 | E2E jornada Inbox → IA → CRM (E2E-P0-00) | infra | P1 | M | E3 | Backlog | — | 🟡 |
 | CRM-023 | Kanban 201+ deals: localizar 201º e reconciliar soma (CRM-201-01) | infra | P1 | S | E3 | Backlog | — | 🟢 |
 | CRM-024 | Revalidar `time_in_stage`/`stale_deals` (mismatch + N+1 do audit) | bug | P2 | XS | E3 | Backlog | — | 🟢 |

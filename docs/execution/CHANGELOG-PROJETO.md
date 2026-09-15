@@ -47,3 +47,7 @@ então o arquivo vive em `docs/execution/` como os demais entregáveis.)
   Evidência: `vite build` — `i18n-locales` eliminado, 51 chunks de idioma
   assíncronos (~250-440 kB cada), JS inicial ~14,9 MB → ~4,5 MB. eslint limpo.
   Rollback: revert do commit; volta o bundle único de traduções.
+- **CRM-021 (P1, E3)** — verificado: `sanitize_custom_fields` já remove a chave
+  reservada `captain_triage` nos params de create e update do deals_controller,
+  e specs já cobrem os dois caminhos (`deals_controller_spec.rb:146,197`).
+  Nenhuma mudança de código necessária — card fechado com evidência existente.
