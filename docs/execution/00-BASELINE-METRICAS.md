@@ -62,3 +62,42 @@
 | p95 endpoints principais | < 300 ms | boundary 401 ≈ 6-9 ms (não representativo) | ⬜ |
 | N+1 telas críticas | 0 | bullet no Gemfile, ativação a confirmar | ⬜ |
 | Bundle JS inicial | ≤ baseline+10% | **14 MB nos 2 maiores chunks** = este é o baseline | ⚠️ medido |
+
+## 7. Baseline autenticado (CRM-011, 2026-09-15)
+
+Conta 115 (2.000 deals, pipeline 37, ~2.000 activities), token de API gerado
+em runtime no container. 12 requests por endpoint via curl → `time_total` em
+segundos. Ambiente: container `chusterm-core-1` em `RAILS_ENV=production`,
+Postgres/Redis no Docker Desktop/Windows.
+
+| Endpoint | mediana | pior | leitura |
+|---|---|---|---|
+| `crm/pipelines/37/board` | ~0,040 s | 0,105 s | ok — board de 2.000 deals |
+| `crm/deals` (index) | ~0,051 s | 0,066 s | ok |
+| `crm/deals/283` | ~0,016 s | 0,036 s | ok |
+| **`crm/activities`** | **~0,53 s** | **0,66 s** | **outlier 10-50×** — ver abaixo |
+| `crm/agenda_events` | ~0,010 s | 0,017 s | ok |
+| `crm/dashboard` | ~0,020 s | 0,036 s | ok |
+| `crm/options` | ~0,008 s | 0,009 s | ok |
+| `conversations` | ~0,055 s | 0,106 s | ok |
+| `contacts` | ~0,036 s | 0,042 s | ok |
+| `crm/audit-events` | ~0,010 s | 0,020 s | ok |
+
+Queries por request (replay do `filtered_activities` com subscriber
+`sql.active_record`, 200 registros, eager load completo): **7 queries** — sem
+N+1. Os ~0,53 s de `crm/activities` são custo de serialização/CPU (200
+registros × ~25 campos + `calendar_links` + nested contact/deal/conversation),
+não de banco. Candidato a paginação menor ou serializer enxuto — backlog
+perf, não bug de query.
+
+### Bundle (pós-CRM-010)
+
+| Chunk | antes | depois |
+|---|---|---|
+| `i18n-locales` (todos os idiomas no load inicial) | 10,9-14,6 MB | **eliminado** — 51 chunks assíncronos ~250-440 kB |
+| `dashboard` (entry) | 2,97 MB | 2,97 MB |
+| `DashboardIcon` (compartilhado, contém en+pt_BR) | 0,44 MB | 1,02 MB |
+| JS inicial total (grafo estático) | ~14,9 MB | **~4,5 MB (−70%)** |
+
+p95-alvo (<300 ms): todos os endpoints medidos exceto `crm/activities` já
+cumprem; activities excede — registrado como débito de serialização.

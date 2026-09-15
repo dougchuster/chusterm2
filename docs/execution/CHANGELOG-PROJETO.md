@@ -59,3 +59,8 @@ então o arquivo vive em `docs/execution/` como os demais entregáveis.)
   realmente agiu — antes, todo caminho logava `executed` mesmo em no-op.
   Evidência: 14 exemplos, 0 falhas em stage_automation_spec; rubocop limpo.
   Rollback: revert do commit.
+- **CRM-011 (P1, E2)** — baseline autenticado medido na conta 115 (2.000
+  deals): 9 de 10 endpoints abaixo de ~110 ms; `crm/activities` é outlier a
+  ~0,53 s por custo de serialização (7 queries, sem N+1). Seção nova em
+  `00-BASELINE-METRICAS.md` §7 com tabela e baseline pós-CRM-010.
+  Rollback: n/a (medida).

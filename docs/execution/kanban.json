@@ -155,7 +155,7 @@
       "priority": "P1",
       "effort": "S",
       "epic": "E2",
-      "column": "Priorizado",
+      "column": "Concluído",
       "depends_on": [],
       "upstream_risk": "low",
       "files": [
