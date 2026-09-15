@@ -261,7 +261,7 @@
       "priority": "P1",
       "effort": "S",
       "epic": "E3",
-      "column": "Backlog",
+      "column": "Concluído",
       "depends_on": [],
       "upstream_risk": "low"
     },
@@ -272,7 +272,7 @@
       "priority": "P2",
       "effort": "XS",
       "epic": "E3",
-      "column": "Backlog",
+      "column": "Concluído",
       "depends_on": [],
       "upstream_risk": "low"
     },

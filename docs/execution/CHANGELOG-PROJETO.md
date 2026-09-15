@@ -144,3 +144,23 @@ então o arquivo vive em `docs/execution/` como os demais entregáveis.)
   `00-BASELINE-METRICAS.md` §8. LCP das 5 telas fica pendente de passagem
   manual autenticada (registrado na seção e no board — CRM-025 cobre a
   passagem visual completa).
+- **CRM-024 (P2, E3)** — verificado, já correto: `MetricsService#time_in_stage`
+  lê `deal_stage_changed` + payload `to_stage_id` (mesmos identificadores do
+  audit logger); `#stale_deals` usa uma agregação de `MAX(updated_at)` por
+  deal e exclui quem tem atividade dentro do cutoff. Specs de
+  `metrics_service_spec` cobrem os dois contratos (stage timing, stale com
+  atividade recente/antiga/ausente). Nenhuma mudança de código.
+- **CRM-023 (P1, E3)** — verificado com evidência ao vivo na conta 115
+  (pipeline 37, estágio "Novo" com **1996 deals**):
+  - Board: `per_column=25` devolve `count=1996` + `loaded=25` + agregados
+    calculados no escopo completo (`sum_value_cents`, `open_count`,
+    `avg_days_in_stage`), não só nos cards carregados.
+  - Paginação: `GET /crm/deals?stage_id=200&order=board` percorre 40
+    páginas × 50 = **1996 ids distintos, zero duplicatas** — o 201º deal
+    (id 2183) é alcançável; `order=board` estabiliza a ordenação
+    (`position ASC NULLS LAST, created_at DESC`).
+  - Reconciliação: `sum_value_cents=219858900` no header bate **exato**
+    com a soma dos `value_estimate_cents` dos 1996 deals paginados.
+  - UI: `CRMBoardColumn` renderiza `column.count` (não `deals.length`) e
+    emite `loadMore` no scroll via `getColumnPage(stage, page)`.
+  Nenhuma mudança de código.
