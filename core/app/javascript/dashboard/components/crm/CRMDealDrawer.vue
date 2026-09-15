@@ -8,6 +8,7 @@ import {
 import { useRoute, useRouter } from 'vue-router';
 import CrmAPI from '../../api/crm';
 import CRMConfirmDialog from 'dashboard/components/crm/CRMConfirmDialog.vue';
+import { usePanelWidth } from 'dashboard/composables/usePanelWidth';
 import CRMActivityList from './CRMActivityList.vue';
 import CRMLegalAreaBadge from './CRMLegalAreaBadge.vue';
 import CRMNextActionBox from './CRMNextActionBox.vue';
@@ -25,6 +26,9 @@ const emit = defineEmits(['saved', 'dealDeleted']);
 const show = defineModel('show', { type: Boolean, default: false });
 const router = useRouter();
 const route = useRoute();
+
+const { dragging, panelStyle, readStoredWidth, startResize } =
+  usePanelWidth('crm-deal-drawer-width');
 
 const loading = ref(false);
 const saving = ref(false);
@@ -76,6 +80,7 @@ const urgencyOptions = computed(() =>
 );
 
 onMounted(() => {
+  readStoredWidth();
   fetchCrmOptions().then(options => {
     crmOptions.value = options;
   });
@@ -347,8 +352,17 @@ watch(
     :on-close="closeDrawer"
   >
     <div
-      class="flex h-full min-h-screen flex-col bg-n-background text-n-slate-12"
+      class="relative flex h-full min-h-screen flex-col bg-n-background text-n-slate-12"
+      :style="panelStyle"
     >
+      <div
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Redimensionar painel"
+        class="absolute inset-y-0 left-0 z-10 w-1.5 cursor-ew-resize transition-colors hover:bg-n-brand/40"
+        :class="{ 'bg-n-brand/60': dragging }"
+        @pointerdown.prevent="startResize"
+      />
       <header class="border-b border-n-weak px-5 py-4">
         <div class="flex items-start justify-between gap-4">
           <div class="min-w-0">
