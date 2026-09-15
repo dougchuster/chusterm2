@@ -13,7 +13,10 @@ RSpec.describe 'CRM Audit Events API', type: :request do
       action: 'deal_updated',
       target_type: 'CrmDeal',
       target_id: 1,
-      payload: { changes: { 'title' => %w[antes depois] } }
+      payload: { changes: { 'title' => %w[antes depois] } },
+      # record_timestamps = false no model: quem registra fornece o timestamp
+      # (Crm::AuditLogger passa created_at explicitamente).
+      created_at: Time.current
     )
   end
 
@@ -40,6 +43,24 @@ RSpec.describe 'CRM Audit Events API', type: :request do
       # (RequestExceptionHandler#render_unauthorized).
       expect(response).to have_http_status(:unauthorized)
       expect(response.parsed_body).to eq('error' => 'You are not authorized to do this action')
+    end
+
+    # Regressão: params[:action] é o nome da action Rails ('index'), não o
+    # filtro — sem query_parameters a listagem vinha sempre vazia.
+    it 'filters by action via query string' do
+      create_event!
+      CrmAuditEvent.create!(
+        account: account, actor_type: 'user', actor_id: admin.id,
+        action: 'deal_moved', target_type: 'CrmDeal', target_id: 1,
+        payload: {}, created_at: Time.current
+      )
+
+      get "/api/v1/accounts/#{account.id}/crm/audit-events?action=deal_moved",
+          headers: admin.create_new_auth_token,
+          as: :json
+
+      expect(response).to have_http_status(:success)
+      expect(response.parsed_body.pluck('action')).to eq(['deal_moved'])
     end
   end
 end

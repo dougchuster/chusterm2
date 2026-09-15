@@ -113,3 +113,20 @@ então o arquivo vive em `docs/execution/` como os demais entregáveis.)
   (filtros, isolamento cross-account, não-membro→401); vitest
   AutomationRules 8/8 e DealDetails 18/18; rubocop+eslint limpos.
   Rollback: revert do commit.
+- **CRM-005 (P1, E1 — QA do épico)** — suíte CRM completa
+  (`spec/services/crm` + `spec/controllers/api/v1/accounts/crm`):
+  316 exemplos, 0 falhas. O QA expôs e corrigiu dois débitos
+  preexistentes fora dos cards do épico:
+  - `channel_pipeline_provisioner_spec`: spec esperava slugs antigos
+    (`novo-atendimento`/`qualificado`) — desde o AccountInitializer toda
+    conta ganha pipeline default com os slugs universais, e o provisioner
+    copia os estágios da fonte default. Spec reescrita para o contrato
+    real (cópia por slug + fallback para o primeiro estágio quando o slug
+    não existe no pipeline do canal).
+  - `audit_events#index` **nunca funcionou**: `params[:action]` colide
+    com o nome da action Rails (`'index'`), então `where(action: 'index')`
+    esvaziava a listagem em 100% dos requests. Filtros agora lidos de
+    `request.query_parameters`; spec ganhou exemplo de regressão do
+    filtro `?action=` e `created_at` explícito no helper (o model tem
+    `record_timestamps = false`).
+  Evidência: rspec 316/0; rubocop limpo. Rollback: revert do commit.
