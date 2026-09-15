@@ -6,42 +6,45 @@ class Api::V1::Accounts::Crm::MetricsController < Api::V1::Accounts::Crm::BaseCo
   before_action -> { authorize CrmDeal, :index? }
 
   def overview
-    render json: cached('overview', params[:period_days]) do
+    # `render json: cached(...) do ... end` ligaria o bloco ao `render`, nao
+    # ao `cached` — `do...end` casa com a chamada mais externa. O payload
+    # precisa ser computado antes do render ou os endpoints devolvem `null`.
+    render json: cached('overview', params[:period_days]) {
       metrics_service.overview(period_days: params[:period_days]&.to_i || 30)
-    end
+    }
   end
 
   def stage_funnel
-    render json: cached('stage_funnel', params[:pipeline_id]) do
+    render json: cached('stage_funnel', params[:pipeline_id]) {
       metrics_service.stage_funnel(pipeline_id: params[:pipeline_id])
-    end
+    }
   end
 
   def time_in_stage
-    render json: cached('time_in_stage', params[:pipeline_id], params[:period_days]) do
+    render json: cached('time_in_stage', params[:pipeline_id], params[:period_days]) {
       metrics_service.time_in_stage(
         pipeline_id: params[:pipeline_id],
         period_days: params[:period_days]&.to_i || 90
       )
-    end
+    }
   end
 
   def win_loss_trend
-    render json: cached('win_loss_trend', params[:months]) do
+    render json: cached('win_loss_trend', params[:months]) {
       metrics_service.win_loss_trend(months: params[:months]&.to_i || 6)
-    end
+    }
   end
 
   def top_loss_reasons
-    render json: cached('top_loss_reasons', params[:limit]) do
+    render json: cached('top_loss_reasons', params[:limit]) {
       metrics_service.top_loss_reasons(limit: params[:limit]&.to_i || 10)
-    end
+    }
   end
 
   def score_by_stage
-    render json: cached('score_by_stage', params[:pipeline_id]) do
+    render json: cached('score_by_stage', params[:pipeline_id]) {
       metrics_service.score_by_stage(pipeline_id: params[:pipeline_id])
-    end
+    }
   end
 
   def area_distribution
@@ -49,18 +52,18 @@ class Api::V1::Accounts::Crm::MetricsController < Api::V1::Accounts::Crm::BaseCo
   end
 
   def top_deals
-    render json: cached('top_deals', params[:limit]) do
+    render json: cached('top_deals', params[:limit]) {
       metrics_service.top_deals(limit: params[:limit]&.to_i || 10)
-    end
+    }
   end
 
   def stale_deals
-    render json: cached('stale_deals', params[:days], params[:limit]) do
+    render json: cached('stale_deals', params[:days], params[:limit]) {
       metrics_service.stale_deals(
         days: params[:days]&.to_i || 7,
         limit: params[:limit]&.to_i || 20
       )
-    end
+    }
   end
 
   private
