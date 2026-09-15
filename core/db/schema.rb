@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_08_28_000006) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -969,6 +969,23 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_28_000006) do
     t.index ["crm_pipeline_stage_id"], name: "idx_crm_automation_rules_pipeline_stage_id"
   end
 
+  create_table "crm_automation_runs", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "crm_automation_rule_id", null: false
+    t.bigint "crm_deal_id", null: false
+    t.string "status", default: "executed", null: false
+    t.string "skip_reason", limit: 80
+    t.text "error"
+    t.jsonb "payload", default: {}, null: false
+    t.datetime "started_at", null: false
+    t.datetime "finished_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "crm_deal_id", "started_at"], name: "idx_crm_automation_runs_deal_started"
+    t.index ["account_id"], name: "idx_crm_automation_runs_account_id"
+    t.index ["crm_automation_rule_id"], name: "idx_crm_automation_runs_rule_id"
+  end
+
   create_table "crm_board_views", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.bigint "user_id", null: false
@@ -1919,6 +1936,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_28_000006) do
   add_foreign_key "contacts", "users", column: "crm_owner_id", on_delete: :nullify
   add_foreign_key "crm_automation_rules", "accounts"
   add_foreign_key "crm_automation_rules", "crm_pipeline_stages"
+  add_foreign_key "crm_automation_runs", "accounts"
+  add_foreign_key "crm_automation_runs", "crm_automation_rules"
+  add_foreign_key "crm_automation_runs", "crm_deals"
   add_foreign_key "crm_board_views", "accounts"
   add_foreign_key "crm_board_views", "users"
   add_foreign_key "crm_cadence_enrollments", "accounts"
