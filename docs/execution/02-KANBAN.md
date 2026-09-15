@@ -17,7 +17,7 @@ Colunas: `Backlog → Priorizado → Em andamento → Em revisão → QA → Con
 | ID | Título | Tipo | P | Esf. | Épico | Coluna | Depende de | Risco upstream |
 |---|---|---|---|---|---|---|---|---|
 | CRM-001 | Unificar atribuição de dono em `Crm::DealOwnerAssigner` (B-01) | refactor | P1 | M | E1 | Concluído | — | 🟢 |
-| CRM-002 | Auditoria verdadeira de automação: não logar `executed` em no-op (B-03) | bug | P1 | S | E1 | Priorizado | — | 🟢 |
+| CRM-002 | Auditoria verdadeira de automação: não logar `executed` em no-op (B-03) | bug | P1 | S | E1 | Concluído | — | 🟢 |
 | CRM-003 | Criar `crm_automation_runs` (migration + model + escrita no StageAutomation) | feature | P1 | M | E1 | Priorizado | — | 🟢 |
 | CRM-004 | Listar runs de automação por deal/regra na UI | feature | P1 | M | E1 | Backlog | CRM-003 | 🟢 |
 | CRM-005 | QA do épico E1: specs + passagem manual de automações | débito | P1 | S | E1 | Backlog | CRM-001..004 | 🟢 |

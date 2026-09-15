@@ -1,7 +1,14 @@
 {
   "project": "ChusteRM — Reformulação CRM",
   "updated": "2026-09-14",
-  "columns": ["Backlog", "Priorizado", "Em andamento", "Em revisão", "QA", "Concluído"],
+  "columns": [
+    "Backlog",
+    "Priorizado",
+    "Em andamento",
+    "Em revisão",
+    "QA",
+    "Concluído"
+  ],
   "epics": {
     "E1": "Confiança & Automação",
     "E2": "Performance",
@@ -10,36 +17,481 @@
     "E5": "Plataforma & Governança"
   },
   "cards": [
-    {"id": "CRM-001", "title": "Unificar atribuição de dono em Crm::DealOwnerAssigner (B-01)", "type": "refactor", "priority": "P1", "effort": "M", "epic": "E1", "column": "Concluído", "depends_on": [], "upstream_risk": "low", "files": ["core/app/services/crm/contact_owner_router.rb", "core/app/controllers/api/v1/accounts/crm/deals_controller.rb", "core/app/services/crm/stage_automation.rb"], "problem": "Três implementações de atribuir dono com side-effects divergentes — origem do bug A-03.", "acceptance": ["Dado um único serviço DealOwnerAssigner quando qualquer caminho atribui dono então os mesmos campos são atualizados segundo parâmetros explícitos", "Dado spec cobrindo cada combinação de flags quando rodo rspec então passa"], "test": "bundle exec rspec spec/services/crm/deal_owner_assigner_spec.rb", "rollback": "revert do commit; call sites voltam ao código inline"},
-    {"id": "CRM-002", "title": "Auditoria verdadeira de automação (B-03)", "type": "bug", "priority": "P1", "effort": "S", "epic": "E1", "column": "Priorizado", "depends_on": [], "upstream_risk": "low", "files": ["core/app/services/crm/stage_automation.rb"], "problem": "Log de sucesso mesmo quando a ação é no-op.", "acceptance": ["Dado regra cuja ação retorna cedo quando perform executa então o evento registrado é automation_skipped_* e não automation_executed_*"], "test": "spec/services/crm/stage_automation_spec.rb", "rollback": "revert"},
-    {"id": "CRM-003", "title": "Criar crm_automation_runs (migration + model + escrita)", "type": "feature", "priority": "P1", "effort": "M", "epic": "E1", "column": "Priorizado", "depends_on": [], "upstream_risk": "low", "files": ["core/db/migrate", "core/app/models/crm_automation_run.rb", "core/app/services/crm/stage_automation.rb"], "problem": "Não há registro por execução — sem status, erro ou 'por que aconteceu'.", "acceptance": ["Dado regra executada quando StageAutomation roda então um run com status/started_at/finished_at/error é persistido"], "test": "rspec + checar tabela", "rollback": "migration reversível; model novo removível"},
-    {"id": "CRM-004", "title": "Listar runs de automação por deal/regra na UI", "type": "feature", "priority": "P1", "effort": "M", "epic": "E1", "column": "Backlog", "depends_on": ["CRM-003"], "upstream_risk": "low", "files": ["core/app/controllers/api/v1/accounts/crm", "core/app/javascript/dashboard"], "problem": "Operador não vê o que a automação fez.", "acceptance": ["Dado deal com automações quando abro detalhe então vejo lista de runs com status/erro"], "test": "spec + manual", "rollback": "feature flag"},
-    {"id": "CRM-005", "title": "QA do épico E1", "type": "débito", "priority": "P1", "effort": "S", "epic": "E1", "column": "Backlog", "depends_on": ["CRM-001", "CRM-002", "CRM-003", "CRM-004"], "upstream_risk": "low", "problem": "Fechar épico sem prova é repetir o passado.", "acceptance": ["Dados os cards do épico quando concluídos então specs verdes + passagem manual documentada"], "test": "rspec + playwright", "rollback": "n/a"},
-    {"id": "CRM-010", "title": "Investigar e quebrar chunk DashboardIcon de 11 MB", "type": "infra", "priority": "P0", "effort": "S", "epic": "E2", "column": "Concluído", "depends_on": [], "upstream_risk": "medium", "files": ["core/app/javascript", "core/vite.config.ts"], "problem": "Primeiro load baixa ~14 MB de JS nos 2 maiores chunks.", "acceptance": ["Dado build de produção quando inspeciono assets então nenhum chunk inicial > 1 MB sem justificativa"], "test": "vite build + manifest", "rollback": "revert da mudança de import"},
-    {"id": "CRM-011", "title": "Baseline autenticado: p95 endpoints + queries/request", "type": "infra", "priority": "P1", "effort": "S", "epic": "E2", "column": "Priorizado", "depends_on": [], "upstream_risk": "low", "files": ["qa/bench"], "problem": "Não há medição autenticada real para comparar depois.", "acceptance": ["Dado runner autenticado quando executo então gero tabela p95 + nº queries dos 10 endpoints principais"], "test": "artefato em docs/execution", "rollback": "n/a"},
-    {"id": "CRM-012", "title": "Deal rotting + soma de valor no topo da coluna", "type": "feature", "priority": "P1", "effort": "S", "epic": "E2", "column": "Backlog", "depends_on": [], "upstream_risk": "low", "files": ["core/app/javascript/dashboard/components/crm", "core/app/controllers/api/v1/accounts/crm/deals_controller.rb"], "problem": "Operador não vê valor nem o que apodrece sem abrir relatório.", "acceptance": ["Dado board quando renderiza coluna então mostra contagem+soma e cards esmaecem após N dias em stage_entered_at"], "test": "vitest + visual", "rollback": "revert"},
-    {"id": "CRM-013", "title": "QA do épico E2", "type": "débito", "priority": "P1", "effort": "S", "epic": "E2", "column": "Backlog", "depends_on": ["CRM-010", "CRM-011"], "upstream_risk": "low"},
-    {"id": "CRM-020", "title": "Spec invariante cross-account (TENANCY-P0)", "type": "infra", "priority": "P0", "effort": "S", "epic": "E3", "column": "Concluído", "depends_on": [], "upstream_risk": "low", "files": ["core/spec"], "problem": "Vazamento entre contas não tem prova automatizada executada.", "acceptance": ["Dado usuário da conta A quando GET/PATCH recurso da conta B então 404/403 — em deals, pipelines, activities, audit-events"], "test": "rspec novo arquivo", "rollback": "n/a"},
-    {"id": "CRM-021", "title": "Verificar/remover captain_triage de custom_fields nos strong params", "type": "bug", "priority": "P1", "effort": "XS", "epic": "E3", "column": "Concluído", "depends_on": [], "upstream_risk": "low", "files": ["core/app/controllers/api/v1/accounts/crm/deals_controller.rb"], "problem": "Agente pode inflar score via PATCH custom_fields['captain_triage'].", "acceptance": ["Dado PATCH com custom_fields.captain_triage quando aplico então a chave reservada é removida antes de persistir"], "test": "request spec", "rollback": "revert"},
-    {"id": "CRM-022", "title": "E2E jornada Inbox→IA→CRM (E2E-P0-00)", "type": "infra", "priority": "P1", "effort": "M", "epic": "E3", "column": "Backlog", "depends_on": [], "upstream_risk": "medium"},
-    {"id": "CRM-023", "title": "Kanban 201+ deals: localizar 201º e reconciliar soma (CRM-201-01)", "type": "infra", "priority": "P1", "effort": "S", "epic": "E3", "column": "Backlog", "depends_on": [], "upstream_risk": "low"},
-    {"id": "CRM-024", "title": "Revalidar time_in_stage/stale_deals", "type": "bug", "priority": "P2", "effort": "XS", "epic": "E3", "column": "Backlog", "depends_on": [], "upstream_risk": "low"},
-    {"id": "CRM-025", "title": "Passagem visual das 161 rotas (VISUAL-F0)", "type": "design", "priority": "P2", "effort": "M", "epic": "E3", "column": "Backlog", "depends_on": ["CRM-040"], "upstream_risk": "medium"},
-    {"id": "CRM-026", "title": "QA do épico E3", "type": "débito", "priority": "P1", "effort": "S", "epic": "E3", "column": "Backlog", "depends_on": ["CRM-020", "CRM-021", "CRM-022", "CRM-023", "CRM-024", "CRM-025"], "upstream_risk": "low"},
-    {"id": "CRM-030", "title": "Expandir Obsidian+Mineral aos módulos CRM secundários", "type": "design", "priority": "P1", "effort": "M", "epic": "E4", "column": "Priorizado", "depends_on": [], "upstream_risk": "medium"},
-    {"id": "CRM-031", "title": "Toggle densidade compacta/confortável persistido", "type": "feature", "priority": "P2", "effort": "M", "epic": "E4", "column": "Backlog", "depends_on": [], "upstream_risk": "medium"},
-    {"id": "CRM-032", "title": "Painéis laterais redimensionáveis persistidos", "type": "feature", "priority": "P2", "effort": "M", "epic": "E4", "column": "Backlog", "depends_on": [], "upstream_risk": "medium"},
-    {"id": "CRM-033", "title": "Estados vazio/erro/offline/permissão auditados nas telas CRM", "type": "design", "priority": "P2", "effort": "M", "epic": "E4", "column": "Backlog", "depends_on": [], "upstream_risk": "low"},
-    {"id": "CRM-034", "title": "⌘K unificado: busca global + ações", "type": "feature", "priority": "P2", "effort": "M", "epic": "E4", "column": "Backlog", "depends_on": [], "upstream_risk": "medium"},
-    {"id": "CRM-035", "title": "QA do épico E4", "type": "débito", "priority": "P2", "effort": "S", "epic": "E4", "column": "Backlog", "depends_on": ["CRM-030", "CRM-031", "CRM-032", "CRM-033", "CRM-034"], "upstream_risk": "low"},
-    {"id": "CRM-040", "title": "Deletar services/crm-service e services/identity-bridge + docs", "type": "infra", "priority": "P2", "effort": "XS", "epic": "E5", "column": "Priorizado", "depends_on": ["dúvida #3"], "upstream_risk": "low"},
-    {"id": "CRM-041", "title": "Alinhar Node local ao alvo 24", "type": "infra", "priority": "P3", "effort": "XS", "epic": "E5", "column": "Backlog", "depends_on": [], "upstream_risk": "low"},
-    {"id": "CRM-042", "title": "Remover lock OpenRouter-only do llm/client.ts", "type": "refactor", "priority": "P3", "effort": "XS", "epic": "E5", "column": "Backlog", "depends_on": [], "upstream_risk": "low"},
-    {"id": "CRM-043", "title": "Agente multi-perfil no orchestrator", "type": "feature", "priority": "P2", "effort": "M", "epic": "E5", "column": "Backlog", "depends_on": ["dúvida #5"], "upstream_risk": "low"},
-    {"id": "CRM-044", "title": "Playbook de sync upstream quinzenal + checklist regressão", "type": "infra", "priority": "P2", "effort": "S", "epic": "E5", "column": "Backlog", "depends_on": [], "upstream_risk": "medium"},
-    {"id": "CRM-045", "title": "Export/exclusão LGPD do titular self-service", "type": "feature", "priority": "P2", "effort": "M", "epic": "E5", "column": "Backlog", "depends_on": [], "upstream_risk": "low"},
-    {"id": "CRM-046", "title": "Transcrição de áudio WhatsApp", "type": "feature", "priority": "P2", "effort": "S", "epic": "E5", "column": "Backlog", "depends_on": [], "upstream_risk": "medium"},
-    {"id": "CRM-047", "title": "Estado do orchestrator fora de memória (Redis)", "type": "refactor", "priority": "P2", "effort": "M", "epic": "E5", "column": "Backlog", "depends_on": ["dúvida #2"], "upstream_risk": "low"},
-    {"id": "CRM-048", "title": "QA do épico E5", "type": "débito", "priority": "P2", "effort": "S", "epic": "E5", "column": "Backlog", "depends_on": ["CRM-040", "CRM-041", "CRM-042", "CRM-043", "CRM-044", "CRM-045", "CRM-046", "CRM-047"], "upstream_risk": "low"}
+    {
+      "id": "CRM-001",
+      "title": "Unificar atribuição de dono em Crm::DealOwnerAssigner (B-01)",
+      "type": "refactor",
+      "priority": "P1",
+      "effort": "M",
+      "epic": "E1",
+      "column": "Concluído",
+      "depends_on": [],
+      "upstream_risk": "low",
+      "files": [
+        "core/app/services/crm/contact_owner_router.rb",
+        "core/app/controllers/api/v1/accounts/crm/deals_controller.rb",
+        "core/app/services/crm/stage_automation.rb"
+      ],
+      "problem": "Três implementações de atribuir dono com side-effects divergentes — origem do bug A-03.",
+      "acceptance": [
+        "Dado um único serviço DealOwnerAssigner quando qualquer caminho atribui dono então os mesmos campos são atualizados segundo parâmetros explícitos",
+        "Dado spec cobrindo cada combinação de flags quando rodo rspec então passa"
+      ],
+      "test": "bundle exec rspec spec/services/crm/deal_owner_assigner_spec.rb",
+      "rollback": "revert do commit; call sites voltam ao código inline"
+    },
+    {
+      "id": "CRM-002",
+      "title": "Auditoria verdadeira de automação (B-03)",
+      "type": "bug",
+      "priority": "P1",
+      "effort": "S",
+      "epic": "E1",
+      "column": "Concluído",
+      "depends_on": [],
+      "upstream_risk": "low",
+      "files": [
+        "core/app/services/crm/stage_automation.rb"
+      ],
+      "problem": "Log de sucesso mesmo quando a ação é no-op.",
+      "acceptance": [
+        "Dado regra cuja ação retorna cedo quando perform executa então o evento registrado é automation_skipped_* e não automation_executed_*"
+      ],
+      "test": "spec/services/crm/stage_automation_spec.rb",
+      "rollback": "revert"
+    },
+    {
+      "id": "CRM-003",
+      "title": "Criar crm_automation_runs (migration + model + escrita)",
+      "type": "feature",
+      "priority": "P1",
+      "effort": "M",
+      "epic": "E1",
+      "column": "Priorizado",
+      "depends_on": [],
+      "upstream_risk": "low",
+      "files": [
+        "core/db/migrate",
+        "core/app/models/crm_automation_run.rb",
+        "core/app/services/crm/stage_automation.rb"
+      ],
+      "problem": "Não há registro por execução — sem status, erro ou 'por que aconteceu'.",
+      "acceptance": [
+        "Dado regra executada quando StageAutomation roda então um run com status/started_at/finished_at/error é persistido"
+      ],
+      "test": "rspec + checar tabela",
+      "rollback": "migration reversível; model novo removível"
+    },
+    {
+      "id": "CRM-004",
+      "title": "Listar runs de automação por deal/regra na UI",
+      "type": "feature",
+      "priority": "P1",
+      "effort": "M",
+      "epic": "E1",
+      "column": "Backlog",
+      "depends_on": [
+        "CRM-003"
+      ],
+      "upstream_risk": "low",
+      "files": [
+        "core/app/controllers/api/v1/accounts/crm",
+        "core/app/javascript/dashboard"
+      ],
+      "problem": "Operador não vê o que a automação fez.",
+      "acceptance": [
+        "Dado deal com automações quando abro detalhe então vejo lista de runs com status/erro"
+      ],
+      "test": "spec + manual",
+      "rollback": "feature flag"
+    },
+    {
+      "id": "CRM-005",
+      "title": "QA do épico E1",
+      "type": "débito",
+      "priority": "P1",
+      "effort": "S",
+      "epic": "E1",
+      "column": "Backlog",
+      "depends_on": [
+        "CRM-001",
+        "CRM-002",
+        "CRM-003",
+        "CRM-004"
+      ],
+      "upstream_risk": "low",
+      "problem": "Fechar épico sem prova é repetir o passado.",
+      "acceptance": [
+        "Dados os cards do épico quando concluídos então specs verdes + passagem manual documentada"
+      ],
+      "test": "rspec + playwright",
+      "rollback": "n/a"
+    },
+    {
+      "id": "CRM-010",
+      "title": "Investigar e quebrar chunk DashboardIcon de 11 MB",
+      "type": "infra",
+      "priority": "P0",
+      "effort": "S",
+      "epic": "E2",
+      "column": "Concluído",
+      "depends_on": [],
+      "upstream_risk": "medium",
+      "files": [
+        "core/app/javascript",
+        "core/vite.config.ts"
+      ],
+      "problem": "Primeiro load baixa ~14 MB de JS nos 2 maiores chunks.",
+      "acceptance": [
+        "Dado build de produção quando inspeciono assets então nenhum chunk inicial > 1 MB sem justificativa"
+      ],
+      "test": "vite build + manifest",
+      "rollback": "revert da mudança de import"
+    },
+    {
+      "id": "CRM-011",
+      "title": "Baseline autenticado: p95 endpoints + queries/request",
+      "type": "infra",
+      "priority": "P1",
+      "effort": "S",
+      "epic": "E2",
+      "column": "Priorizado",
+      "depends_on": [],
+      "upstream_risk": "low",
+      "files": [
+        "qa/bench"
+      ],
+      "problem": "Não há medição autenticada real para comparar depois.",
+      "acceptance": [
+        "Dado runner autenticado quando executo então gero tabela p95 + nº queries dos 10 endpoints principais"
+      ],
+      "test": "artefato em docs/execution",
+      "rollback": "n/a"
+    },
+    {
+      "id": "CRM-012",
+      "title": "Deal rotting + soma de valor no topo da coluna",
+      "type": "feature",
+      "priority": "P1",
+      "effort": "S",
+      "epic": "E2",
+      "column": "Backlog",
+      "depends_on": [],
+      "upstream_risk": "low",
+      "files": [
+        "core/app/javascript/dashboard/components/crm",
+        "core/app/controllers/api/v1/accounts/crm/deals_controller.rb"
+      ],
+      "problem": "Operador não vê valor nem o que apodrece sem abrir relatório.",
+      "acceptance": [
+        "Dado board quando renderiza coluna então mostra contagem+soma e cards esmaecem após N dias em stage_entered_at"
+      ],
+      "test": "vitest + visual",
+      "rollback": "revert"
+    },
+    {
+      "id": "CRM-013",
+      "title": "QA do épico E2",
+      "type": "débito",
+      "priority": "P1",
+      "effort": "S",
+      "epic": "E2",
+      "column": "Backlog",
+      "depends_on": [
+        "CRM-010",
+        "CRM-011"
+      ],
+      "upstream_risk": "low"
+    },
+    {
+      "id": "CRM-020",
+      "title": "Spec invariante cross-account (TENANCY-P0)",
+      "type": "infra",
+      "priority": "P0",
+      "effort": "S",
+      "epic": "E3",
+      "column": "Concluído",
+      "depends_on": [],
+      "upstream_risk": "low",
+      "files": [
+        "core/spec"
+      ],
+      "problem": "Vazamento entre contas não tem prova automatizada executada.",
+      "acceptance": [
+        "Dado usuário da conta A quando GET/PATCH recurso da conta B então 404/403 — em deals, pipelines, activities, audit-events"
+      ],
+      "test": "rspec novo arquivo",
+      "rollback": "n/a"
+    },
+    {
+      "id": "CRM-021",
+      "title": "Verificar/remover captain_triage de custom_fields nos strong params",
+      "type": "bug",
+      "priority": "P1",
+      "effort": "XS",
+      "epic": "E3",
+      "column": "Concluído",
+      "depends_on": [],
+      "upstream_risk": "low",
+      "files": [
+        "core/app/controllers/api/v1/accounts/crm/deals_controller.rb"
+      ],
+      "problem": "Agente pode inflar score via PATCH custom_fields['captain_triage'].",
+      "acceptance": [
+        "Dado PATCH com custom_fields.captain_triage quando aplico então a chave reservada é removida antes de persistir"
+      ],
+      "test": "request spec",
+      "rollback": "revert"
+    },
+    {
+      "id": "CRM-022",
+      "title": "E2E jornada Inbox→IA→CRM (E2E-P0-00)",
+      "type": "infra",
+      "priority": "P1",
+      "effort": "M",
+      "epic": "E3",
+      "column": "Backlog",
+      "depends_on": [],
+      "upstream_risk": "medium"
+    },
+    {
+      "id": "CRM-023",
+      "title": "Kanban 201+ deals: localizar 201º e reconciliar soma (CRM-201-01)",
+      "type": "infra",
+      "priority": "P1",
+      "effort": "S",
+      "epic": "E3",
+      "column": "Backlog",
+      "depends_on": [],
+      "upstream_risk": "low"
+    },
+    {
+      "id": "CRM-024",
+      "title": "Revalidar time_in_stage/stale_deals",
+      "type": "bug",
+      "priority": "P2",
+      "effort": "XS",
+      "epic": "E3",
+      "column": "Backlog",
+      "depends_on": [],
+      "upstream_risk": "low"
+    },
+    {
+      "id": "CRM-025",
+      "title": "Passagem visual das 161 rotas (VISUAL-F0)",
+      "type": "design",
+      "priority": "P2",
+      "effort": "M",
+      "epic": "E3",
+      "column": "Backlog",
+      "depends_on": [
+        "CRM-040"
+      ],
+      "upstream_risk": "medium"
+    },
+    {
+      "id": "CRM-026",
+      "title": "QA do épico E3",
+      "type": "débito",
+      "priority": "P1",
+      "effort": "S",
+      "epic": "E3",
+      "column": "Backlog",
+      "depends_on": [
+        "CRM-020",
+        "CRM-021",
+        "CRM-022",
+        "CRM-023",
+        "CRM-024",
+        "CRM-025"
+      ],
+      "upstream_risk": "low"
+    },
+    {
+      "id": "CRM-030",
+      "title": "Expandir Obsidian+Mineral aos módulos CRM secundários",
+      "type": "design",
+      "priority": "P1",
+      "effort": "M",
+      "epic": "E4",
+      "column": "Priorizado",
+      "depends_on": [],
+      "upstream_risk": "medium"
+    },
+    {
+      "id": "CRM-031",
+      "title": "Toggle densidade compacta/confortável persistido",
+      "type": "feature",
+      "priority": "P2",
+      "effort": "M",
+      "epic": "E4",
+      "column": "Backlog",
+      "depends_on": [],
+      "upstream_risk": "medium"
+    },
+    {
+      "id": "CRM-032",
+      "title": "Painéis laterais redimensionáveis persistidos",
+      "type": "feature",
+      "priority": "P2",
+      "effort": "M",
+      "epic": "E4",
+      "column": "Backlog",
+      "depends_on": [],
+      "upstream_risk": "medium"
+    },
+    {
+      "id": "CRM-033",
+      "title": "Estados vazio/erro/offline/permissão auditados nas telas CRM",
+      "type": "design",
+      "priority": "P2",
+      "effort": "M",
+      "epic": "E4",
+      "column": "Backlog",
+      "depends_on": [],
+      "upstream_risk": "low"
+    },
+    {
+      "id": "CRM-034",
+      "title": "⌘K unificado: busca global + ações",
+      "type": "feature",
+      "priority": "P2",
+      "effort": "M",
+      "epic": "E4",
+      "column": "Backlog",
+      "depends_on": [],
+      "upstream_risk": "medium"
+    },
+    {
+      "id": "CRM-035",
+      "title": "QA do épico E4",
+      "type": "débito",
+      "priority": "P2",
+      "effort": "S",
+      "epic": "E4",
+      "column": "Backlog",
+      "depends_on": [
+        "CRM-030",
+        "CRM-031",
+        "CRM-032",
+        "CRM-033",
+        "CRM-034"
+      ],
+      "upstream_risk": "low"
+    },
+    {
+      "id": "CRM-040",
+      "title": "Deletar services/crm-service e services/identity-bridge + docs",
+      "type": "infra",
+      "priority": "P2",
+      "effort": "XS",
+      "epic": "E5",
+      "column": "Priorizado",
+      "depends_on": [
+        "dúvida #3"
+      ],
+      "upstream_risk": "low"
+    },
+    {
+      "id": "CRM-041",
+      "title": "Alinhar Node local ao alvo 24",
+      "type": "infra",
+      "priority": "P3",
+      "effort": "XS",
+      "epic": "E5",
+      "column": "Backlog",
+      "depends_on": [],
+      "upstream_risk": "low"
+    },
+    {
+      "id": "CRM-042",
+      "title": "Remover lock OpenRouter-only do llm/client.ts",
+      "type": "refactor",
+      "priority": "P3",
+      "effort": "XS",
+      "epic": "E5",
+      "column": "Backlog",
+      "depends_on": [],
+      "upstream_risk": "low"
+    },
+    {
+      "id": "CRM-043",
+      "title": "Agente multi-perfil no orchestrator",
+      "type": "feature",
+      "priority": "P2",
+      "effort": "M",
+      "epic": "E5",
+      "column": "Backlog",
+      "depends_on": [
+        "dúvida #5"
+      ],
+      "upstream_risk": "low"
+    },
+    {
+      "id": "CRM-044",
+      "title": "Playbook de sync upstream quinzenal + checklist regressão",
+      "type": "infra",
+      "priority": "P2",
+      "effort": "S",
+      "epic": "E5",
+      "column": "Backlog",
+      "depends_on": [],
+      "upstream_risk": "medium"
+    },
+    {
+      "id": "CRM-045",
+      "title": "Export/exclusão LGPD do titular self-service",
+      "type": "feature",
+      "priority": "P2",
+      "effort": "M",
+      "epic": "E5",
+      "column": "Backlog",
+      "depends_on": [],
+      "upstream_risk": "low"
+    },
+    {
+      "id": "CRM-046",
+      "title": "Transcrição de áudio WhatsApp",
+      "type": "feature",
+      "priority": "P2",
+      "effort": "S",
+      "epic": "E5",
+      "column": "Backlog",
+      "depends_on": [],
+      "upstream_risk": "medium"
+    },
+    {
+      "id": "CRM-047",
+      "title": "Estado do orchestrator fora de memória (Redis)",
+      "type": "refactor",
+      "priority": "P2",
+      "effort": "M",
+      "epic": "E5",
+      "column": "Backlog",
+      "depends_on": [
+        "dúvida #2"
+      ],
+      "upstream_risk": "low"
+    },
+    {
+      "id": "CRM-048",
+      "title": "QA do épico E5",
+      "type": "débito",
+      "priority": "P2",
+      "effort": "S",
+      "epic": "E5",
+      "column": "Backlog",
+      "depends_on": [
+        "CRM-040",
+        "CRM-041",
+        "CRM-042",
+        "CRM-043",
+        "CRM-044",
+        "CRM-045",
+        "CRM-046",
+        "CRM-047"
+      ],
+      "upstream_risk": "low"
+    }
   ]
 }

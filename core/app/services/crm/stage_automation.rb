@@ -20,27 +20,28 @@ class Crm::StageAutomation
         next
       end
 
-      case rule.action_type
-      when 'create_activity'
-        execute_create_activity(rule, config)
-      when 'set_captain_mode'
-        execute_set_captain_mode(rule, config)
-      when 'move_to_stage'
-        execute_move_to_stage(rule, config)
-      when 'assign_owner'
-        unless execute_assign_owner(rule, config)
-          log_skip(rule, 'automation_skipped_invalid_owner', config)
-          next
-        end
-      end
+      # Cada executor devolve :executed ou o motivo do skip — nunca logar
+      # `automation_executed_*` quando a regra foi no-op, senão a trilha de
+      # auditoria mente sobre o que aconteceu (B-03).
+      result = case rule.action_type
+               when 'create_activity' then execute_create_activity(config)
+               when 'set_captain_mode' then execute_set_captain_mode(config)
+               when 'move_to_stage' then execute_move_to_stage(config)
+               when 'assign_owner' then execute_assign_owner(config)
+               else :unknown_action_type
+               end
 
-      Crm::AuditLogger.log(
-        account: @deal.account,
-        actor: @actor,
-        action: "automation_executed_#{rule.action_type}",
-        target: @deal,
-        payload: { automation: 'stage', stage_slug: @deal.crm_pipeline_stage&.slug, rule_id: rule.id, action_type: rule.action_type }
-      )
+      if result == :executed
+        Crm::AuditLogger.log(
+          account: @deal.account,
+          actor: @actor,
+          action: "automation_executed_#{rule.action_type}",
+          target: @deal,
+          payload: { automation: 'stage', stage_slug: @deal.crm_pipeline_stage&.slug, rule_id: rule.id, action_type: rule.action_type }
+        )
+      else
+        log_skip(rule, "automation_skipped_#{result}", config)
+      end
     end
   end
 
@@ -83,8 +84,8 @@ class Crm::StageAutomation
     CrmActivity::PRIORITIES.include?(normalized_priority) ? normalized_priority : 'normal'
   end
 
-  def execute_create_activity(rule, config)
-    return if pending_activity_exists?(config)
+  def execute_create_activity(config)
+    return :duplicate_activity if pending_activity_exists?(config)
 
     @deal.crm_activities.create!(
       account: @deal.account,
@@ -98,31 +99,33 @@ class Crm::StageAutomation
       created_by_type: @actor ? @actor.class.name : 'system',
       created_by_id: @actor.respond_to?(:id) ? @actor.id : nil
     )
+    :executed
   end
 
-  def execute_set_captain_mode(_rule, config)
+  def execute_set_captain_mode(config)
     conversation = @deal.conversation
-    return unless conversation
+    return :no_conversation unless conversation
 
     captain_state = @deal.account.captain_conversation_states.find_by(conversation: conversation)
-    return unless captain_state
+    return :no_captain_state unless captain_state
 
     mode = config[:ai_mode].to_s
-    return unless CaptainConversationState::AI_MODES.include?(mode)
+    return :invalid_ai_mode unless CaptainConversationState::AI_MODES.include?(mode)
 
     captain_state.apply_ai_mode!(
       mode: mode,
       reason: config[:reason] || "Automacao CRM: deal entrou na etapa #{@deal.crm_pipeline_stage&.name}"
     )
+    :executed
   end
 
-  def execute_move_to_stage(_rule, config)
+  def execute_move_to_stage(config)
     target_slug = config[:stage_slug].to_s
-    return if target_slug.blank?
+    return :blank_stage_slug if target_slug.blank?
 
     target_stage = @deal.crm_pipeline.crm_pipeline_stages.active.find_by(slug: target_slug)
-    return unless target_stage
-    return if @deal.crm_pipeline_stage_id == target_stage.id
+    return :stage_not_found unless target_stage
+    return :same_stage if @deal.crm_pipeline_stage_id == target_stage.id
 
     # Guarda de ciclo: cada move encadeado incrementa a profundidade; ao
     # atingir o teto a automação é pulada (o comportamento de regras não
@@ -132,7 +135,7 @@ class Crm::StageAutomation
         "[CRM StageAutomation] move_to_stage ignorado: profundidade máxima #{MAX_AUTOMATION_DEPTH} " \
         "atingida (possível ciclo) deal=#{@deal.id} etapa_destino=#{target_slug}"
       )
-      return
+      return :max_depth
     end
 
     Crm::DealMover.new(
@@ -141,15 +144,16 @@ class Crm::StageAutomation
       actor: @actor,
       automation_depth: @automation_depth + 1
     ).perform
+    :executed
   end
 
   # O dono é sempre gravado; o responsável acompanha o dono, exceto quando foi
   # escolhido a dedo — regra centralizada em Crm::DealOwnerAssigner.
   # Diferente da acao manual em massa, nao mexemos em `contact.crm_owner_id`:
   # isso rerotearia todos os negocios futuros do contato.
-  def execute_assign_owner(_rule, config)
+  def execute_assign_owner(config)
     user = resolve_owner(config[:user_id])
-    return false if user.nil?
+    return :invalid_owner if user.nil?
 
     result = Crm::DealOwnerAssigner.new(
       deal: @deal,
@@ -158,7 +162,7 @@ class Crm::StageAutomation
       sync_assignee: :if_unmanaged
     ).perform
     log_preserved_assignee(result.preserved_assignee_id) if result.preserved_assignee_id
-    true
+    :executed
   end
 
   def log_preserved_assignee(assignee_id)

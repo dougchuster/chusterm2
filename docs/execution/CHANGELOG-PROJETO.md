@@ -51,3 +51,11 @@ então o arquivo vive em `docs/execution/` como os demais entregáveis.)
   reservada `captain_triage` nos params de create e update do deals_controller,
   e specs já cobrem os dois caminhos (`deals_controller_spec.rb:146,197`).
   Nenhuma mudança de código necessária — card fechado com evidência existente.
+- **CRM-002 (P1, E1)** — auditoria verdadeira em `Crm::StageAutomation`: cada
+  executor devolve `:executed` ou o motivo do skip (`duplicate_activity`,
+  `no_conversation`, `no_captain_state`, `invalid_ai_mode`,
+  `blank_stage_slug`, `stage_not_found`, `same_stage`, `max_depth`,
+  `invalid_owner`) e o loop só grava `automation_executed_*` quando a regra
+  realmente agiu — antes, todo caminho logava `executed` mesmo em no-op.
+  Evidência: 14 exemplos, 0 falhas em stage_automation_spec; rubocop limpo.
+  Rollback: revert do commit.

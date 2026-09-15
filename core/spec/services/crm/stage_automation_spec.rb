@@ -15,14 +15,18 @@ RSpec.describe Crm::StageAutomation do
     )
   end
 
-  def build_assign_owner_rule(config)
+  def build_rule(action_type, config)
     account.crm_automation_rules.create!(
       crm_pipeline_stage: stage,
-      name: 'Atribuir responsavel na qualificacao',
+      name: "Regra #{action_type}",
       trigger_event: 'stage_entered',
-      action_type: 'assign_owner',
+      action_type: action_type,
       action_config: config
     )
+  end
+
+  def build_assign_owner_rule(config)
+    build_rule('assign_owner', config)
   end
 
   describe 'assign_owner action' do
@@ -125,6 +129,57 @@ RSpec.describe Crm::StageAutomation do
 
       expect { described_class.new(deal: deal, actor: nil).perform }
         .not_to(change { deal.reload.owner_id })
+    end
+  end
+
+  describe 'truthful audit trail (B-03)' do
+    it 'does not log executed when create_activity hits a pending duplicate' do
+      build_rule('create_activity', { 'kind' => 'follow_up', 'title' => 'Ligar para o lead' })
+      deal.crm_activities.create!(
+        account: account, kind: 'follow_up', title: 'Ligar para o lead', priority: 'normal'
+      )
+      allow(Crm::AuditLogger).to receive(:log)
+
+      described_class.new(deal: deal, actor: nil).perform
+
+      expect(Crm::AuditLogger).not_to have_received(:log)
+        .with(hash_including(action: 'automation_executed_create_activity'))
+      expect(Crm::AuditLogger).to have_received(:log)
+        .with(hash_including(action: 'automation_skipped_duplicate_activity'))
+    end
+
+    it 'logs executed when create_activity actually creates the activity' do
+      build_rule('create_activity', { 'kind' => 'follow_up', 'title' => 'Ligar para o lead' })
+      allow(Crm::AuditLogger).to receive(:log)
+
+      expect { described_class.new(deal: deal, actor: nil).perform }
+        .to change { deal.crm_activities.count }.by(1)
+      expect(Crm::AuditLogger).to have_received(:log)
+        .with(hash_including(action: 'automation_executed_create_activity'))
+    end
+
+    it 'does not log executed when set_captain_mode finds no conversation' do
+      build_rule('set_captain_mode', { 'ai_mode' => 'assist' })
+      allow(Crm::AuditLogger).to receive(:log)
+
+      described_class.new(deal: deal, actor: nil).perform
+
+      expect(Crm::AuditLogger).not_to have_received(:log)
+        .with(hash_including(action: 'automation_executed_set_captain_mode'))
+      expect(Crm::AuditLogger).to have_received(:log)
+        .with(hash_including(action: 'automation_skipped_no_conversation'))
+    end
+
+    it 'does not log executed when move_to_stage targets the current stage' do
+      build_rule('move_to_stage', { 'stage_slug' => stage.slug })
+      allow(Crm::AuditLogger).to receive(:log)
+
+      described_class.new(deal: deal, actor: nil).perform
+
+      expect(Crm::AuditLogger).not_to have_received(:log)
+        .with(hash_including(action: 'automation_executed_move_to_stage'))
+      expect(Crm::AuditLogger).to have_received(:log)
+        .with(hash_including(action: 'automation_skipped_same_stage'))
     end
   end
 end
