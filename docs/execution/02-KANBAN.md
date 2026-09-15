@@ -24,7 +24,7 @@ Colunas: `Backlog → Priorizado → Em andamento → Em revisão → QA → Con
 | CRM-010 | Investigar e quebrar chunk `DashboardIcon` de 11 MB | infra | P0 | S | E2 | Concluído | — | 🟡 |
 | CRM-011 | Baseline autenticado: p95 dos 10 endpoints + queries/request | infra | P1 | S | E2 | Concluído | — | 🟢 |
 | CRM-012 | Deal rotting + soma de valor no topo da coluna Kanban | feature | P1 | S | E2 | Concluído | — | 🟢 |
-| CRM-013 | QA do épico E2: medir LCP das 5 telas e comparar bundle | débito | P1 | S | E2 | Backlog | CRM-010,011 | 🟢 |
+| CRM-013 | QA do épico E2: medir LCP das 5 telas e comparar bundle | débito | P1 | S | E2 | Concluído | CRM-010,011 | 🟢 |
 | CRM-020 | Spec de invariante cross-account (ler/escrever deal de outra conta → 404/403) (TENANCY-P0) | infra | P0 | S | E3 | Concluído | — | 🟢 |
 | CRM-021 | Verificar/remover `captain_triage` de `custom_fields` nos strong params | bug | P1 | XS | E3 | Concluído | — | 🟢 |
 | CRM-022 | E2E jornada Inbox → IA → CRM (E2E-P0-00) | infra | P1 | M | E3 | Backlog | — | 🟡 |

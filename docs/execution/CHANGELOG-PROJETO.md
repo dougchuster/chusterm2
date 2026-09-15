@@ -137,3 +137,10 @@ então o arquivo vive em `docs/execution/` como os demais entregáveis.)
   badge "STALE" + borda âmbar/vermelha). Evidência: vitest
   crmCardSignals 16 + CRMBoardColumn 14 + CRMDealCard 31 = 61 verdes.
   Nenhuma mudança de código.
+- **CRM-013 (P1, E2 — QA do épico)** — re-medição de bundle pós-cards:
+  orçamento mantido (JS inicial ~4,5 MB, nenhum chunk inicial novo >1 MB,
+  51 idiomas assíncronos). `crm/activities` ~530 ms confirmado como custo
+  de serialização sem N+1 — fica como débito de produto registrado em
+  `00-BASELINE-METRICAS.md` §8. LCP das 5 telas fica pendente de passagem
+  manual autenticada (registrado na seção e no board — CRM-025 cobre a
+  passagem visual completa).

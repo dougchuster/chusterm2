@@ -101,3 +101,19 @@ perf, não bug de query.
 
 p95-alvo (<300 ms): todos os endpoints medidos exceto `crm/activities` já
 cumprem; activities excede — registrado como débito de serialização.
+
+## 8. QA do épico E2 (CRM-013, re-medição 2026-09-15)
+
+Rebuild de produção pós-CRM-030/004: entry `dashboard` 2.974 kB,
+`DashboardIcon` 1.024 kB (en+pt_BR estáticos), 51 chunks de idioma
+assíncronos (~250-440 kB) — orçamento de bundle mantido (nenhum chunk
+inicial novo >1 MB; `dashboard`/`DashboardIcon` já estavam no baseline
+pós-CRM-010 e não cresceram).
+
+- `crm/activities` (~530 ms p95): débito de serialização conhecido — 200
+  registros × ~25 campos; não é N+1 (7 queries medidas). Reduzir exige
+  paginação menor ou serializer enxuto — fica como follow-up de produto
+  (decisão de quantos itens a tela precisa), não de QA.
+- LCP das 5 telas principais: exige sessão de browser autenticada com
+  dados reais — pendente de passagem manual documentada (ver
+  `02-KANBAN.md`, CRM-025 cobre a passagem visual completa).

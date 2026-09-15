@@ -196,7 +196,7 @@
       "priority": "P1",
       "effort": "S",
       "epic": "E2",
-      "column": "Backlog",
+      "column": "Concluído",
       "depends_on": [
         "CRM-010",
         "CRM-011"
