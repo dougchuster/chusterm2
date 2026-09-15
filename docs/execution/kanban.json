@@ -250,7 +250,7 @@
       "priority": "P1",
       "effort": "M",
       "epic": "E3",
-      "column": "Backlog",
+      "column": "Concluído",
       "depends_on": [],
       "upstream_risk": "medium"
     },

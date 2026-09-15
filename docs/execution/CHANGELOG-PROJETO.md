@@ -164,3 +164,20 @@ então o arquivo vive em `docs/execution/` como os demais entregáveis.)
   - UI: `CRMBoardColumn` renderiza `column.count` (não `deals.length`) e
     emite `loadMore` no scroll via `getColumnPage(stage, page)`.
   Nenhuma mudança de código.
+- **CRM-022 (P1, E3)** — jornada E2E Inbox → IA → CRM
+  (`qa/e2e/tests/inbox-ai-crm-journey.spec.ts`): resolve a conversa seedada
+  (`qa_fixture_conversation`) via API, confere o painel do Capitão (modo
+  ativo via `aria-pressed`, score, classificação), clica "Abrir negócio no
+  CRM" e valida que a ficha abre e o "Detalhes" leva a `/crm/deals/:id` com
+  o título do deal. O teste expôs e cobriu dois bugs reais:
+  - `crm?deal_id=` era produzido pelo `CaptainConversationStateCard` mas
+    **nenhum consumidor** abria a ficha — o link caía no quadro sem
+    contexto. `CrmIndexOperational#onMounted` agora consome o parâmetro e
+    abre o `CRMDealDrawer`.
+  - `?search=`/`?owner_id=`/`?priority=` na query pintavam a caixa de busca
+    mas não filtravam: `pullLegacyFilterRefs()` só rodava quando o usuário
+    aplicava filtro à mão. Chamado antes do `loadCrm` inicial — deep-links
+    de busca passam a filtrar no servidor.
+  Evidência: playwright 9/9 (auth-setup + jornada); vitest CrmIndex*
+  55/55; eslint sem erros novos (1 erro preexistente em Logo.vue, fora do
+  escopo). Rollback: revert do commit.

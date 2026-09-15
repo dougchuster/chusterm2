@@ -705,7 +705,18 @@ onMounted(async () => {
   readStoredDensity();
   loadBoardViews();
   store.dispatch('agents/get');
+  // Query string e a fonte de verdade dos filtros legados: sem o pull, um
+  // link como `/crm?search=X` pintava a caixa mas nao filtrava o quadro.
+  pullLegacyFilterRefs();
   await loadCrm();
+
+  // Deep-link vindo do atendimento (`/crm?deal_id=`): abre a ficha do
+  // negocio por cima do quadro, sem exigir que o card esteja carregado.
+  const deepLinkedDeal = Number(route.query.deal_id);
+  if (deepLinkedDeal > 0) {
+    selectedDealId.value = deepLinkedDeal;
+    showDealDrawer.value = true;
+  }
 });
 </script>
 
