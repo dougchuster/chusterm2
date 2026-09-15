@@ -72,7 +72,7 @@ const timeSeparator = '/';
 // value when the component is mounted
 onMounted(() => {
   duration.value = audioPlayer.value?.duration;
-  audioPlayer.value.playbackRate = playbackSpeed.value;
+  if (audioPlayer.value) audioPlayer.value.playbackRate = playbackSpeed.value;
 });
 
 // Listen for global audio play events and pause if it's not this audio

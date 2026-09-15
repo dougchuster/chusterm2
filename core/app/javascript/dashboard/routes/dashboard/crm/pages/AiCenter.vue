@@ -5,7 +5,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import axios from 'axios';
+import CaptainAiCenterAPI from 'dashboard/api/captain/aiCenter';
 import CaptainConversationStateAPI from 'dashboard/api/captain/conversationState';
 import { AI_HANDOFF_REASON_LABELS } from 'dashboard/helper/crmOptions';
 import { useAlert } from 'dashboard/composables';
@@ -147,9 +147,7 @@ async function loadAiCenter() {
   loading.value = true;
   error.value = '';
   try {
-    const { data } = await axios.get(
-      `/api/v1/accounts/${accountId.value}/captain/ai_center`
-    );
+    const { data } = await CaptainAiCenterAPI.get();
     summary.value = data.summary;
     metrics.value = data.metrics;
     media.value = data.media;

@@ -1,5 +1,5 @@
 import { flushPromises, mount } from '@vue/test-utils';
-import axios from 'axios';
+import CaptainAiCenterAPI from 'dashboard/api/captain/aiCenter';
 import CaptainConversationStateAPI from 'dashboard/api/captain/conversationState';
 import AiCenter from './AiCenter.vue';
 
@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
   routerPush: vi.fn(),
 }));
 
-vi.mock('axios', () => ({
+vi.mock('dashboard/api/captain/aiCenter', () => ({
   default: {
     get: vi.fn(),
   },
@@ -48,7 +48,9 @@ const aiCenterResponse = pausedConversations => ({
 });
 
 const mountPage = async pausedConversations => {
-  axios.get.mockResolvedValue(aiCenterResponse(pausedConversations));
+  CaptainAiCenterAPI.get.mockResolvedValue(
+    aiCenterResponse(pausedConversations)
+  );
   CaptainConversationStateAPI.update.mockResolvedValue({ data: {} });
 
   const wrapper = mount(AiCenter);

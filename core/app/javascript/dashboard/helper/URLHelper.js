@@ -110,7 +110,7 @@ export const hasValidAvatarUrl = avatarUrl => {
 };
 
 export const timeStampAppendedURL = dataUrl => {
-  const url = new URL(dataUrl);
+  const url = new URL(dataUrl, window.location.origin);
   if (!url.searchParams.has('t')) {
     url.searchParams.append('t', Date.now());
   }
