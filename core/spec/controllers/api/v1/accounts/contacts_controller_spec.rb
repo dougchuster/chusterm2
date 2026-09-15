@@ -884,4 +884,61 @@ RSpec.describe 'Contacts API', type: :request do
       end
     end
   end
+
+  describe 'LGPD — direitos do titular' do
+    let(:account) { create(:account) }
+    let(:admin) { create(:user, account: account, role: :administrator) }
+    let(:agent) { create(:user, account: account, role: :agent) }
+    let(:contact) { create(:contact, :with_email, account: account, phone_number: '+5511999998888') }
+
+    describe 'GET /api/v1/accounts/:account_id/contacts/:id/data_export' do
+      it 'returns the subject data bundle for an administrator' do
+        pipeline = CrmPipeline.create!(account: account, name: 'P', position: 1, is_default: true)
+        stage = CrmPipelineStage.create!(account: account, crm_pipeline: pipeline, name: 'Novo', position: 1)
+        CrmDeal.create!(account: account, crm_pipeline: pipeline, crm_pipeline_stage: stage,
+                        contact: contact, title: 'Caso do titular')
+
+        get "/api/v1/accounts/#{account.id}/contacts/#{contact.id}/data_export",
+            headers: admin.create_new_auth_token, as: :json
+
+        expect(response).to have_http_status(:success)
+        expect(response.parsed_body['contact']['id']).to eq(contact.id)
+        expect(response.parsed_body['deals'].first['title']).to eq('Caso do titular')
+        expect(response.parsed_body['exported_at']).to be_present
+      end
+
+      it 'denies agents' do
+        get "/api/v1/accounts/#{account.id}/contacts/#{contact.id}/data_export",
+            headers: agent.create_new_auth_token, as: :json
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+
+    describe 'POST /api/v1/accounts/:account_id/contacts/:id/data_erasure' do
+      it 'anonymizes the subject PII and audits the erasure' do
+        post "/api/v1/accounts/#{account.id}/contacts/#{contact.id}/data_erasure",
+             headers: admin.create_new_auth_token, as: :json
+
+        expect(response).to have_http_status(:success)
+        contact.reload
+        expect(contact.name).to eq('Titular anonimizado')
+        expect(contact.email).to be_nil
+        expect(contact.phone_number).to be_nil
+        expect(contact.additional_attributes['lgpd_anonymized_at']).to be_present
+
+        event = CrmAuditEvent.where(account: account, action: 'lgpd_erasure').last
+        expect(event).to be_present
+        expect(event.target_id).to eq(contact.id)
+      end
+
+      it 'denies agents' do
+        post "/api/v1/accounts/#{account.id}/contacts/#{contact.id}/data_erasure",
+             headers: agent.create_new_auth_token, as: :json
+
+        expect(response).to have_http_status(:unauthorized)
+        expect(contact.reload.email).not_to be_nil
+      end
+    end
+  end
 end

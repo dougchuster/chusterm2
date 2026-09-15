@@ -326,6 +326,8 @@ Rails.application.routes.draw do
             end
             member do
               get :contactable_inboxes
+              get :data_export
+              post :data_erasure
               post :destroy_custom_attributes
               delete :avatar
             end

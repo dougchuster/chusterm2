@@ -54,4 +54,14 @@ class ContactPolicy < ApplicationPolicy
   def destroy?
     @account_user.administrator?
   end
+
+  # CRM-045: exportar e apagar dados do titular são operações sensíveis —
+  # restritas a administradores (mesmo nível de `destroy?`).
+  def data_export?
+    @account_user.administrator?
+  end
+
+  def data_erasure?
+    @account_user.administrator?
+  end
 end

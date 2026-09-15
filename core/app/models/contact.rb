@@ -62,6 +62,7 @@ class Contact < ApplicationRecord
   has_many :inboxes, through: :contact_inboxes
   has_many :messages, as: :sender, dependent: :destroy_async
   has_many :notes, dependent: :destroy_async
+  has_many :crm_deals, dependent: :nullify
   belongs_to :crm_owner, class_name: 'User', optional: true
   before_validation :prepare_contact_attributes, :normalize_crm_attributes
   after_create_commit :dispatch_create_event, :ip_lookup

@@ -17,7 +17,8 @@ class Api::V1::Accounts::ContactsController < Api::V1::Accounts::BaseController
 
   before_action :check_authorization
   before_action :set_current_page, only: [:index, :active, :search, :filter]
-  before_action :fetch_contact, only: [:show, :update, :destroy, :avatar, :contactable_inboxes, :destroy_custom_attributes]
+  before_action :fetch_contact, only: [:show, :update, :destroy, :avatar, :contactable_inboxes, :destroy_custom_attributes,
+                                       :data_export, :data_erasure]
   before_action :set_include_contact_inboxes, only: [:index, :active, :search, :filter, :show, :update]
 
   def index
@@ -157,6 +158,16 @@ class Api::V1::Accounts::ContactsController < Api::V1::Accounts::BaseController
   def avatar
     @contact.avatar.purge if @contact.avatar.attached?
     @contact
+  end
+
+  # CRM-045 — direitos do titular (LGPD): exportação e eliminação sob demanda.
+  def data_export
+    render json: Crm::DataSubjectRights.new(contact: @contact, actor: Current.user).export
+  end
+
+  def data_erasure
+    Crm::DataSubjectRights.new(contact: @contact, actor: Current.user).erase!
+    head :ok
   end
 
   private
