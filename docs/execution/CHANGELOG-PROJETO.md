@@ -181,3 +181,59 @@ então o arquivo vive em `docs/execution/` como os demais entregáveis.)
   Evidência: playwright 9/9 (auth-setup + jornada); vitest CrmIndex*
   55/55; eslint sem erros novos (1 erro preexistente em Logo.vue, fora do
   escopo). Rollback: revert do commit.
+
+## 2026-09-15 — CRM-046 Transcrição de áudio WhatsApp (verificação)
+
+- Auditoria revelou que o pipeline **já está implementado no overlay Enterprise**:
+  - `Enterprise::Concerns::Attachment` dispara `Messages::AudioTranscriptionJob`
+    no `after_create_commit` de todo attachment `file_type: :audio`.
+  - `Messages::AudioTranscriptionService` aplica os gates na ordem correta
+    (`captain_integration` → `audio_transcriptions` (default on) →
+    `transcription_configured?` → limite de uso), grava
+    `meta['transcribed_text']` + `media_understanding_status`
+    (`processing`/`processed`/`failed`/`skipped`) e emite `send_update_event`.
+  - Provider: `Llm::OpenRouterMultimodalService#transcribe_audio` via
+    OpenRouter (`CAPTAIN_AUDIO_TRANSCRIPTION_MODEL`, default
+    `openai/gpt-4o-transcribe`).
+  - Entrada WhatsApp: `Whatsapp::IncomingMessageEvolutionService#attach_media`
+    anexa áudio via ActiveStorage → attachment create → job enfileirado
+    (observado ao vivo em spec: `Messages::AudioTranscriptionJob` enfileirado
+    para attachment de áudio).
+  - UI: `MediaUnderstandingStatus.vue` + `Audio.vue` (hardening do player já
+    feito em CRM-025); contexto LLM via `Message#attachment_content_for_llm`;
+    observabilidade via `Crm::HealthCheckService#media_summary`.
+- Evidência: `rspec spec/enterprise/jobs/messages/audio_transcription_job_spec.rb
+  spec/enterprise/services/messages/audio_transcription_service_spec.rb` →
+  10/10 verdes.
+- Decisão: sem mudança de código — duplicar o pipeline em OSS quebraria o
+  contrato Enterprise. Card fechado como verificado.
+
+## 2026-09-15 — CRM-026/035 QA dos épicos E3 e E4
+
+- **E3 (interface operacional)**: vitest das specs CRM —
+  `routes/dashboard/crm` + `components/crm` = 238/238; composables do épico
+  (`useBoardDensity`, `usePanelWidth`, `useCrmCommandHotKeys`) = 13/13.
+- **E4 (orchestrator)**: `npm test` (node:test) = 38/38; `npm run test:vitest`
+  = 10/10; `/health` ok em `http://127.0.0.1:4001`.
+- Gap encontrado no QA: imagem do orchestrator ainda rodava Node 20 embora o
+  Dockerfile já estivesse em `node:24-alpine` (CRM-041). Rebuild +
+  `docker compose up -d orchestrator` → runtime agora em **v24.21.0**, health
+  verde.
+
+## 2026-09-15 — CRM-043 Agente multi-perfil no orchestrator
+
+- Novo contrato `AgentProfile` (`src/agents/profiles/types.ts`): encapsula slug,
+  modelo de LLM, identidade pública, regex de identidade, fato de fechamento de
+  lead novo e todos os builders de triagem/score/prompt/resposta/normalização.
+- `src/agents/profiles/drPaulaMatosProfile.ts`: adapter fino sobre
+  `drPaulaMatos.ts` — nenhuma lógica movida, comportamento idêntico.
+- `src/agents/profiles/index.ts`: registry com `resolveAgentProfile(slug)` —
+  resolve por `conversation.custom_attributes.agent_profile` (ou
+  `chusterm_agent`) e cai no perfil default quando ausente/desconhecido;
+  `registerAgentProfile` permite registrar novos nichos sem tocar na rota.
+- `routes/agent.ts` agora é agnóstico de perfil: todas as referências
+  `DR_PAULA_*`/`DR_LETICIA_*`/`extractPrevidenciario*`/`buildDr*` substituídas
+  por `profile.*`; memória já era particionada por `profileSlug`.
+- Evidência: `tsc --noEmit` limpo; `npm test` 40/40 (2 testes novos cobrem
+  resolução default e registro de perfil customizado).
+- Rollback: revert do commit.

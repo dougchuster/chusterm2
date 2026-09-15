@@ -857,3 +857,30 @@ test('GET /health returns the service smoke response without external calls', as
     await app.close()
   }
 })
+
+describe('agent profile registry', () => {
+  test('defaults to the dr-paula-matos profile when slug is missing or unknown', async () => {
+    const { resolveAgentProfile, DEFAULT_AGENT_PROFILE } = await import(
+      '../src/agents/profiles/index.js'
+    )
+
+    assert.equal(resolveAgentProfile(undefined), DEFAULT_AGENT_PROFILE)
+    assert.equal(resolveAgentProfile('perfil-inexistente'), DEFAULT_AGENT_PROFILE)
+    assert.equal(DEFAULT_AGENT_PROFILE.slug, 'dr-paula-matos')
+  })
+
+  test('resolves a registered profile by slug', async () => {
+    const { resolveAgentProfile, registerAgentProfile } = await import(
+      '../src/agents/profiles/index.js'
+    )
+    const { drPaulaMatosProfile } = await import(
+      '../src/agents/profiles/drPaulaMatosProfile.js'
+    )
+
+    const custom = { ...drPaulaMatosProfile, slug: 'trabalhista-teste' }
+    registerAgentProfile(custom)
+
+    assert.equal(resolveAgentProfile('trabalhista-teste'), custom)
+    assert.equal(resolveAgentProfile('dr-paula-matos').slug, 'dr-paula-matos')
+  })
+})

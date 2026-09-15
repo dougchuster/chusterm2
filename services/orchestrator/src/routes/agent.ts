@@ -1,31 +1,19 @@
 import type { FastifyPluginAsync } from 'fastify'
 import {
-  DR_PAULA_MATOS_LLM_MODEL,
   llm,
   LLM_MAX_TOKENS,
   isLlmConfigured,
 } from '../llm/client.js'
 import {
-  DR_LETICIA_NEW_LEAD_CLOSING_FACT,
-  DR_LETICIA_PUBLIC_INTRO,
-  DR_PAULA_MATOS_SLUG,
   buildAgentAttachmentContext,
-  buildDrLeticiaPriorityResponse,
-  buildDrPaulaFallbackResponse,
-  buildDrPaulaMessages,
-  buildMemorySummary,
-  buildPrivateTriageNote,
-  drLeticiaResponseIncludesNewLeadClosing,
-  drPaulaResponsesAreNearDuplicates,
-  ensureDrLeticiaNewLeadClosing,
-  extractPrevidenciarioTriage,
-  normalizeDrPaulaResponse,
   redactCredentialsFromText,
-  retrieveDrPaulaKnowledge,
-  scorePrevidenciarioLead,
   type AgentMessage,
   type PrevidenciarioTriageSnapshot,
 } from '../agents/drPaulaMatos.js'
+import {
+  resolveAgentProfile,
+  type AgentProfile,
+} from '../agents/profiles/index.js'
 import {
   getAgentConversationMemory,
   upsertAgentConversationMemory,
@@ -78,25 +66,15 @@ const activeConversations = new Map<string, Promise<void>>()
 const WEBHOOK_EVENT_TTL_MS = 10 * 60 * 1000
 const webhookEventRedisKey = (key: string) => `orchestrator:webhook-event:${key}`
 
-function isKnownAgentOpening(content: string): boolean {
-  const normalized = normalizeText(content)
-  return (
-    (normalized.includes('sou a dra. leticia') ||
-      normalized.includes('sou a dra leticia') ||
-      normalized.includes('assistente de atendimento da equipe da dra. paula matos') ||
-      normalized.includes('aqui e a dra paula matos')) &&
-    (normalized.includes('atendimento inicial da dra. paula matos') ||
-      normalized.includes('como posso ajudar voce hoje') ||
-      normalized.includes('como posso te ajudar hoje'))
-  )
-}
-
-function isAgentGeneratedMessage(message: ChatMessage): boolean {
+function isAgentGeneratedMessage(
+  message: ChatMessage,
+  profile: AgentProfile,
+): boolean {
   return (
     message.senderType === 'agent_bot' ||
     message.contentAttributes?.generated_by === AUTOMATION_SOURCE ||
-    message.contentAttributes?.chusterm_agent === DR_PAULA_MATOS_SLUG ||
-    isKnownAgentOpening(message.content)
+    message.contentAttributes?.chusterm_agent === profile.slug ||
+    profile.isKnownAgentOpening(message.content)
   )
 }
 
@@ -104,20 +82,24 @@ function lastOutgoingMessage(messages: ChatMessage[]): ChatMessage | undefined {
   return [...messages].reverse().find((message) => message.role === 'assistant')
 }
 
-function hasHumanTakeover(messages: ChatMessage[]): boolean {
+function hasHumanTakeover(
+  messages: ChatMessage[],
+  profile: AgentProfile,
+): boolean {
   const lastOutgoing = lastOutgoingMessage(messages)
-  return Boolean(lastOutgoing && !isAgentGeneratedMessage(lastOutgoing))
+  return Boolean(lastOutgoing && !isAgentGeneratedMessage(lastOutgoing, profile))
 }
 
 function responseWasAlreadySent(
   messages: ChatMessage[],
   responseText: string,
+  profile: AgentProfile,
 ): boolean {
   return messages
     .filter((message) => message.role === 'assistant')
     .slice(-6)
     .some((message) =>
-      drPaulaResponsesAreNearDuplicates(message.content, responseText),
+      profile.responsesAreNearDuplicates(message.content, responseText),
     )
 }
 
@@ -153,6 +135,7 @@ function latestIncomingMessageId(messages: ChatMessage[]): number | undefined {
 async function markConversationPaused(input: {
   accountId: number
   conversationId: number
+  profileSlug: string
   senderName?: string | null
   lastUserMessage: string
   messageCount: number
@@ -163,7 +146,7 @@ async function markConversationPaused(input: {
   await upsertAgentConversationMemory({
     accountId: input.accountId,
     conversationId: String(input.conversationId),
-    profileSlug: DR_PAULA_MATOS_SLUG,
+    profileSlug: input.profileSlug,
     senderName: input.senderName ?? input.memory?.senderName ?? null,
     summary:
       input.memory?.summary ||
@@ -334,6 +317,12 @@ const agentRoute: FastifyPluginAsync<AgentRouteOptions> = async (fastify, option
 
     const { conversation } = payload
     const { id: conversationId } = conversation
+    // Perfil resolvido por conversa: quem provisiona o agent_bot define
+    // custom_attributes.agent_profile (ou chusterm_agent) no conversation.
+    const profile = resolveAgentProfile(
+      conversation.custom_attributes?.['agent_profile'] ??
+        conversation.custom_attributes?.['chusterm_agent'],
+    )
     const accountId = conversation.account_id ?? payload.account?.id
     if (accountId === undefined) {
       return reply.status(400).send({ error: 'INVALID_PAYLOAD' })
@@ -425,7 +414,7 @@ const agentRoute: FastifyPluginAsync<AgentRouteOptions> = async (fastify, option
         const memory = await getAgentConversationMemory({
         accountId,
         conversationId: String(conversationId),
-        profileSlug: DR_PAULA_MATOS_SLUG,
+        profileSlug: profile.slug,
       })
 
       const nextMessageCount = (memory?.messageCount ?? 0) + 1
@@ -441,6 +430,7 @@ const agentRoute: FastifyPluginAsync<AgentRouteOptions> = async (fastify, option
         await markConversationPaused({
           accountId,
           conversationId,
+          profileSlug: profile.slug,
           senderName: payload.sender?.name ?? null,
           lastUserMessage: userMessage,
           messageCount: nextMessageCount,
@@ -457,10 +447,11 @@ const agentRoute: FastifyPluginAsync<AgentRouteOptions> = async (fastify, option
         })
       }
 
-      if (hasHumanTakeover(history)) {
+      if (hasHumanTakeover(history, profile)) {
         await markConversationPaused({
           accountId,
           conversationId,
+          profileSlug: profile.slug,
           senderName: payload.sender?.name ?? null,
           lastUserMessage: userMessage,
           messageCount: nextMessageCount,
@@ -478,14 +469,14 @@ const agentRoute: FastifyPluginAsync<AgentRouteOptions> = async (fastify, option
       }
 
       const attachmentEvidence = buildAgentAttachmentContext(currentAttachments)
-      const triage = extractPrevidenciarioTriage({
+      const triage = profile.extractTriage({
         // The stored snapshot already represents previous customer evidence.
         // Applying only the newest turn lets corrections such as "não sou MEI"
         // override an older positive mention instead of re-adding it.
         text: [userMessage, attachmentEvidence].filter(Boolean).join('\n'),
         previous: asStoredTriage(memory?.triageJson),
       })
-      const score = scorePrevidenciarioLead({
+      const score = profile.scoreLead({
         triage,
         latestMessage: userMessage,
         messageCount: nextMessageCount,
@@ -501,13 +492,13 @@ const agentRoute: FastifyPluginAsync<AgentRouteOptions> = async (fastify, option
           : contactRelationship === 'new_lead'
             ? 'Relacionamento CRM: lead novo.'
             : 'Relacionamento CRM: n\u00e3o confirmado; n\u00e3o presumir lead novo.'
-      const memorySummary = `${buildMemorySummary(triage, score)}\n${relationshipSummary}`
-      const retrievedDocuments = retrieveDrPaulaKnowledge(
+      const memorySummary = `${profile.buildMemorySummary(triage, score)}\n${relationshipSummary}`
+      const retrievedDocuments = profile.retrieveKnowledge(
         `${userMessage}\n${attachmentEvidence}\n${memorySummary}`,
       )
       const status = score.review.recommended ? 'review_recommended' : 'active'
       const closingAlreadySent =
-        storedFacts[DR_LETICIA_NEW_LEAD_CLOSING_FACT] === true
+        storedFacts[profile.newLeadClosingFact] === true
       const isNewLead =
         !closingAlreadySent && contactRelationship === 'new_lead'
       const factsWithSources = {
@@ -521,7 +512,7 @@ const agentRoute: FastifyPluginAsync<AgentRouteOptions> = async (fastify, option
       await upsertAgentConversationMemory({
         accountId,
         conversationId: String(conversationId),
-        profileSlug: DR_PAULA_MATOS_SLUG,
+        profileSlug: profile.slug,
         senderName: payload.sender?.name ?? null,
         summary: memorySummary,
         factsJson: factsWithSources,
@@ -538,18 +529,18 @@ const agentRoute: FastifyPluginAsync<AgentRouteOptions> = async (fastify, option
       const historyHasPublicIdentity = messages.some(
         (message) =>
           message.role === 'assistant' &&
-          /\bdra\.? leticia\b/u.test(normalizeText(message.content)),
+          profile.publicIdentityPattern.test(normalizeText(message.content)),
       )
       const priorityResponse =
         unreadableAttachmentResponse && !historyHasPublicIdentity
-          ? `${DR_LETICIA_PUBLIC_INTRO} ${unreadableAttachmentResponse}`
+          ? `${profile.publicIntro} ${unreadableAttachmentResponse}`
           : unreadableAttachmentResponse ??
-            buildDrLeticiaPriorityResponse(messages as AgentMessage[])
+            profile.buildPriorityResponse(messages as AgentMessage[])
 
       if (priorityResponse) {
-        responseText = normalizeDrPaulaResponse(priorityResponse) ?? undefined
+        responseText = profile.normalizeResponse(priorityResponse) ?? undefined
       } else if (isLlmConfigured()) {
-        const agentMessages = buildDrPaulaMessages({
+        const agentMessages = profile.buildMessages({
           conversation: messages as AgentMessage[],
           memorySummary,
           triage,
@@ -557,13 +548,13 @@ const agentRoute: FastifyPluginAsync<AgentRouteOptions> = async (fastify, option
           retrievedDocuments,
         })
 
-        const modelParameters = DR_PAULA_MATOS_LLM_MODEL.includes(
+        const modelParameters = profile.llmModel.includes(
           'claude-sonnet-5',
         )
           ? {}
           : { temperature: 0.35 }
         const completion = await llm.chat.completions.create({
-          model: DR_PAULA_MATOS_LLM_MODEL,
+          model: profile.llmModel,
           messages: agentMessages,
           // Reasoning-capable models account for internal reasoning inside the
           // completion budget. A 700-token ceiling produced truncated public
@@ -574,7 +565,7 @@ const agentRoute: FastifyPluginAsync<AgentRouteOptions> = async (fastify, option
 
         const rawResponse = completion.choices[0]?.message?.content?.trim()
         responseText = rawResponse
-          ? normalizeDrPaulaResponse(rawResponse) ?? undefined
+          ? profile.normalizeResponse(rawResponse) ?? undefined
           : undefined
         if (rawResponse && !responseText) {
           request.log.warn(
@@ -585,8 +576,8 @@ const agentRoute: FastifyPluginAsync<AgentRouteOptions> = async (fastify, option
             },
             '[AGENT] Provider output rejected by public response validator',
           )
-          responseText = normalizeDrPaulaResponse(
-            buildDrPaulaFallbackResponse({
+          responseText = profile.normalizeResponse(
+            profile.buildFallbackResponse({
               triage,
               retrievedDocuments,
               conversation: messages as AgentMessage[],
@@ -595,8 +586,8 @@ const agentRoute: FastifyPluginAsync<AgentRouteOptions> = async (fastify, option
         }
       } else {
         request.log.warn('[AGENT] LLM_API_KEY not configured; using deterministic response')
-        responseText = normalizeDrPaulaResponse(
-          buildDrPaulaFallbackResponse({
+        responseText = profile.normalizeResponse(
+          profile.buildFallbackResponse({
             triage,
             retrievedDocuments,
             conversation: messages as AgentMessage[],
@@ -609,16 +600,16 @@ const agentRoute: FastifyPluginAsync<AgentRouteOptions> = async (fastify, option
         return reply.status(200).send({ ok: false, reason: 'empty_agent_response' })
       }
 
-      responseText = ensureDrLeticiaNewLeadClosing(responseText, {
+      responseText = profile.ensureNewLeadClosing(responseText, {
         conversation: messages as AgentMessage[],
         closingAlreadySent,
         isNewLead,
       })
       const closingSentNow =
         !closingAlreadySent &&
-        drLeticiaResponseIncludesNewLeadClosing(responseText)
+        profile.responseIncludesNewLeadClosing(responseText)
 
-      if (responseWasAlreadySent(messages, responseText)) {
+      if (responseWasAlreadySent(messages, responseText, profile)) {
         request.log.info(
           `[AGENT] Resposta duplicada bloqueada na conversa ${conversationId}`,
         )
@@ -675,7 +666,7 @@ const agentRoute: FastifyPluginAsync<AgentRouteOptions> = async (fastify, option
           skipped: 'newer_message_queued',
         })
       }
-      if (responseWasAlreadySent(latestHistory, responseText)) {
+      if (responseWasAlreadySent(latestHistory, responseText, profile)) {
         return reply.status(200).send({
           ok: true,
           skipped: 'duplicate_response',
@@ -684,7 +675,7 @@ const agentRoute: FastifyPluginAsync<AgentRouteOptions> = async (fastify, option
 
       await postReply(accountId, conversationId, responseText, {
         contentAttributes: {
-          chusterm_agent: DR_PAULA_MATOS_SLUG,
+          chusterm_agent: profile.slug,
           generated_by: AUTOMATION_SOURCE,
         },
       })
@@ -693,12 +684,12 @@ const agentRoute: FastifyPluginAsync<AgentRouteOptions> = async (fastify, option
         await upsertAgentConversationMemory({
           accountId,
           conversationId: String(conversationId),
-          profileSlug: DR_PAULA_MATOS_SLUG,
+          profileSlug: profile.slug,
           senderName: payload.sender?.name ?? null,
           summary: memorySummary,
           factsJson: {
             ...factsWithSources,
-            [DR_LETICIA_NEW_LEAD_CLOSING_FACT]: true,
+            [profile.newLeadClosingFact]: true,
           },
           triageJson: triage as unknown as Record<string, unknown>,
           scoreJson: score as unknown as Record<string, unknown>,
@@ -712,17 +703,17 @@ const agentRoute: FastifyPluginAsync<AgentRouteOptions> = async (fastify, option
         await postReply(
           accountId,
           conversationId,
-          buildPrivateTriageNote({ triage, score }),
+          profile.buildPrivateTriageNote({ triage, score }),
           { private: true },
         )
       }
 
       request.log.info(
-        `[AGENT] Dra. Letícia respondeu conversa ${conversationId} score=${score.total}`,
+        `[AGENT] ${profile.publicName} respondeu conversa ${conversationId} score=${score.total}`,
       )
       return reply.status(200).send({
         ok: true,
-        agent: DR_PAULA_MATOS_SLUG,
+        agent: profile.slug,
         score: score.total,
         handoffRecommended: score.handoff.recommended,
         reviewRecommended: score.review.recommended,

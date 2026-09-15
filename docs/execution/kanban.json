@@ -1,6 +1,6 @@
 {
   "project": "ChusteRM — Reformulação CRM",
-  "updated": "2026-09-14",
+  "updated": "2026-09-15",
   "columns": [
     "Backlog",
     "Priorizado",
@@ -283,7 +283,7 @@
       "priority": "P2",
       "effort": "M",
       "epic": "E3",
-      "column": "Backlog",
+      "column": "Concluído",
       "depends_on": [
         "CRM-040"
       ],
@@ -296,7 +296,7 @@
       "priority": "P1",
       "effort": "S",
       "epic": "E3",
-      "column": "Backlog",
+      "column": "Concluído",
       "depends_on": [
         "CRM-020",
         "CRM-021",
@@ -305,7 +305,8 @@
         "CRM-024",
         "CRM-025"
       ],
-      "upstream_risk": "low"
+      "upstream_risk": "low",
+      "notes": "QA executado: vitest CRM 238/238 + composables E3 13/13"
     },
     {
       "id": "CRM-030",
@@ -325,7 +326,7 @@
       "priority": "P2",
       "effort": "M",
       "epic": "E4",
-      "column": "Backlog",
+      "column": "Concluído",
       "depends_on": [],
       "upstream_risk": "medium"
     },
@@ -336,7 +337,7 @@
       "priority": "P2",
       "effort": "M",
       "epic": "E4",
-      "column": "Backlog",
+      "column": "Concluído",
       "depends_on": [],
       "upstream_risk": "medium"
     },
@@ -347,7 +348,7 @@
       "priority": "P2",
       "effort": "M",
       "epic": "E4",
-      "column": "Backlog",
+      "column": "Concluído",
       "depends_on": [],
       "upstream_risk": "low"
     },
@@ -358,7 +359,7 @@
       "priority": "P2",
       "effort": "M",
       "epic": "E4",
-      "column": "Backlog",
+      "column": "Concluído",
       "depends_on": [],
       "upstream_risk": "medium"
     },
@@ -369,7 +370,7 @@
       "priority": "P2",
       "effort": "S",
       "epic": "E4",
-      "column": "Backlog",
+      "column": "Concluído",
       "depends_on": [
         "CRM-030",
         "CRM-031",
@@ -377,7 +378,8 @@
         "CRM-033",
         "CRM-034"
       ],
-      "upstream_risk": "low"
+      "upstream_risk": "low",
+      "notes": "QA executado: orchestrator node:test 38/38 + vitest 10/10 + health ok; container rebuildado para Node v24.21.0"
     },
     {
       "id": "CRM-040",
@@ -397,7 +399,7 @@
       "priority": "P3",
       "effort": "XS",
       "epic": "E5",
-      "column": "Backlog",
+      "column": "Concluído",
       "depends_on": [],
       "upstream_risk": "low"
     },
@@ -408,7 +410,7 @@
       "priority": "P3",
       "effort": "XS",
       "epic": "E5",
-      "column": "Backlog",
+      "column": "Concluído",
       "depends_on": [],
       "upstream_risk": "low"
     },
@@ -419,11 +421,12 @@
       "priority": "P2",
       "effort": "M",
       "epic": "E5",
-      "column": "Backlog",
+      "column": "Concluído",
       "depends_on": [
         "dúvida #5"
       ],
-      "upstream_risk": "low"
+      "upstream_risk": "low",
+      "notes": "AgentProfile + registry implementados; rota /agent/message resolve perfil por custom_attributes.agent_profile com fallback default. tsc limpo, 40/40 testes."
     },
     {
       "id": "CRM-044",
@@ -432,7 +435,7 @@
       "priority": "P2",
       "effort": "S",
       "epic": "E5",
-      "column": "Backlog",
+      "column": "Concluído",
       "depends_on": [],
       "upstream_risk": "medium"
     },
@@ -443,7 +446,7 @@
       "priority": "P2",
       "effort": "M",
       "epic": "E5",
-      "column": "Backlog",
+      "column": "Concluído",
       "depends_on": [],
       "upstream_risk": "low"
     },
@@ -454,9 +457,10 @@
       "priority": "P2",
       "effort": "S",
       "epic": "E5",
-      "column": "Backlog",
+      "column": "Concluído",
       "depends_on": [],
-      "upstream_risk": "medium"
+      "upstream_risk": "medium",
+      "notes": "Pipeline ja implementado no overlay Enterprise: Enterprise::Concerns::Attachment enfileira Messages::AudioTranscriptionJob para attachments audio; service aplica gates (captain_integration, audio_transcriptions, transcription_configured, usage limit) e grava meta[transcribed_text]+status com send_update_event. Caminho Evolution/WhatsApp attach_media confirmado. Specs existentes 10/10 verdes. Sem mudanca de codigo necessaria."
     },
     {
       "id": "CRM-047",
@@ -465,7 +469,7 @@
       "priority": "P2",
       "effort": "M",
       "epic": "E5",
-      "column": "Backlog",
+      "column": "Concluído",
       "depends_on": [
         "dúvida #2"
       ],
