@@ -181,16 +181,22 @@ describe('ChusteRM operational design system', () => {
         default:
           '<button v-bind="$attrs" aria-label="Editar atividade">Editar</button>',
       },
+      attachTo: document.body,
     });
-    expect(tooltip.get('[role="tooltip"]').text()).toBe('Editar');
+    await tooltip.trigger('mouseenter');
+    // O tooltip e teleportado para <body> para escapar de containers com overflow.
+    const tooltipEl = document.body.querySelector('[role="tooltip"]');
+    expect(tooltipEl?.textContent).toBe('Editar');
 
     const dropdown = mount(DsDropdown, {
       props: { label: 'Mais ações' },
       slots: { default: '<button role="menuitem">Excluir</button>' },
       global,
+      attachTo: document.body,
     });
     await dropdown.get('button').trigger('click');
-    expect(dropdown.get('[role="menu"]').exists()).toBe(true);
+    // O menu e teleportado para <body> para escapar de stacking contexts.
+    expect(document.body.querySelector('[role="menu"]')).toBeTruthy();
 
     const toast = mount(DsToast, {
       props: { message: 'Atividade salva', variant: 'success' },

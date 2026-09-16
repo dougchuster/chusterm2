@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 
 import DsButton from './DsButton.vue';
 
@@ -17,36 +17,79 @@ const props = defineProps({
 });
 
 const rootRef = ref(null);
+const menuRef = ref(null);
 const open = ref(false);
+const menuStyle = ref({});
 
-const alignmentClasses = computed(() =>
-  props.align === 'start' ? 'left-0' : 'right-0'
-);
+// O menu e teleportado para <body>: ancestors com overflow (coluna rolavel do
+// kanban) ou backdrop-filter (a barra de ferramentas) criam contextos de
+// empilhamento que prendiam o dropdown atras das colunas seguintes. `fixed`
+// posiciona a partir do gatilho e a camada foge dos dois problemas.
+const updatePosition = () => {
+  const rect = rootRef.value?.getBoundingClientRect();
+  if (!rect) return;
+
+  const menuHeight = menuRef.value?.offsetHeight ?? 0;
+  const spaceBelow = window.innerHeight - rect.bottom;
+  const flip = menuHeight > spaceBelow && rect.top > spaceBelow;
+
+  menuStyle.value = {
+    top: flip ? 'auto' : `${rect.bottom + 8}px`,
+    bottom: flip ? `${window.innerHeight - rect.top + 8}px` : 'auto',
+    ...(props.align === 'start'
+      ? { left: `${rect.left}px`, right: 'auto' }
+      : {
+          left: 'auto',
+          right: `${Math.max(window.innerWidth - rect.right, 8)}px`,
+        }),
+  };
+};
 
 const close = () => {
   open.value = false;
 };
 
-const toggle = () => {
-  if (!props.disabled && !props.loading) open.value = !open.value;
+const toggle = async () => {
+  if (props.disabled || props.loading) return;
+  open.value = !open.value;
+  if (open.value) {
+    await nextTick();
+    updatePosition();
+  }
 };
 
 const handleDocumentPointer = event => {
-  if (!rootRef.value?.contains(event.target)) close();
+  if (
+    rootRef.value?.contains(event.target) ||
+    menuRef.value?.contains(event.target)
+  ) {
+    return;
+  }
+  close();
 };
 
 const handleDocumentKeydown = event => {
   if (event.key === 'Escape') close();
 };
 
+// capture=true enxerga o scroll das colunas do kanban; sem ele o menu ficava
+// flutuando no lugar errado quando a coluna rolava com ele aberto.
+const handleReposition = () => {
+  if (open.value) updatePosition();
+};
+
 onMounted(() => {
   document.addEventListener('pointerdown', handleDocumentPointer);
   document.addEventListener('keydown', handleDocumentKeydown);
+  document.addEventListener('scroll', handleReposition, true);
+  window.addEventListener('resize', handleReposition);
 });
 
 onBeforeUnmount(() => {
   document.removeEventListener('pointerdown', handleDocumentPointer);
   document.removeEventListener('keydown', handleDocumentKeydown);
+  document.removeEventListener('scroll', handleReposition, true);
+  window.removeEventListener('resize', handleReposition);
 });
 </script>
 
@@ -66,14 +109,17 @@ onBeforeUnmount(() => {
         @click="toggle"
       />
     </slot>
-    <div
-      v-if="open"
-      role="menu"
-      class="absolute top-full z-ui-overlay mt-2 min-w-48 overflow-hidden rounded-ui-surface border border-ui-border bg-ui-elevated p-1 shadow-ui-overlay"
-      :class="alignmentClasses"
-      @click="close"
-    >
-      <slot :close="close" />
-    </div>
+    <Teleport to="body">
+      <div
+        v-if="open"
+        ref="menuRef"
+        role="menu"
+        :style="menuStyle"
+        class="fixed z-ui-overlay min-w-48 overflow-hidden rounded-ui-surface border border-ui-border bg-ui-elevated p-1 shadow-ui-overlay"
+        @click="close"
+      >
+        <slot :close="close" />
+      </div>
+    </Teleport>
   </div>
 </template>
