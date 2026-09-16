@@ -1,0 +1,58 @@
+{
+  "MARKETING": {
+    "TITLE": "Marketing",
+    "OVERVIEW": {
+      "TITLE": "Visão geral",
+      "EMPTY": {
+        "TITLE": "Visão geral de marketing",
+        "MESSAGE": "Conecte uma conta de anúncios para ver investimento, leads e retorno."
+      }
+    },
+    "CAMPAIGNS": {
+      "TITLE": "Campanhas de anúncios",
+      "EMPTY": {
+        "TITLE": "Nenhuma campanha ainda",
+        "MESSAGE": "Sincronize uma conta de anúncios conectada para listar campanhas de Meta e Google aqui."
+      }
+    },
+    "LEADS": {
+      "TITLE": "Leads de anúncios",
+      "EMPTY": {
+        "TITLE": "Nenhum lead de anúncio ainda",
+        "MESSAGE": "Leads capturados por formulários da Meta aparecem aqui em tempo real."
+      }
+    },
+    "EVENTS": {
+      "TITLE": "Eventos de conversão",
+      "EMPTY": {
+        "TITLE": "Nenhum evento ainda",
+        "MESSAGE": "Eventos enviados à Meta e ao Google aparecem aqui quando negócios avançam no funil."
+      }
+    },
+    "CONNECTIONS": {
+      "TITLE": "Conexões",
+      "SUBTITLE": "Conecte suas contas de Meta Ads, Google Ads e Google Analytics para trazer métricas de campanhas, patrocinados e leads de anúncios para o CRM.",
+      "META_DESC": "Campanhas, conjuntos, anúncios e formulários de lead do Facebook e Instagram.",
+      "GOOGLE_ADS_DESC": "Campanhas de Pesquisa, Display, Performance Max e YouTube com métricas via GAQL.",
+      "GA4_DESC": "Tráfego, funis e conversões medidos pelo Google Analytics 4.",
+      "CONNECT": "Conectar",
+      "DISCONNECT": "Desconectar",
+      "SYNC_NOW": "Sincronizar agora",
+      "AD_ACCOUNTS": "Contas de anúncio",
+      "LAST_SYNC": "Última sincronização em {at}",
+      "OAUTH_MISSING": "As chaves OAuth não estão configuradas nesta instalação.",
+      "CONNECTED": "Conta conectada com sucesso.",
+      "DISCONNECTED": "Conta desconectada.",
+      "CONNECT_ERROR": "Não foi possível concluir a conexão.",
+      "DISCONNECT_ERROR": "Não foi possível desconectar a conta.",
+      "NOT_CONFIGURED": "OAuth não está configurado nesta instalação.",
+      "SYNC_QUEUED": "Sincronização enfileirada.",
+      "SYNC_ERROR": "Não foi possível enfileirar a sincronização.",
+      "STATUS": {
+        "ACTIVE": "Conectado",
+        "ERROR": "Erro",
+        "DISCONNECTED": "Desconectado"
+      }
+    }
+  }
+}

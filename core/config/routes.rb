@@ -231,6 +231,16 @@ Rails.application.routes.draw do
             get 'metrics/top_deals', to: 'metrics#top_deals'
             get 'metrics/stale_deals', to: 'metrics#stale_deals'
           end
+          namespace :marketing do
+            resources :connections, only: [:index, :destroy] do
+              collection do
+                post :authorize
+              end
+              member do
+                post :sync
+              end
+            end
+          end
           namespace :channels do
             resource :twilio_channel, only: [:create]
 
@@ -755,6 +765,8 @@ Rails.application.routes.draw do
   get 'microsoft/callback', to: 'microsoft/callbacks#show'
   get 'google/callback', to: 'google/callbacks#show'
   get 'crm/google/callback', to: 'crm/google_callbacks#show'
+  get 'marketing/meta/callback', to: 'marketing/meta_callbacks#show'
+  get 'marketing/google/callback', to: 'marketing/google_callbacks#show'
   get 'instagram/callback', to: 'instagram/callbacks#show'
   get 'tiktok/callback', to: 'tiktok/callbacks#show'
   get 'notion/callback', to: 'notion/callbacks#show'

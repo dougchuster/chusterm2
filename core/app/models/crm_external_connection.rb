@@ -1,5 +1,6 @@
 class CrmExternalConnection < ApplicationRecord
-  PROVIDERS = %w[google_workspace].freeze
+  PROVIDERS = %w[google_workspace meta_ads google_ads ga4].freeze
+  MARKETING_PROVIDERS = %w[meta_ads google_ads ga4].freeze
   STATUSES = %w[active disconnected error].freeze
 
   belongs_to :account
@@ -14,8 +15,14 @@ class CrmExternalConnection < ApplicationRecord
   validates :provider, inclusion: { in: PROVIDERS }
   validates :status, inclusion: { in: STATUSES }
 
+  scope :marketing, -> { where(provider: MARKETING_PROVIDERS, user_id: nil) }
+
   def active?
     status == 'active'
+  end
+
+  def marketing?
+    MARKETING_PROVIDERS.include?(provider)
   end
 
   def token_expired?

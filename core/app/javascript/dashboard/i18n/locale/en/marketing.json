@@ -1,0 +1,58 @@
+{
+  "MARKETING": {
+    "TITLE": "Marketing",
+    "OVERVIEW": {
+      "TITLE": "Overview",
+      "EMPTY": {
+        "TITLE": "Marketing overview",
+        "MESSAGE": "Connect an ads account to see spend, leads and return on investment."
+      }
+    },
+    "CAMPAIGNS": {
+      "TITLE": "Ad campaigns",
+      "EMPTY": {
+        "TITLE": "No campaigns yet",
+        "MESSAGE": "Sync a connected ads account to list Meta and Google campaigns here."
+      }
+    },
+    "LEADS": {
+      "TITLE": "Ads leads",
+      "EMPTY": {
+        "TITLE": "No ad leads yet",
+        "MESSAGE": "Leads captured by Meta lead forms appear here in real time."
+      }
+    },
+    "EVENTS": {
+      "TITLE": "Conversion events",
+      "EMPTY": {
+        "TITLE": "No events yet",
+        "MESSAGE": "Events sent to Meta and Google appear here once deals move through the pipeline."
+      }
+    },
+    "CONNECTIONS": {
+      "TITLE": "Connections",
+      "SUBTITLE": "Connect your Meta Ads, Google Ads and Google Analytics accounts to bring campaign metrics, sponsored posts and ad leads into the CRM.",
+      "META_DESC": "Facebook and Instagram campaigns, ad sets, ads and lead forms.",
+      "GOOGLE_ADS_DESC": "Search, Display, Performance Max and YouTube campaigns with GAQL metrics.",
+      "GA4_DESC": "Traffic, funnels and conversions measured by Google Analytics 4.",
+      "CONNECT": "Connect",
+      "DISCONNECT": "Disconnect",
+      "SYNC_NOW": "Sync now",
+      "AD_ACCOUNTS": "Ad accounts",
+      "LAST_SYNC": "Last sync at {at}",
+      "OAUTH_MISSING": "OAuth keys are not configured on this installation.",
+      "CONNECTED": "Account connected successfully.",
+      "DISCONNECTED": "Account disconnected.",
+      "CONNECT_ERROR": "Could not complete the connection.",
+      "DISCONNECT_ERROR": "Could not disconnect the account.",
+      "NOT_CONFIGURED": "OAuth is not configured on this installation.",
+      "SYNC_QUEUED": "Synchronization queued.",
+      "SYNC_ERROR": "Could not queue the synchronization.",
+      "STATUS": {
+        "ACTIVE": "Connected",
+        "ERROR": "Error",
+        "DISCONNECTED": "Disconnected"
+      }
+    }
+  }
+}

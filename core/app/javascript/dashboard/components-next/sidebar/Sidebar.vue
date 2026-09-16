@@ -73,6 +73,13 @@ const hasAdvancedAssignment = computed(() => {
   );
 });
 
+const hasMarketing = computed(() => {
+  return isFeatureEnabledonAccount.value(
+    accountId.value,
+    FEATURE_FLAGS.MARKETING
+  );
+});
+
 const toggleShortcutModalFn = show => {
   if (show) {
     emit('openKeyShortcutModal');
@@ -681,6 +688,52 @@ const salesCrmMenuItems = computed(() => [
     activeOn: ['crm_cadences'],
     to: accountScopedRoute('crm_cadences'),
   },
+  ...(hasMarketing.value
+    ? [
+        {
+          name: 'Marketing',
+          label: t('SIDEBAR.MARKETING'),
+          icon: 'i-lucide-megaphone',
+          activeOn: [
+            'marketing_overview',
+            'marketing_campaigns',
+            'marketing_leads',
+            'marketing_events',
+            'marketing_connections',
+          ],
+          children: [
+            {
+              name: 'MarketingOverview',
+              label: t('MARKETING.OVERVIEW.TITLE'),
+              icon: 'i-lucide-bar-chart-3',
+              activeOn: ['marketing_overview'],
+              to: accountScopedRoute('marketing_overview'),
+            },
+            {
+              name: 'MarketingCampaigns',
+              label: t('MARKETING.CAMPAIGNS.TITLE'),
+              icon: 'i-lucide-target',
+              activeOn: ['marketing_campaigns'],
+              to: accountScopedRoute('marketing_campaigns'),
+            },
+            {
+              name: 'MarketingLeads',
+              label: t('MARKETING.LEADS.TITLE'),
+              icon: 'i-lucide-user-plus',
+              activeOn: ['marketing_leads'],
+              to: accountScopedRoute('marketing_leads'),
+            },
+            {
+              name: 'MarketingConnections',
+              label: t('MARKETING.CONNECTIONS.TITLE'),
+              icon: 'i-lucide-plug',
+              activeOn: ['marketing_connections', 'marketing_events'],
+              to: accountScopedRoute('marketing_connections'),
+            },
+          ],
+        },
+      ]
+    : []),
 ]);
 
 // Bloco 3: Automação & IA (Central Captain AI, Campanhas, Automações)
