@@ -10,8 +10,13 @@ public/system
 tmp
 .codeclimate.yml
 public/packs
+public/vite
 node_modules
 vendor/bundle
 .DS_Store
 *.swp
 *~
+# Segredos locais e artefatos de dev nunca entram na imagem
+config/master.key
+config/credentials*
+spec

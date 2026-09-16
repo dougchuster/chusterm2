@@ -1,6 +1,13 @@
 class Captain::InboxPendingConversationsResolutionJob < ApplicationJob
   CAPTAIN_INFERENCE_RESOLVE_ACTIVITY_REASON = 'no outstanding questions'.freeze
   CAPTAIN_INFERENCE_HANDOFF_ACTIVITY_REASON = 'pending clarification from customer'.freeze
+  # LLM evaluations are deduplicated per conversation: the scheduler fires every
+  # few minutes, but each pending conversation is evaluated at most once per
+  # cooldown window. Without this the sweep issues an API call per conversation
+  # per run — the dominant OpenRouter consumer in production.
+  EVALUATION_COOLDOWN = 24.hours
+  PROVIDER_FAILURE_PATTERN =
+    /api error|provider|timeout|unavailable|indisponível|credit|quota|billing|rate.?limit|insufficient|more tokens|\b402\b|\b429\b|\b5\d\d\b/i
 
   queue_as :low
 
@@ -35,16 +42,30 @@ class Captain::InboxPendingConversationsResolutionJob < ApplicationJob
     Current.executed_by = inbox.captain_assistant
 
     resolvable_pending_conversations(inbox).each do |conversation|
+      next if recently_evaluated?(conversation)
+
+      # Marked before the call so a persistent failure also exits the loop —
+      # otherwise every sweep retries the same conversation indefinitely.
+      mark_evaluated!(conversation)
       evaluation = evaluate_conversation(conversation, inbox)
       next unless still_resolvable_after_evaluation?(conversation)
 
-      if evaluation[:complete]
-        resolve_conversation(conversation, inbox, evaluation[:reason])
-      elsif provider_failure?(evaluation) || auto_handoff_on_incomplete?(inbox)
-        handoff_conversation(conversation, inbox, evaluation[:reason])
-      else
-        recommend_human_review(conversation, inbox, evaluation[:reason])
-      end
+      act_on_evaluation(conversation, inbox, evaluation)
+    rescue StandardError => e
+      # A bad conversation must not abort the whole batch or leave the remaining
+      # ones unevaluated until the next sweep.
+      Rails.logger.error("[CaptainResolution] conversation #{conversation.id}: #{e.class} #{e.message}")
+      ::ChusteRMExceptionTracker.new(e, account: inbox.account).capture_exception
+    end
+  end
+
+  def act_on_evaluation(conversation, inbox, evaluation)
+    if evaluation[:complete]
+      resolve_conversation(conversation, inbox, evaluation[:reason])
+    elsif provider_failure?(evaluation) || auto_handoff_on_incomplete?(inbox)
+      handoff_conversation(conversation, inbox, evaluation[:reason])
+    else
+      recommend_human_review(conversation, inbox, evaluation[:reason])
     end
   end
 
@@ -112,8 +133,24 @@ class Captain::InboxPendingConversationsResolutionJob < ApplicationJob
     )
   end
 
+  def recently_evaluated?(conversation)
+    evaluated_at = conversation.captain_conversation_state&.score_payload&.dig('last_evaluated_at')
+    return false if evaluated_at.blank?
+
+    Time.zone.parse(evaluated_at.to_s) > EVALUATION_COOLDOWN.ago
+  rescue ArgumentError, TypeError
+    false
+  end
+
+  def mark_evaluated!(conversation)
+    state = CaptainConversationState.for_conversation!(conversation)
+    state.update!(score_payload: state.score_payload.to_h.merge('last_evaluated_at' => Time.current.iso8601))
+  end
+
   def provider_failure?(evaluation)
-    evaluation[:reason].to_s.match?(/api error|provider|timeout|unavailable|indisponível/i)
+    return true if evaluation[:provider_error] == true
+
+    evaluation[:reason].to_s.match?(PROVIDER_FAILURE_PATTERN)
   end
 
   def recent_private_note?(conversation, content)

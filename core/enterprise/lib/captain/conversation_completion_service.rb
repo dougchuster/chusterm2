@@ -8,6 +8,10 @@
 # not a customer-facing value-add, so we don't charge for it.
 class Captain::ConversationCompletionService < Captain::BaseTaskService
   RESPONSE_SCHEMA = Captain::ConversationCompletionSchema
+  # A binary complete/incomplete verdict never needs the model's full output
+  # budget. Capping max_tokens keeps OpenRouter credit-limit checks cheap and
+  # stops every sweep call from reserving 65k tokens.
+  EVALUATION_MAX_TOKENS = 512
 
   pattr_initialize [:account!, :conversation_display_id!]
 
@@ -24,7 +28,7 @@ class Captain::ConversationCompletionService < Captain::BaseTaskService
       schema: RESPONSE_SCHEMA
     )
 
-    return default_incomplete_response(response[:error]) if response[:error].present?
+    return provider_error_response(response[:error]) if response[:error].present?
 
     parse_response(response[:message])
   end
@@ -54,6 +58,19 @@ class Captain::ConversationCompletionService < Captain::BaseTaskService
 
   def default_incomplete_response(reason)
     { complete: false, reason: reason }
+  end
+
+  # Provider/API failures are flagged explicitly so the caller can route them to
+  # handoff without regexing free-form reason text (LLM reasons can contain words
+  # like "credit" or "timeout" without being provider failures).
+  def provider_error_response(error)
+    { complete: false, reason: error, provider_error: true }
+  end
+
+  def build_chat(context, model:, messages:, schema: nil, tools: [])
+    chat = super
+    chat.with_params(max_tokens: EVALUATION_MAX_TOKENS)
+    chat
   end
 
   # All AI traffic uses the installation-wide OpenRouter gateway.

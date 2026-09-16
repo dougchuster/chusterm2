@@ -361,6 +361,123 @@ RSpec.describe Captain::InboxPendingConversationsResolutionJob, type: :job do
     end
   end
 
+  context 'when evaluation returns a provider error flag' do
+    before do
+      allow(inbox.account).to receive(:feature_enabled?).and_call_original
+      allow(inbox.account).to receive(:feature_enabled?).with('captain_tasks').and_return(true)
+      mock_service = instance_double(Captain::ConversationCompletionService)
+      allow(mock_service).to receive(:perform).and_return(
+        { complete: false, reason: 'This request requires more credits, or fewer max_tokens', provider_error: true }
+      )
+      allow(Captain::ConversationCompletionService).to receive(:new).and_return(mock_service)
+    end
+
+    it 'hands off instead of recommending review' do
+      described_class.perform_now(inbox)
+
+      expect(resolvable_pending_conversation.reload.status).to eq('open')
+      expect(resolvable_pending_conversation.messages.where(private: true).map(&:content))
+        .not_to include(a_string_starting_with('Revisão recomendada'))
+    end
+  end
+
+  context 'when credit/quota errors arrive without the provider flag' do
+    before do
+      allow(inbox.account).to receive(:feature_enabled?).and_call_original
+      allow(inbox.account).to receive(:feature_enabled?).with('captain_tasks').and_return(true)
+      mock_service = instance_double(Captain::ConversationCompletionService)
+      allow(mock_service).to receive(:perform).and_return(
+        { complete: false, reason: 'This request requires more credits, or fewer max_tokens' }
+      )
+      allow(Captain::ConversationCompletionService).to receive(:new).and_return(mock_service)
+    end
+
+    it 'still hands off via the reason classifier' do
+      described_class.perform_now(inbox)
+
+      expect(resolvable_pending_conversation.reload.status).to eq('open')
+    end
+  end
+
+  context 'when the conversation was evaluated recently' do
+    before do
+      allow(inbox.account).to receive(:feature_enabled?).and_call_original
+      allow(inbox.account).to receive(:feature_enabled?).with('captain_tasks').and_return(true)
+      CaptainConversationState.for_conversation!(resolvable_pending_conversation).update!(
+        score_payload: { 'last_evaluated_at' => 30.minutes.ago.iso8601 }
+      )
+    end
+
+    it 'skips the LLM call within the cooldown window' do
+      expect(Captain::ConversationCompletionService).not_to receive(:new)
+
+      described_class.perform_now(inbox)
+
+      expect(resolvable_pending_conversation.reload.status).to eq('pending')
+    end
+
+    it 'evaluates again once the cooldown expires' do
+      CaptainConversationState.for_conversation!(resolvable_pending_conversation).update!(
+        score_payload: { 'last_evaluated_at' => 25.hours.ago.iso8601 }
+      )
+      mock_service = instance_double(Captain::ConversationCompletionService)
+      allow(mock_service).to receive(:perform).and_return({ complete: false, reason: 'still pending' })
+      allow(Captain::ConversationCompletionService).to receive(:new).and_return(mock_service)
+
+      described_class.perform_now(inbox)
+
+      expect(mock_service).to have_received(:perform)
+    end
+  end
+
+  it 'records last_evaluated_at on the conversation state' do
+    allow(inbox.account).to receive(:feature_enabled?).and_call_original
+    allow(inbox.account).to receive(:feature_enabled?).with('captain_tasks').and_return(true)
+    mock_service = instance_double(Captain::ConversationCompletionService)
+    allow(mock_service).to receive(:perform).and_return({ complete: false, reason: 'pending input' })
+    allow(Captain::ConversationCompletionService).to receive(:new).and_return(mock_service)
+
+    described_class.perform_now(inbox)
+
+    state = resolvable_pending_conversation.reload.captain_conversation_state
+    expect(Time.zone.parse(state.score_payload['last_evaluated_at'])).to be_within(1.minute).of(Time.current)
+  end
+
+  context 'when evaluating one conversation raises' do
+    let!(:second_pending) do
+      create(
+        :conversation,
+        account: inbox.account,
+        inbox: inbox,
+        status: :pending,
+        last_activity_at: 2.hours.ago
+      )
+    end
+
+    before do
+      allow(inbox.account).to receive(:feature_enabled?).and_call_original
+      allow(inbox.account).to receive(:feature_enabled?).with('captain_tasks').and_return(true)
+      call_count = 0
+      mock_service = instance_double(Captain::ConversationCompletionService)
+      allow(mock_service).to receive(:perform) do
+        call_count += 1
+        raise StandardError, 'boom' if call_count == 1
+
+        { complete: true, reason: 'done' }
+      end
+      allow(Captain::ConversationCompletionService).to receive(:new).and_return(mock_service)
+      allow(Rails.logger).to receive(:error)
+    end
+
+    it 'logs the error and keeps evaluating the rest of the batch' do
+      described_class.perform_now(inbox)
+
+      expect(Rails.logger).to have_received(:error).with(/\[CaptainResolution\] conversation .* boom/)
+      statuses = [resolvable_pending_conversation.reload.status, second_pending.reload.status]
+      expect(statuses).to include('resolved')
+    end
+  end
+
   it 'does not resolve conversations when auto-resolve is disabled at execution time' do
     inbox.account.update!(captain_auto_resolve_mode: 'disabled')
 

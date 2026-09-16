@@ -144,134 +144,20 @@ COPY lib/devise/models/password_has_required_content.rb ./lib/devise/models/pass
       cp -a public/vite /app/public/vite-image && \
       if [ "$INSTALL_JS_DEPS" != "true" ]; then rm -rf node_modules; fi
 
-# Evolution API - Ruby backend
-COPY config/initializers/filter_parameter_logging.rb ./config/initializers/filter_parameter_logging.rb
-COPY app/dashboards/account_dashboard.rb ./app/dashboards/account_dashboard.rb
-COPY config/routes.rb ./config/routes.rb
-COPY app/controllers/api/v1/accounts/captain/ ./app/controllers/api/v1/accounts/captain/
-COPY app/controllers/api/v1/accounts/campaigns_controller.rb ./app/controllers/api/v1/accounts/campaigns_controller.rb
-COPY app/controllers/api/v1/accounts/conversations_controller.rb ./app/controllers/api/v1/accounts/conversations_controller.rb
-COPY app/controllers/api/v1/accounts/crm/ ./app/controllers/api/v1/accounts/crm/
+# Deploy integrity — the repo is the source of truth for ALL application code.
+# The previous cherry-picked COPY list silently left ~190 fork-modified files on
+# the stale base-image version (e.g. send_on_whatsapp_service.rb ran the March
+# upstream file without the Evolution session-message bypass). The base image
+# now only provides the OS, system packages and the prebuilt toolchain.
+COPY app ./app
+COPY lib ./lib
+COPY config ./config
+COPY db ./db
+COPY bin ./bin
+COPY vendor ./vendor
+COPY scripts ./scripts
+COPY swagger ./swagger
 RUN rm -f ./app/controllers/api/v1/accounts/crm_controller.rb
-COPY app/controllers/api/v1/accounts/integrations/linear_controller.rb ./app/controllers/api/v1/accounts/integrations/linear_controller.rb
-COPY app/controllers/public_controller.rb ./app/controllers/public_controller.rb
-COPY app/controllers/super_admin/instance_statuses_controller.rb ./app/controllers/super_admin/instance_statuses_controller.rb
-COPY app/views/api/v1/models/_campaign.json.jbuilder ./app/views/api/v1/models/_campaign.json.jbuilder
-COPY app/views/api/v1/models/_contact.json.jbuilder ./app/views/api/v1/models/_contact.json.jbuilder
-COPY app/views/api/v1/models/_inbox.json.jbuilder ./app/views/api/v1/models/_inbox.json.jbuilder
-COPY app/views/api/v1/models/_conversation.json.jbuilder ./app/views/api/v1/models/_conversation.json.jbuilder
-COPY app/views/api/v1/conversations/partials/_conversation.json.jbuilder ./app/views/api/v1/conversations/partials/_conversation.json.jbuilder
-COPY app/views/api/v1/accounts/search/ ./app/views/api/v1/accounts/search/
-COPY app/views/api/v1/accounts/csat_survey_responses/download.csv.erb ./app/views/api/v1/accounts/csat_survey_responses/download.csv.erb
-COPY app/views/api/v1/accounts/labels/ ./app/views/api/v1/accounts/labels/
-COPY app/views/layouts/portal.html.erb ./app/views/layouts/portal.html.erb
-COPY app/finders/conversation_finder.rb ./app/finders/conversation_finder.rb
-COPY app/finders/message_finder.rb ./app/finders/message_finder.rb
-COPY app/models/account.rb ./app/models/account.rb
-COPY app/models/attachment.rb ./app/models/attachment.rb
-COPY app/models/campaign.rb ./app/models/campaign.rb
-COPY app/models/contact.rb ./app/models/contact.rb
-COPY app/models/conversation.rb ./app/models/conversation.rb
-COPY app/models/inbox.rb ./app/models/inbox.rb
-COPY app/models/label.rb ./app/models/label.rb
-COPY app/models/message.rb ./app/models/message.rb
-COPY app/models/user.rb ./app/models/user.rb
-COPY app/models/concerns/crm_score_classification.rb ./app/models/concerns/crm_score_classification.rb
-COPY app/models/concerns/account_association_scoped.rb ./app/models/concerns/account_association_scoped.rb
-COPY app/models/concerns/conversation_account_scoped.rb ./app/models/concerns/conversation_account_scoped.rb
-COPY app/models/captain_conversation_state.rb ./app/models/captain_conversation_state.rb
-COPY app/models/campaign_delivery_event.rb ./app/models/campaign_delivery_event.rb
-COPY app/models/captain/ ./app/models/captain/
-COPY app/models/crm_deal.rb ./app/models/crm_deal.rb
-COPY app/models/crm_*.rb ./app/models/
-COPY app/jobs/delete_object_job.rb ./app/jobs/delete_object_job.rb
-COPY app/jobs/data_import_job.rb ./app/jobs/data_import_job.rb
-COPY app/jobs/account/contacts_export_job.rb ./app/jobs/account/contacts_export_job.rb
-COPY app/jobs/crm/ ./app/jobs/crm/
-COPY app/mailers/campaign_mailer.rb ./app/mailers/campaign_mailer.rb
-# PERF-04: export de deals em job com email de conclusão
-COPY app/mailers/administrator_notifications/account_notification_mailer.rb ./app/mailers/administrator_notifications/account_notification_mailer.rb
-COPY app/views/mailers/administrator_notifications/account_notification_mailer/crm_deals_export_complete.liquid ./app/views/mailers/administrator_notifications/account_notification_mailer/crm_deals_export_complete.liquid
-COPY app/controllers/api/v1/accounts/contacts_controller.rb ./app/controllers/api/v1/accounts/contacts_controller.rb
-COPY app/controllers/api/v1/accounts/labels_controller.rb ./app/controllers/api/v1/accounts/labels_controller.rb
-COPY app/controllers/api/v1/accounts/contact_categories_controller.rb ./app/controllers/api/v1/accounts/contact_categories_controller.rb
-COPY app/services/captain/ ./app/services/captain/
-COPY app/services/campaigns/ ./app/services/campaigns/
-COPY app/services/conversations/ ./app/services/conversations/
-COPY app/services/contacts/sync_attributes.rb ./app/services/contacts/sync_attributes.rb
-COPY app/services/data_import/ ./app/services/data_import/
-COPY app/services/message_templates/hook_execution_service.rb ./app/services/message_templates/hook_execution_service.rb
-COPY app/services/base_refresh_oauth_token_service.rb ./app/services/base_refresh_oauth_token_service.rb
-COPY app/services/crm/ ./app/services/crm/
-COPY app/services/email/ ./app/services/email/
-COPY app/services/sms/oneoff_sms_campaign_service.rb ./app/services/sms/oneoff_sms_campaign_service.rb
-COPY app/services/twilio/oneoff_sms_campaign_service.rb ./app/services/twilio/oneoff_sms_campaign_service.rb
-COPY app/services/whatsapp/oneoff_campaign_service.rb ./app/services/whatsapp/oneoff_campaign_service.rb
-COPY app/services/whatsapp/multiple_numbers_error.rb ./app/services/whatsapp/multiple_numbers_error.rb
-COPY app/services/whatsapp/phone_info_service.rb ./app/services/whatsapp/phone_info_service.rb
-COPY app/services/whatsapp/embedded_signup_service.rb ./app/services/whatsapp/embedded_signup_service.rb
-COPY app/services/whatsapp/incoming_message_base_service.rb ./app/services/whatsapp/incoming_message_base_service.rb
-COPY app/services/whatsapp/embedded_signup/ ./app/services/whatsapp/embedded_signup/
-COPY app/controllers/api/v1/accounts/whatsapp/ ./app/controllers/api/v1/accounts/whatsapp/
-COPY app/models/whatsapp_embedded_onboarding.rb ./app/models/whatsapp_embedded_onboarding.rb
-COPY config/agents/tools.yml ./config/agents/tools.yml
-COPY app/listeners/crm_captain_triage_listener.rb ./app/listeners/crm_captain_triage_listener.rb
-# PERF-02: eventos crm_deal.* em realtime
-COPY app/listeners/action_cable_listener.rb ./app/listeners/action_cable_listener.rb
-COPY app/presenters/conversations/event_data_presenter.rb ./app/presenters/conversations/event_data_presenter.rb
-COPY lib/events/types.rb ./lib/events/types.rb
-COPY lib/global_config_service.rb ./lib/global_config_service.rb
-COPY lib/qa/ ./lib/qa/
-COPY lib/tasks/qa_fixture.rake ./lib/tasks/qa_fixture.rake
-COPY app/dispatchers/async_dispatcher.rb ./app/dispatchers/async_dispatcher.rb
-COPY app/policies/label_policy.rb ./app/policies/label_policy.rb
-COPY app/policies/contact_policy.rb ./app/policies/contact_policy.rb
-COPY app/policies/crm_*.rb ./app/policies/
-# Migrations do ChusteRM e patches sobre a imagem base
-COPY db/migrate/ ./db/migrate/
-COPY lib/tasks/crm_labels.rake ./lib/tasks/crm_labels.rake
-COPY lib/tasks/crm_contacts.rake ./lib/tasks/crm_contacts.rake
-COPY lib/tasks/crm_channel_pipelines.rake ./lib/tasks/crm_channel_pipelines.rake
-COPY lib/tasks/crm_health.rake ./lib/tasks/crm_health.rake
-COPY lib/tasks/crm_smoke.rake ./lib/tasks/crm_smoke.rake
-COPY lib/tasks/captain_playbooks.rake ./lib/tasks/captain_playbooks.rake
-COPY lib/tasks/captain_dr_paula_matos.rake ./lib/tasks/captain_dr_paula_matos.rake
-COPY db/seeds.rb ./db/seeds.rb
-COPY db/seeds/ ./db/seeds/
-COPY scripts/captain/ ./scripts/captain/
-COPY scripts/security/ ./scripts/security/
-COPY app/models/channel/whatsapp.rb ./app/models/channel/whatsapp.rb
-COPY app/controllers/dashboard_controller.rb ./app/controllers/dashboard_controller.rb
-COPY app/controllers/evo_manager_controller.rb ./app/controllers/evo_manager_controller.rb
-COPY app/services/whatsapp/providers/evolution_service.rb ./app/services/whatsapp/providers/evolution_service.rb
-COPY app/services/whatsapp/incoming_message_evolution_service.rb ./app/services/whatsapp/incoming_message_evolution_service.rb
-COPY app/services/evolution/ ./app/services/evolution/
-COPY app/models/evolution_api_configuration.rb ./app/models/evolution_api_configuration.rb
-COPY app/models/evolution_instance.rb ./app/models/evolution_instance.rb
-COPY app/models/evolution_webhook_event.rb ./app/models/evolution_webhook_event.rb
-COPY app/channels/evolution_instance_channel.rb ./app/channels/evolution_instance_channel.rb
-COPY app/controllers/webhooks/evolution_controller.rb ./app/controllers/webhooks/evolution_controller.rb
-COPY app/controllers/api/v1/accounts/channels/evolution_controller.rb ./app/controllers/api/v1/accounts/channels/evolution_controller.rb
-COPY app/controllers/api/v1/accounts/channels/evolution/ ./app/controllers/api/v1/accounts/channels/evolution/
-COPY app/controllers/api/v1/accounts/evolution/ ./app/controllers/api/v1/accounts/evolution/
-COPY app/jobs/webhooks/evolution_events_job.rb ./app/jobs/webhooks/evolution_events_job.rb
-COPY app/jobs/webhooks/whatsapp_events_job.rb ./app/jobs/webhooks/whatsapp_events_job.rb
-COPY app/jobs/evolution/ ./app/jobs/evolution/
-COPY app/jobs/channels/whatsapp/ ./app/jobs/channels/whatsapp/
-COPY app/jobs/channels/evolution_connection_health_job.rb ./app/jobs/channels/evolution_connection_health_job.rb
-COPY config/schedule.yml ./config/schedule.yml
-COPY config/initializers/disable_evented_watcher.rb ./config/initializers/disable_evented_watcher.rb
-COPY config/environments/development.rb ./config/environments/development.rb
-COPY config/initializers/vite_hot_reload.rb ./config/initializers/vite_hot_reload.rb
-COPY config/initializers/evolution_routes.rb ./config/initializers/evolution_routes.rb
-COPY config/initializers/01_inject_enterprise_edition_module.rb ./config/initializers/01_inject_enterprise_edition_module.rb
-COPY config/initializers/chusterm_branding.rb ./config/initializers/chusterm_branding.rb
-COPY config/initializers/chusterm_compatibility_aliases.rb ./config/initializers/chusterm_compatibility_aliases.rb
-COPY config/initializers/chusterm_exception_tracker_alias.rb ./config/initializers/chusterm_exception_tracker_alias.rb
-COPY config/initializers/active_record_query_trace.rb ./config/initializers/active_record_query_trace.rb
-COPY config/application.rb ./config/application.rb
-# Templates de email traduzidos para pt_BR
-COPY app/views/devise/mailer/ ./app/views/devise/mailer/
 
 EXPOSE 3000
 CMD ["sh", "-c", "rm -f /app/tmp/pids/server.pid && bundle exec rails s -b 0.0.0.0 -p 3000"]

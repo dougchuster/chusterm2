@@ -13,6 +13,7 @@ RSpec.describe Captain::ConversationCompletionService do
     allow(Llm::Config).to receive(:with_api_key).and_yield(mock_context)
     allow(mock_chat).to receive(:with_instructions)
     allow(mock_chat).to receive(:with_schema).and_return(mock_chat)
+    allow(mock_chat).to receive(:with_params).and_return(mock_chat)
     allow(account).to receive(:feature_enabled?).and_call_original
     allow(account).to receive(:feature_enabled?).with('captain_tasks').and_return(true)
   end
@@ -111,6 +112,23 @@ RSpec.describe Captain::ConversationCompletionService do
         expect(result[:complete]).to be false
         expect(result[:reason]).to eq('API Error')
       end
+
+      it 'flags the result as a provider error' do
+        result = service.perform
+
+        expect(result[:provider_error]).to be true
+      end
+    end
+
+    it 'caps max_tokens for the evaluation call' do
+      create(:message, conversation: conversation, message_type: :incoming, content: 'Hello')
+      allow(mock_chat).to receive(:ask).and_return(
+        instance_double(RubyLLM::Message, content: { 'complete' => true, 'reason' => 'Done' }, input_tokens: 10, output_tokens: 5)
+      )
+
+      service.perform
+
+      expect(mock_chat).to have_received(:with_params).with(max_tokens: described_class::EVALUATION_MAX_TOKENS)
     end
 
     context 'when captain_tasks feature is disabled' do
@@ -141,15 +159,14 @@ RSpec.describe Captain::ConversationCompletionService do
         service.perform
       end
 
-      it 'falls back to the account hook key when no system key exists' do
+      it 'does not fall back to the account hook key when no system key exists' do
         InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_API_KEY').update!(value: nil)
 
-        expect(Llm::Config).to receive(:with_api_key).with('customer-own-key', api_base: anything).and_yield(mock_context)
-        allow(mock_chat).to receive(:ask).and_return(
-          instance_double(RubyLLM::Message, content: { 'complete' => true, 'reason' => 'Done' }, input_tokens: 10, output_tokens: 5)
-        )
+        expect(Llm::Config).not_to receive(:with_api_key)
 
-        service.perform
+        result = service.perform
+        expect(result[:complete]).to be false
+        expect(result[:provider_error]).to be true
       end
     end
 
