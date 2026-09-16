@@ -21,7 +21,7 @@ test('atendimento apresenta o centro inteligente do Capitão', async ({
     name: 'Controle inteligente do Capitão',
   });
   if (!(await intelligencePanel.isVisible())) {
-    await page.locator('button:has(.i-ph-user-bold)').click();
+    await page.locator("button[aria-label='Contatos']").click();
   }
   await expect(intelligencePanel).toBeVisible({ timeout: 30_000 });
   await expect(

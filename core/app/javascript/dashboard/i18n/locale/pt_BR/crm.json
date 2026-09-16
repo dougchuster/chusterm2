@@ -259,6 +259,11 @@
         "PAUSED": "Pausada",
         "HUMAN_ONLY": "Humano no controle"
       }
+    },
+    "VIEW_SWITCHER": {
+      "LABEL": "Modo de exibição",
+      "KANBAN": "Quadro Kanban",
+      "TABLE": "Visão em tabela"
     }
   }
 }

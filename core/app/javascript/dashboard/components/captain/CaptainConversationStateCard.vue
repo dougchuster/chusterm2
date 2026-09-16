@@ -87,15 +87,15 @@ const humanControlled = computed(() =>
 const isReasonDirty = computed(() => reason.value !== persistedReason.value);
 const statusTone = computed(() => {
   if (currentMode.value === 'human_only') {
-    return 'bg-ds-state-info-soft text-ds-state-info';
+    return 'bg-ds-state-info-soft text-ds-state-info-fg';
   }
   if (currentMode.value === 'paused') {
-    return 'bg-ds-state-warning-soft text-ds-state-warning';
+    return 'bg-ds-state-warning-soft text-ds-state-warning-fg';
   }
   if (currentMode.value === 'supervised') {
     return 'bg-ds-accent-soft text-ds-accent';
   }
-  return 'bg-ds-state-success-soft text-ds-state-success';
+  return 'bg-ds-state-success-soft text-ds-state-success-fg';
 });
 const scoreValue = computed(() => Number(state.value?.score_total || 0));
 const scoreLabel = computed(
@@ -103,13 +103,13 @@ const scoreLabel = computed(
 );
 const scoreTone = computed(() => {
   if (scoreValue.value >= 80) {
-    return 'bg-ds-state-success-soft text-ds-state-success';
+    return 'bg-ds-state-success-soft text-ds-state-success-fg';
   }
   if (scoreValue.value >= 60) {
-    return 'bg-ds-state-info-soft text-ds-state-info';
+    return 'bg-ds-state-info-soft text-ds-state-info-fg';
   }
   if (scoreValue.value >= 40) {
-    return 'bg-ds-state-warning-soft text-ds-state-warning';
+    return 'bg-ds-state-warning-soft text-ds-state-warning-fg';
   }
   return 'bg-ds-bg-hover text-ds-fg-muted';
 });
@@ -307,7 +307,7 @@ watch(
           </span>
           <div class="min-w-0">
             <p
-              class="m-0 text-[10px] font-semibold uppercase tracking-[0.2em] text-ds-fg-subtle"
+              class="m-0 text-[10px] font-semibold uppercase tracking-[0.2em] text-ds-fg-muted"
             >
               {{ copy.eyebrow }}
             </p>
@@ -370,7 +370,7 @@ watch(
         <article class="rounded-xl bg-ds-bg-sunken p-3">
           <div class="flex items-center justify-between gap-2">
             <span
-              class="text-[10px] font-semibold uppercase tracking-widest text-ds-fg-subtle"
+              class="text-[10px] font-semibold uppercase tracking-widest text-ds-fg-muted"
             >
               {{ copy.relationship }}
             </span>
@@ -386,7 +386,7 @@ watch(
           </p>
           <button
             type="button"
-            class="mt-1 inline-flex min-h-10 w-full items-center rounded-lg text-left text-[11px] text-ds-fg-subtle transition-colors hover:text-ds-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
+            class="mt-1 inline-flex min-h-10 w-full items-center rounded-lg text-left text-[11px] text-ds-fg-muted transition-colors hover:text-ds-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
             :aria-expanded="isRelationshipExpanded"
             :aria-controls="`captain-relationship-${conversationDisplayId}`"
             @click="isRelationshipExpanded = !isRelationshipExpanded"
@@ -398,7 +398,7 @@ watch(
         <article class="rounded-xl bg-ds-bg-sunken p-3">
           <div class="flex items-center justify-between gap-2">
             <span
-              class="text-[10px] font-semibold uppercase tracking-widest text-ds-fg-subtle"
+              class="text-[10px] font-semibold uppercase tracking-widest text-ds-fg-muted"
             >
               {{ copy.qualification }}
             </span>
@@ -411,7 +411,7 @@ watch(
             <strong class="font-manrope text-2xl text-ds-fg-default">{{
               scoreValue
             }}</strong>
-            <span class="text-[10px] text-ds-fg-subtle">{{
+            <span class="text-[10px] text-ds-fg-muted">{{
               copy.scoreUnit
             }}</span>
           </div>
@@ -440,7 +440,7 @@ watch(
           />
           {{ item.description }}
         </p>
-        <p class="m-0 mt-2 text-[11px] text-ds-fg-subtle">
+        <p class="m-0 mt-2 text-[11px] text-ds-fg-muted">
           {{ copy.relationshipNotice }}
         </p>
       </div>
@@ -454,7 +454,7 @@ watch(
             />
             <div class="min-w-0">
               <p
-                class="m-0 text-[10px] uppercase tracking-widest text-ds-fg-subtle"
+                class="m-0 text-[10px] uppercase tracking-widest text-ds-fg-muted"
               >
                 {{ copy.nextAction }}
               </p>
@@ -512,7 +512,7 @@ watch(
             {{ copy.scoreWhy }}
           </span>
           <span
-            class="size-4 text-ds-fg-subtle"
+            class="size-4 text-ds-fg-muted"
             :class="
               isScoreExpanded ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'
             "
@@ -535,7 +535,7 @@ watch(
               }}</span>
               <span class="text-ds-accent">{{ scoreFactorValue(item) }}</span>
             </div>
-            <p class="m-0 mt-1 text-[11px] leading-4 text-ds-fg-subtle">
+            <p class="m-0 mt-1 text-[11px] leading-4 text-ds-fg-muted">
               {{ item.evidence }}
             </p>
           </div>
@@ -544,7 +544,7 @@ watch(
 
       <label class="block">
         <span
-          class="text-[10px] font-semibold uppercase tracking-widest text-ds-fg-subtle"
+          class="text-[10px] font-semibold uppercase tracking-widest text-ds-fg-muted"
         >
           {{ copy.interventionContext }}
         </span>
@@ -553,7 +553,7 @@ watch(
           :disabled="saving"
           :aria-describedby="`captain-reason-status-${conversationDisplayId}`"
           rows="2"
-          class="mt-2 w-full resize-none rounded-xl bg-ds-bg-sunken px-3 py-2.5 text-xs leading-5 text-ds-fg-default outline-none ring-1 ring-inset ring-ds-border placeholder:text-ds-fg-subtle focus:ring-2 focus:ring-ds-border-focus disabled:cursor-not-allowed disabled:opacity-60"
+          class="mt-2 w-full resize-none rounded-xl bg-ds-bg-sunken px-3 py-2.5 text-xs leading-5 text-ds-fg-default outline-none ring-1 ring-inset ring-ds-border placeholder:text-ds-fg-muted focus:ring-2 focus:ring-ds-border-focus disabled:cursor-not-allowed disabled:opacity-60"
           :placeholder="copy.reasonPlaceholder"
           data-testid="captain-reason"
         />
@@ -563,7 +563,9 @@ watch(
         <p
           :id="`captain-reason-status-${conversationDisplayId}`"
           class="m-0 text-[11px]"
-          :class="isReasonDirty ? 'text-ds-state-warning' : 'text-ds-fg-subtle'"
+          :class="
+            isReasonDirty ? 'text-ds-state-warning-fg' : 'text-ds-fg-muted'
+          "
           role="status"
           aria-live="polite"
           data-testid="captain-reason-status"

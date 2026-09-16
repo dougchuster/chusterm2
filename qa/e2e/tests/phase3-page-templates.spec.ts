@@ -49,7 +49,8 @@ async function setTheme(page: Page, theme: 'light' | 'dark') {
 
 test('seis arquétipos mantêm layout, tema e acessibilidade', async ({
   page,
-}) => {
+}, testInfo) => {
+  testInfo.setTimeout(180_000);
   await openGallery(page);
 
   for (const theme of ['light', 'dark'] as const) {

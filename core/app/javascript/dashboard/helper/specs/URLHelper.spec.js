@@ -236,9 +236,12 @@ describe('#URL Helpers', () => {
       expect(timeStampAppendedURL(input)).toBe(expected);
     });
 
-    it('should throw an error for invalid URLs', () => {
-      const input = 'not a valid url';
-      expect(() => timeStampAppendedURL(input)).toThrow();
+    it('should treat non-absolute input as relative to the current origin', () => {
+      const input = '/rails/active_storage/blobs/xyz';
+      const result = timeStampAppendedURL(input);
+      expect(result).toMatch(
+        /^https?:\/\/[^/]+\/rails\/active_storage\/blobs\/xyz\?t=\d+$/
+      );
     });
   });
 

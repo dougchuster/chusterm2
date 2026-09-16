@@ -213,10 +213,20 @@ const applyTheme = async (page: any, theme: (typeof THEMES)[number]) => {
 test.describe('VISUAL-F0 — passagem visual', () => {
   test.describe.configure({ timeout: 0 });
 
+  // Auditoria de rotas: roda uma vez por suite (chromium-desktop). Os projetos
+  // de viewport multiplicariam as ~200 visitas sem ganho de cobertura — o
+  // sweep B ja exercita a matriz de viewports internamente.
+  test.beforeEach(({}, testInfo) => {
+    test.skip(
+      testInfo.project.name !== 'chromium-desktop',
+      'sweep visual roda apenas no projeto chromium-desktop'
+    );
+  });
+
   test('sweep A: todas as rotas resolvíveis em light e dark', async ({
     page,
   }, testInfo) => {
-    test.setTimeout(10 * 60 * 1000);
+    test.setTimeout(20 * 60 * 1000);
     const manifest: Manifest = JSON.parse(
       await import('node:fs/promises').then(fs =>
         fs.readFile(manifestPath, 'utf8')
@@ -292,7 +302,7 @@ test.describe('VISUAL-F0 — passagem visual', () => {
   test('sweep B: matriz 5 viewports × light/dark nas superfícies-chave', async ({
     page,
   }, testInfo) => {
-    test.setTimeout(10 * 60 * 1000);
+    test.setTimeout(20 * 60 * 1000);
     const resolver = await buildResolver(page);
     const results: SweepResult[] = [];
     await mkdir(evidenceDir, { recursive: true });

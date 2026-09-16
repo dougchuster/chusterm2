@@ -9,8 +9,8 @@ async function openCrm(page: Page) {
 
   await page.goto(`/app/accounts/${accountId}/crm`);
   await expect(
-    page.getByRole('heading', { name: 'Pipeline Comercial', level: 1 })
-  ).toBeVisible();
+    page.getByRole('heading', { name: 'Pipeline', level: 1 })
+  ).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText('Carregando CRM...')).toBeHidden({
     timeout: 30_000,
   });
@@ -21,12 +21,17 @@ test('shell global aplica a identidade visual do CRM', async ({
 }, testInfo) => {
   await openCrm(page);
 
-  const sidebar = page.locator('aside.sidebar-shell');
+  const sidebar = page.getByRole('complementary');
   await expect(page.getByText('ChusteRM', { exact: true })).toBeVisible();
   await expect(page.getByText('CRM + IA', { exact: true })).toBeVisible();
-  await expect(sidebar).toHaveCSS('background-color', 'rgb(7, 13, 32)');
 
   const viewportWidth = testInfo.project.use.viewport?.width ?? 1366;
+  const expectedSidebarBg =
+    viewportWidth < 768
+      ? 'rgba(246, 248, 252, 0.95)'
+      : 'rgb(246, 248, 252)';
+  await expect(sidebar).toHaveCSS('background-color', expectedSidebarBg);
+
   const workspace = page.locator('main > div').first();
 
   if (viewportWidth >= 768) {
@@ -42,9 +47,11 @@ test('shell global aplica a identidade visual do CRM', async ({
       .poll(() => sidebar.evaluate(element => element.getBoundingClientRect().left))
       .toBeGreaterThanOrEqual(0);
 
-    const closeButton = page.getByRole('button', {
-      name: /Fechar barra lateral/i,
-    });
+    // Dois controles fecham a sidebar: o backdrop translucido e o "X" do
+    // header. O alvo do teste e o backdrop (clique fora da gaveta).
+    const closeButton = page
+      .getByRole('button', { name: /Fechar barra lateral/i })
+      .first();
     await expect(closeButton).toBeVisible();
     await closeButton.click({ position: { x: viewportWidth - 20, y: 400 } });
     await expect

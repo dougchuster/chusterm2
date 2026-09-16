@@ -318,12 +318,16 @@ export const colors = {
     state: {
       success: 'rgb(var(--ds-state-success) / <alpha-value>)',
       'success-soft': 'rgb(var(--ds-state-success-soft) / <alpha-value>)',
+      'success-fg': 'rgb(var(--ds-state-success-fg) / <alpha-value>)',
       warning: 'rgb(var(--ds-state-warning) / <alpha-value>)',
       'warning-soft': 'rgb(var(--ds-state-warning-soft) / <alpha-value>)',
+      'warning-fg': 'rgb(var(--ds-state-warning-fg) / <alpha-value>)',
       danger: 'rgb(var(--ds-state-danger) / <alpha-value>)',
       'danger-soft': 'rgb(var(--ds-state-danger-soft) / <alpha-value>)',
+      'danger-fg': 'rgb(var(--ds-state-danger-fg) / <alpha-value>)',
       info: 'rgb(var(--ds-state-info) / <alpha-value>)',
       'info-soft': 'rgb(var(--ds-state-info-soft) / <alpha-value>)',
+      'info-fg': 'rgb(var(--ds-state-info-fg) / <alpha-value>)',
     },
     shell: {
       canvas: 'rgb(var(--ds-shell-canvas) / <alpha-value>)',

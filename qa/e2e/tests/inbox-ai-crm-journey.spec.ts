@@ -108,7 +108,7 @@ test('jornada Inbox → IA → CRM: triagem visível, ficha aberta e card no qua
     name: 'Controle inteligente do Capitão',
   });
   if (!(await captainPanel.isVisible())) {
-    await page.locator('button:has(.i-ph-user-bold)').click();
+    await page.locator("button[aria-label='Contatos']").click();
   }
   await expect(captainPanel).toBeVisible({ timeout: 30_000 });
   await expect(

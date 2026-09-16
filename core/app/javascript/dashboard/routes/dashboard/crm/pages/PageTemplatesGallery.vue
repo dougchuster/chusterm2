@@ -516,11 +516,11 @@ const commonBreadcrumbs = [{ label: 'CRM' }, { label: 'Modelos de página' }];
         <header
           class="flex min-h-14 shrink-0 items-center justify-between border-b border-ui-border-subtle bg-ui-surface px-4"
         >
-          <div class="flex items-center gap-3">
+          <div class="flex min-w-0 items-center gap-3">
             <DsAvatar name="Ana Carolina" status="online" />
-            <div>
-              <h2 class="m-0 text-ui-body font-semibold">Ana Carolina</h2>
-              <p class="m-0 text-ui-caption text-ui-text-muted">WhatsApp · online</p>
+            <div class="min-w-0">
+              <h2 class="m-0 truncate text-ui-body font-semibold">Ana Carolina</h2>
+              <p class="m-0 truncate text-ui-caption text-ui-text-muted">WhatsApp · online</p>
             </div>
           </div>
           <DsButton

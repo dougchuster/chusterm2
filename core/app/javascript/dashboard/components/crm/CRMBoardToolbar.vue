@@ -105,6 +105,7 @@ const advancedFiltersOpen = ref(false);
       @update:model-value="emit('update:groupBy', $event)"
     />
     <DsInput
+      id="crm-board-search"
       :model-value="search"
       :label="$t('CRM.TOOLBAR.SEARCH')"
       hide-label
@@ -112,6 +113,10 @@ const advancedFiltersOpen = ref(false);
       class="col-span-2 col-start-1 row-start-1 min-w-0 sm:row-start-2 xl:col-auto xl:row-auto xl:min-w-64 xl:flex-[1_1_20rem]"
       @update:model-value="emit('update:search', $event)"
       @enter="emit('apply-filters')"
+      @keydown.escape="
+        emit('update:search', '');
+        emit('apply-filters');
+      "
     >
       <template #prefix>
         <Icon icon="i-lucide-search" class="size-4" />

@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/no-bare-strings-in-template, @intlify/vue-i18n/no-raw-text -->
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -701,7 +701,22 @@ const createDeal = async () => {
 const dealUrl = deal =>
   `/app/accounts/${route.params.accountId}/crm/deals/${deal.id}`;
 
+const SEARCH_INPUT_ID = 'crm-board-search';
+const onWindowKeydown = event => {
+  if (event.key !== '/' || event.defaultPrevented) return;
+  const target = event.target;
+  if (
+    target instanceof HTMLElement &&
+    target.closest('input, textarea, select, [contenteditable="true"]')
+  ) {
+    return;
+  }
+  event.preventDefault();
+  document.getElementById(SEARCH_INPUT_ID)?.focus();
+};
+
 onMounted(async () => {
+  window.addEventListener('keydown', onWindowKeydown);
   readStoredDensity();
   loadBoardViews();
   store.dispatch('agents/get');
@@ -717,6 +732,10 @@ onMounted(async () => {
     selectedDealId.value = deepLinkedDeal;
     showDealDrawer.value = true;
   }
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', onWindowKeydown);
 });
 </script>
 

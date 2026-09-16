@@ -53,6 +53,7 @@ const DETAILS_ASIDE_LABEL = 'Detalhes do item';
       >
         <div
           v-if="loading"
+          role="status"
           class="grid h-full min-w-[64rem] grid-cols-4 gap-3.5"
           :aria-label="LOADING_BOARD_LABEL"
         >
