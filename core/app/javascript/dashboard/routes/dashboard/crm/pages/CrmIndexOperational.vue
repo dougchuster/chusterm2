@@ -519,7 +519,13 @@ const syncQuery = () =>
       priority: priority.value || undefined,
     },
   });
+// Duas trocas de funil em sequencia disparam dois loads. Sem o ticket, o
+// primeiro a responder por ultimo sobrescreve o quadro da escolha mais
+// recente — a URL diz uma coisa e as colunas mostram outra.
+let loadTicket = 0;
 const loadCrm = async ({ silent = false } = {}) => {
+  loadTicket += 1;
+  const ticket = loadTicket;
   if (silent) refreshing.value = true;
   else loading.value = true;
   error.value = '';
@@ -540,6 +546,8 @@ const loadCrm = async ({ silent = false } = {}) => {
       CrmAPI.getLossReasons(),
     ]);
 
+    if (ticket !== loadTicket) return;
+
     applyBoard(boardResponse?.data);
     deals.value = flattenColumns();
     lossReasons.value = extractData(reasonsResponse);
@@ -548,19 +556,56 @@ const loadCrm = async ({ silent = false } = {}) => {
     );
     await syncQuery();
   } catch (exception) {
+    if (ticket !== loadTicket) return;
     error.value =
       exception?.response?.data?.error ||
       exception?.response?.data?.message ||
       'Não foi possível carregar o pipeline.';
   } finally {
-    loading.value = false;
-    refreshing.value = false;
+    if (ticket === loadTicket) {
+      loading.value = false;
+      refreshing.value = false;
+    }
   }
 };
 const changePipeline = async () => {
   selectedIds.value = [];
   await loadCrm({ silent: true });
 };
+
+// Trocar de funil pela sidebar so muda a query — a rota e a mesma e o Vue
+// reutiliza o componente. Sem este watcher a URL apontava para o funil novo
+// enquanto o quadro continuava pintando o anterior. `syncQuery` re-escreve
+// os mesmos valores depois do load; a comparacao evita loop.
+watch(
+  () => route.query,
+  query => {
+    const dealId = Number(query.deal_id);
+    if (dealId > 0 && dealId !== selectedDealId.value) {
+      selectedDealId.value = dealId;
+      showDealDrawer.value = true;
+    }
+
+    const nextPipeline = String(query.pipeline_id || '');
+    const nextSearch = String(query.search || '');
+    const nextOwner = String(query.owner_id || '');
+    const nextPriority = String(query.priority || '');
+    const changed =
+      nextPipeline !== pipelineId.value ||
+      nextSearch !== search.value ||
+      nextOwner !== ownerId.value ||
+      nextPriority !== priority.value;
+    if (!changed) return;
+
+    pipelineId.value = nextPipeline;
+    search.value = nextSearch;
+    ownerId.value = nextOwner;
+    priority.value = nextPriority;
+    selectedIds.value = [];
+    pullLegacyFilterRefs();
+    loadCrm({ silent: true });
+  }
+);
 // Filtrar agora significa perguntar de novo ao servidor. E mais barato do que
 // parece: o board devolve 25 cards por coluna, nao o pipeline.
 const applyFilters = async () => {
