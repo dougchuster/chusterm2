@@ -41,9 +41,12 @@ class Captain::PendingSweepCleanup
     messages.where(private: true).where('content LIKE ?', REVIEW_NOTE_PREFIX)
   end
 
+  # content_attributes is double-serialized in this install (a JSON string inside
+  # the json column), so match on the raw text — that covers both encodings.
+  # Scoped to Captain senders: failures on human agent messages stay visible.
   def failed_outgoing
-    messages.where(message_type: :outgoing, status: :failed)
-            .where("content_attributes->>'external_error' LIKE ?", '%Template not found%')
+    messages.where(message_type: :outgoing, status: :failed, sender_type: 'Captain::Assistant')
+            .where('content_attributes::text LIKE ?', '%external_error%')
   end
 
   def pending_conversations
