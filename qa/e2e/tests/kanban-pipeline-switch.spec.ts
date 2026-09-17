@@ -15,10 +15,17 @@ const PIPELINE_B_ID = '1303';
 const PIPELINE_B_NAME = 'Kanban QA - Segundo Funil';
 const PIPELINE_B_STAGE = 'Triagem B';
 
+// Em viewport < md a sidebar fica recolhida — o usuario abre o flyout pelo
+// launcher flutuante antes de tocar no funil.
+const openSidebarIfMobile = async (page, testInfo) => {
+  if ((testInfo.project.use.viewport?.width ?? 1366) >= 768) return;
+  await page.locator('#mobile-sidebar-launcher button').click();
+};
+
 test.describe('troca de funil pela sidebar', () => {
   test('URL muda e o quadro recarrega as colunas do novo funil', async ({
     page,
-  }) => {
+  }, testInfo) => {
     await page.goto(`/app/accounts/${accountId}/crm`);
 
     // Quadro inicial carregado (funil padrao/primeiro).
@@ -28,6 +35,7 @@ test.describe('troca de funil pela sidebar', () => {
     await expect(page.locator('article, section').first()).toBeVisible();
 
     // O clique real do usuario: item da sidebar com o nome do funil.
+    await openSidebarIfMobile(page, testInfo);
     await page
       .getByRole('link', { name: /Segundo Funil/ })
       .click();
@@ -44,7 +52,7 @@ test.describe('troca de funil pela sidebar', () => {
 
   test('voltar ao funil anterior pela sidebar tambem recarrega', async ({
     page,
-  }) => {
+  }, testInfo) => {
     await page.goto(
       `/app/accounts/${accountId}/crm?pipeline_id=${PIPELINE_B_ID}`
     );
@@ -53,6 +61,7 @@ test.describe('troca de funil pela sidebar', () => {
     ).toBeVisible({ timeout: 20000 });
 
     // Clicar de volta no funil canonico da fixture ("Pipeline Comercial QA").
+    await openSidebarIfMobile(page, testInfo);
     await page
       .getByRole('link', { name: /Comercial QA/ })
       .click();

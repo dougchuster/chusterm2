@@ -35,7 +35,7 @@ const tierConfig = computed(() => {
     sem_score: {
       label: 'Score pendente',
       bg: 'bg-n-slate-3',
-      text: 'text-n-slate-11',
+      text: 'text-n-slate-12',
       border: 'border-n-slate-5',
       pulse: false,
       icon: 'i-lucide-sparkles',
@@ -43,7 +43,7 @@ const tierConfig = computed(() => {
     prioridade_alta: {
       label: 'Alta prioridade',
       bg: 'bg-n-ruby-3',
-      text: 'text-n-ruby-11',
+      text: 'text-n-ruby-12',
       border: 'border-n-ruby-6',
       pulse: true,
       icon: 'i-lucide-zap',
@@ -51,7 +51,7 @@ const tierConfig = computed(() => {
     qualificado: {
       label: 'Qualificado',
       bg: 'bg-n-teal-3',
-      text: 'text-n-teal-11',
+      text: 'text-n-teal-12',
       border: 'border-n-teal-6',
       pulse: false,
       icon: 'i-lucide-star',
@@ -59,7 +59,7 @@ const tierConfig = computed(() => {
     medio_potencial: {
       label: 'Médio potencial',
       bg: 'bg-n-amber-3',
-      text: 'text-n-amber-11',
+      text: 'text-n-amber-12',
       border: 'border-n-amber-6',
       pulse: false,
       icon: 'i-lucide-trending-up',
@@ -67,7 +67,7 @@ const tierConfig = computed(() => {
     baixo_potencial: {
       label: 'Baixo potencial',
       bg: 'bg-n-slate-3',
-      text: 'text-n-slate-11',
+      text: 'text-n-slate-12',
       border: 'border-n-slate-5',
       pulse: false,
       icon: 'i-lucide-minus-circle',

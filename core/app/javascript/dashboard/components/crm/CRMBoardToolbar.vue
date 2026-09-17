@@ -71,7 +71,7 @@ const advancedFiltersOpen = ref(false);
     @clear="emit('clear-all-filters')"
   />
   <div
-    class="grid w-full grid-cols-[auto_minmax(0,1fr)] items-end gap-2.5 sm:grid-cols-[auto_minmax(12rem,1fr)_10rem] xl:flex xl:flex-wrap"
+    class="grid w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-2.5 sm:grid-cols-[auto_minmax(12rem,1fr)_10rem] xl:flex xl:flex-wrap"
   >
     <DsDropdown
       :aria-label="$t('CRM.VIEWS.MENU')"
@@ -133,7 +133,7 @@ const advancedFiltersOpen = ref(false);
       @click="advancedFiltersOpen = !advancedFiltersOpen"
     />
     <span
-      class="col-span-2 col-start-1 row-start-5 self-center justify-self-end whitespace-nowrap text-ui-body-sm tabular-nums text-ui-text-muted sm:col-span-3 sm:row-start-3 xl:col-auto xl:row-auto xl:ml-auto"
+      class="col-span-2 col-start-1 row-start-5 self-center justify-self-end whitespace-nowrap rounded-full bg-ui-sunken px-2.5 py-1 text-ui-caption font-medium tabular-nums text-ui-text-muted sm:col-span-3 sm:row-start-3 xl:col-auto xl:row-auto xl:ml-auto"
     >
       {{ $t('CRM.TOOLBAR.TOTAL', { count: totalVisible }) }}
     </span>
@@ -143,7 +143,7 @@ const advancedFiltersOpen = ref(false);
     v-if="advancedFiltersOpen"
     id="crm-toolbar-advanced-filters"
     data-testid="crm-toolbar-advanced-filters"
-    class="flex w-full flex-wrap items-end gap-2.5 rounded-ui-surface bg-ui-sunken/70 p-2.5"
+    class="flex w-full flex-wrap items-center gap-2.5 rounded-xl bg-ui-sunken/70 p-2.5"
   >
     <DsSelect
       :model-value="ownerId"

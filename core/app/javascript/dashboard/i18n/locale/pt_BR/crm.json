@@ -30,9 +30,11 @@
     },
     "COLUMN": {
       "AVERAGE_AGE": "Tempo médio nesta etapa",
+      "WEIGHTED_VALUE": "Valor ponderado: {value}",
       "WIP_TITLE": "Trabalho em andamento nesta etapa",
       "WIP": "WIP {current}/{limit}",
       "LOADING_MORE": "Carregando mais…",
+      "EMPTY": "Arraste negócios para cá",
       "CREATE_IN_STAGE": "Criar negócio em {stage}"
     },
     "DENSITY": {

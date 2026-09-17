@@ -18,12 +18,12 @@
  * Fingir que funcionou é pior do que não deixar. A reordenação de verdade é
  * a F2.10, que usa o `before_id`/`after_id` que a F1.3 construiu.
  */
-import { computed, ref } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
 import Draggable from 'vuedraggable';
 
 import Icon from 'dashboard/components-next/icon/Icon.vue';
-import { DsBadge, DsButton } from 'dashboard/design-system/components';
+import { DsButton } from 'dashboard/design-system/components';
 
 const props = defineProps({
   column: { type: Object, required: true },
@@ -47,6 +47,23 @@ const emit = defineEmits([
 const LOAD_MORE_THRESHOLD_PX = 240;
 
 const scroller = ref(null);
+
+// A sombra no pé da coluna é o único sinal de que ainda há cards abaixo —
+// sem ela a lista parece acabar no corte do viewport.
+const canScrollBelow = ref(false);
+
+const updateScrollFade = async () => {
+  await nextTick();
+  const el = scroller.value;
+  canScrollBelow.value =
+    !!el && el.scrollHeight - (el.scrollTop + el.clientHeight) > 8;
+};
+
+watch(
+  () => props.column.deals.length,
+  () => updateScrollFade()
+);
+onMounted(updateScrollFade);
 
 const loadedEverything = computed(
   () => props.column.deals.length >= Number(props.column.count || 0)
@@ -118,6 +135,7 @@ const averageAge = computed(() => {
 });
 
 const onScroll = event => {
+  updateScrollFade();
   if (props.loading || loadedEverything.value) return;
 
   const { scrollTop, clientHeight, scrollHeight } = event.target;
@@ -131,26 +149,28 @@ const onScroll = event => {
 
 <template>
   <article
-    class="flex h-full max-h-full w-[calc(100vw-3rem)] shrink-0 flex-col rounded-ui-surface border border-ui-border-subtle/80 bg-ui-sunken/90 shadow-sm backdrop-blur-md sm:w-80"
+    data-testid="crm-board-column"
+    class="flex h-full max-h-full w-[calc(100vw-3rem)] shrink-0 flex-col overflow-hidden rounded-xl bg-ui-sunken sm:w-[21rem]"
+    :style="{ '--crm-stage-color': column.color || 'transparent' }"
   >
     <header
-      class="flex min-h-12 shrink-0 flex-wrap items-center gap-x-2 gap-y-1 border-b border-ui-border-subtle/80 bg-ui-surface/40 px-3.5 py-2.5"
+      class="flex min-h-12 shrink-0 flex-wrap items-center gap-x-2 gap-y-1 bg-[color-mix(in_srgb,var(--crm-stage-color)_9%,transparent)] px-3.5 py-2.5"
     >
       <div
         v-if="column.color"
-        class="size-2 rounded-full bg-[var(--crm-stage-color)] shadow-sm dark:!bg-ui-text-muted"
-        :style="{ '--crm-stage-color': column.color }"
+        class="size-2.5 rounded-full bg-[var(--crm-stage-color)] shadow-[0_0_0_3px_color-mix(in_srgb,var(--crm-stage-color)_22%,transparent)]"
       />
       <h2
-        class="m-0 min-w-0 flex-1 truncate text-ui-body-sm font-semibold text-ui-text"
+        class="m-0 min-w-0 flex-1 truncate font-manrope text-ui-body-sm font-semibold tracking-tight text-ui-text"
       >
         {{ column.name }}
       </h2>
-      <DsBadge
+      <span
         data-testid="crm-column-count"
-        :label="String(column.count ?? column.deals.length)"
-        variant="neutral"
-      />
+        class="rounded-full bg-ui-surface/80 px-2 py-0.5 text-ui-caption font-semibold tabular-nums text-ui-text-muted"
+      >
+        {{ column.count ?? column.deals.length }}
+      </span>
       <!-- Criar so faz sentido numa coluna que e uma etapa: agrupado por
            responsavel ou faixa de score nao ha etapa para o negocio nascer. -->
       <DsButton
@@ -166,7 +186,7 @@ const onScroll = event => {
       <div
         class="flex w-full items-center gap-2 pt-0.5 text-ui-caption text-ui-text-muted"
       >
-        <span v-if="money" class="font-medium text-ui-text/80">{{
+        <span v-if="money" class="font-semibold tabular-nums text-ui-text">{{
           money
         }}</span>
         <span
@@ -222,8 +242,8 @@ const onScroll = event => {
         :sort="false"
         :disabled="!movable"
         class="space-y-2.5 p-2.5"
-        ghost-class="opacity-30 scale-95"
-        drag-class="shadow-xl rotate-1 scale-105 ring-2 ring-ui-border-focus"
+        ghost-class="opacity-40"
+        drag-class="rotate-[1.5deg] scale-[1.02] shadow-ui-overlay"
         :delay="120"
         delay-on-touch-only
         @update:model-value="emit('change', { deals: $event })"
@@ -236,6 +256,14 @@ const onScroll = event => {
         </template>
       </Draggable>
 
+      <div
+        v-if="!column.deals.length && !loading"
+        data-testid="crm-column-empty"
+        class="m-2.5 flex min-h-24 items-center justify-center rounded-lg border border-dashed border-ui-border-subtle/80 px-3 text-center text-ui-caption font-medium text-ui-text-muted"
+      >
+        {{ $t('CRM.COLUMN.EMPTY') }}
+      </div>
+
       <p
         v-if="loading"
         class="flex items-center justify-center gap-2 py-3 text-ui-caption text-ui-text-muted"
@@ -246,6 +274,12 @@ const onScroll = event => {
         />
         {{ $t('CRM.COLUMN.LOADING_MORE') }}
       </p>
+
+      <div
+        v-if="canScrollBelow"
+        aria-hidden="true"
+        class="pointer-events-none sticky bottom-0 -mb-1 h-8 shrink-0 bg-gradient-to-t from-ui-sunken to-transparent"
+      />
     </div>
   </article>
 </template>

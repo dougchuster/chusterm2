@@ -938,6 +938,7 @@ onBeforeUnmount(() => {
             :deal="deal"
             :stage="column"
             :selected="selectedIds.includes(deal.id)"
+            :selection-active="selectedIds.length > 0"
             :owner-name="ownerName(deal.owner_id)"
             :density="cardDensity"
             :href="dealUrl(deal)"

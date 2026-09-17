@@ -208,7 +208,12 @@ onMounted(load);
       </template>
     </DsPageHeader>
 
-    <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4 sm:p-6">
+    <div
+      role="region"
+      tabindex="0"
+      :aria-label="$t('MARKETING.PAGE_REGION')"
+      class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4 sm:p-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-border-focus"
+    >
       <DsCard v-if="error">
         <DsEmptyState
           icon="i-lucide-cloud-off"

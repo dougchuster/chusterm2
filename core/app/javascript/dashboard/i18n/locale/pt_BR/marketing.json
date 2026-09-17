@@ -1,6 +1,7 @@
 {
   "MARKETING": {
     "TITLE": "Marketing",
+    "PAGE_REGION": "Conteúdo de marketing",
     "PERIOD": {
       "D7": "Últimos 7 dias",
       "D14": "Últimos 14 dias",

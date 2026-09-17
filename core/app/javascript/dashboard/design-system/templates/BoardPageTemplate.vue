@@ -54,13 +54,13 @@ const DETAILS_ASIDE_LABEL = 'Detalhes do item';
         <div
           v-if="loading"
           role="status"
-          class="grid h-full min-w-[64rem] grid-cols-4 gap-3.5"
+          class="grid h-full min-w-[64rem] grid-cols-4 gap-4"
           :aria-label="LOADING_BOARD_LABEL"
         >
           <div
             v-for="column in 4"
             :key="column"
-            class="flex min-h-96 flex-col gap-3 rounded-ui-surface border border-ui-border-subtle/60 bg-ui-sunken/80 p-3.5"
+            class="flex min-h-96 flex-col gap-3 rounded-xl bg-ui-sunken p-3.5"
           >
             <DsSkeleton class="w-2/3" />
             <DsSkeleton
@@ -77,7 +77,7 @@ const DETAILS_ASIDE_LABEL = 'Detalhes do item';
           :action-label="emptyActionLabel"
           @action="emit('empty-action')"
         />
-        <div v-else class="flex h-full min-w-max gap-3.5 pb-2">
+        <div v-else class="flex h-full min-w-max gap-4 pb-2">
           <slot />
         </div>
       </div>

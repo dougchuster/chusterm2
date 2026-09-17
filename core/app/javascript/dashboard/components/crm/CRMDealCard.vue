@@ -34,6 +34,9 @@ const props = defineProps({
   deal: { type: Object, required: true },
   stage: { type: Object, default: () => ({}) },
   selected: { type: Boolean, default: false },
+  // Quando qualquer card do quadro está marcado, todos os checkboxes ficam
+  // visíveis — fora do modo de seleção eles só aparecem no hover/foco.
+  selectionActive: { type: Boolean, default: false },
   ownerName: { type: String, default: '' },
   density: { type: String, default: 'normal' },
   href: { type: String, default: '' },
@@ -73,12 +76,13 @@ const rotting = computed(() =>
   rottingSignal(props.deal, props.stage, props.now)
 );
 
+// A área jurídica vive na linha do responsável — nas badges ela competia com
+// os sinais e ainda aparecia duplicada no rodapé.
 const badges = computed(() =>
   visibleBadges([
     props.deal.captain_ai_mode === 'auto' ? 'ai' : null,
     props.deal.is_stale ? 'stale' : null,
     props.deal.operational_status === 'returning_client' ? 'returning' : null,
-    props.deal.legal_area || null,
   ])
 );
 
@@ -106,6 +110,15 @@ const dueLabel = computed(() => {
 const isCompact = computed(() => props.density === 'compact');
 const isDetailed = computed(() => props.density === 'detailed');
 
+const ownerInitial = computed(() => {
+  const name = (props.ownerName || '').trim();
+  return name ? name[0].toUpperCase() : '';
+});
+
+const selectionVisible = computed(
+  () => props.selected || props.selectionActive
+);
+
 const displayName = computed(() => contactName.value);
 const label = computed(
   () => props.deal.title || contactName.value || String(props.deal.id)
@@ -122,22 +135,20 @@ const availableStageOptions = computed(() =>
     data-testid="crm-board-card"
     :data-rotting="rotting.level"
     :style="{ '--crm-stage-color': stage.color || 'transparent' }"
-    class="group relative rounded-ui-surface border border-l-4 border-l-[color:var(--crm-stage-color)] bg-ui-surface p-3.5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md dark:!border-l-ui-border-strong"
+    class="group relative rounded-xl bg-ui-surface px-3.5 py-3 shadow-ui-raised transition-[transform,box-shadow] duration-ui-base ease-out"
     :class="{
       'cursor-default': !canDrag,
-      'cursor-grab active:cursor-grabbing': canDrag,
-      'border-ui-border hover:border-ui-border-strong hover:shadow-ui-brand/5':
-        rotting.level !== 'late' && rotting.level !== 'warning',
-      'border-ui-warning shadow-amber-500/5': rotting.level === 'warning',
-      'border-ui-danger shadow-rose-500/10': rotting.level === 'late',
-      'ring-2 ring-ui-border-focus': selected,
+      'cursor-grab hover:-translate-y-0.5 hover:shadow-ui-overlay active:cursor-grabbing':
+        canDrag,
+      'hover:-translate-y-0.5 hover:shadow-ui-overlay': !canDrag,
+      'ring-2 ring-ui-brand/60': selected,
     }"
   >
-    <div class="flex items-start gap-2">
+    <div class="flex items-start gap-1.5">
       <span
         v-if="canDrag"
         data-testid="crm-card-drag-handle"
-        class="crm-drag-handle -ml-2 mt-0.5 inline-flex min-h-7 w-5 shrink-0 cursor-grab touch-none items-center justify-center rounded-ui-control text-ui-text-subtle transition-colors hover:bg-ui-hover hover:text-ui-text active:cursor-grabbing"
+        class="crm-drag-handle -ml-1.5 mt-0.5 inline-flex min-h-7 w-5 shrink-0 cursor-grab touch-none items-center justify-center rounded-ui-control text-ui-text-subtle/60 transition-[opacity,color,background-color] duration-ui-fast hover:bg-ui-hover hover:text-ui-text active:cursor-grabbing max-md:opacity-60 md:opacity-40 md:group-hover:opacity-100"
         draggable="true"
         aria-hidden="true"
         @dragstart.stop="emit('nativeDragStart', $event)"
@@ -149,7 +160,12 @@ const availableStageOptions = computed(() =>
         type="checkbox"
         :checked="selected"
         :aria-label="$t('CRM.CARD.SELECT', { name: label })"
-        class="mt-1 size-4 shrink-0 cursor-pointer rounded border-ui-border accent-ui-brand transition-transform hover:scale-110"
+        class="mt-1 size-4 shrink-0 cursor-pointer rounded border-ui-border accent-ui-brand transition-opacity duration-ui-fast"
+        :class="
+          selectionVisible
+            ? 'opacity-100'
+            : 'max-md:opacity-60 md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100 md:group-focus-within:opacity-100'
+        "
         @click.stop
         @change="emit('select', $event.target.checked)"
       />
@@ -178,11 +194,14 @@ const availableStageOptions = computed(() =>
         icon="i-lucide-message-circle"
         variant="ghost"
         size="sm"
-        class="text-ui-text-muted transition-colors hover:text-ui-brand"
+        class="text-ui-text-muted transition-[opacity,color] duration-ui-fast hover:text-ui-brand max-md:opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
         :aria-label="$t('CRM.CARD.ATTEND', { name: label })"
         @click.stop="emit('attend')"
       />
-      <DsDropdown :aria-label="$t('CRM.CARD.MORE_ACTIONS', { name: label })">
+      <DsDropdown
+        :aria-label="$t('CRM.CARD.MORE_ACTIONS', { name: label })"
+        class="text-ui-text-subtle transition-colors hover:text-ui-text"
+      >
         <button
           v-for="option in availableStageOptions"
           :key="option.value"
@@ -223,10 +242,10 @@ const availableStageOptions = computed(() =>
           data-testid="crm-card-discard"
           type="button"
           role="menuitem"
-          class="flex min-h-10 w-full items-center gap-2 rounded-ui-control px-3 text-left text-ui-body-sm text-ui-danger transition-colors hover:bg-ui-hover"
+          class="flex min-h-10 w-full items-center gap-2 rounded-ui-control px-3 text-left text-ui-body-sm text-ui-danger-foreground transition-colors hover:bg-ui-hover"
           @click="emit('discard')"
         >
-          <Icon icon="i-lucide-ban" class="size-4 text-ui-danger" />
+          <Icon icon="i-lucide-ban" class="size-4 text-ui-danger-foreground" />
           {{ $t('CRM.CARD.DISCARD') }}
         </button>
       </DsDropdown>
@@ -236,7 +255,7 @@ const availableStageOptions = computed(() =>
     <div
       v-if="nextAction.tone === 'missing'"
       data-testid="crm-card-no-next-action"
-      class="mt-2.5 flex items-center gap-2 rounded-ui-control border border-ui-danger/25 bg-ui-danger-soft px-2.5 py-1.5 text-ui-caption font-medium text-ui-danger-foreground"
+      class="mt-2.5 flex items-center gap-2 rounded-ui-control bg-ui-danger-soft px-2.5 py-1.5 text-ui-caption font-medium text-ui-danger-foreground"
     >
       <Icon icon="i-lucide-circle-alert" class="size-4 shrink-0" />
       <span class="min-w-0 flex-1 truncate">
@@ -245,7 +264,7 @@ const availableStageOptions = computed(() =>
       <button
         data-testid="crm-card-schedule"
         type="button"
-        class="shrink-0 rounded-ui-control px-2 py-0.5 underline transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus"
+        class="shrink-0 rounded-full bg-ui-danger-solid px-2.5 py-0.5 font-semibold text-ui-text-inverse transition-opacity hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus"
         :aria-label="$t('CRM.CARD.SCHEDULE_NEXT_ACTION', { name: label })"
         @click.stop="emit('scheduleNextAction')"
       >
@@ -274,9 +293,7 @@ const availableStageOptions = computed(() =>
       </span>
     </div>
 
-    <div
-      class="mt-3 flex items-center justify-between gap-2 border-t border-ui-border-subtle pt-2.5"
-    >
+    <div class="mt-3 flex items-center justify-between gap-2">
       <div class="flex min-w-0 items-center gap-1.5">
         <CRMScoreBadge
           :score="Number(deal.score_total || 0)"
@@ -287,7 +304,14 @@ const availableStageOptions = computed(() =>
           v-for="badge in badges.shown"
           :key="badge"
           data-testid="crm-card-badge"
-          class="truncate rounded-ui-control border border-ui-border-subtle bg-ui-sunken px-2 py-0.5 text-ui-caption font-medium text-ui-text-muted"
+          class="truncate rounded-full px-2 py-0.5 text-ui-caption font-medium"
+          :class="
+            badge === 'ai'
+              ? 'bg-ui-brand-soft text-ui-brand'
+              : badge === 'stale'
+                ? 'bg-ui-danger-soft text-ui-danger-foreground'
+                : 'bg-ui-sunken text-ui-text-muted'
+          "
         >
           <template v-if="badge === 'ai'">{{
             $t('CRM.CARD.AI_ACTIVE')
@@ -297,7 +321,7 @@ const availableStageOptions = computed(() =>
         <span
           v-if="badges.overflow"
           data-testid="crm-card-badge-overflow"
-          class="shrink-0 text-ui-caption font-medium text-ui-text-subtle"
+          class="shrink-0 text-ui-caption font-medium text-ui-text-muted"
         >
           {{ $t('CRM.CARD.MORE_BADGES', { count: badges.overflow }) }}
         </span>
@@ -315,26 +339,36 @@ const availableStageOptions = computed(() =>
       class="mt-2.5 flex items-center gap-2 text-ui-caption text-ui-text-muted"
     >
       <span
+        class="flex size-5 shrink-0 items-center justify-center rounded-full bg-ui-sunken font-semibold text-ui-text-muted"
+        aria-hidden="true"
+      >
+        <Icon v-if="!ownerInitial" icon="i-lucide-user-round" class="size-3" />
+        <template v-else>{{ ownerInitial }}</template>
+      </span>
+      <span
+        class="min-w-0 truncate font-medium"
+        :class="ownerName ? 'text-ui-text-muted' : 'text-ui-text-muted/75'"
+      >
+        {{ ownerName || $t('CRM.CARD.NO_OWNER') }}
+      </span>
+      <span
         v-if="!isCompact && deal.legal_area"
         data-testid="crm-card-area"
-        class="truncate rounded bg-ui-sunken/60 px-1.5 py-0.5"
+        class="shrink-0 truncate rounded-full bg-ui-sunken px-2 py-0.5 text-ui-text-muted"
       >
         {{ deal.legal_area }}
       </span>
       <span
         v-if="rotting.level === 'late'"
         data-testid="crm-card-stale"
-        class="shrink-0 font-medium text-ui-danger-foreground"
+        class="shrink-0 rounded-full bg-ui-danger-soft px-2 py-0.5 font-semibold text-ui-danger-foreground"
       >
         {{ $t('CRM.CARD.STALE', { days: rotting.daysInStage }) }}
-      </span>
-      <span class="ml-auto min-w-0 shrink-0 truncate font-medium">
-        {{ ownerName || $t('CRM.CARD.NO_OWNER') }}
       </span>
       <a
         :href="href"
         :aria-label="$t('CRM.CARD.OPEN_RECORD', { name: label })"
-        class="shrink-0 rounded-ui-control p-1 text-ui-text-muted transition-colors hover:bg-ui-hover hover:text-ui-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus"
+        class="ml-auto shrink-0 rounded-ui-control p-1 text-ui-text-muted transition-colors hover:bg-ui-hover hover:text-ui-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus"
         @click.stop
       >
         <Icon icon="i-lucide-arrow-up-right" class="size-4" />
@@ -344,7 +378,7 @@ const availableStageOptions = computed(() =>
     <p
       v-if="isDetailed && deal.next_best_action"
       data-testid="crm-card-next-best-action"
-      class="mt-2 line-clamp-2 border-t border-ui-border-subtle pt-2 text-ui-caption text-ui-text-muted"
+      class="mt-2.5 line-clamp-2 rounded-ui-control bg-ui-sunken/70 px-2.5 py-2 text-ui-caption text-ui-text-muted"
     >
       {{ deal.next_best_action }}
     </p>
