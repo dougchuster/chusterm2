@@ -18,6 +18,8 @@
       "OVERDUE": "Overdue",
       "STALE": "Sitting for {days}d",
       "AI_ACTIVE": "AI is handling",
+      "BADGE_STALE": "Stale",
+      "BADGE_RETURNING": "Returning client",
       "MORE_BADGES": "+{count}",
       "SELECT": "Select {name}",
       "ATTEND": "Reply to {name} on WhatsApp",

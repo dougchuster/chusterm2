@@ -135,7 +135,7 @@ const availableStageOptions = computed(() =>
     data-testid="crm-board-card"
     :data-rotting="rotting.level"
     :style="{ '--crm-stage-color': stage.color || 'transparent' }"
-    class="group relative rounded-xl bg-ui-surface px-3.5 py-3 shadow-ui-raised transition-[transform,box-shadow] duration-ui-base ease-out"
+    class="group relative rounded-xl border border-ui-border-subtle/70 bg-ui-surface px-3.5 py-3 shadow-ui-raised transition-[transform,box-shadow,border-color] duration-ui-base ease-out hover:border-ui-border"
     :class="{
       'cursor-default': !canDrag,
       'cursor-grab hover:-translate-y-0.5 hover:shadow-ui-overlay active:cursor-grabbing':
@@ -148,7 +148,7 @@ const availableStageOptions = computed(() =>
       <span
         v-if="canDrag"
         data-testid="crm-card-drag-handle"
-        class="crm-drag-handle -ml-1.5 mt-0.5 inline-flex min-h-7 w-5 shrink-0 cursor-grab touch-none items-center justify-center rounded-ui-control text-ui-text-subtle/60 transition-[opacity,color,background-color] duration-ui-fast hover:bg-ui-hover hover:text-ui-text active:cursor-grabbing max-md:opacity-60 md:opacity-40 md:group-hover:opacity-100"
+        class="crm-drag-handle -ml-2 -my-2 inline-flex min-h-10 w-7 shrink-0 cursor-grab touch-none items-center justify-center self-stretch rounded-lg text-ui-text-subtle/80 transition-[opacity,color,background-color] duration-ui-fast hover:bg-ui-hover hover:text-ui-text active:cursor-grabbing max-md:opacity-70 md:opacity-60 md:group-hover:opacity-100"
         draggable="true"
         aria-hidden="true"
         @dragstart.stop="emit('nativeDragStart', $event)"
@@ -194,7 +194,7 @@ const availableStageOptions = computed(() =>
         icon="i-lucide-message-circle"
         variant="ghost"
         size="sm"
-        class="text-ui-text-muted transition-[opacity,color] duration-ui-fast hover:text-ui-brand max-md:opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
+        class="text-ui-text-muted transition-colors duration-ui-fast hover:bg-ui-hover hover:text-ui-brand"
         :aria-label="$t('CRM.CARD.ATTEND', { name: label })"
         @click.stop="emit('attend')"
       />
@@ -316,7 +316,10 @@ const availableStageOptions = computed(() =>
           <template v-if="badge === 'ai'">{{
             $t('CRM.CARD.AI_ACTIVE')
           }}</template>
-          <template v-else>{{ badge }}</template>
+          <template v-else-if="badge === 'stale'">{{
+            $t('CRM.CARD.BADGE_STALE')
+          }}</template>
+          <template v-else>{{ $t('CRM.CARD.BADGE_RETURNING') }}</template>
         </span>
         <span
           v-if="badges.overflow"
@@ -339,7 +342,12 @@ const availableStageOptions = computed(() =>
       class="mt-2.5 flex items-center gap-2 text-ui-caption text-ui-text-muted"
     >
       <span
-        class="flex size-5 shrink-0 items-center justify-center rounded-full bg-ui-sunken font-semibold text-ui-text-muted"
+        class="flex size-5 shrink-0 items-center justify-center rounded-full font-semibold"
+        :class="
+          ownerInitial
+            ? 'bg-ui-brand-soft text-ui-brand'
+            : 'bg-ui-sunken text-ui-text-muted'
+        "
         aria-hidden="true"
       >
         <Icon v-if="!ownerInitial" icon="i-lucide-user-round" class="size-3" />
@@ -354,7 +362,7 @@ const availableStageOptions = computed(() =>
       <span
         v-if="!isCompact && deal.legal_area"
         data-testid="crm-card-area"
-        class="shrink-0 truncate rounded-full bg-ui-sunken px-2 py-0.5 text-ui-text-muted"
+        class="shrink-0 truncate rounded-full bg-ui-info-soft px-2 py-0.5 font-medium text-ui-info-foreground"
       >
         {{ deal.legal_area }}
       </span>

@@ -18,6 +18,8 @@
       "OVERDUE": "Vencida",
       "STALE": "Parado há {days}d",
       "AI_ACTIVE": "IA conduzindo",
+      "BADGE_STALE": "Parado",
+      "BADGE_RETURNING": "Cliente retornando",
       "MORE_BADGES": "+{count}",
       "SELECT": "Selecionar {name}",
       "ATTEND": "Atender {name} no WhatsApp",
