@@ -8,6 +8,7 @@ import {
 import { useRoute, useRouter } from 'vue-router';
 import CrmAPI from '../../api/crm';
 import CRMConfirmDialog from 'dashboard/components/crm/CRMConfirmDialog.vue';
+import { useCrmPack } from 'dashboard/composables/useCrmPack';
 import { usePanelWidth } from 'dashboard/composables/usePanelWidth';
 import CRMActivityList from './CRMActivityList.vue';
 import CRMLegalAreaBadge from './CRMLegalAreaBadge.vue';
@@ -29,6 +30,10 @@ const route = useRoute();
 
 const { dragging, panelStyle, readStoredWidth, startResize } =
   usePanelWidth('crm-deal-drawer-width');
+
+// Fase 2: seções específicas de vertical (conflito de interesse) só aparecem
+// quando o pack correspondente está instalado na conta.
+const { hasLegalPack } = useCrmPack();
 
 const loading = ref(false);
 const saving = ref(false);
@@ -78,6 +83,13 @@ const areaOptions = computed(() =>
 const urgencyOptions = computed(() =>
   crmOptions.value.urgency_levels.map(({ value, label }) => [value, label])
 );
+
+// Subcategorias do pack por categoria selecionada — quando o pack oferece
+// lista fechada, o campo vira select; sem pack, mantém texto livre.
+const subcategoryOptions = computed(() => {
+  const list = crmOptions.value.subcategories?.[form.legal_area];
+  return Array.isArray(list) ? list.map(({ value, label }) => [value, label]) : [];
+});
 
 onMounted(() => {
   readStoredWidth();
@@ -409,7 +421,11 @@ watch(
         </div>
 
         <div class="mt-3 flex flex-wrap items-center gap-2 text-xs">
-          <CRMLegalAreaBadge v-if="deal?.legal_area" :area="deal.legal_area" />
+          <CRMLegalAreaBadge
+            v-if="deal?.legal_area"
+            :area="deal.legal_area"
+            :label="deal.legal_area_label"
+          />
           <span class="rounded-full bg-n-slate-2 px-2 py-1 text-n-slate-11">
             {{ deal?.stage?.name || 'Sem etapa' }}
           </span>
@@ -621,9 +637,24 @@ watch(
 
           <label class="block">
             <span class="mb-1 block text-xs font-medium text-n-slate-11"
-              >Tipo de caso</span
+              >Subcategoria</span
             >
+            <select
+              v-if="subcategoryOptions.length"
+              v-model="form.case_type"
+              class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+            >
+              <option value="">Não informado</option>
+              <option
+                v-for="[value, label] in subcategoryOptions"
+                :key="value"
+                :value="value"
+              >
+                {{ label }}
+              </option>
+            </select>
             <input
+              v-else
               v-model="form.case_type"
               class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
               type="text"
@@ -676,7 +707,7 @@ watch(
               </select>
             </label>
 
-            <label class="block">
+            <label v-if="hasLegalPack" class="block">
               <span class="mb-1 block text-xs font-medium text-n-slate-11"
                 >Conflito</span
               >

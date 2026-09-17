@@ -189,8 +189,8 @@
         "COUNT": "Total"
       },
       "AREA": {
-        "TITLE": "Distribuição por Área Jurídica",
-        "EMPTY": "Nenhum deal com área jurídica definida"
+        "TITLE": "Distribuição por Categoria",
+        "EMPTY": "Nenhum negócio com categoria definida"
       },
       "SCORE_BY_STAGE": {
         "TITLE": "Score Médio por Estágio",
@@ -387,8 +387,8 @@
           "EMPTY": "Sem dados de scoring por etapa"
         },
         "AREA_DISTRIBUTION": {
-          "TITLE": "Negócios por Área Jurídica",
-          "EMPTY": "Nenhuma área jurídica registrada"
+          "TITLE": "Negócios por Categoria",
+          "EMPTY": "Nenhuma categoria registrada"
         },
         "STALE_DEALS": {
           "TITLE": "Negócios Estagnados (7+ dias sem atividade)",
@@ -526,8 +526,8 @@
         "CRITICA": "Crítica"
       },
       "CONDITION_FIELDS": {
-        "LEGAL_AREA": "Área jurídica",
-        "CASE_TYPE": "Tipo de caso",
+        "LEGAL_AREA": "Categoria",
+        "CASE_TYPE": "Subcategoria",
         "URGENCY_LEVEL": "Nível de urgência",
         "SCORE_TOTAL": "Score total",
         "RELATIONSHIP_STATUS": "Status do relacionamento",
@@ -702,17 +702,17 @@
       "SUMMARY": {
         "TITLE": "Resumo de checklists",
         "ACTIVE_TEMPLATES": "Modelos ativos",
-        "LEGAL_AREAS": "Áreas jurídicas",
+        "LEGAL_AREAS": "Categorias",
         "TOTAL_ITEMS": "Total de itens",
         "REQUIRED_ITEMS": "Itens obrigatórios"
       },
       "FILTERS": {
         "SEARCH_LABEL": "Buscar modelos",
         "SEARCH_PLACEHOLDER": "Buscar por nome ou tipo de caso…",
-        "CASE_TYPE_LABEL": "Tipo de caso",
-        "ALL_CASE_TYPES": "Todos os tipos de caso",
-        "LEGAL_AREA_LABEL": "Área jurídica",
-        "ALL_LEGAL_AREAS": "Todas as áreas jurídicas",
+        "CASE_TYPE_LABEL": "Subcategoria",
+        "ALL_CASE_TYPES": "Todas as subcategorias",
+        "LEGAL_AREA_LABEL": "Categoria",
+        "ALL_LEGAL_AREAS": "Todas as categorias",
         "CLEAR": "Limpar filtros"
       },
       "CARD": {
@@ -732,10 +732,10 @@
         "DESCRIPTION": "Defina quando este checklist se aplica e quais itens ele contém.",
         "NAME_LABEL": "Nome do modelo",
         "NAME_PLACEHOLDER": "ex.: Documentos iniciais de aposentadoria",
-        "LEGAL_AREA_LABEL": "Área jurídica",
-        "LEGAL_AREA_PLACEHOLDER": "Selecione uma área jurídica",
-        "CASE_TYPE_LABEL": "Tipo de caso",
-        "CASE_TYPE_PLACEHOLDER": "ex.: Aposentadoria por idade",
+        "LEGAL_AREA_LABEL": "Categoria",
+        "LEGAL_AREA_PLACEHOLDER": "Selecione uma categoria",
+        "CASE_TYPE_LABEL": "Subcategoria",
+        "CASE_TYPE_PLACEHOLDER": "ex.: Renovação de contrato",
         "POSITION_LABEL": "Posição",
         "ITEMS_TITLE": "Itens do checklist",
         "ADD_ITEM": "Adicionar item",

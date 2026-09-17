@@ -72,11 +72,22 @@ export const URGENCY_LEVEL_LABELS = Object.fromEntries(
 let cachedOptions = null;
 let inflight = null;
 
+// Lookup síncrono do label de um tipo de atividade do pack — retorna null
+// quando o cache ainda não carregou ou o tipo não existe no pack.
+export function packActivityKindLabel(kind) {
+  const types = cachedOptions?.activity_types;
+  if (!Array.isArray(types)) return null;
+  return types.find(t => t.value === kind)?.label || null;
+}
+
 export async function fetchCrmOptions() {
   if (cachedOptions) return cachedOptions;
   if (inflight) return inflight;
 
-  inflight = CrmAPI.getOptions()
+  // Promise.resolve().then garante que um throw síncrono do client (ex.:
+  // axios indisponível em specs) vire rejection capturada pelo catch.
+  inflight = Promise.resolve()
+    .then(() => CrmAPI.getOptions())
     .then(({ data }) => {
       cachedOptions = { ...CRM_OPTIONS_FALLBACK, ...(data || {}) };
       return cachedOptions;

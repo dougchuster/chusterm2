@@ -5,6 +5,7 @@ import { LEGAL_AREA_LABELS } from 'dashboard/helper/crmOptions';
 
 const props = defineProps({
   area: { type: String, default: '' },
+  label: { type: String, default: '' },
   compact: { type: Boolean, default: false },
 });
 
@@ -41,8 +42,14 @@ const normalizedArea = computed(() => {
   const raw = String(props.area || '').toLowerCase();
   return AREA_ALIASES[raw] || raw;
 });
+// Prioridade: label serializado pelo backend (pack-aware) > mapa estático
+// legado > slug cru.
 const label = computed(
-  () => LEGAL_AREA_LABELS[normalizedArea.value] || props.area || 'Sem área'
+  () =>
+    props.label ||
+    LEGAL_AREA_LABELS[normalizedArea.value] ||
+    props.area ||
+    'Sem categoria'
 );
 const colorClass = computed(
   () =>

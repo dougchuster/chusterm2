@@ -3,6 +3,7 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import CrmAPI from 'dashboard/api/crm';
+import { fetchCrmOptions } from 'dashboard/helper/crmOptions';
 import Icon from 'dashboard/components-next/icon/Icon.vue';
 import DsBadge from 'dashboard/design-system/components/DsBadge.vue';
 import DsButton from 'dashboard/design-system/components/DsButton.vue';
@@ -65,7 +66,11 @@ const stageMap = computed(() => {
   return map;
 });
 
-const actionKindOptions = computed(() => [
+// Fase 2: tipos de atividade das ações vêm do pack instalado — conta sem
+// pack legal nunca oferece "revisão jurídica"/"envio de contrato".
+const packActivityTypes = ref([]);
+
+const LEGACY_ACTION_KIND_OPTIONS = computed(() => [
   { value: 'ligacao', label: t('CRM.AUTOMATION_RULES.ACTION_KINDS.LIGACAO') },
   {
     value: 'solicitacao_documentos',
@@ -98,6 +103,12 @@ const actionKindOptions = computed(() => [
     label: t('CRM.AUTOMATION_RULES.ACTION_KINDS.ARQUIVAMENTO'),
   },
 ]);
+
+const actionKindOptions = computed(() =>
+  packActivityTypes.value.length
+    ? packActivityTypes.value
+    : LEGACY_ACTION_KIND_OPTIONS.value
+);
 
 const priorityOptions = computed(() => [
   { value: 'baixa', label: t('CRM.AUTOMATION_RULES.PRIORITIES.BAIXA') },
@@ -394,7 +405,14 @@ async function confirmDelete() {
   }
 }
 
-onMounted(loadData);
+onMounted(() => {
+  fetchCrmOptions().then(options => {
+    packActivityTypes.value = (options.activity_types || []).map(
+      ({ value, label }) => ({ value, label })
+    );
+  });
+  loadData();
+});
 </script>
 
 <template>

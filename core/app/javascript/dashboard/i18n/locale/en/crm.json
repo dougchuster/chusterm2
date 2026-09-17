@@ -209,7 +209,7 @@
         "COUNT": "Count"
       },
       "AREA": {
-        "TITLE": "Distribution by Legal Area",
+        "TITLE": "Distribution by Category",
         "EMPTY": "No deals with a legal area set"
       },
       "SCORE_BY_STAGE": {
@@ -351,7 +351,7 @@
           "EMPTY": "No scoring data available for stages"
         },
         "AREA_DISTRIBUTION": {
-          "TITLE": "Deals by Legal Area",
+          "TITLE": "Deals by Category",
           "EMPTY": "No legal area recorded"
         },
         "STALE_DEALS": {
@@ -490,8 +490,8 @@
         "CRITICA": "Critical"
       },
       "CONDITION_FIELDS": {
-        "LEGAL_AREA": "Legal area",
-        "CASE_TYPE": "Case type",
+        "LEGAL_AREA": "Category",
+        "CASE_TYPE": "Subcategory",
         "URGENCY_LEVEL": "Urgency level",
         "SCORE_TOTAL": "Total score",
         "RELATIONSHIP_STATUS": "Relationship status",
@@ -666,17 +666,17 @@
       "SUMMARY": {
         "TITLE": "Checklist summary",
         "ACTIVE_TEMPLATES": "Active templates",
-        "LEGAL_AREAS": "Legal areas",
+        "LEGAL_AREAS": "Categories",
         "TOTAL_ITEMS": "Total items",
         "REQUIRED_ITEMS": "Required items"
       },
       "FILTERS": {
         "SEARCH_LABEL": "Search templates",
         "SEARCH_PLACEHOLDER": "Search by name or case type…",
-        "CASE_TYPE_LABEL": "Case type",
-        "ALL_CASE_TYPES": "All case types",
-        "LEGAL_AREA_LABEL": "Legal area",
-        "ALL_LEGAL_AREAS": "All legal areas",
+        "CASE_TYPE_LABEL": "Subcategory",
+        "ALL_CASE_TYPES": "All subcategories",
+        "LEGAL_AREA_LABEL": "Category",
+        "ALL_LEGAL_AREAS": "All categories",
         "CLEAR": "Clear filters"
       },
       "CARD": {
@@ -696,9 +696,9 @@
         "DESCRIPTION": "Define when this checklist applies and which items it contains.",
         "NAME_LABEL": "Template name",
         "NAME_PLACEHOLDER": "e.g. Initial retirement documents",
-        "LEGAL_AREA_LABEL": "Legal area",
-        "LEGAL_AREA_PLACEHOLDER": "Select a legal area",
-        "CASE_TYPE_LABEL": "Case type",
+        "LEGAL_AREA_LABEL": "Category",
+        "LEGAL_AREA_PLACEHOLDER": "Select a category",
+        "CASE_TYPE_LABEL": "Subcategory",
         "CASE_TYPE_PLACEHOLDER": "e.g. Retirement by age",
         "POSITION_LABEL": "Position",
         "ITEMS_TITLE": "Checklist items",

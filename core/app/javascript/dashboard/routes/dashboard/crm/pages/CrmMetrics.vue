@@ -38,6 +38,7 @@ const timeInStage = ref([]);
 const analystQuestion = ref('');
 const analystLoading = ref(false);
 const analystResult = ref(null);
+const packAnalystPrompts = ref([]);
 
 // Larguras quantizadas em passos de 5%: as classes precisam existir de forma
 // estatica para o Tailwind, entao barras nao usam style inline.
@@ -91,14 +92,19 @@ const pipelineOptions = computed(() => [
   })),
 ]);
 
-const analystExamples = computed(() => [
-  t('CRM.METRICS.ANALYST.EXAMPLES.INSS'),
-  t('CRM.METRICS.ANALYST.EXAMPLES.UNASSIGNED_HOT'),
-  t('CRM.METRICS.ANALYST.EXAMPLES.TOP_LIST'),
-  t('CRM.METRICS.ANALYST.EXAMPLES.WAITING_DOCS'),
-  t('CRM.METRICS.ANALYST.EXAMPLES.BEST_OWNER'),
-  t('CRM.METRICS.ANALYST.EXAMPLES.CAMPAIGNS'),
-]);
+// Fase 2: exemplos do Analista vêm do pack instalado (conta não-jurídica
+// nunca vê "leads INSS"). Fallback i18n preserva contas legadas sem pack.
+const analystExamples = computed(() => {
+  if (packAnalystPrompts.value.length) return packAnalystPrompts.value;
+  return [
+    t('CRM.METRICS.ANALYST.EXAMPLES.INSS'),
+    t('CRM.METRICS.ANALYST.EXAMPLES.UNASSIGNED_HOT'),
+    t('CRM.METRICS.ANALYST.EXAMPLES.TOP_LIST'),
+    t('CRM.METRICS.ANALYST.EXAMPLES.WAITING_DOCS'),
+    t('CRM.METRICS.ANALYST.EXAMPLES.BEST_OWNER'),
+    t('CRM.METRICS.ANALYST.EXAMPLES.CAMPAIGNS'),
+  ];
+});
 
 const maxFunnelCount = computed(() =>
   Math.max(1, ...funnel.value.map(f => f.deal_count))
@@ -339,8 +345,18 @@ async function fetchPipelines() {
   }
 }
 
+async function fetchPackOptions() {
+  try {
+    const response = await CrmAPI.getOptions();
+    packAnalystPrompts.value = response.data?.analyst_prompts || [];
+  } catch {
+    packAnalystPrompts.value = [];
+  }
+}
+
 onMounted(() => {
   fetchPipelines();
+  fetchPackOptions();
   fetchAll();
 });
 </script>

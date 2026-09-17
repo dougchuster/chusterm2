@@ -13,6 +13,7 @@ import { useRoute } from 'vue-router';
 import AgentsAPI from '../../../../api/agents';
 import ContactAPI from '../../../../api/contacts';
 import CrmAPI from '../../../../api/crm';
+import { fetchCrmOptions } from 'dashboard/helper/crmOptions';
 import {
   DsBadge,
   DsButton,
@@ -89,8 +90,9 @@ const STATUS_TABS = [
   { value: 'all', label: 'Todas', icon: 'i-lucide-inbox' },
 ];
 
-const KINDS = [
-  { value: '', label: 'Todos os tipos' },
+// Fase 2: tipos de atividade vêm do pack instalado (crm_activity_types via
+// /crm/options). A lista estática é só fallback para quando o endpoint falha.
+const KINDS_FALLBACK = [
   { value: 'follow_up', label: 'Follow-up', icon: 'i-lucide-message-circle' },
   { value: 'ligacao', label: 'Ligação', icon: 'i-lucide-phone' },
   { value: 'reuniao', label: 'Reunião', icon: 'i-lucide-calendar-clock' },
@@ -126,6 +128,15 @@ const KINDS = [
   },
   { value: 'arquivamento', label: 'Arquivamento', icon: 'i-lucide-archive' },
 ];
+
+const packActivityKinds = ref([]);
+
+const KINDS = computed(() => {
+  const types = packActivityKinds.value.length
+    ? packActivityKinds.value
+    : KINDS_FALLBACK;
+  return [{ value: '', label: 'Todos os tipos' }, ...types];
+});
 
 const PRIORITIES = [
   { value: '', label: 'Toda prioridade' },
@@ -224,7 +235,7 @@ function dealOptionLabel(deal) {
 }
 
 function iconForKind(kind) {
-  return KINDS.find(item => item.value === kind)?.icon || 'i-lucide-check';
+  return KINDS.value.find(item => item.value === kind)?.icon || 'i-lucide-check';
 }
 
 function priorityLabel(priority) {
@@ -669,6 +680,15 @@ watch(
 );
 
 onMounted(async () => {
+  fetchCrmOptions().then(options => {
+    packActivityKinds.value = (options.activity_types || []).map(
+      ({ value, label, icon }) => ({
+        value,
+        label,
+        icon: icon ? `i-lucide-${icon}` : 'i-lucide-check',
+      })
+    );
+  });
   await Promise.all([loadActivities(), loadSupportData()]);
 });
 

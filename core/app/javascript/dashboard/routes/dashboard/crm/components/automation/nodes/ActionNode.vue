@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Handle, Position } from '@vue-flow/core';
+import { packActivityKindLabel } from 'dashboard/helper/crmOptions';
 import Icon from 'dashboard/components-next/icon/Icon.vue';
 import DsBadge from 'dashboard/design-system/components/DsBadge.vue';
 import DsButton from 'dashboard/design-system/components/DsButton.vue';
@@ -32,6 +33,10 @@ const actionTypeLabel = computed(() => {
 
 const actionKindLabel = computed(() => {
   const kind = props.data?.kind || 'follow_up';
+  // Pack types (ex.: 'demonstracao', 'email') não existem no mapa i18n —
+  // o cache de options já está quente quando o builder renderiza.
+  const packLabel = packActivityKindLabel(kind);
+  if (packLabel) return packLabel;
   switch (kind) {
     case 'ligacao':
       return t('CRM.AUTOMATION_RULES.ACTION_KINDS.LIGACAO');
