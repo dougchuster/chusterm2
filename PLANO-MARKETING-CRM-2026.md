@@ -254,7 +254,7 @@ entrega só Meta (não bloquear — marcar Google como "pendente credencial").
 
 ---
 
-### FASE 3 — Lead Ads → CRM (o coração) `3-4 dias`
+### FASE 3 — Lead Ads → CRM (o coração) `3-4 dias` ✅ `2494a68a`
 
 **Entregáveis**
 - `Webhooks::MetaLeadgenController`:
@@ -285,7 +285,7 @@ de prod; testar local com túnel (ngrok/cloudflared) ou fixture.
 
 ---
 
-### FASE 4 — Conversions API (fechar o loop) `2-3 dias`
+### FASE 4 — Conversions API (fechar o loop) `2-3 dias` ✅ `dea6ef2d`
 
 **Entregáveis**
 - `Marketing::Meta::CapiService` — POST `/datasets/{id}/events`:
@@ -313,7 +313,7 @@ bundle exec rspec spec/services/marketing/meta/capi_service_spec.rb
 
 ---
 
-### FASE 5 — MCPs + Captain (camada de IA) `3-4 dias`
+### FASE 5 — MCPs + Captain (camada de IA) `3-4 dias` ✅ `759aeb92`
 
 **Entregáveis**
 - Gem `ruby_llm-mcp` + `config/initializers/mcp_marketing.rb`:
@@ -350,7 +350,7 @@ se `ruby_llm-mcp` conflitar com a versão do RubyLLM, isolar em serviço Node
 
 ---
 
-### FASE 6 — Automação e governança `2-3 dias`
+### FASE 6 — Automação e governança `2-3 dias` ✅ `7958f324`
 
 **Entregáveis**
 - Automações CRM novas (reusa `crm_automation_rules`):
@@ -370,7 +370,13 @@ bundle exec rspec spec/models/crm_automation_rule  # novos gatilhos verdes
 
 ---
 
-### FASE 7 — Hardening + deploy `1-2 dias`
+### FASE 7 — Hardening + deploy `1-2 dias` ⏳ em execução
+
+> **Nota de implementação (FASE 6)**: o gatilho `campaign.cpl_above_threshold`
+> virou o alerta `cpl_spike` do `Marketing::InsightsService` (página Insights +
+> relatório semanal auditado) — sugerir pausa é o botão governado na grade de
+> Campanhas. Export/erasure LGPD de `marketing_leads` já coberto pelo
+> `dependent: :destroy_async` + dados pseudonimizados (contato é entidade própria).
 
 - Suite completa: RSpec novos + Vitest + Playwright `marketing-*.spec.ts`
   (conexões, campanhas, leads, overlay regressions) nos 7 projetos
