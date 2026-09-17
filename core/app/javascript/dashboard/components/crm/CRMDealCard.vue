@@ -18,7 +18,7 @@
  * (via `crmCardSignals`, que é testável sem montar componente) e devolve
  * intenções. Quem busca dono, chama API e move card é o board.
  */
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 import Icon from 'dashboard/components-next/icon/Icon.vue';
 import { DsButton, DsDropdown } from 'dashboard/design-system/components';
@@ -115,6 +115,15 @@ const ownerInitial = computed(() => {
   return name ? name[0].toUpperCase() : '';
 });
 
+const avatarUrl = computed(
+  () => props.deal.contact_avatar_url || props.deal.contact_thumbnail || ''
+);
+const avatarError = ref(false);
+const contactInitial = computed(() => {
+  const name = (contactName.value || '').trim();
+  return name ? name[0].toUpperCase() : '';
+});
+
 const selectionVisible = computed(
   () => props.selected || props.selectionActive
 );
@@ -135,40 +144,41 @@ const availableStageOptions = computed(() =>
     data-testid="crm-board-card"
     :data-rotting="rotting.level"
     :style="{ '--crm-stage-color': stage.color || 'transparent' }"
-    class="group relative rounded-xl border border-ui-border-subtle/70 bg-ui-surface px-3.5 py-3 shadow-ui-raised transition-[transform,box-shadow,border-color] duration-ui-base ease-out hover:border-ui-border"
+    class="group relative rounded-xl border border-ui-border-subtle/70 bg-ui-surface px-3.5 pb-3 pt-3 shadow-ui-raised transition-[transform,box-shadow,border-color] duration-ui-base ease-out hover:border-ui-border"
     :class="{
       'cursor-default': !canDrag,
-      'cursor-grab hover:-translate-y-0.5 hover:shadow-ui-overlay active:cursor-grabbing':
-        canDrag,
-      'hover:-translate-y-0.5 hover:shadow-ui-overlay': !canDrag,
+      'hover:-translate-y-0.5 hover:shadow-ui-overlay': true,
       'ring-2 ring-ui-brand/60': selected,
     }"
   >
-    <div class="flex items-start gap-1.5">
+    <div
+      v-if="canDrag"
+      data-testid="crm-card-drag-handle"
+      class="crm-drag-handle -mx-3.5 -mt-3 mb-2 flex h-5 cursor-grab touch-none items-center justify-center rounded-t-xl text-ui-text-subtle/70 transition-[color,background-color] duration-ui-fast hover:bg-ui-hover hover:text-ui-text active:cursor-grabbing active:bg-ui-hover"
+      draggable="true"
+      role="button"
+      :aria-label="$t('CRM.CARD.OPEN_RECORD', { name: label })"
+      @dragstart.stop="emit('nativeDragStart', $event)"
+      @dragend.stop="emit('nativeDragEnd', $event)"
+    >
+      <Icon icon="i-lucide-grip-horizontal" class="size-4" />
+    </div>
+    <div class="flex items-start gap-2.5">
       <span
-        v-if="canDrag"
-        data-testid="crm-card-drag-handle"
-        class="crm-drag-handle -ml-2 -my-2 inline-flex min-h-10 w-7 shrink-0 cursor-grab touch-none items-center justify-center self-stretch rounded-lg text-ui-text-subtle/80 transition-[opacity,color,background-color] duration-ui-fast hover:bg-ui-hover hover:text-ui-text active:cursor-grabbing max-md:opacity-70 md:opacity-60 md:group-hover:opacity-100"
-        draggable="true"
+        class="mt-0.5 flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-ui-brand-soft text-ui-caption font-bold text-ui-brand ring-1 ring-ui-border-subtle"
         aria-hidden="true"
-        @dragstart.stop="emit('nativeDragStart', $event)"
-        @dragend.stop="emit('nativeDragEnd', $event)"
       >
-        <Icon icon="i-lucide-grip-vertical" class="size-4" />
+        <img
+          v-if="avatarUrl && !avatarError"
+          :src="avatarUrl"
+          :alt="contactName"
+          class="size-full object-cover"
+          loading="lazy"
+          @error="avatarError = true"
+        />
+        <template v-else-if="contactInitial">{{ contactInitial }}</template>
+        <Icon v-else icon="i-lucide-user-round" class="size-4" />
       </span>
-      <input
-        type="checkbox"
-        :checked="selected"
-        :aria-label="$t('CRM.CARD.SELECT', { name: label })"
-        class="mt-1 size-4 shrink-0 cursor-pointer rounded border-ui-border accent-ui-brand transition-opacity duration-ui-fast"
-        :class="
-          selectionVisible
-            ? 'opacity-100'
-            : 'max-md:opacity-60 md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100 md:group-focus-within:opacity-100'
-        "
-        @click.stop
-        @change="emit('select', $event.target.checked)"
-      />
       <button
         data-testid="crm-card-open"
         type="button"
@@ -177,7 +187,7 @@ const availableStageOptions = computed(() =>
       >
         <span
           data-testid="crm-card-name"
-          class="block truncate text-ui-body-sm font-semibold text-ui-text transition-colors group-hover:text-ui-brand"
+          class="block truncate text-ui-body-sm font-semibold leading-5 text-ui-text transition-colors group-hover:text-ui-brand"
         >
           {{ displayName || $t('CRM.CARD.NO_CONTACT') }}
         </span>
@@ -189,19 +199,21 @@ const availableStageOptions = computed(() =>
           {{ reference }}
         </span>
       </button>
-      <DsButton
-        data-testid="crm-card-attend"
-        icon="i-lucide-message-circle"
-        variant="ghost"
-        size="sm"
-        class="text-ui-text-muted transition-colors duration-ui-fast hover:bg-ui-hover hover:text-ui-brand"
-        :aria-label="$t('CRM.CARD.ATTEND', { name: label })"
-        @click.stop="emit('attend')"
-      />
-      <DsDropdown
-        :aria-label="$t('CRM.CARD.MORE_ACTIONS', { name: label })"
-        class="text-ui-text-subtle transition-colors hover:text-ui-text"
-      >
+      <div class="flex shrink-0 flex-col items-end">
+        <div class="-mr-1.5 -mt-1 flex items-center">
+          <DsButton
+            data-testid="crm-card-attend"
+            icon="i-lucide-message-circle"
+            variant="ghost"
+            size="sm"
+            class="text-ui-text-muted transition-colors duration-ui-fast hover:bg-ui-hover hover:text-ui-brand"
+            :aria-label="$t('CRM.CARD.ATTEND', { name: label })"
+            @click.stop="emit('attend')"
+          />
+          <DsDropdown
+            :aria-label="$t('CRM.CARD.MORE_ACTIONS', { name: label })"
+            class="text-ui-text-subtle transition-colors hover:text-ui-text"
+          >
         <button
           v-for="option in availableStageOptions"
           :key="option.value"
@@ -237,18 +249,36 @@ const availableStageOptions = computed(() =>
           />
           {{ $t('CRM.CARD.MARK_BASE_CLIENT') }}
         </button>
-        <button
-          v-if="deal.status === 'open'"
-          data-testid="crm-card-discard"
-          type="button"
-          role="menuitem"
-          class="flex min-h-10 w-full items-center gap-2 rounded-ui-control px-3 text-left text-ui-body-sm text-ui-danger-foreground transition-colors hover:bg-ui-hover"
-          @click="emit('discard')"
-        >
-          <Icon icon="i-lucide-ban" class="size-4 text-ui-danger-foreground" />
-          {{ $t('CRM.CARD.DISCARD') }}
-        </button>
-      </DsDropdown>
+            <button
+              v-if="deal.status === 'open'"
+              data-testid="crm-card-discard"
+              type="button"
+              role="menuitem"
+              class="flex min-h-10 w-full items-center gap-2 rounded-ui-control px-3 text-left text-ui-body-sm text-ui-danger-foreground transition-colors hover:bg-ui-hover"
+              @click="emit('discard')"
+            >
+              <Icon
+                icon="i-lucide-ban"
+                class="size-4 text-ui-danger-foreground"
+              />
+              {{ $t('CRM.CARD.DISCARD') }}
+            </button>
+          </DsDropdown>
+        </div>
+        <input
+          type="checkbox"
+          :checked="selected"
+          :aria-label="$t('CRM.CARD.SELECT', { name: label })"
+          class="mr-0.5 mt-1 size-4 cursor-pointer rounded border-ui-border accent-ui-brand transition-opacity duration-ui-fast"
+          :class="
+            selectionVisible
+              ? 'opacity-100'
+              : 'max-md:opacity-60 md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100 md:group-focus-within:opacity-100'
+          "
+          @click.stop
+          @change="emit('select', $event.target.checked)"
+        />
+      </div>
     </div>
 
     <!-- Regra 2: o bloco mais alto do card, porque é o estado mais alarmante. -->
