@@ -2,6 +2,10 @@
 class Api::V1::Accounts::Marketing::MetricsController < Api::V1::Accounts::BaseController
   before_action :check_feature_flag
 
+  def insights
+    render json: Marketing::InsightsService.new(account: Current.account).perform
+  end
+
   def overview
     snapshots = scoped_snapshots
 

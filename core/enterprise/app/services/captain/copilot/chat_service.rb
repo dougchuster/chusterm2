@@ -72,6 +72,9 @@ class Captain::Copilot::ChatService < Llm::BaseAiService
     tools << Captain::Tools::Copilot::SearchArticlesService.new(@assistant, user: @user)
     tools << Captain::Tools::Copilot::SearchContactsService.new(@assistant, user: @user)
     tools << Captain::Tools::Copilot::SearchLinearIssuesService.new(@assistant, user: @user)
+    tools << Captain::Tools::Copilot::MarketingSpendSummaryService.new(@assistant, user: @user)
+    tools << Captain::Tools::Copilot::MarketingTopCampaignsService.new(@assistant, user: @user)
+    tools << Captain::Tools::Copilot::MarketingLeadFunnelService.new(@assistant, user: @user)
 
     tools.select(&:active?)
   end

@@ -132,6 +132,34 @@
         "RETRY": "Retry queued."
       }
     },
+    "INSIGHTS": {
+      "TITLE": "AI insights",
+      "LOADING": "Analyzing data…",
+      "ALERTS": {
+        "TITLE": "Alerts",
+        "SUBTITLE": "Signals computed from synced metrics — no AI needed."
+      },
+      "ASK": {
+        "TITLE": "Ask Captain",
+        "SUBTITLE": "Copilot can read your marketing tables via built-in tools. Try:",
+        "OPEN": "Open Copilot"
+      },
+      "QUESTIONS": {
+        "SPEND": "How much did we spend on Meta Ads this week?",
+        "TOP": "Which are our top 5 campaigns by leads?",
+        "FUNNEL": "How do ads leads flow through the sales funnel?",
+        "CPL": "What is our cost per lead in the last 14 days?"
+      },
+      "SEVERITY": {
+        "CRITICAL": "Critical",
+        "WARNING": "Warning",
+        "INFO": "Info"
+      },
+      "EMPTY": {
+        "TITLE": "Everything looks healthy",
+        "MESSAGE": "No anomalies detected in synced campaigns and events."
+      }
+    },
     "CONNECTIONS": {
       "TITLE": "Connections",
       "SUBTITLE": "Connect your Meta Ads, Google Ads and Google Analytics accounts to bring campaign metrics, sponsored posts and ad leads into the CRM.",

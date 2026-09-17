@@ -49,6 +49,10 @@ class MarketingAPI {
     );
   }
 
+  getInsights() {
+    return axios.get(marketingUrl('metrics/insights'));
+  }
+
   getCampaigns(params = {}) {
     const query = queryString(params);
     return axios.get(marketingUrl(`campaigns${query ? `?${query}` : ''}`));

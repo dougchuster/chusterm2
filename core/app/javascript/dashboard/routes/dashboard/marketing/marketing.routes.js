@@ -8,6 +8,7 @@ const MarketingConnections = () => import('./pages/MarketingConnections.vue');
 const MarketingCampaigns = () => import('./pages/MarketingCampaigns.vue');
 const MarketingLeads = () => import('./pages/MarketingLeads.vue');
 const MarketingEvents = () => import('./pages/MarketingEvents.vue');
+const MarketingInsights = () => import('./pages/MarketingInsights.vue');
 
 const commonMeta = {
   featureFlag: FEATURE_FLAGS.MARKETING,
@@ -37,6 +38,12 @@ export const routes = [
     path: frontendURL('accounts/:accountId/marketing/leads'),
     name: 'marketing_leads',
     component: MarketingLeads,
+    meta: commonMeta,
+  },
+  {
+    path: frontendURL('accounts/:accountId/marketing/insights'),
+    name: 'marketing_insights',
+    component: MarketingInsights,
     meta: commonMeta,
   },
   {

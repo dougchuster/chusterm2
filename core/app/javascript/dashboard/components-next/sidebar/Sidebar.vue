@@ -698,6 +698,7 @@ const salesCrmMenuItems = computed(() => [
             'marketing_overview',
             'marketing_campaigns',
             'marketing_leads',
+            'marketing_insights',
             'marketing_events',
             'marketing_connections',
           ],
@@ -722,6 +723,13 @@ const salesCrmMenuItems = computed(() => [
               icon: 'i-lucide-user-plus',
               activeOn: ['marketing_leads'],
               to: accountScopedRoute('marketing_leads'),
+            },
+            {
+              name: 'MarketingInsights',
+              label: t('MARKETING.INSIGHTS.TITLE'),
+              icon: 'i-lucide-sparkles',
+              activeOn: ['marketing_insights'],
+              to: accountScopedRoute('marketing_insights'),
             },
             {
               name: 'MarketingConnections',

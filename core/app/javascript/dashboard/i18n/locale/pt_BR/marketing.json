@@ -132,6 +132,34 @@
         "RETRY": "Reenvio enfileirado."
       }
     },
+    "INSIGHTS": {
+      "TITLE": "Insights IA",
+      "LOADING": "Analisando dados…",
+      "ALERTS": {
+        "TITLE": "Alertas",
+        "SUBTITLE": "Sinais calculados sobre as métricas sincronizadas — sem IA."
+      },
+      "ASK": {
+        "TITLE": "Pergunte ao Captain",
+        "SUBTITLE": "O Copilot lê as tabelas de marketing via ferramentas nativas. Tente:",
+        "OPEN": "Abrir Copilot"
+      },
+      "QUESTIONS": {
+        "SPEND": "Quanto gastamos no Meta Ads essa semana?",
+        "TOP": "Quais são as 5 campanhas com mais leads?",
+        "FUNNEL": "Como os leads de anúncios fluem pelo funil de vendas?",
+        "CPL": "Qual nosso custo por lead nos últimos 14 dias?"
+      },
+      "SEVERITY": {
+        "CRITICAL": "Crítico",
+        "WARNING": "Atenção",
+        "INFO": "Info"
+      },
+      "EMPTY": {
+        "TITLE": "Tudo saudável",
+        "MESSAGE": "Nenhuma anomalia detectada nas campanhas e eventos sincronizados."
+      }
+    },
     "CONNECTIONS": {
       "TITLE": "Conexões",
       "SUBTITLE": "Conecte suas contas de Meta Ads, Google Ads e Google Analytics para trazer métricas de campanhas, patrocinados e leads de anúncios para o CRM.",

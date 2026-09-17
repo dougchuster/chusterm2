@@ -253,6 +253,7 @@ Rails.application.routes.draw do
               end
             end
             get 'metrics/overview', to: 'metrics#overview'
+            get 'metrics/insights', to: 'metrics#insights'
           end
           namespace :channels do
             resource :twilio_channel, only: [:create]
