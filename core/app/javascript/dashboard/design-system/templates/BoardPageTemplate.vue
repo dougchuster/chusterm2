@@ -1,8 +1,11 @@
 <!-- eslint-disable vue/no-bare-strings-in-template, @intlify/vue-i18n/no-raw-text -->
 <script setup>
+import { ref } from 'vue';
+
 import DsEmptyState from '../components/DsEmptyState.vue';
 import DsSkeleton from '../components/DsSkeleton.vue';
 import DsPageHeader from './DsPageHeader.vue';
+import { useDragToScroll } from 'dashboard/composables/useDragToScroll';
 
 defineProps({
   title: { type: String, required: true },
@@ -16,6 +19,11 @@ defineProps({
 const emit = defineEmits(['empty-action']);
 const LOADING_BOARD_LABEL = 'Carregando quadro';
 const DETAILS_ASIDE_LABEL = 'Detalhes do item';
+
+// Agarrar o fundo do quadro e arrastar move o scroll horizontal — chegar
+// nas colunas da frente sem depender da barra de rolagem.
+const boardScroller = ref(null);
+useDragToScroll(boardScroller);
 </script>
 
 <template>
@@ -48,8 +56,9 @@ const DETAILS_ASIDE_LABEL = 'Detalhes do item';
 
     <div class="flex min-h-0 flex-1">
       <div
+        ref="boardScroller"
         data-template-region="board"
-        class="min-w-0 flex-1 overflow-x-auto overflow-y-hidden p-4 sm:p-6"
+        class="min-w-0 flex-1 cursor-grab overflow-x-auto overflow-y-hidden p-4 sm:p-6"
       >
         <div
           v-if="loading"
