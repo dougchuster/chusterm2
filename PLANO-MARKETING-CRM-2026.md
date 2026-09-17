@@ -1,8 +1,9 @@
 # PLANO — Área de Marketing ChusteRM (Ads, MCPs, IA)
 
-> **Status do projeto**: `FASE 0 — Fundação concluída (este documento)`
-> **Última atualização**: 2026-09-16
-> **Commit base**: `746c8533aa` (fix overlay kanban)
+> **Status do projeto**: `FASES 0-7 concluídas — área de Marketing entregue e em produção`
+> **Última atualização**: 2026-09-17
+> **Commit base**: `529e236b33` (fix a11y contraste AA + labels selects marketing)
+> **Release em produção**: `20260917T023000-529e236-fase6-a11y` (staging + prod)
 > **Como usar**: este arquivo é o estado-fonte do projeto. Cada fase tem um
 > **Protocolo de Auto-Diagnóstico** — comandos executáveis que provam se a fase
 > está completa. Antes de codar qualquer fase, rode o diagnóstico da anterior.
@@ -370,7 +371,24 @@ bundle exec rspec spec/models/crm_automation_rule  # novos gatilhos verdes
 
 ---
 
-### FASE 7 — Hardening + deploy `1-2 dias` ⏳ em execução
+### FASE 7 — Hardening + deploy `1-2 dias` ✅ `529e236b`
+
+**Evidência (2026-09-17)**:
+- RSpec escopo marketing+CRM: **85/85** · Vitest: **305/305** · Playwright
+  marketing (conexões/campanhas/leads/eventos/insights/overlay): **26/26**
+- axe a11y: **9/9** (0 critical/serious) — fixes `529e236b33` (labels em
+  `DsSelect` + contraste `ui-danger/warning-foreground`)
+- visual-sweep: **141 rotas** × light/dark × 7 projetos — verde
+- Deploy: staging `82.25.79.50` (crm.chuster.tech 200) e prod
+  `187.77.255.211` (crm.coimbraeruas.com.br 200) na imagem
+  `20260917T023000-529e236-fase6-a11y`; backup prod 7,2 GB + rollback tag;
+  sidekiq processando scheduled jobs; dead queue 0; 0×5xx no audit loop
+- **Swap correto em prod**: `cd /opt/chusterm-releases/<rel>/source &&
+  docker compose -p chusterm -f docker-compose.prod.yml up -d` — o compose
+  base em `/opt/chusterm` é de dev e cria `core` SEM `env_file` (causou
+  restart loop `secret_key_base`); `crm-service` legado removido do release
+- Rollback: `docker tag chusterm-core:rollback-20260917T023000-529e236-fase6-a11y
+  chusterm-core:latest` + recreate (ou flag `marketing` off por conta)
 
 > **Nota de implementação (FASE 6)**: o gatilho `campaign.cpl_above_threshold`
 > virou o alerta `cpl_spike` do `Marketing::InsightsService` (página Insights +
@@ -405,10 +423,18 @@ bundle exec rspec spec/models/crm_automation_rule  # novos gatilhos verdes
 
 ## 8. Débitos conhecidos
 
-- `docker-compose.prod.yml` de prod referencia `crm-service`/`identity-bridge`
-  (serviços removidos do repo) e `build.context: ./core` aponta para source
-  antigo em `/opt/chusterm` — padronizar `image:` + contexto do release.
+- `/opt/chusterm` em prod contém cópia de maio + compose base de dev — criar
+  core a partir dele gera container sem `env_file` (restart loop). Fonte de
+  verdade do deploy = release dir + `docker-compose.prod.yml`. Sanitizar
+  `/opt/chusterm` ou apontá-lo para o release ativo.
+- `docker-compose.prod.yml` do repo já está sem `crm-service` e com
+  `image:`/healthcheck explícitos — verificar se `identity-bridge` ainda
+  é referenciado em algum ambiente antes de removê-lo.
 - `public/vite` acumula assets entre builds (sem `emptyOutDir`) — limpar no CI.
+- Consolidar `REDIS_PASSWORD`: o compose fixa `chusterm_redis_pass` no
+  `--requirepass` enquanto `.env` pode divergir → `WRONGPASS` no sidekiq.
+- Vite emite chunk-size warnings no bundle do dashboard — avaliar code
+  splitting em sprint de performance.
 
 ## 9. Bloqueios externos (credenciais)
 
