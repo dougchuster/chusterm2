@@ -194,6 +194,33 @@ RSpec.describe 'CRM Deals API', type: :request do
       expect(response.body).not_to include(secret)
     end
 
+    it 'does not expose internal-only contact and message fields' do
+      contact = create(
+        :contact,
+        account: account,
+        additional_attributes: { 'avatar_url' => 'https://cdn.test/avatar.jpg', 'city' => 'BSB' },
+        custom_attributes: { 'internal_flag' => true },
+        identifier: 'internal-identifier'
+      )
+      conversation = create(:conversation, account: account, contact: contact)
+      deal = create_deal!(title: 'Ficha higiênica', contact: contact, conversation: conversation)
+      create(:message, conversation: conversation, account: account, message_type: :incoming, content: 'Olá')
+      create(:message, conversation: conversation, account: account, message_type: :activity, content: 'Sistema: criado')
+
+      get "/api/v1/accounts/#{account.id}/crm/deals/#{deal.id}", headers: headers, as: :json
+
+      expect(response).to have_http_status(:success)
+      payload = response.parsed_body
+      contact_payload = payload['contact'] || payload.dig('deal', 'contact')
+      expect(contact_payload).not_to include('identifier', 'additional_attributes', 'custom_attributes')
+
+      messages = payload['messages'] || payload.dig('deal', 'messages') || []
+      messages.each do |message|
+        expect(message).not_to have_key('content_for_llm')
+        expect(message['message_type']).not_to eq('activity')
+      end
+    end
+
     it 'strips the reserved captain_triage key from custom_fields' do
       deal = create_deal!(title: 'Lead com triagem', custom_fields: { 'existing' => 'value' })
 

@@ -51,32 +51,36 @@ class Crm::LegalTriageAnalyzer
 
   def perform
     text = transcript_text
-    return insufficient_data_triage(text) if insufficient_data?(text)
+    # Rules are written without accents; matching runs on a transliterated
+    # copy so "divórcio"/"pensão alimentícia"/"cartão" hit the same patterns.
+    # The original text is kept for summaries/intake answers shown to humans.
+    match_text = I18n.transliterate(text.to_s)
+    return insufficient_data_triage(text) if insufficient_data?(match_text)
 
-    legal_area = detect_from_rules(text, AREA_RULES, nil)
-    case_type = detect_from_rules(text, CASE_RULES, default_case_type(legal_area))
-    urgency_level = detect_urgency(text)
+    legal_area = detect_from_rules(match_text, AREA_RULES, nil)
+    case_type = detect_from_rules(match_text, CASE_RULES, default_case_type(legal_area))
+    urgency_level = detect_urgency(match_text)
     documents_needed = documents_needed_for(legal_area)
 
     {
       legal_area: legal_area,
       case_type: case_type,
       urgency_level: urgency_level,
-      intent: detect_intent(text),
+      intent: detect_intent(match_text),
       summary: build_summary(text, legal_area, case_type),
-      opposing_party: detect_opposing_party(text, legal_area),
+      opposing_party: detect_opposing_party(match_text, legal_area),
       documents_needed: documents_needed,
-      deadline_risk: deadline_risk_for(urgency_level, text),
-      economic_potential: economic_potential_for(text, legal_area),
-      engagement_level: engagement_level_for(text),
-      payment_capacity: payment_capacity_for(text),
+      deadline_risk: deadline_risk_for(urgency_level, match_text),
+      economic_potential: economic_potential_for(match_text, legal_area),
+      engagement_level: engagement_level_for(match_text),
+      payment_capacity: payment_capacity_for(match_text),
       conflict_check_status: 'pending',
-      documents_status: document_status_for(text),
+      documents_status: document_status_for(match_text),
       lgpd_basis: 'procedimentos_preliminares',
       consent_status: 'pending',
       data_retention_until: 5.years.from_now.to_date,
       next_best_action: next_best_action_for(legal_area, urgency_level, documents_needed),
-      score_reason: score_reason_for(legal_area, urgency_level, text),
+      score_reason: score_reason_for(legal_area, urgency_level, match_text),
       intake_answers: intake_answers_for(text, legal_area, case_type, urgency_level, documents_needed)
     }
   end
@@ -85,9 +89,18 @@ class Crm::LegalTriageAnalyzer
 
   def transcript_text
     @transcript_text ||= incoming_messages
-                         .filter_map { |message| message.content.to_s.presence }
+                         .flat_map { |message| [message.content.to_s.presence, attachment_texts_for(message)].flatten.compact }
                          .join("\n")
                          .squish
+  end
+
+  # Audio transcriptions and OCR text live in attachment meta; without them
+  # voice messages (very common on WhatsApp) are invisible to triage.
+  def attachment_texts_for(message)
+    message.attachments.filter_map do |attachment|
+      meta = attachment.meta || {}
+      [meta['transcribed_text'], meta['ocr_text']].compact_blank.join(' ').presence
+    end
   end
 
   def incoming_messages
@@ -141,9 +154,13 @@ class Crm::LegalTriageAnalyzer
     }
   end
 
+  # Areas compete by match count: "pensão alimentícia" must beat a bare
+  # "pensão" hit from another area. Ties keep hash order (most specific first).
   def detect_from_rules(text, rules, fallback)
-    rules.each { |value, rule| return value if text.match?(rule) }
-    fallback
+    best = rules.max_by { |_value, rule| text.scan(rule).size }
+    return fallback if best.nil? || text.scan(best.last).empty?
+
+    best.first
   end
 
   def detect_urgency(text)

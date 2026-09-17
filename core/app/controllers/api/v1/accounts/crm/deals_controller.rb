@@ -441,6 +441,7 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
       title: deal.title,
       status: deal.status,
       legal_area: deal.legal_area,
+      legal_area_label: Crm::DomainOptions.legal_area_label(deal.legal_area),
       case_type: deal.case_type,
       urgency_level: deal.urgency_level,
       source: deal.source,
@@ -539,14 +540,11 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
       phone_number: contact.phone_number,
       thumbnail: avatar_url,
       avatar_url: avatar_url,
-      identifier: contact.identifier,
       relationship_status: contact.try(:relationship_status),
       lifecycle_stage: contact.try(:lifecycle_stage),
       crm_owner_id: contact.try(:crm_owner_id),
       crm_owner: serialize_user(contact.try(:crm_owner)),
       labels: contact.label_list.to_a,
-      additional_attributes: contact.additional_attributes || {},
-      custom_attributes: contact.custom_attributes || {},
       created_at: contact.created_at,
       last_activity_at: contact.last_activity_at
     }
@@ -598,10 +596,13 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
     { id: inbox.id, name: inbox.name, channel_type: inbox.channel_type }
   end
 
+  # Mensagens de sistema (activity) não são conversa — viram ruído na aba
+  # Mensagens do drawer.
   def serialize_messages_for(deal)
     return [] unless deal.conversation
 
     deal.conversation.messages
+        .where.not(message_type: :activity)
         .includes(:sender, attachments: { file_attachment: :blob })
         .order(created_at: :desc)
         .limit(30)
@@ -613,7 +614,9 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
     {
       id: message.id,
       content: message.content,
-      content_for_llm: message.content_for_llm,
+      # Transcrição de áudio como campo explícito (não o payload inteiro de
+      # content_for_llm, que expõe formatação interna de LLM).
+      transcription: message_transcription(message),
       message_type: message.message_type,
       content_type: message.content_type,
       status: message.status,
@@ -625,12 +628,24 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
     }
   end
 
+  def message_transcription(message)
+    message.attachments.filter_map do |attachment|
+      (attachment.meta || {})['transcribed_text'].presence
+    end.join("\n").presence
+  end
+
+  # A aba de anexos não precisa varrer o histórico inteiro — as 50 mensagens
+  # mais recentes cobrem o uso operacional e limitam o payload.
   def serialize_attachments_for(deal)
     return [] unless deal.conversation
 
-    deal.conversation.messages.includes(attachments: { file_attachment: :blob }).flat_map do |message|
-      message.attachments.map { |attachment| serialize_attachment(attachment).merge(message_created_at: message.created_at) }
-    end
+    deal.conversation.messages
+        .includes(attachments: { file_attachment: :blob })
+        .order(created_at: :desc)
+        .limit(50)
+        .flat_map do |message|
+          message.attachments.map { |attachment| serialize_attachment(attachment).merge(message_created_at: message.created_at) }
+        end.first(100)
   end
 
   def serialize_attachment(attachment)

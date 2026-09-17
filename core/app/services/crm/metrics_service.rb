@@ -5,40 +5,55 @@ class Crm::MetricsService
     @account = account
   end
 
-  # Métricas gerais do período
+  # Métricas gerais do período.
+  #
+  # Dois coortes diferentes, de propósito: volume (total/open/valor em
+  # aberto/score) mede deals CRIADOS no período; resultado (won/lost/win_rate/
+  # valor ganho/tempo de fechamento) mede deals FECHADOS no período por
+  # closed_at — medir win_rate por coorte de criação mistura deals que ainda
+  # não tiveram chance de fechar e produzia percentuais incoerentes.
   def overview(period_days: 30)
     since = period_days.days.ago
-    deals = account.crm_deals.where('crm_deals.created_at >= ?', since)
+    created = account.crm_deals.where('crm_deals.created_at >= ?', since)
+    closed = account.crm_deals.where(closed_at: since..Time.current, status: %w[won lost])
 
     {
-      total_deals: deals.count,
-      open_deals: deals.where(status: 'open').count,
-      won_deals: deals.where(status: 'won').count,
-      lost_deals: deals.where(status: 'lost').count,
-      win_rate: calc_win_rate(deals),
-      avg_score: calc_avg_score(deals),
-      total_value: calc_total_value(deals),
-      won_value: calc_won_value(deals),
-      avg_time_to_close: calc_avg_time_to_close(deals)
+      total_deals: created.count,
+      open_deals: created.where(status: 'open').count,
+      won_deals: closed.where(status: 'won').count,
+      lost_deals: closed.where(status: 'lost').count,
+      win_rate: calc_win_rate(closed),
+      avg_score: calc_avg_score(created),
+      total_value: calc_total_value(created),
+      won_value: calc_won_value(closed),
+      avg_time_to_close: calc_avg_time_to_close(closed)
     }
   end
 
-  # Funil de conversão por estágio
+  # Funil de conversão por estágio.
+  #
+  # Sem pipeline_id, cai no funil default da conta — somar etapas de funis
+  # diferentes num único funil produzia um gráfico que não correspondia a
+  # nenhum funil real. Contagem e média saem em UM GROUP BY (antes eram
+  # 2 queries por etapa).
   def stage_funnel(pipeline_id: nil)
-    scope = account.crm_deals.open_deals
-    scope = scope.where(crm_pipeline_id: pipeline_id) if pipeline_id
+    pipeline = resolve_pipeline(pipeline_id)
+    scope = account.crm_deals.open_deals.where(crm_pipeline: pipeline)
 
-    stages = account.crm_pipeline_stages.active.ordered
-    stages = stages.where(crm_pipeline_id: pipeline_id) if pipeline_id
+    aggregates = scope.group(:crm_pipeline_stage_id).pluck(
+      :crm_pipeline_stage_id,
+      Arel.sql('COUNT(*)'),
+      Arel.sql('AVG(score_total)')
+    ).to_h { |stage_id, count, avg| [stage_id, { count: count, avg: avg }] }
 
-    stages.map do |stage|
-      count = scope.where(crm_pipeline_stage_id: stage.id).count
+    pipeline_stages(pipeline).map do |stage|
+      agg = aggregates[stage.id] || { count: 0, avg: nil }
       {
         stage_id: stage.id,
         stage_name: stage.name,
         stage_slug: stage.slug,
-        deal_count: count,
-        avg_score: scope.where(crm_pipeline_stage_id: stage.id).average(:score_total)&.round(1) || 0
+        deal_count: agg[:count],
+        avg_score: agg[:avg]&.round(1) || 0
       }
     end
   end
@@ -68,10 +83,9 @@ class Crm::MetricsService
       end
     end
 
-    stages = account.crm_pipeline_stages.active.ordered
-    stages = stages.where(crm_pipeline_id: pipeline_id) if pipeline_id
+    pipeline = resolve_pipeline(pipeline_id)
 
-    stages.map do |stage|
+    pipeline_stages(pipeline).map do |stage|
       times = stage_times[stage.id] || []
       {
         stage_id: stage.id,
@@ -119,23 +133,31 @@ class Crm::MetricsService
       .map { |name, count| { reason: name, count: count } }
   end
 
-  # Score médio por estágio
+  # Score médio por estágio — um GROUP BY com avg/min/max/count (antes eram
+  # 2 queries por etapa). COUNT(score_total) ignora NULLs como o `.compact`
+  # anterior.
   def score_by_stage(pipeline_id: nil)
-    scope = account.crm_deals.open_deals
-    scope = scope.where(crm_pipeline_id: pipeline_id) if pipeline_id
+    pipeline = resolve_pipeline(pipeline_id)
+    scope = account.crm_deals.open_deals.where(crm_pipeline: pipeline)
 
-    stages = account.crm_pipeline_stages.active.ordered
-    stages = stages.where(crm_pipeline_id: pipeline_id) if pipeline_id
+    aggregates = scope.group(:crm_pipeline_stage_id).pluck(
+      :crm_pipeline_stage_id,
+      Arel.sql('COUNT(score_total)'),
+      Arel.sql('AVG(score_total)'),
+      Arel.sql('MIN(score_total)'),
+      Arel.sql('MAX(score_total)')
+    ).to_h do |stage_id, count, avg, min, max|
+      [stage_id, { count: count, avg: avg, min: min, max: max }]
+    end
 
-    stages.map do |stage|
-      deals_in_stage = scope.where(crm_pipeline_stage_id: stage.id)
-      scores = deals_in_stage.pluck(:score_total).compact
+    pipeline_stages(pipeline).map do |stage|
+      agg = aggregates[stage.id] || { count: 0, avg: nil, min: nil, max: nil }
       {
         stage_name: stage.name,
-        avg_score: scores.any? ? (scores.sum.to_f / scores.size).round(1) : 0,
-        min_score: scores.any? ? scores.min : 0,
-        max_score: scores.any? ? scores.max : 0,
-        count: scores.size
+        avg_score: agg[:avg]&.round(1) || 0,
+        min_score: agg[:min] || 0,
+        max_score: agg[:max] || 0,
+        count: agg[:count]
       }
     end
   end
@@ -207,11 +229,26 @@ class Crm::MetricsService
 
   private
 
-  def calc_win_rate(deals_scope)
-    closed = deals_scope.where(status: %w[won lost])
-    return 0 if closed.count.zero?
+  # Sem pipeline_id explícito, as métricas por etapa medem o funil default —
+  # nunca uma mistura de todos os funis da conta.
+  def resolve_pipeline(pipeline_id)
+    pipelines = account.crm_pipelines.active.default_first
+    return pipelines.find_by(id: pipeline_id) if pipeline_id.present?
 
-    (deals_scope.where(status: 'won').count.to_f / closed.count * 100).round(1)
+    pipelines.first
+  end
+
+  def pipeline_stages(pipeline)
+    return CrmPipelineStage.none if pipeline.nil?
+
+    pipeline.crm_pipeline_stages.active.ordered
+  end
+
+  def calc_win_rate(closed_scope)
+    total = closed_scope.count
+    return 0 if total.zero?
+
+    (closed_scope.where(status: 'won').count.to_f / total * 100).round(1)
   end
 
   def calc_avg_score(deals_scope)

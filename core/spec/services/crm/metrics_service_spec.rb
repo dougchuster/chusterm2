@@ -2,9 +2,12 @@ require 'rails_helper'
 
 RSpec.describe Crm::MetricsService do
   let(:account) { create(:account) }
-  let(:pipeline) { CrmPipeline.create!(account: account, name: 'Pipeline Jurídico', position: 1, is_default: true) }
-  let(:stage) { CrmPipelineStage.create!(account: account, crm_pipeline: pipeline, name: 'Novo atendimento', position: 1) }
-  let(:qualified_stage) { CrmPipelineStage.create!(account: account, crm_pipeline: pipeline, name: 'Qualificado', position: 2) }
+  # O AccountInitializer semeia um funil default em toda conta — a spec usa
+  # esse funil (o mesmo que resolve_pipeline escolhe) em vez de criar um
+  # segundo `is_default`, que tornaria a resolução ambígua.
+  let(:pipeline) { account.crm_pipelines.active.default_first.first }
+  let(:stage) { CrmPipelineStage.create!(account: account, crm_pipeline: pipeline, name: 'Novo atendimento', position: 11) }
+  let(:qualified_stage) { CrmPipelineStage.create!(account: account, crm_pipeline: pipeline, name: 'Qualificado', position: 12) }
 
   def create_deal!(title:, stage: self.stage, **attrs)
     CrmDeal.create!(
@@ -28,6 +31,66 @@ RSpec.describe Crm::MetricsService do
       payload: { from_stage_id: stage.id, to_stage_id: to_stage.id },
       created_at: at
     )
+  end
+
+  describe '#stage_funnel' do
+    it 'scopes to the default pipeline when pipeline_id is not given' do
+      other_pipeline = CrmPipeline.create!(account: account, name: 'Funil Secundário', position: 2)
+      other_stage = CrmPipelineStage.create!(account: account, crm_pipeline: other_pipeline, name: 'Entrada', position: 1)
+
+      create_deal!(title: 'Deal do funil default')
+      create_deal!(title: 'Deal do funil default 2', stage: qualified_stage)
+      CrmDeal.create!(
+        account: account, crm_pipeline: other_pipeline,
+        crm_pipeline_stage: other_stage, title: 'Deal de outro funil'
+      )
+
+      result = described_class.new(account).stage_funnel
+
+      stage_ids = result.map { |entry| entry[:stage_id] }
+      expect(stage_ids).to include(stage.id, qualified_stage.id)
+      expect(stage_ids).not_to include(other_stage.id)
+      expect(result.sum { |entry| entry[:deal_count] }).to eq(2)
+    end
+
+    it 'sums to the open deal count of the pipeline (KPI coherence)' do
+      create_deal!(title: 'A')
+      create_deal!(title: 'B', stage: qualified_stage)
+      create_deal!(title: 'C fechado', status: 'won', closed_at: 1.day.ago)
+
+      result = described_class.new(account).stage_funnel
+
+      expect(result.sum { |entry| entry[:deal_count] })
+        .to eq(account.crm_deals.open_deals.count)
+    end
+  end
+
+  describe '#overview' do
+    it 'measures won/lost on deals closed in the period (closed_at cohort)' do
+      # Criado fora do período, fechado dentro — deve contar no resultado.
+      old_won = create_deal!(title: 'Ganho antigo', status: 'won', closed_at: 2.days.ago)
+      old_won.update!(created_at: 60.days.ago)
+      # Criado e fechado fora do período — não pode contaminar o win_rate.
+      old_closed = create_deal!(title: 'Fechado antigo', status: 'lost', closed_at: 40.days.ago)
+      old_closed.update!(created_at: 60.days.ago)
+
+      result = described_class.new(account).overview(period_days: 30)
+
+      expect(result[:total_deals]).to eq(0)
+      expect(result[:won_deals]).to eq(1)
+      expect(result[:lost_deals]).to eq(0)
+      expect(result[:win_rate]).to eq(100.0)
+    end
+
+    it 'returns win_rate 0 (not a bogus 50%) when nothing closed in the period' do
+      create_deal!(title: 'Aberto')
+
+      result = described_class.new(account).overview(period_days: 30)
+
+      expect(result[:win_rate]).to eq(0)
+      expect(result[:won_deals]).to eq(0)
+      expect(result[:lost_deals]).to eq(0)
+    end
   end
 
   describe '#time_in_stage' do

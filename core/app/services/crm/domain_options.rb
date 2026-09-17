@@ -19,6 +19,11 @@ module Crm
       { value: 'previdenciario', label: 'Previdenciário' },
       { value: 'civel', label: 'Cível' },
       { value: 'trabalhista', label: 'Trabalhista' },
+      { value: 'familia', label: 'Família' },
+      { value: 'consumidor', label: 'Consumidor' },
+      { value: 'criminal', label: 'Criminal' },
+      { value: 'tributario', label: 'Tributário' },
+      { value: 'empresarial', label: 'Empresarial' },
       { value: 'outro', label: 'Outro' }
     ].freeze
 
@@ -75,6 +80,15 @@ module Crm
 
       aliases = LEGAL_AREA_ALIASES.filter_map { |legacy, target| legacy if target == canonical }
       ([canonical] + aliases).uniq
+    end
+
+    # Label amigável do slug — o front nunca deve renderizar a chave crua
+    # ("previdenciario") no card/relatório.
+    def self.legal_area_label(value)
+      canonical = canonical_legal_area(value)
+      return if canonical.blank?
+
+      LEGAL_AREAS.find { |option| option[:value] == canonical }&.dig(:label) || canonical
     end
 
     def self.payload
