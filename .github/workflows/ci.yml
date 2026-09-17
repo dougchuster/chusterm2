@@ -50,6 +50,12 @@ jobs:
           head: HEAD
           extra_args: --only-verified
 
+      # Segunda varredura com regras diferentes do trufflehog — cobre
+      # padrões que o modo --only-verified deixa passar (tokens ainda vivos
+      # mas não verificáveis, chaves de formato proprietário).
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+
   # ─── Agent Orchestrator ──────────────────────────────────────────────────────
   orchestrator:
     name: Orchestrator — Test, Build & Audit

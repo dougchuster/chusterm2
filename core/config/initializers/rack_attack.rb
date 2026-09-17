@@ -16,7 +16,16 @@ class Rack::Attack
   # Redis calls like `get` to hit the outer wrapper and explode.
   # `pool: false` tells Rails to skip its internal pool and use ours directly.
   # TODO: We can use build in connection pool in future upgrade
-  Rack::Attack.cache.store = ActiveSupport::Cache::RedisCacheStore.new(redis: $velma, pool: false)
+  #
+  # Em teste, $velma entrega Redis::Namespace sobre MockRedis, que não responde
+  # a `.call` (RedisCacheStore#supports_expire_nx? faz `redis.call('info')`) —
+  # toda request throttled virava 500. MemoryStore resolve: throttle por
+  # processo é suficiente para specs.
+  Rack::Attack.cache.store = if Rails.env.test?
+                               ActiveSupport::Cache::MemoryStore.new
+                             else
+                               ActiveSupport::Cache::RedisCacheStore.new(redis: $velma, pool: false)
+                             end
 
   class Request < ::Rack::Request
     # You many need to specify a method to fetch the correct remote IP address
@@ -227,6 +236,36 @@ class Rack::Attack
            limit: ENV.fetch('RATE_LIMIT_CONVERSATIONS_META', '30').to_i, period: 1.minute) do |req|
     match_data = %r{/api/v1/accounts/(?<account_id>\d+)/conversations/meta}.match(req.path)
     next unless match_data.present? && req.get?
+
+    user_uid = req.get_header('HTTP_UID')
+    api_access_token = req.get_header('HTTP_API_ACCESS_TOKEN') || req.get_header('api_access_token')
+    user_identifier = user_uid.presence || api_access_token.presence
+
+    "#{user_identifier}:#{match_data[:account_id]}" if user_identifier.present?
+  end
+
+  ###-----------------CRM API Throttling---------------###
+
+  # O analista é uma chamada de LLM — cada request custa tokens. Sem teto por
+  # usuário, um script ou um dedo nervoso vira custo real.
+  throttle('/api/v1/accounts/:account_id/crm/analyst/ask',
+           limit: ENV.fetch('RATE_LIMIT_CRM_ANALYST', '20').to_i, period: 1.minute) do |req|
+    match_data = %r{/api/v1/accounts/(?<account_id>\d+)/crm/analyst/ask}.match(req.path)
+    next unless match_data.present? && req.post?
+
+    user_uid = req.get_header('HTTP_UID')
+    api_access_token = req.get_header('HTTP_API_ACCESS_TOKEN') || req.get_header('api_access_token')
+    user_identifier = user_uid.presence || api_access_token.presence
+
+    "#{user_identifier}:#{match_data[:account_id]}" if user_identifier.present?
+  end
+
+  # Exportação varre a base do tenant inteira — operações em massa merecem
+  # teto mais baixo que leitura comum.
+  throttle('/api/v1/accounts/:account_id/crm/deals/export',
+           limit: ENV.fetch('RATE_LIMIT_CRM_EXPORT', '10').to_i, period: 1.hour) do |req|
+    match_data = %r{/api/v1/accounts/(?<account_id>\d+)/crm/deals/export}.match(req.path)
+    next unless match_data.present? && req.post?
 
     user_uid = req.get_header('HTTP_UID')
     api_access_token = req.get_header('HTTP_API_ACCESS_TOKEN') || req.get_header('api_access_token')
