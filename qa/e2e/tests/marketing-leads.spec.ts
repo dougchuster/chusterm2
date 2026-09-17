@@ -87,7 +87,18 @@ test.describe('area de marketing — leads de anuncios', () => {
       leads.find(
         (l: { leadgen_id: string }) => l.leadgen_id === 'qa_lead_2'
       ) ?? leads[0];
-    expect(target).toBeTruthy();
+
+    if (!target) {
+      // Rerun sem leads novos: descartar um ja descartado e no-op idempotente.
+      const responseDisc = await listLeads(page, 'discarded');
+      const { leads: done } = await responseDisc.json();
+      const again = await page.request.post(
+        `/api/v1/accounts/${accountId}/marketing/leads/${done[0].id}/discard`,
+        { headers: await apiHeaders(page) }
+      );
+      expect(again.status()).toBe(200);
+      return;
+    }
 
     await page.goto(`/app/accounts/${accountId}/marketing/leads`);
     const row = page
@@ -116,7 +127,8 @@ test.describe('area de marketing — leads de anuncios', () => {
     const { leads } = await response.json();
 
     if (leads.length === 0) {
-      // Rerun: todos ja convertidos — reconversao deve ser rejeitada.
+      // Rerun: todos ja convertidos — reconversao deve ser rejeitada sem
+      // criar deal duplicado (idempotencia via crm_deal_id).
       const converted = await listLeads(page, 'converted');
       const { leads: done } = await converted.json();
       const again = await page.request.post(
