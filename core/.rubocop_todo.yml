@@ -242,6 +242,7 @@ Metrics/ClassLength:
     - 'app/models/contact.rb'
     - 'app/models/crm_deal.rb'
     - 'app/models/inbox.rb'
+    - 'app/services/crm/analyst_service.rb'
     - 'app/services/crm/domain_options.rb'
     - 'app/services/crm/lead_score_calculator.rb'
     - 'app/services/crm/legal_triage_analyzer.rb'

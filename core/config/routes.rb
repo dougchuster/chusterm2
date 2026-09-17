@@ -150,6 +150,8 @@ Rails.application.routes.draw do
             get :agenda_events, to: 'agenda_events#index'
             get :dashboard, to: 'dashboard#index'
             get :options, to: 'options#index'
+            # Fase 2: packs de vertical (só responde com crm_universal ligado).
+            resources :packs, only: [:index, :create]
             resource :health, only: [:show], controller: :health
 
             # F2.7: visoes salvas do board (lacuna K-05).

@@ -988,6 +988,19 @@
         "PAUSED": "Paused",
         "HUMAN_ONLY": "Human in control"
       }
+    },
+    "SEGMENT": {
+      "TITLE": "Segment",
+      "BREADCRUMB": "CRM Settings",
+      "SUBTITLE": "Choose the vertical packs installed on this account. Each pack defines categories, activity types, and custom deal fields.",
+      "LOADING": "Loading packs",
+      "EMPTY": "No packs available",
+      "INSTALLED": "Installed",
+      "INSTALL": "Install pack",
+      "MORE_CATEGORIES": "+{count} more",
+      "FIELDS_COUNT": "{count} types and fields included",
+      "ERROR_LOAD": "Could not load packs.",
+      "ERROR_INSTALL": "Could not install the pack."
     }
   }
 }

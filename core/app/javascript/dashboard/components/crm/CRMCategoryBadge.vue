@@ -1,9 +1,11 @@
 <!-- eslint-disable vue/prefer-separate-static-class -->
 <script setup>
 import { computed } from 'vue';
-import { LEGAL_AREA_LABELS } from 'dashboard/helper/crmOptions';
+import { categoryLabel } from 'dashboard/helper/crmOptions';
 
 const props = defineProps({
+  // A0: 'category' é o nome universal; 'area' permanece para callers legados.
+  category: { type: String, default: '' },
   area: { type: String, default: '' },
   label: { type: String, default: '' },
   compact: { type: Boolean, default: false },
@@ -39,15 +41,16 @@ const AREA_COLORS = {
 };
 
 const normalizedArea = computed(() => {
-  const raw = String(props.area || '').toLowerCase();
+  const raw = String(props.category || props.area || '').toLowerCase();
   return AREA_ALIASES[raw] || raw;
 });
-// Prioridade: label serializado pelo backend (pack-aware) > mapa estático
-// legado > slug cru.
+// Prioridade: label serializado pelo backend (pack-aware) > categorias do
+// pack/mapa legado > slug cru.
 const label = computed(
   () =>
     props.label ||
-    LEGAL_AREA_LABELS[normalizedArea.value] ||
+    categoryLabel(normalizedArea.value) ||
+    props.category ||
     props.area ||
     'Sem categoria'
 );

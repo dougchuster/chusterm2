@@ -415,7 +415,8 @@
     "SECURITY": "Security",
     "CAPTAIN_AI": "Captain",
     "CONVERSATION_WORKFLOW": "Conversation Workflow",
-    "MARKETING": "Marketing"
+    "MARKETING": "Marketing",
+    "CRM_SEGMENT": "Segment"
   },
   "CAPTAIN_SETTINGS": {
     "TITLE": "Captain Settings",

@@ -2,11 +2,12 @@
 
 class Crm::AccountInitializer
   DEFAULT_STAGES = [
-    { name: 'Novo Lead', slug: 'novo-lead', position: 1, probability_pct: 10, color: '#3b82f6' },
-    { name: 'Qualificação', slug: 'qualificacao', position: 2, probability_pct: 30, color: '#6366f1' },
-    { name: 'Apresentação / Proposta', slug: 'apresentacao-proposta', position: 3, probability_pct: 60, color: '#a855f7' },
-    { name: 'Negociação', slug: 'negociacao', position: 4, probability_pct: 80, color: '#ec4899' },
-    { name: 'Fechamento', slug: 'fechamento', position: 5, probability_pct: 100, color: '#10b981' },
+    { name: 'Novo Lead', slug: 'novo-lead', position: 1, probability_pct: 10, color: '#3b82f6', expected_duration_hours: 48 },
+    { name: 'Qualificação', slug: 'qualificacao', position: 2, probability_pct: 30, color: '#6366f1', expected_duration_hours: 72 },
+    { name: 'Apresentação / Proposta', slug: 'apresentacao-proposta', position: 3, probability_pct: 60, color: '#a855f7',
+      expected_duration_hours: 96 },
+    { name: 'Negociação', slug: 'negociacao', position: 4, probability_pct: 80, color: '#ec4899', expected_duration_hours: 120 },
+    { name: 'Fechamento', slug: 'fechamento', position: 5, probability_pct: 100, color: '#10b981', expected_duration_hours: 168 },
     { name: 'Perdido / Arquivado', slug: 'perdido-arquivado', position: 6, probability_pct: 0, color: '#ef4444' }
   ].freeze
 

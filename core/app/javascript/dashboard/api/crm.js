@@ -244,6 +244,15 @@ class CrmAPI {
     return axios.get(crmUrl('options'));
   }
 
+  // Fase 2: packs de vertical da conta (só existem com crm_universal).
+  getPacks() {
+    return axios.get(crmUrl('packs'));
+  }
+
+  installPack(slug) {
+    return axios.post(crmUrl('packs'), { slug });
+  }
+
   getLossReasons() {
     return axios.get(crmUrl('loss-reasons'));
   }

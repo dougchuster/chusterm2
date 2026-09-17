@@ -988,6 +988,19 @@
       "OPEN_CONVERSATION": "Abrir conversa com o Copilot",
       "SCORE_UPDATED": "Score do lead atualizado com sucesso.",
       "SCORE_UPDATE_ERROR": "Não foi possível recalcular o score. Tente novamente."
+    },
+    "SEGMENT": {
+      "TITLE": "Segmento",
+      "BREADCRUMB": "Configurações do CRM",
+      "SUBTITLE": "Escolha os packs de segmento instalados nesta conta. Cada pack define categorias, tipos de atividade e campos personalizados dos negócios.",
+      "LOADING": "Carregando packs",
+      "EMPTY": "Nenhum pack disponível",
+      "INSTALLED": "Instalado",
+      "INSTALL": "Instalar pack",
+      "MORE_CATEGORIES": "+{count} outras",
+      "FIELDS_COUNT": "{count} tipos e campos inclusos",
+      "ERROR_LOAD": "Não foi possível carregar os packs.",
+      "ERROR_INSTALL": "Não foi possível instalar o pack."
     }
   }
 }

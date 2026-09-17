@@ -445,6 +445,7 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
       case_type: deal.case_type,
       # A0: campos universais (dual-write com legal_area/case_type).
       category: deal.category,
+      category_label: Crm::PackOptions.category_label_for(Current.account, deal.category.presence || deal.legal_area),
       subcategory: deal.subcategory,
       subcategory_label: Crm::PackOptions.subcategory_label_for(
         Current.account, deal.category, deal.subcategory
@@ -491,6 +492,8 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
       owner_id: deal.owner_id,
       assignee_id: deal.assignee_id,
       position: deal.position,
+      # A0: valores dos campos dinâmicos definidos pelos packs instalados.
+      custom_fields: deal.custom_fields || {},
       # F1.5: nulo significa "nunca se moveu", e a data de criacao e a resposta
       # certa para o rotting. Quem consome resolve o COALESCE.
       stage_entered_at: deal.stage_entered_at || deal.created_at,

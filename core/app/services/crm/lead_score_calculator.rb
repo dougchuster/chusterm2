@@ -86,8 +86,22 @@ class Crm::LeadScoreCalculator
     @stage_mapping ||= DEFAULT_STAGE_MAPPING.merge((scoring_config['stage_mapping'].presence || {}).slice(*DEFAULT_STAGE_MAPPING.keys))
   end
 
+  # Fase 2: pack define a base; pipeline e campanha sobrescrevem nessa ordem.
   def scoring_config
-    @scoring_config ||= deep_merge_config(pipeline_scoring_config, campaign_scoring_config)
+    @scoring_config ||= deep_merge_config(
+      deep_merge_config(pack_scoring_config, pipeline_scoring_config),
+      campaign_scoring_config
+    )
+  end
+
+  def pack_scoring_config
+    @pack_scoring_config ||= if @deal.account&.feature_enabled?('crm_universal')
+                               Crm::PackOptions.installed_packs(@deal.account)
+                                               .map(&:scoring)
+                                               .reduce({}) { |merged, config| deep_merge_config(merged, hash_config(config)) }
+                             else
+                               {}
+                             end
   end
 
   def calculate_scores
@@ -262,11 +276,11 @@ class Crm::LeadScoreCalculator
 
   def evidence_for(weight_key)
     case weight_key
-    when 'fit' then @deal.legal_area.present? ? "Area juridica identificada: #{@deal.legal_area}" : 'Area juridica ainda nao identificada'
+    when 'fit' then @deal.legal_area.present? ? "Categoria identificada: #{@deal.legal_area}" : 'Categoria ainda nao identificada'
     when 'urgency' then @deal.urgency_level.present? ? "Urgencia: #{@deal.urgency_level}" : 'Urgencia ausente'
     when 'economic' then @deal.value_estimate_cents.to_i.positive? ? 'Valor estimado informado' : 'Usando potencial economico da triagem'
     when 'documents' then "Documentos: #{@deal.documents_status || 'nao informado'}"
-    when 'clarity' then @deal.summary.present? && @deal.case_type.present? ? 'Resumo e tipo de caso preenchidos' : 'Faltam resumo ou tipo de caso'
+    when 'clarity' then @deal.summary.present? && @deal.case_type.present? ? 'Resumo e subcategoria preenchidos' : 'Faltam resumo ou subcategoria'
     when 'engagement' then captain_triage['engagement_level'].presence || 'Engajamento inferido por atividades'
     when 'payment_capacity' then captain_triage['payment_capacity'].presence || 'Capacidade financeira nao informada'
     when 'conflict' then @deal.conflict_check_status == 'ok' ? 'Conflito verificado como ok' : 'Conflito ainda pendente'

@@ -27,13 +27,27 @@ class Crm::AnalystService
     normalized = normalize(@question)
 
     return :hot_leads_without_owner if normalized.match?(/quente|sem responsavel|owner/)
-    return :inss_leads if normalized.match?(/inss|previdenci/)
+
+    # Fase 2: no modo universal a pergunta casa qualquer categoria dos packs
+    # (por valor, label transliterado ou keyword); fora dele, mantém o
+    # intent legado de INSS/previdenciário que a conta em produção usa hoje.
+    category_intent = universal? ? :category_leads : :inss_leads
+    return category_intent if category_matched?(normalized)
+
+    legacy_intent(normalized) || :overview
+  end
+
+  def category_matched?(normalized)
+    universal? ? matched_category(normalized).present? : normalized.match?(/inss|previdenci/)
+  end
+
+  def legacy_intent(normalized)
     return :source_lists if normalized.match?(/lista|planilha|importad|origem/)
     return :waiting_documents if normalized.match?(/document/)
     return :owner_conversion if normalized.match?(/responsavel|converte|ganho|cliente/)
     return :campaigns if normalized.match?(/campanha|disparo|broadcast/)
 
-    :overview
+    nil
   end
 
   def answer_overview
@@ -54,6 +68,37 @@ class Crm::AnalystService
         sample: deal_sample(scope)
       },
       links: [{ label: 'Abrir CRM', route: 'crm', query: { score_min: HOT_LEAD_SCORE, owner: 'none' } }]
+    }
+  end
+
+  # Universal: responde "leads de <categoria>" para qualquer categoria dos
+  # packs instalados — mesmo shape de resposta do intent legado.
+  def answer_category_leads
+    category = @matched_category
+    term = category[:value]
+    since = @period_days.days.ago
+
+    contacts = @account.contacts.where('contacts.created_at >= ?', since)
+    contacts = contacts.where(relationship_status: 'lead') if Contact.column_names.include?('relationship_status')
+    contacts = contacts.where(
+      "LOWER(contacts.additional_attributes ->> 'legal_area') LIKE ? OR LOWER(contacts.additional_attributes ->> 'source_list') LIKE ?",
+      "%#{term}%", "%#{term}%"
+    )
+
+    deals = @account.crm_deals.where('crm_deals.created_at >= ?', since)
+    deals = deals.where(
+      'LOWER(COALESCE(category, legal_area)) = ? OR LOWER(source) LIKE ?',
+      term, "%#{term}%"
+    )
+
+    {
+      answer: "Nos ultimos #{@period_days} dias encontrei #{contacts.count} contato(s) lead de #{category[:label]} e #{deals.count} oportunidade(s) de #{category[:label]} no funil.",
+      metrics: {
+        contacts: contacts.count,
+        deals: deals.count,
+        period_days: @period_days,
+        sample_deals: deal_sample(deals)
+      }
     }
   end
 
@@ -165,6 +210,21 @@ class Crm::AnalystService
 
   def normalize(text)
     I18n.transliterate(text.to_s).downcase
+  end
+
+  def universal?
+    @account.feature_enabled?('crm_universal')
+  end
+
+  # Casa a pergunta com uma categoria dos packs (valor, label transliterado
+  # ou keyword declarada no YAML). Memoriza o resultado para a resposta.
+  def matched_category(normalized_question)
+    @matched_category = Crm::PackOptions.installed_packs(@account)
+                                        .flat_map(&:categories)
+                                        .find do |option|
+      needles = [option[:value], option[:label], *Array(option[:keywords])].compact
+      needles.any? { |needle| normalized_question.include?(normalize(needle)) }
+    end
   end
 
   def deal_sample(scope)

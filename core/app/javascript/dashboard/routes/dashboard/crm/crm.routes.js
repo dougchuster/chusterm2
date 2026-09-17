@@ -20,6 +20,7 @@ const CrmMetrics = () => import('./pages/CrmMetrics.vue');
 const AnalyticsCenter = () => import('./pages/AnalyticsCenter.vue');
 const AiCenter = () => import('./pages/AiCenter.vue');
 const PageTemplatesGallery = () => import('./pages/PageTemplatesGallery.vue');
+const SegmentSettings = () => import('./pages/SegmentSettings.vue');
 
 const commonMeta = {
   featureFlag: FEATURE_FLAGS.CRM,
@@ -116,6 +117,16 @@ export const routes = [
     name: 'crm_ai_center',
     component: AiCenter,
     meta: commonMeta,
+  },
+  {
+    // Fase 2 (2.2): escolha do segmento — só existe com crm_universal.
+    path: frontendURL('accounts/:accountId/crm/settings/segment'),
+    name: 'crm_segment_settings',
+    component: SegmentSettings,
+    meta: {
+      featureFlag: FEATURE_FLAGS.CRM_UNIVERSAL,
+      permissions: ['administrator'],
+    },
   },
   {
     path: frontendURL('accounts/:accountId/crm/design-system/templates'),

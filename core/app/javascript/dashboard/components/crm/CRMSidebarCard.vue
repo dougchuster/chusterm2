@@ -5,7 +5,7 @@ import { useRoute } from 'vue-router';
 import { useMapGetter, useStore } from 'dashboard/composables/store';
 import CrmAPI from '../../api/crm';
 import CRMDealDrawer from './CRMDealDrawer.vue';
-import CRMLegalAreaBadge from './CRMLegalAreaBadge.vue';
+import CRMCategoryBadge from './CRMCategoryBadge.vue';
 import CRMScoreAudit from './CRMScoreAudit.vue';
 import CRMContactSummary from 'dashboard/components-next/Contacts/CRMContactSummary.vue';
 import ContactLabels from 'dashboard/components-next/Contacts/ContactLabels/ContactLabels.vue';
@@ -599,9 +599,10 @@ onMounted(() => {
       </div>
 
       <div class="flex flex-wrap items-center gap-1.5">
-        <CRMLegalAreaBadge
-          v-if="deal.legal_area"
-          :area="deal.legal_area"
+        <CRMCategoryBadge
+          v-if="deal.category || deal.legal_area"
+          :category="deal.category || deal.legal_area"
+          :label="deal.category_label || deal.legal_area_label"
           compact
         />
         <span

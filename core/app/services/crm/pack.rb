@@ -69,6 +69,11 @@ class Crm::Pack
     Array(definition['analyst_prompts'])
   end
 
+  # Pesos/thresholds/mapa de etapas do score declarados pelo pack.
+  def scoring
+    (definition['scoring'] || {}).with_indifferent_access
+  end
+
   def pipeline_template
     (definition['pipeline_template'] || {}).with_indifferent_access
   end

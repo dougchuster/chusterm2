@@ -10,6 +10,7 @@ export const FEATURE_FLAGS = {
   CANNED_RESPONSES: 'canned_responses',
   CRM: 'crm',
   CRM_V2: 'crm_v2',
+  CRM_UNIVERSAL: 'crm_universal',
   MARKETING: 'marketing',
   CUSTOM_ATTRIBUTES: 'custom_attributes',
   INBOX_MANAGEMENT: 'inbox_management',

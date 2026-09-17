@@ -80,6 +80,13 @@ const hasMarketing = computed(() => {
   );
 });
 
+const hasCrmUniversal = computed(() => {
+  return isFeatureEnabledonAccount.value(
+    accountId.value,
+    FEATURE_FLAGS.CRM_UNIVERSAL
+  );
+});
+
 const toggleShortcutModalFn = show => {
   if (show) {
     emit('openKeyShortcutModal');
@@ -596,6 +603,17 @@ const salesCrmMenuItems = computed(() => [
         activeOn: ['crm_pipeline_settings'],
         to: accountScopedRoute('crm_pipeline_settings'),
       },
+      ...(hasCrmUniversal.value
+        ? [
+            {
+              name: 'Segment',
+              label: t('SIDEBAR.CRM_SEGMENT'),
+              icon: 'i-lucide-package',
+              activeOn: ['crm_segment_settings'],
+              to: accountScopedRoute('crm_segment_settings'),
+            },
+          ]
+        : []),
     ],
   },
   {

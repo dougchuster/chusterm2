@@ -80,6 +80,18 @@ export function packActivityKindLabel(kind) {
   return types.find(t => t.value === kind)?.label || null;
 }
 
+// Label de categoria: primeiro as categorias do pack (quando o payload é
+// universal), senão o mapa estático legado. Retorna null se desconhecida.
+export function categoryLabel(value) {
+  if (!value) return null;
+  const categories = cachedOptions?.categories || cachedOptions?.legal_areas;
+  if (Array.isArray(categories)) {
+    const hit = categories.find(c => c.value === value);
+    if (hit) return hit.label;
+  }
+  return LEGAL_AREA_LABELS[value] || null;
+}
+
 export async function fetchCrmOptions() {
   if (cachedOptions) return cachedOptions;
   if (inflight) return inflight;

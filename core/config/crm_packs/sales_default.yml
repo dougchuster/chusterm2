@@ -134,9 +134,9 @@ analyst_prompts:
 pipeline_template:
   kind: sales
   stages:
-    - { name: Novo, slug: novo, position: 1, probability_pct: 10, color: '#3b82f6' }
-    - { name: Qualificação, slug: qualificacao, position: 2, probability_pct: 30, color: '#6366f1' }
-    - { name: Proposta, slug: proposta, position: 3, probability_pct: 60, color: '#a855f7' }
-    - { name: Negociação, slug: negociacao, position: 4, probability_pct: 80, color: '#ec4899' }
+    - { name: Novo, slug: novo, position: 1, probability_pct: 10, expected_duration_hours: 48, color: '#3b82f6' }
+    - { name: Qualificação, slug: qualificacao, position: 2, probability_pct: 30, expected_duration_hours: 72, color: '#6366f1' }
+    - { name: Proposta, slug: proposta, position: 3, probability_pct: 60, expected_duration_hours: 96, color: '#a855f7' }
+    - { name: Negociação, slug: negociacao, position: 4, probability_pct: 80, expected_duration_hours: 120, expected_duration_hours: 120, color: '#ec4899' }
     - { name: Ganho, slug: ganho, position: 5, probability_pct: 100, color: '#10b981' }
     - { name: Perdido, slug: perdido, position: 6, probability_pct: 0, color: '#ef4444' }

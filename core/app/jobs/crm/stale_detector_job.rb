@@ -45,6 +45,15 @@ class Crm::StaleDetectorJob < ApplicationJob
   def stale_threshold_for(deal, override_days)
     return override_days.to_i if override_days.present?
 
+    # Fase 2: conta universal usa o SLA declarado na própria etapa
+    # (expected_duration_hours); conta legada mantém o mapa por slug.
+    if deal.account&.feature_enabled?('crm_universal')
+      hours = deal.crm_pipeline_stage&.expected_duration_hours
+      return (hours / 24.0).ceil if hours.to_i.positive?
+
+      return DEFAULT_STALE_DAYS
+    end
+
     slug = deal.crm_pipeline_stage&.slug
     STAGE_THRESHOLDS.fetch(slug, DEFAULT_STALE_DAYS)
   end

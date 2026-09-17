@@ -11,7 +11,7 @@ import CRMConfirmDialog from 'dashboard/components/crm/CRMConfirmDialog.vue';
 import { useCrmPack } from 'dashboard/composables/useCrmPack';
 import { usePanelWidth } from 'dashboard/composables/usePanelWidth';
 import CRMActivityList from './CRMActivityList.vue';
-import CRMLegalAreaBadge from './CRMLegalAreaBadge.vue';
+import CRMCategoryBadge from './CRMCategoryBadge.vue';
 import CRMNextActionBox from './CRMNextActionBox.vue';
 import CRMDealOutcomeControl from './CRMDealOutcomeControl.vue';
 import CRMScoreAudit from './CRMScoreAudit.vue';
@@ -70,6 +70,8 @@ const form = reactive({
   data_retention_until: '',
   summary: '',
   next_best_action: '',
+  // A0: valores dos campos dinâmicos definidos pelos packs (field_definitions).
+  custom_fields: {},
 });
 
 // UX-05: listas de domínio da fonte única, preservando as chaves históricas
@@ -90,6 +92,17 @@ const subcategoryOptions = computed(() => {
   const list = crmOptions.value.subcategories?.[form.legal_area];
   return Array.isArray(list) ? list.map(({ value, label }) => [value, label]) : [];
 });
+
+// A0: campos dinâmicos do deal definidos pelos packs instalados — ausentes no
+// payload legado (flag off), então a seção some naturalmente.
+const packFieldDefinitions = computed(() =>
+  (crmOptions.value.field_definitions || [])
+    .slice()
+    .sort((a, b) => (a.position || 0) - (b.position || 0))
+);
+
+const fieldInputType = field =>
+  ({ number: 'number', date: 'date' })[field.field_type] || 'text';
 
 onMounted(() => {
   readStoredWidth();
@@ -215,6 +228,7 @@ function assignForm(payload) {
     data_retention_until: toDateInput(payload.data_retention_until),
     summary: payload.summary || '',
     next_best_action: payload.next_best_action || '',
+    custom_fields: { ...(payload.custom_fields || {}) },
   });
   valueEstimate.value = (Number(payload.value_estimate_cents || 0) / 100)
     .toFixed(2)
@@ -421,10 +435,10 @@ watch(
         </div>
 
         <div class="mt-3 flex flex-wrap items-center gap-2 text-xs">
-          <CRMLegalAreaBadge
-            v-if="deal?.legal_area"
-            :area="deal.legal_area"
-            :label="deal.legal_area_label"
+          <CRMCategoryBadge
+            v-if="deal?.category || deal?.legal_area"
+            :category="deal.category || deal.legal_area"
+            :label="deal.category_label || deal.legal_area_label"
           />
           <span class="rounded-full bg-n-slate-2 px-2 py-1 text-n-slate-11">
             {{ deal?.stage?.name || 'Sem etapa' }}
@@ -762,6 +776,51 @@ watch(
                   {{ label }}
                 </option>
               </select>
+            </label>
+          </div>
+
+          <!-- A0: campos dinâmicos do pack (numero_processo, prazo_desejado…) -->
+          <div
+            v-if="packFieldDefinitions.length"
+            class="grid grid-cols-1 gap-3 border-t border-ui-border-subtle/60 pt-4 sm:grid-cols-2"
+          >
+            <label
+              v-for="field in packFieldDefinitions"
+              :key="field.key"
+              class="block"
+            >
+              <span class="mb-1 block text-xs font-medium text-n-slate-11">{{
+                field.label
+              }}</span>
+              <select
+                v-if="field.field_type === 'boolean'"
+                v-model="form.custom_fields[field.key]"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+              >
+                <option :value="null">Não informado</option>
+                <option :value="true">Sim</option>
+                <option :value="false">Não</option>
+              </select>
+              <select
+                v-else-if="field.field_type === 'select'"
+                v-model="form.custom_fields[field.key]"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+              >
+                <option value="">Não informado</option>
+                <option
+                  v-for="option in field.options || []"
+                  :key="option.value || option"
+                  :value="option.value || option"
+                >
+                  {{ option.label || option }}
+                </option>
+              </select>
+              <input
+                v-else
+                v-model="form.custom_fields[field.key]"
+                :type="fieldInputType(field)"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+              />
             </label>
           </div>
 
