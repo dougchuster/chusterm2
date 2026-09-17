@@ -48,6 +48,7 @@ class CrmDeal < ApplicationRecord
 
   after_commit :trigger_lifecycle_recalculation, if: :contact_id
   after_commit :track_campaign_conversion, if: :campaign_conversion_event?
+  before_validation :sync_universal_category
   before_validation :normalize_legal_area
 
   # PERF-02: eventos crm_deal.* → ActionCableListener → board em realtime.
@@ -167,6 +168,20 @@ class CrmDeal < ApplicationRecord
 
   def normalize_legal_area
     self.legal_area = Crm::DomainOptions.canonical_legal_area(legal_area) if legal_area.present?
+  end
+
+  # A0: category/subcategory são os campos universais; legal_area/case_type
+  # seguem escritos para compat (triagem, checklists e dados antigos os leem).
+  # O par alterado neste save é a fonte da verdade.
+  def sync_universal_category
+    pairs = if category_changed? || subcategory_changed?
+              { category => :legal_area, subcategory => :case_type }
+            elsif legal_area_changed? || case_type_changed?
+              { legal_area => :category, case_type => :subcategory }
+            else
+              {}
+            end
+    pairs.each { |value, target| public_send("#{target}=", value) if value.present? }
   end
 
   def open_status?

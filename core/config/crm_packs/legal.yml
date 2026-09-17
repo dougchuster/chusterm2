@@ -1,0 +1,172 @@
+# Pack jurídico — preserva 1:1 o comportamento da conta em produção.
+# Instalado via `rails crm:packs:install[legal]` nas contas existentes; o
+# modo universal usa estas listas no lugar dos literais hardcoded.
+slug: legal
+version: 1
+name: Jurídico
+
+categories:
+  - value: previdenciario
+    label: Previdenciário
+  - value: civel
+    label: Cível
+  - value: trabalhista
+    label: Trabalhista
+  - value: familia
+    label: Família
+  - value: consumidor
+    label: Consumidor
+  - value: criminal
+    label: Criminal
+  - value: tributario
+    label: Tributário
+  - value: empresarial
+    label: Empresarial
+  - value: juridico
+    label: Jurídico (geral)
+  - value: comercial
+    label: Comercial / Vendas
+  - value: servicos
+    label: Prestação de Serviços
+  - value: consultoria
+    label: Consultoria
+  - value: tecnologia
+    label: Tecnologia / SaaS
+  - value: saude
+    label: Saúde / Clínicas
+  - value: imobiliario
+    label: Imobiliário
+  - value: financeiro
+    label: Financeiro / Contábil
+  - value: educacao
+    label: Educação / Treinamento
+  - value: varejo
+    label: Varejo / E-commerce
+  - value: outro
+    label: Outro
+
+subcategories:
+  previdenciario:
+    - value: beneficio_previdenciario
+      label: Benefício previdenciário
+    - value: revisao_de_beneficio
+      label: Revisão de benefício
+    - value: analise_previdenciaria
+      label: Análise previdenciária
+  trabalhista:
+    - value: verbas_rescisorias
+      label: Verbas rescisórias
+    - value: consulta_trabalhista
+      label: Consulta trabalhista
+  civel:
+    - value: consulta_inicial
+      label: Consulta inicial
+    - value: consulta_juridica
+      label: Consulta jurídica
+    - value: cobranca
+      label: Cobrança / Indenização
+  familia:
+    - value: divorcio
+      label: Divórcio
+    - value: pensao_alimenticia
+      label: Pensão alimentícia
+    - value: guarda
+      label: Guarda / Visitação
+  consumidor:
+    - value: cobranca_indevida
+      label: Cobrança indevida
+    - value: vicio_produto
+      label: Vício de produto/serviço
+  criminal:
+    - value: defesa_criminal
+      label: Defesa criminal
+  tributario:
+    - value: recuperacao_credito
+      label: Recuperação de crédito
+    - value: planejamento_fiscal
+      label: Planejamento fiscal
+  empresarial:
+    - value: contrato_empresarial
+      label: Contrato empresarial
+    - value: societario
+      label: Societário
+
+# Inclui os tipos universais + os específicos do jurídico (chaves legadas —
+# dados históricos usam estes slugs, então precisam permanecer válidos).
+activity_types:
+  - key: ligacao
+    label: Ligação
+    icon: phone
+    position: 1
+  - key: reuniao
+    label: Reunião
+    icon: calendar
+    position: 2
+  - key: analise_documental
+    label: Análise documental
+    icon: file-search
+    position: 3
+  - key: solicitacao_documentos
+    label: Solicitação de documentos
+    icon: file-plus
+    position: 4
+  - key: follow_up
+    label: Follow-up
+    icon: repeat
+    position: 5
+  - key: envio_contrato
+    label: Envio de contrato
+    icon: file-text
+    position: 6
+  - key: envio_proposta
+    label: Envio de proposta
+    icon: file-signature
+    position: 7
+  - key: revisao_juridica
+    label: Revisão jurídica
+    icon: scale
+    position: 8
+  - key: retorno_cliente
+    label: Retorno do cliente
+    icon: reply
+    position: 9
+  - key: arquivamento
+    label: Arquivamento
+    icon: archive
+    position: 10
+
+field_definitions:
+  - key: numero_processo
+    label: Número do processo
+    field_type: text
+    position: 10
+  - key: parte_contraria
+    label: Parte contrária
+    field_type: text
+    position: 20
+  - key: data_indeferimento
+    label: Data do indeferimento
+    field_type: date
+    position: 30
+  - key: documentos_medicos
+    label: Documentos médicos recebidos
+    field_type: boolean
+    position: 40
+
+analyst_prompts:
+  - Quantos leads INSS entraram essa semana?
+  - Quais leads quentes estão sem responsável?
+  - Qual lista importada tem mais contatos?
+  - Quais contatos estão aguardando documento há mais de 3 dias?
+  - Qual responsável converte mais?
+  - Como foram as campanhas recentes?
+
+pipeline_template:
+  kind: legal_intake
+  stages:
+    - { name: Novo Lead, slug: novo-lead, position: 1, probability_pct: 10, color: '#3b82f6' }
+    - { name: Qualificação, slug: qualificacao, position: 2, probability_pct: 30, color: '#6366f1' }
+    - { name: Apresentação / Proposta, slug: apresentacao-proposta, position: 3, probability_pct: 60, color: '#a855f7' }
+    - { name: Negociação, slug: negociacao, position: 4, probability_pct: 80, color: '#ec4899' }
+    - { name: Fechamento, slug: fechamento, position: 5, probability_pct: 100, color: '#10b981' }
+    - { name: Perdido / Arquivado, slug: perdido-arquivado, position: 6, probability_pct: 0, color: '#ef4444' }

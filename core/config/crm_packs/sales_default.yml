@@ -1,0 +1,142 @@
+# Pack padrão de vendas — instalado em toda conta nova (Fase 2 / A0).
+# Nenhum termo jurídico pode aparecer aqui: esta é a experiência universal.
+slug: sales_default
+version: 1
+name: Vendas (padrão)
+
+# category/subcategory universais — substituem legal_area/case_type na UI
+# quando a conta roda com este pack.
+categories:
+  - value: comercial
+    label: Comercial / Vendas
+  - value: servicos
+    label: Prestação de Serviços
+  - value: consultoria
+    label: Consultoria
+  - value: tecnologia
+    label: Tecnologia / SaaS
+  - value: saude
+    label: Saúde / Clínicas
+  - value: imobiliario
+    label: Imobiliário
+  - value: financeiro
+    label: Financeiro / Contábil
+  - value: educacao
+    label: Educação / Treinamento
+  - value: varejo
+    label: Varejo / E-commerce
+  - value: outro
+    label: Outro
+
+subcategories:
+  comercial:
+    - value: venda_direta
+      label: Venda direta
+    - value: renovacao
+      label: Renovação
+    - value: upsell
+      label: Upsell / Expansão
+  servicos:
+    - value: projeto
+      label: Projeto
+    - value: contrato_recorrente
+      label: Contrato recorrente
+  saude:
+    - value: consulta
+      label: Consulta
+    - value: pacote
+      label: Pacote / Tratamento
+  imobiliario:
+    - value: venda
+      label: Venda
+    - value: locacao
+      label: Locação
+  educacao:
+    - value: matricula
+      label: Matrícula
+    - value: curso_livre
+      label: Curso livre
+  varejo:
+    - value: pedido
+      label: Pedido
+    - value: atacado
+      label: Atacado
+
+# Tipos de atividade universais — os KINDS jurídicos legados continuam
+# aceitos pelo modelo, mas não são oferecidos a contas sem o pack legal.
+activity_types:
+  - key: ligacao
+    label: Ligação
+    icon: phone
+    position: 1
+  - key: reuniao
+    label: Reunião
+    icon: calendar
+    position: 2
+  - key: whatsapp
+    label: Mensagem WhatsApp
+    icon: message-circle
+    position: 3
+  - key: email
+    label: E-mail
+    icon: mail
+    position: 4
+  - key: follow_up
+    label: Follow-up
+    icon: repeat
+    position: 5
+  - key: envio_proposta
+    label: Envio de proposta
+    icon: file-text
+    position: 6
+  - key: demonstracao
+    label: Demonstração
+    icon: presentation
+    position: 7
+  - key: tarefa
+    label: Tarefa
+    icon: check-square
+    position: 8
+  - key: retorno_cliente
+    label: Retorno do cliente
+    icon: reply
+    position: 9
+  - key: arquivamento
+    label: Arquivamento
+    icon: archive
+    position: 10
+
+# Campos de negócio expostos no drawer/tela de detalhe. `key` é o nome em
+# custom_fields; field_type dirige o renderer universal.
+field_definitions:
+  - key: quantidade
+    label: Quantidade / Volume
+    field_type: number
+    position: 10
+  - key: prazo_desejado
+    label: Prazo desejado
+    field_type: date
+    position: 20
+  - key: concorrente
+    label: Concorrente em avaliação
+    field_type: text
+    position: 30
+
+# Perguntas do Analista CRM — sem exemplos jurídicos.
+analyst_prompts:
+  - Quantos negócios quentes estão sem responsável?
+  - Quais negócios estão parados há mais de 3 dias?
+  - Qual lista importada tem mais contatos?
+  - Qual responsável converte mais?
+  - Como foram as campanhas recentes?
+
+# Estágios sugeridos para pipelines criadas do zero por este pack.
+pipeline_template:
+  kind: sales
+  stages:
+    - { name: Novo, slug: novo, position: 1, probability_pct: 10, color: '#3b82f6' }
+    - { name: Qualificação, slug: qualificacao, position: 2, probability_pct: 30, color: '#6366f1' }
+    - { name: Proposta, slug: proposta, position: 3, probability_pct: 60, color: '#a855f7' }
+    - { name: Negociação, slug: negociacao, position: 4, probability_pct: 80, color: '#ec4899' }
+    - { name: Ganho, slug: ganho, position: 5, probability_pct: 100, color: '#10b981' }
+    - { name: Perdido, slug: perdido, position: 6, probability_pct: 0, color: '#ef4444' }

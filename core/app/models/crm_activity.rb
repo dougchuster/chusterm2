@@ -15,7 +15,7 @@ class CrmActivity < ApplicationRecord
   validates :account, :kind, :title, presence: true
   validates_same_account_for :crm_deal, :contact, :conversation
   validate :account_memberships_are_valid
-  validates :kind, inclusion: { in: KINDS }
+  validate :kind_is_available_for_account
   validates :priority, inclusion: { in: PRIORITIES }
 
   scope :pending, -> { where(completed_at: nil) }
@@ -30,6 +30,15 @@ class CrmActivity < ApplicationRecord
   end
 
   private
+
+  # KINDS legados continuam válidos (dados históricos). Em modo universal,
+  # os tipos instalados pelo pack também são aceitos.
+  def kind_is_available_for_account
+    return if kind.blank? || KINDS.include?(kind)
+    return if account&.feature_enabled?('crm_universal') && account.crm_activity_types.exists?(key: kind)
+
+    errors.add(:kind, :inclusion)
+  end
 
   def account_memberships_are_valid
     return if account.nil?

@@ -29,6 +29,7 @@ class Crm::AccountInitializer
     ActiveRecord::Base.transaction do
       ensure_default_pipeline
       ensure_default_loss_reasons
+      ensure_default_pack
     end
   end
 
@@ -62,5 +63,14 @@ class Crm::AccountInitializer
     DEFAULT_LOSS_REASONS.each do |reason_attrs|
       account.crm_loss_reasons.create!(reason_attrs)
     end
+  end
+
+  # Fase 2: conta nova nasce com o pack universal de vendas — nunca assume
+  # o vertical jurídico. Contas antigas recebem o pack `legal` pelo rake
+  # task crm:packs:install[legal].
+  def ensure_default_pack
+    return if account.crm_account_packs.exists?
+
+    Crm::PackInstaller.new(account).install_default
   end
 end

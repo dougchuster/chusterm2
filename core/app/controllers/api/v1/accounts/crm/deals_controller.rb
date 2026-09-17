@@ -441,8 +441,14 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
       title: deal.title,
       status: deal.status,
       legal_area: deal.legal_area,
-      legal_area_label: Crm::DomainOptions.legal_area_label(deal.legal_area),
+      legal_area_label: Crm::PackOptions.category_label_for(Current.account, deal.legal_area),
       case_type: deal.case_type,
+      # A0: campos universais (dual-write com legal_area/case_type).
+      category: deal.category,
+      subcategory: deal.subcategory,
+      subcategory_label: Crm::PackOptions.subcategory_label_for(
+        Current.account, deal.category, deal.subcategory
+      ),
       urgency_level: deal.urgency_level,
       source: deal.source,
       source_detail: deal.source_detail,

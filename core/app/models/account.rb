@@ -165,6 +165,9 @@ class Account < ApplicationRecord
   has_many :crm_automation_runs, dependent: :destroy
   has_many :crm_cadences, dependent: :destroy
   has_many :crm_cadence_steps, dependent: :destroy
+  has_many :crm_account_packs, dependent: :destroy
+  has_many :crm_field_definitions, dependent: :destroy
+  has_many :crm_activity_types, dependent: :destroy
 
   has_one_attached :contacts_export
   has_one_attached :crm_deals_export
