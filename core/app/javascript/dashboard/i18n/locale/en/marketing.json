@@ -95,9 +95,41 @@
     },
     "EVENTS": {
       "TITLE": "Conversion events",
+      "LOADING": "Loading events…",
+      "FILTERS": {
+        "ALL": "All",
+        "SENT": "Sent",
+        "FAILED": "Failed",
+        "PENDING": "Pending",
+        "SKIPPED": "Skipped"
+      },
+      "TABLE": {
+        "EVENT": "Event",
+        "DEAL": "Deal",
+        "PROVIDER": "Platform",
+        "STATUS": "Status",
+        "SENT": "Sent at",
+        "ACTIONS": "Actions"
+      },
+      "STATUS": {
+        "SENT": "Sent",
+        "FAILED": "Failed",
+        "PENDING": "Pending",
+        "SKIPPED": "Skipped"
+      },
+      "ACTIONS": {
+        "RETRY": "Retry"
+      },
       "EMPTY": {
         "TITLE": "No events yet",
         "MESSAGE": "Events sent to Meta and Google appear here once deals move through the pipeline."
+      },
+      "ERROR": {
+        "LOAD": "Could not load events.",
+        "RETRY": "Could not retry the event."
+      },
+      "SUCCESS": {
+        "RETRY": "Retry queued."
       }
     },
     "CONNECTIONS": {

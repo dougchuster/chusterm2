@@ -247,6 +247,11 @@ Rails.application.routes.draw do
                 post :convert
               end
             end
+            resources :events, only: [:index] do
+              member do
+                post :retry
+              end
+            end
             get 'metrics/overview', to: 'metrics#overview'
           end
           namespace :channels do

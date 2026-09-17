@@ -110,6 +110,7 @@ class Account < ApplicationRecord
   has_many :marketing_campaigns, dependent: :destroy_async
   has_many :marketing_metric_snapshots, dependent: :destroy_async
   has_many :marketing_leads, dependent: :destroy_async
+  has_many :marketing_events, dependent: :destroy_async
   has_many :campaign_delivery_events, dependent: :destroy_async
   has_many :canned_responses, dependent: :destroy_async
   has_many :categories, dependent: :destroy_async, class_name: '::Category'

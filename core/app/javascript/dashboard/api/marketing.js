@@ -71,6 +71,10 @@ class MarketingAPI {
     const query = queryString(params);
     return axios.get(marketingUrl(`events${query ? `?${query}` : ''}`));
   }
+
+  retryEvent(eventId) {
+    return axios.post(marketingUrl(`events/${eventId}/retry`));
+  }
 }
 
 export default new MarketingAPI();

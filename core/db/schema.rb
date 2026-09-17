@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_09_16_000003) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_16_000004) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -1564,6 +1564,26 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_16_000003) do
     t.index ["crm_external_connection_id", "level", "external_id"], name: "idx_marketing_campaigns_unique", unique: true
   end
 
+  create_table "marketing_events", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "crm_external_connection_id"
+    t.bigint "crm_deal_id"
+    t.bigint "marketing_lead_id"
+    t.string "provider", limit: 30, null: false
+    t.string "direction", limit: 10, default: "outbound", null: false
+    t.string "event_name", null: false
+    t.string "event_id", null: false
+    t.string "status", limit: 20, default: "pending", null: false
+    t.jsonb "payload", default: {}, null: false
+    t.jsonb "response", default: {}, null: false
+    t.datetime "sent_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "event_id"], name: "idx_marketing_events_unique", unique: true
+    t.index ["account_id", "status"], name: "idx_marketing_events_status"
+    t.index ["account_id"], name: "idx_marketing_events_account"
+  end
+
   create_table "marketing_leads", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.bigint "crm_external_connection_id"
@@ -2023,6 +2043,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_16_000003) do
   add_foreign_key "inboxes", "portals"
   add_foreign_key "marketing_campaigns", "accounts"
   add_foreign_key "marketing_campaigns", "crm_external_connections"
+  add_foreign_key "marketing_events", "accounts"
+  add_foreign_key "marketing_events", "crm_deals"
+  add_foreign_key "marketing_events", "crm_external_connections"
+  add_foreign_key "marketing_events", "marketing_leads"
   add_foreign_key "marketing_leads", "accounts"
   add_foreign_key "marketing_leads", "contacts"
   add_foreign_key "marketing_leads", "crm_deals"

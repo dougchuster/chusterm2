@@ -95,9 +95,41 @@
     },
     "EVENTS": {
       "TITLE": "Eventos de conversão",
+      "LOADING": "Carregando eventos…",
+      "FILTERS": {
+        "ALL": "Todos",
+        "SENT": "Enviados",
+        "FAILED": "Falhos",
+        "PENDING": "Pendentes",
+        "SKIPPED": "Ignorados"
+      },
+      "TABLE": {
+        "EVENT": "Evento",
+        "DEAL": "Negócio",
+        "PROVIDER": "Plataforma",
+        "STATUS": "Status",
+        "SENT": "Enviado em",
+        "ACTIONS": "Ações"
+      },
+      "STATUS": {
+        "SENT": "Enviado",
+        "FAILED": "Falhou",
+        "PENDING": "Pendente",
+        "SKIPPED": "Ignorado"
+      },
+      "ACTIONS": {
+        "RETRY": "Reenviar"
+      },
       "EMPTY": {
         "TITLE": "Nenhum evento ainda",
         "MESSAGE": "Eventos enviados à Meta e ao Google aparecem aqui quando negócios avançam no funil."
+      },
+      "ERROR": {
+        "LOAD": "Não foi possível carregar os eventos.",
+        "RETRY": "Não foi possível reenviar o evento."
+      },
+      "SUCCESS": {
+        "RETRY": "Reenvio enfileirado."
       }
     },
     "CONNECTIONS": {

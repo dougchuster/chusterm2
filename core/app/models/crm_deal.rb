@@ -57,6 +57,12 @@ class CrmDeal < ApplicationRecord
   after_update_commit :dispatch_updated_event
   after_destroy_commit :dispatch_deleted_event
 
+  # Lead Ads → CAPI: eventos de estágio sobem para a Meta em tempo real.
+  after_commit on: %i[create update],
+               if: -> { previously_new_record? ? contact_id.present? : saved_change_to_crm_pipeline_stage_id? || saved_change_to_status? } do
+    Marketing::CapiDispatchJob.perform_later(id)
+  end
+
   # Payload leve para o board (o front refaz o fetch para dados completos)
   def push_event_data
     {
