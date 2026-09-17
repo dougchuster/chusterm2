@@ -194,7 +194,7 @@ Estudo + este documento + inventário do sistema.
 
 ---
 
-### FASE 1 — Conexões OAuth (`marketing_connections`) `2-3 dias`
+### FASE 1 — Conexões OAuth (`marketing_connections`) `2-3 dias` ✅ `e9b9e06a`
 
 **Entregáveis**
 - Migration `marketing_connections` + model `Marketing::Connection`
@@ -224,7 +224,7 @@ bundle exec rspec spec/models/marketing spec/requests/api/v1/accounts/marketing 
 
 ---
 
-### FASE 2 — Sync de campanhas e métricas `3-4 dias`
+### FASE 2 — Sync de campanhas e métricas `3-4 dias` ✅ `6597cccf`
 
 **Entregáveis**
 - `Marketing::Meta::GraphClient` (Faraday, paginação cursored, rate-limit backoff)
