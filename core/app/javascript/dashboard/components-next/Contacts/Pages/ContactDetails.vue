@@ -250,7 +250,7 @@ const handleAvatarDelete = async () => {
 
 <template>
   <div class="flex flex-col gap-5 pb-6">
-    <section class="rounded-lg border border-n-weak bg-n-solid-2 p-4 sm:p-5">
+    <section class="rounded-lg bg-ui-surface shadow-ui-raised p-4 sm:p-5">
       <div class="flex flex-col gap-4 sm:flex-row sm:items-start">
         <Avatar
           :src="avatarSrc || ''"
@@ -299,7 +299,7 @@ const handleAvatarDelete = async () => {
       </div>
     </section>
 
-    <section class="rounded-lg border border-n-weak bg-n-solid-2 p-4 sm:p-5">
+    <section class="rounded-lg bg-ui-surface shadow-ui-raised p-4 sm:p-5">
       <div class="mb-4 flex flex-col gap-1">
         <h4 class="text-sm font-semibold text-n-slate-12">
           {{ CRM_TEXT.title }}
@@ -316,7 +316,7 @@ const handleAvatarDelete = async () => {
       />
     </section>
 
-    <section class="rounded-lg border border-n-weak bg-n-solid-2 p-4 sm:p-5">
+    <section class="rounded-lg bg-ui-surface shadow-ui-raised p-4 sm:p-5">
       <div class="mb-4 flex flex-col gap-1">
         <h4 class="text-sm font-semibold text-n-slate-12">
           {{ ASSIGNMENT_TEXT.title }}
@@ -331,7 +331,7 @@ const handleAvatarDelete = async () => {
             {{ ASSIGNMENT_TEXT.currentConversation }}
           </label>
           <div
-            class="mb-3 flex min-h-9 items-center rounded border border-n-weak bg-n-alpha-2 px-3 text-sm text-n-slate-11"
+            class="mb-3 flex min-h-9 items-center rounded border border-ui-border-subtle bg-n-alpha-2 px-3 text-sm text-n-slate-11"
           >
             <span class="truncate">{{ activeConversationLabel }}</span>
             <span
@@ -369,7 +369,7 @@ const handleAvatarDelete = async () => {
       </p>
     </section>
 
-    <section class="rounded-lg border border-n-weak bg-n-solid-2 p-4 sm:p-5">
+    <section class="rounded-lg bg-ui-surface shadow-ui-raised p-4 sm:p-5">
       <ContactsForm
         ref="contactsFormRef"
         :contact-data="contactData"
@@ -387,7 +387,7 @@ const handleAvatarDelete = async () => {
     </section>
 
     <Policy :permissions="['administrator']">
-      <section class="rounded-lg border border-n-weak bg-n-solid-2 p-4 sm:p-5">
+      <section class="rounded-lg bg-ui-surface shadow-ui-raised p-4 sm:p-5">
         <div class="flex flex-col items-start gap-4">
           <div class="flex flex-col gap-2">
             <h6 class="text-base font-medium text-n-slate-12">

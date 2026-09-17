@@ -179,7 +179,7 @@ export default {
       :class="
         error
           ? 'outline-n-ruby-8 dark:outline-n-ruby-8 hover:outline-n-ruby-9 dark:hover:outline-n-ruby-9 mb-1'
-          : 'mb-4 outline-n-weak dark:outline-n-weak hover:outline-n-slate-6 dark:hover:outline-n-slate-6'
+          : 'mb-4 outline-ui-border-subtle dark:outline-ui-border-subtle hover:outline-n-slate-6 dark:hover:outline-n-slate-6'
       "
     >
       <div

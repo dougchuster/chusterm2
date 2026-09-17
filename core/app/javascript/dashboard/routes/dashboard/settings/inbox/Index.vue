@@ -160,10 +160,12 @@ const openDelete = inbox => {
                 name: 'settings_inbox_show',
                 params: { inboxId: inbox.id },
               }"
+              :aria-label="$t('INBOX_MGMT.SETTINGS')"
             >
               <Button
                 v-if="isAdmin"
                 v-tooltip.top="$t('INBOX_MGMT.SETTINGS')"
+                :aria-label="$t('INBOX_MGMT.SETTINGS')"
                 icon="i-woot-settings"
                 slate
                 sm
@@ -172,6 +174,7 @@ const openDelete = inbox => {
             <Button
               v-if="isAdmin"
               v-tooltip.top="$t('INBOX_MGMT.DELETE.BUTTON_TEXT')"
+              :aria-label="$t('INBOX_MGMT.DELETE.BUTTON_TEXT')"
               icon="i-woot-bin"
               slate
               sm

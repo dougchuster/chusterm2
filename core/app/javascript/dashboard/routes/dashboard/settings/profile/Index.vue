@@ -275,7 +275,7 @@ export default {
           :class="
             isEditorHotKeyEnabled(hotKey.key)
               ? 'outline-n-brand/30'
-              : 'outline-n-weak'
+              : 'outline-ui-border-subtle'
           "
         >
           <HotKeyCard

@@ -79,7 +79,7 @@ function formatValue(value) {
 
 <template>
   <section
-    class="rounded-lg border border-n-weak bg-n-slate-1"
+    class="rounded-lg border border-ui-border-subtle bg-n-slate-1"
     :class="compact ? 'p-2' : 'p-4'"
   >
     <div class="mb-3 flex items-start justify-between gap-3">

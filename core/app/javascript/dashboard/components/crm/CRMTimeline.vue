@@ -105,7 +105,7 @@ watch(() => props.dealId, loadTimeline, { immediate: true });
       Nenhum evento registrado ainda.
     </div>
 
-    <ol v-else class="relative space-y-3 border-l border-n-weak pl-4">
+    <ol v-else class="relative space-y-3 border-l border-ui-border-subtle pl-4">
       <li v-for="event in events" :key="event.id" class="relative">
         <span
           class="absolute -left-[1.3125rem] top-1 grid size-2.5 rounded-full bg-n-brand ring-4 ring-n-background"

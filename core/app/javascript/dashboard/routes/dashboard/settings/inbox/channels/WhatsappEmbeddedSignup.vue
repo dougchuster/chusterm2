@@ -380,7 +380,7 @@ onBeforeUnmount(() => {
           :class="
             selectedPhoneNumberId === phone.id
               ? 'border-n-brand bg-n-alpha-2'
-              : 'border-n-weak hover:border-n-brand'
+              : 'border-ui-border-subtle hover:border-n-brand'
           "
         >
           <input

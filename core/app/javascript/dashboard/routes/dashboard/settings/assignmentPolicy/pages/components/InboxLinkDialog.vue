@@ -99,7 +99,7 @@ defineExpose({ openDialog, closeDialog });
     </template>
 
     <div
-      class="flex items-center gap-3 p-3 rounded-xl border border-n-weak bg-n-alpha-1"
+      class="flex items-center gap-3 p-3 rounded-xl border border-ui-border-subtle bg-n-alpha-1"
     >
       <div
         class="flex-shrink-0 size-10 rounded-lg bg-n-alpha-2 flex items-center justify-center"

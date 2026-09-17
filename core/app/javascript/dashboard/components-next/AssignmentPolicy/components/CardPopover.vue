@@ -62,7 +62,7 @@ const handleClickOutside = () => {
     </button>
     <div
       v-if="showPopover"
-      class="top-full mt-1 ltr:left-0 rtl:right-0 z-50 flex flex-col items-start absolute bg-n-alpha-3 backdrop-blur-[50px] border-0 gap-4 outline outline-1 outline-n-weak p-3 rounded-xl max-w-96 min-w-80 max-h-[20rem] overflow-y-auto"
+      class="top-full mt-1 ltr:left-0 rtl:right-0 z-50 flex flex-col items-start absolute bg-n-alpha-3 backdrop-blur-[50px] border-0 gap-4 outline outline-1 outline-ui-border-subtle p-3 rounded-xl max-w-96 min-w-80 max-h-[20rem] overflow-y-auto"
     >
       <div class="flex items-center gap-2.5 pb-2">
         <Icon :icon="icon" class="size-3.5" />

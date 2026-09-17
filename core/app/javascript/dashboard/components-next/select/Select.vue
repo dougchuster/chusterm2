@@ -53,10 +53,11 @@ const modelValue = defineModel({
       class="appearance-none bg-none rounded-lg border-0 outline-1 outline -outline-offset-1 transition-all duration-200 bg-n-surface-1 !mb-0 py-2 px-3 pr-10 text-sm"
       :class="{
         'w-full': block,
-        'outline-n-weak hover:outline-n-slate-6 focus:outline-n-blue-9':
+        'outline-ui-border-subtle hover:outline-n-slate-6 focus:outline-n-blue-9':
           !error && !disabled,
         'outline-n-red-9 focus:outline-n-red-9': error && !disabled,
-        'outline-n-weak bg-n-slate-2 cursor-not-allowed opacity-60': disabled,
+        'outline-ui-border-subtle bg-n-slate-2 cursor-not-allowed opacity-60':
+          disabled,
       }"
     >
       <option v-if="placeholder" value="" disabled>

@@ -209,13 +209,13 @@ const filterSummary = computed(
   <div class="flex flex-col gap-4">
     <div
       v-if="campaigns.length"
-      class="grid gap-3 rounded-lg border border-n-weak bg-n-alpha-2 p-3 sm:grid-cols-2 lg:grid-cols-[1.4fr_0.9fr_0.9fr_0.9fr_0.9fr_auto]"
+      class="grid gap-3 rounded-lg border border-ui-border-subtle bg-n-alpha-2 p-3 sm:grid-cols-2 lg:grid-cols-[1.4fr_0.9fr_0.9fr_0.9fr_0.9fr_auto]"
     >
       <label class="flex min-w-0 flex-col gap-1 text-xs text-n-slate-11">
         {{ filterLabels.search }}
         <input
           v-model="filterState.search"
-          class="h-9 min-w-0 rounded-md border border-n-weak bg-n-alpha-1 px-3 text-sm text-n-slate-12 outline-none focus:border-n-brand"
+          class="h-9 min-w-0 rounded-md border border-ui-border-subtle bg-n-alpha-1 px-3 text-sm text-n-slate-12 outline-none focus:border-n-brand"
           :placeholder="filterLabels.searchPlaceholder"
           type="search"
         />
@@ -259,7 +259,7 @@ const filterSummary = computed(
 
     <div
       v-if="campaigns.length && !filteredCampaigns.length"
-      class="rounded-lg border border-dashed border-n-weak px-4 py-8 text-center text-sm text-n-slate-11"
+      class="rounded-lg border border-dashed border-ui-border-subtle px-4 py-8 text-center text-sm text-n-slate-11"
     >
       {{ filterLabels.noResults }}
     </div>

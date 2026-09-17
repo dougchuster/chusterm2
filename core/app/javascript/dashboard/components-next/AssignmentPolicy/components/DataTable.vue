@@ -45,7 +45,7 @@ const handleNavigate = item => {
       {{ emptyStateMessage }}
     </span>
   </div>
-  <div v-else class="flex flex-col divide-y divide-n-weak">
+  <div v-else class="flex flex-col divide-y divide-ui-border-subtle/60">
     <div
       v-for="item in items"
       :key="item.id"

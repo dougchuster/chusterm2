@@ -112,7 +112,7 @@ const handleModelChange = ({ feature, model }) => {
 
 <template>
   <div
-    class="p-4 rounded-xl border border-n-weak bg-n-solid-1 flex"
+    class="p-4 rounded-xl border border-ui-border-subtle bg-n-solid-1 flex"
     :class="{
       'flex-col gap-3': showModelSelector,
       'items-center justify-between gap-4': !showModelSelector,
@@ -130,7 +130,7 @@ const handleModelChange = ({ feature, model }) => {
     </div>
     <div
       v-if="showModelSelector && isAllowed"
-      class="flex gap-2 ps-8 relative before:content-[''] before:absolute before:w-0.5 before:h-1/2 before:top-0 before:start-3 before:bg-n-weak after:content-[''] after:absolute after:w-2.5 after:h-3 after:top-[calc(50%-6px)] after:start-3 after:border-b-[0.125rem] after:border-s-[0.125rem] after:rounded-es after:border-n-weak"
+      class="flex gap-2 ps-8 relative before:content-[''] before:absolute before:w-0.5 before:h-1/2 before:top-0 before:start-3 before:bg-n-weak after:content-[''] after:absolute after:w-2.5 after:h-3 after:top-[calc(50%-6px)] after:start-3 after:border-b-[0.125rem] after:border-s-[0.125rem] after:rounded-es after:border-ui-border-subtle"
     >
       <div class="flex-1 min-w-0">
         <h4 class="text-sm font-medium text-n-slate-12">{{ modelTitle }}</h4>

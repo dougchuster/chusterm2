@@ -303,7 +303,7 @@ defineExpose({ open, close });
           :class="
             hasConditionErrors
               ? 'outline-n-ruby-5 bg-n-ruby-2/50'
-              : 'outline-n-weak dark:outline-n-strong'
+              : 'outline-ui-border-subtle dark:outline-n-strong'
           "
         >
           <template v-for="(condition, i) in automation.conditions" :key="i">
@@ -354,7 +354,7 @@ defineExpose({ open, close });
           :class="
             hasActionErrors
               ? 'outline-n-ruby-5 bg-n-ruby-2/50'
-              : 'outline-n-weak dark:outline-n-strong'
+              : 'outline-ui-border-subtle dark:outline-n-strong'
           "
         >
           <AutomationActionInput

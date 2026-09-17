@@ -71,7 +71,7 @@ const pageInfo = computed(() => {
 
 <template>
   <div
-    class="mx-auto flex h-[3.375rem] w-full items-center justify-between border-t border-n-weak bg-n-surface-1 px-3 py-3 sm:px-6"
+    class="mx-auto flex h-[3.375rem] w-full items-center justify-between border-t border-ui-border-subtle/60 bg-n-surface-1 px-3 py-3 sm:px-6"
   >
     <div class="flex items-center gap-3">
       <span class="min-w-0 text-body-main line-clamp-1 text-n-slate-11">

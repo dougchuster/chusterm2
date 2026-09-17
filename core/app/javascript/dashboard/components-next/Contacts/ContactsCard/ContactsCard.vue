@@ -161,7 +161,7 @@ const handleAvatarHover = isHovered => {
       :key="id"
       layout="row"
       :class="{
-        'outline-n-weak !bg-n-slate-3 dark:!bg-n-solid-3': isSelected,
+        'outline-ui-border-subtle !bg-n-slate-3 dark:!bg-n-solid-3': isSelected,
       }"
     >
       <div
@@ -182,7 +182,7 @@ const handleAvatarHover = isHovered => {
           >
             <template v-if="selectable" #overlay="{ size }">
               <label
-                class="flex items-center justify-center rounded-full cursor-pointer absolute inset-0 z-10 backdrop-blur-[2px] border border-n-weak"
+                class="flex items-center justify-center rounded-full cursor-pointer absolute inset-0 z-10 backdrop-blur-[2px] border border-ui-border-subtle"
                 :style="{ width: `${size}px`, height: `${size}px` }"
                 @click.stop
               >
@@ -233,7 +233,7 @@ const handleAvatarHover = isHovered => {
             </span>
             <span
               v-if="legalArea"
-              class="inline-flex h-6 max-w-full items-center gap-1 rounded bg-n-alpha-2 px-2 font-medium text-n-slate-11 ring-1 ring-n-weak"
+              class="inline-flex h-6 max-w-full items-center gap-1 rounded bg-n-alpha-2 px-2 font-medium text-n-slate-11 ring-1 ring-ui-border-subtle"
             >
               <span class="i-lucide-scale size-3.5 shrink-0" />
               <span class="truncate">{{ legalArea }}</span>
@@ -241,14 +241,14 @@ const handleAvatarHover = isHovered => {
             <span
               v-for="label in visibleLabels"
               :key="label"
-              class="inline-flex h-6 max-w-full items-center gap-1 rounded bg-n-alpha-2 px-2 font-medium text-n-slate-11 ring-1 ring-n-weak"
+              class="inline-flex h-6 max-w-full items-center gap-1 rounded bg-n-alpha-2 px-2 font-medium text-n-slate-11 ring-1 ring-ui-border-subtle"
             >
               <span class="i-lucide-tags size-3.5 shrink-0" />
               <span class="truncate">{{ humanizeLabel(label) }}</span>
             </span>
             <span
               v-if="hiddenLabelsCount"
-              class="inline-flex h-6 items-center rounded bg-n-alpha-2 px-2 font-medium text-n-slate-10 ring-1 ring-n-weak"
+              class="inline-flex h-6 items-center rounded bg-n-alpha-2 px-2 font-medium text-n-slate-10 ring-1 ring-ui-border-subtle"
             >
               {{ `+${hiddenLabelsCount}` }}
             </span>

@@ -96,7 +96,7 @@ const selectModel = model => {
   <div v-on-clickaway="closeDropdown" class="relative flex-shrink-0">
     <button
       type="button"
-      class="flex items-center gap-2 px-3 py-2 text-sm border rounded-lg border-n-weak dark:bg-n-solid-2 dark:hover:bg-n-solid-3 bg-n-alpha-2 hover:bg-n-alpha-1 min-w-[180px] justify-between"
+      class="flex items-center gap-2 px-3 py-2 text-sm border rounded-lg border-ui-border-subtle dark:bg-n-solid-2 dark:hover:bg-n-solid-3 bg-n-alpha-2 hover:bg-n-alpha-1 min-w-[180px] justify-between"
       @click="toggleDropdown"
     >
       <span v-if="selectedModelDetails" class="text-n-slate-12">

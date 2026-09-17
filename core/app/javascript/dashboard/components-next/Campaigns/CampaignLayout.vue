@@ -23,7 +23,7 @@ const handleButtonClick = () => {
 <template>
   <section class="flex flex-col w-full h-full overflow-hidden bg-n-surface-1">
     <header
-      class="sticky top-0 z-10 border-b border-n-weak bg-n-surface-1 px-3 sm:px-6"
+      class="sticky top-0 z-10 border-b border-ui-border-subtle/60 bg-n-surface-1 px-3 sm:px-6"
     >
       <div class="w-full max-w-5xl mx-auto">
         <div class="flex min-h-16 w-full items-center justify-between gap-3">

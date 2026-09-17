@@ -13,7 +13,7 @@ const toggleExpanded = () => {
 
 <template>
   <section
-    class="rounded-xl border border-n-weak bg-n-solid-1 w-full text-sm text-n-slate-12 mb-5 overflow-hidden"
+    class="rounded-xl border border-ui-border-subtle bg-n-solid-1 w-full text-sm text-n-slate-12 mb-5 overflow-hidden"
   >
     <button
       type="button"

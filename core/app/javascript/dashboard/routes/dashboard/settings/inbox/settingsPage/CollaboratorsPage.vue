@@ -368,7 +368,7 @@ onMounted(() => {
       class="[&>div]:!items-start"
     >
       <div
-        class="rounded-xl ring-1 ring-inset ring-n-weak hover:ring-n-strong px-2 py-2"
+        class="rounded-xl ring-1 ring-inset ring-ui-border-subtle hover:ring-n-strong px-2 py-2"
       >
         <TagInput
           :model-value="selectedAgentNames"
@@ -547,7 +547,7 @@ onMounted(() => {
 
               <!-- Default Rules Info -->
               <div
-                class="px-4 py-4 border-t border-n-weak bg-n-slate-2 rounded-b-xl"
+                class="px-4 py-4 border-t border-ui-border-subtle/60 bg-n-slate-2 rounded-b-xl"
               >
                 <div class="flex items-start gap-3">
                   <Icon icon="i-lucide-info" class="mt-0.5 text-n-slate-11" />

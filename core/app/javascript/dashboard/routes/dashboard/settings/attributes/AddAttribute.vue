@@ -241,7 +241,11 @@ export default {
             </label>
             <div
               class="rounded-xl border px-3 py-2"
-              :class="isTagInputInvalid ? 'border-n-ruby-9' : 'border-n-weak'"
+              :class="
+                isTagInputInvalid
+                  ? 'border-n-ruby-9'
+                  : 'border-ui-border-subtle'
+              "
             >
               <TagInput
                 v-model="values"

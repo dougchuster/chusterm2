@@ -45,7 +45,9 @@ const formatAmount = (amount, currency) => {
   <label
     class="relative flex flex-col p-6 border-2 rounded-xl transition-all cursor-pointer bg-n-solid-1 hover:bg-n-solid-2"
     :class="[
-      isSelected ? 'border-woot-500' : 'border-n-weak hover:border-n-strong',
+      isSelected
+        ? 'border-woot-500'
+        : 'border-ui-border-subtle hover:border-n-strong',
     ]"
   >
     <input

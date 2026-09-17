@@ -11,7 +11,7 @@ const { strong } = defineProps({
 });
 
 const borderClass = computed(() => {
-  return strong ? 'border-n-strong' : 'border-n-weak';
+  return strong ? 'border-n-strong' : 'border-ui-border-subtle';
 });
 
 const beforeClass = computed(() => {

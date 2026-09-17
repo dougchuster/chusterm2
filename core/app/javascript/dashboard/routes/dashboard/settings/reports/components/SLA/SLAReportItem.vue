@@ -36,7 +36,7 @@ const routerParams = computed(() => ({
 
 <template>
   <div
-    class="grid items-center content-center w-full h-16 grid-cols-12 gap-4 px-6 py-0 border-b last:border-b-0 last:rounded-b-xl border-n-weak"
+    class="grid items-center content-center w-full h-16 grid-cols-12 gap-4 px-6 py-0 border-b last:border-b-0 last:rounded-b-xl border-ui-border-subtle"
   >
     <div
       class="flex items-center gap-2 col-span-6 px-0 py-2 text-sm tracking-[0.5] text-n-slate-12 rtl:text-right"

@@ -37,7 +37,7 @@ watch(
 <template>
   <div
     ref="toolsDropdownRef"
-    class="w-[22.5rem] p-2 flex flex-col gap-1 z-50 absolute rounded-xl bg-n-alpha-3 shadow outline outline-1 outline-n-weak backdrop-blur-[50px] max-h-[20rem] overflow-y-auto"
+    class="w-[22.5rem] p-2 flex flex-col gap-1 z-50 absolute rounded-xl bg-n-alpha-3 shadow outline outline-1 outline-ui-border-subtle backdrop-blur-[50px] max-h-[20rem] overflow-y-auto"
   >
     <div
       v-for="(tool, idx) in items"

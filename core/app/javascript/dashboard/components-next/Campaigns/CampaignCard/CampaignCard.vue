@@ -163,7 +163,7 @@ const deliveryStatsSummary = computed(() => {
       >
         <span
           v-if="audienceLabel"
-          class="max-w-full truncate rounded-md border border-n-weak px-2 py-1"
+          class="max-w-full truncate rounded-md border border-ui-border-subtle px-2 py-1"
         >
           {{ audienceLabel }}
         </span>

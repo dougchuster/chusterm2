@@ -47,7 +47,7 @@ const label = computed(
 const colorClass = computed(
   () =>
     AREA_COLORS[normalizedArea.value] ||
-    'border-n-weak bg-n-slate-2 text-n-slate-11'
+    'border-ui-border-subtle bg-n-slate-2 text-n-slate-11'
 );
 </script>
 

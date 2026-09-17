@@ -123,7 +123,7 @@ const handleDelete = attribute => {
 <template>
   <div
     v-if="isEnabled || showPaywall"
-    class="flex flex-col w-full outline-1 outline outline-n-container rounded-xl bg-n-solid-2 divide-y divide-n-weak"
+    class="flex flex-col w-full outline-1 outline outline-n-container rounded-xl bg-n-solid-2 divide-y divide-ui-border-subtle/60"
     @click="handleClick"
   >
     <div class="flex flex-col gap-2 items-start px-5 py-4">

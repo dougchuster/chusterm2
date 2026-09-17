@@ -180,7 +180,7 @@ onBeforeMount(() => {
       >
         <button
           type="button"
-          class="px-3 py-1.5 text-sm rounded-md border border-n-weak text-n-slate-11 hover:bg-n-slate-2"
+          class="px-3 py-1.5 text-sm rounded-md border border-ui-border-subtle text-n-slate-11 hover:bg-n-slate-2"
           :class="{ 'bg-n-slate-3 text-n-slate-12': !categoryFilter }"
           @click="categoryFilter = ''"
         >
@@ -190,7 +190,7 @@ onBeforeMount(() => {
           v-for="option in categoryOptions"
           :key="option.value"
           type="button"
-          class="px-3 py-1.5 text-sm rounded-md border border-n-weak text-n-slate-11 hover:bg-n-slate-2"
+          class="px-3 py-1.5 text-sm rounded-md border border-ui-border-subtle text-n-slate-11 hover:bg-n-slate-2"
           :class="{
             'bg-n-slate-3 text-n-slate-12': categoryFilter === option.value,
           }"
@@ -250,7 +250,7 @@ onBeforeMount(() => {
               <BaseTableCell>
                 <div class="flex items-center">
                   <span
-                    class="w-4 h-4 ltr:mr-2 rtl:ml-2 border border-solid rounded border-n-weak"
+                    class="w-4 h-4 ltr:mr-2 rtl:ml-2 border border-solid rounded border-ui-border-subtle"
                     :style="{ backgroundColor: label.color }"
                   />
                   <span class="text-body-main text-n-slate-12">

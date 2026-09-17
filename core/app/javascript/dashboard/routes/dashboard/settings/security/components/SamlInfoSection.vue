@@ -71,7 +71,7 @@ const handleCopy = async text => {
       />
     </div>
     <section
-      class="rounded-xl border border-n-weak bg-n-solid-1 w-full text-sm text-n-slate-12 divide-y divide-n-weak"
+      class="rounded-xl border border-ui-border-subtle bg-n-solid-1 w-full text-sm text-n-slate-12 divide-y divide-ui-border-subtle/60"
     >
       <div
         v-for="item in visibleInfoItems"
@@ -94,6 +94,7 @@ const handleCopy = async text => {
           sm
           slate
           icon="i-lucide-copy"
+          :aria-label="t('SECURITY_SETTINGS.SAML.COPY')"
           @click="handleCopy(item.value)"
         />
       </div>

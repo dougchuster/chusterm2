@@ -125,7 +125,7 @@ const toggleAutoResolve = async () => {
 
 <template>
   <div
-    class="flex flex-col w-full outline-1 outline outline-n-container rounded-xl bg-n-solid-2 divide-y divide-n-weak"
+    class="flex flex-col w-full outline-1 outline outline-n-container rounded-xl bg-n-solid-2 divide-y divide-ui-border-subtle/60"
   >
     <div class="flex flex-col gap-2 items-start px-5 py-4">
       <div class="flex justify-between items-center w-full">
@@ -172,7 +172,7 @@ const toggleAutoResolve = async () => {
         </WithLabel>
         <WithLabel :label="t('GENERAL_SETTINGS.FORM.AUTO_RESOLVE.PREFERENCES')">
           <div
-            class="rounded-xl border border-n-weak bg-n-solid-1 w-full text-sm text-n-slate-12 divide-y divide-n-weak"
+            class="rounded-xl border border-ui-border-subtle bg-n-solid-1 w-full text-sm text-n-slate-12 divide-y divide-ui-border-subtle/60"
           >
             <div class="p-3 h-12 flex items-center justify-between">
               <span>

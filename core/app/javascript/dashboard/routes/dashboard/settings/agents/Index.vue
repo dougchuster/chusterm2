@@ -182,11 +182,11 @@ const confirmDeletion = () => {
       >
         {{ $t('AGENT_MGMT.NO_RESULTS') }}
       </span>
-      <div v-else class="divide-y divide-n-weak border-t border-n-weak">
+      <div v-else class="divide-y divide-ui-border-subtle/60">
         <div
           v-for="(agent, index) in filteredAgentList"
           :key="agent.email"
-          class="flex justify-between flex-row items-start gap-4 py-4"
+          class="flex flex-row items-start justify-between gap-4 px-4 py-4 transition-colors duration-ui-fast first:rounded-t-xl last:rounded-b-xl hover:bg-ui-hover/60 sm:px-5"
         >
           <div class="flex items-center gap-4">
             <Avatar
@@ -197,11 +197,13 @@ const confirmDeletion = () => {
               hide-offline-status
             />
             <div class="flex flex-col gap-1.5 items-start">
-              <span class="block text-heading-3 text-n-slate-12 capitalize">
+              <span
+                class="block font-manrope text-ui-body font-semibold tracking-tight text-ui-text capitalize"
+              >
                 {{ agent.name }}
               </span>
               <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-body-main text-ds-fg-muted">
+                <span class="text-ui-body-sm text-ui-text-muted">
                   {{ agent.email }}
                 </span>
                 <span class="relative" :class="{ group: agent.custom_role_id }">
@@ -256,6 +258,7 @@ const confirmDeletion = () => {
             <Button
               v-if="showEditAction(agent)"
               v-tooltip.top="$t('AGENT_MGMT.EDIT.BUTTON_TEXT')"
+              :aria-label="$t('AGENT_MGMT.EDIT.BUTTON_TEXT')"
               icon="i-woot-edit-pen"
               slate
               sm
@@ -264,6 +267,7 @@ const confirmDeletion = () => {
             <Button
               v-if="showDeleteAction(agent)"
               v-tooltip.top="$t('AGENT_MGMT.DELETE.BUTTON_TEXT')"
+              :aria-label="$t('AGENT_MGMT.DELETE.BUTTON_TEXT')"
               icon="i-woot-bin"
               slate
               sm

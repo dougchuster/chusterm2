@@ -88,7 +88,7 @@ const ownerLabel = computed(() => {
 
 const ownerClass = computed(() =>
   crmOwnerId.value
-    ? 'bg-n-alpha-2 text-n-slate-11 ring-n-weak'
+    ? 'bg-n-alpha-2 text-n-slate-11 ring-ui-border-subtle'
     : 'bg-n-ruby-3 text-n-ruby-11 ring-n-ruby-6'
 );
 
@@ -110,7 +110,7 @@ const switchRelationship = status => {
   >
     <div
       v-if="editable"
-      class="inline-grid h-8 grid-cols-2 overflow-hidden rounded border border-n-weak bg-n-alpha-2 p-0.5"
+      class="inline-grid h-8 grid-cols-2 overflow-hidden rounded border border-ui-border-subtle bg-n-alpha-2 p-0.5"
       :class="{ 'h-7': compact }"
     >
       <button
@@ -151,7 +151,7 @@ const switchRelationship = status => {
       <span class="truncate">{{ relationship.label }}</span>
     </span>
     <span
-      class="inline-flex h-6 max-w-full items-center gap-1 rounded bg-n-alpha-2 px-2 font-medium text-n-slate-11 ring-1 ring-n-weak"
+      class="inline-flex h-6 max-w-full items-center gap-1 rounded bg-n-alpha-2 px-2 font-medium text-n-slate-11 ring-1 ring-ui-border-subtle"
     >
       <span :class="lifecycle.icon" class="size-3.5 shrink-0" />
       <span class="truncate">{{ lifecycle.label }}</span>

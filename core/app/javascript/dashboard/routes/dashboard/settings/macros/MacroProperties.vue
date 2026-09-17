@@ -23,7 +23,7 @@ export default {
     isActive(key) {
       return this.macroVisibility === key
         ? 'bg-n-blue-2 dark:bg-n-blue-1 border-n-blue-3 dark:border-n-blue-4'
-        : 'bg-white dark:bg-n-solid-2 border-n-weak dark:border-n-strong';
+        : 'bg-white dark:bg-n-solid-2 border-ui-border-subtle dark:border-n-strong';
     },
     onUpdateName(value) {
       this.$emit('update:name', value);
@@ -37,7 +37,7 @@ export default {
 
 <template>
   <div
-    class="p-4 bg-n-solid-2 border border-n-weak rounded-lg shadow-sm h-full flex flex-col"
+    class="p-4 bg-n-solid-2 border border-ui-border-subtle rounded-lg shadow-sm h-full flex flex-col"
   >
     <div>
       <woot-input

@@ -524,7 +524,7 @@ onMounted(async () => {
     <main
       class="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-4 px-4 py-6 sm:px-6"
     >
-      <header class="rounded-lg border border-n-weak bg-n-solid-2 p-4 sm:p-5">
+      <header class="rounded-lg bg-ui-surface shadow-ui-raised p-4 sm:p-5">
         <div
           class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between"
         >
@@ -532,7 +532,7 @@ onMounted(async () => {
             <button
               v-if="!isFolderOverview"
               type="button"
-              class="mb-3 inline-flex h-8 items-center gap-2 rounded border border-n-weak px-3 text-sm font-medium text-n-slate-11 hover:bg-n-slate-2"
+              class="mb-3 inline-flex h-8 items-center gap-2 rounded border border-ui-border-subtle px-3 text-sm font-medium text-n-slate-11 hover:bg-n-slate-2"
               @click="isCategoryDetail ? backToFolder() : backToFolders()"
             >
               <span class="i-lucide-arrow-left size-4" />
@@ -580,7 +580,7 @@ onMounted(async () => {
             <template v-if="isCategoryDetail && selectedCategory">
               <button
                 type="button"
-                class="inline-flex h-9 items-center gap-2 rounded border border-n-weak px-3 text-sm font-medium text-n-slate-11 hover:bg-n-slate-2"
+                class="inline-flex h-9 items-center gap-2 rounded border border-ui-border-subtle px-3 text-sm font-medium text-n-slate-11 hover:bg-n-slate-2"
                 :disabled="isImporting"
                 @click="openImportFile(selectedCategory)"
               >
@@ -589,7 +589,7 @@ onMounted(async () => {
               </button>
               <button
                 type="button"
-                class="inline-flex h-9 items-center gap-2 rounded border border-n-weak px-3 text-sm font-medium text-n-slate-11 hover:bg-n-slate-2"
+                class="inline-flex h-9 items-center gap-2 rounded border border-ui-border-subtle px-3 text-sm font-medium text-n-slate-11 hover:bg-n-slate-2"
                 :disabled="isExportingCsv"
                 @click="exportCategoryCsv(selectedCategory)"
               >
@@ -598,7 +598,7 @@ onMounted(async () => {
               </button>
               <button
                 type="button"
-                class="inline-flex h-9 items-center gap-2 rounded border border-n-weak px-3 text-sm font-medium text-n-slate-11 hover:bg-n-slate-2"
+                class="inline-flex h-9 items-center gap-2 rounded border border-ui-border-subtle px-3 text-sm font-medium text-n-slate-11 hover:bg-n-slate-2"
                 :disabled="isExportingSheet"
                 @click="exportCategoryGoogleSheet(selectedCategory)"
               >
@@ -623,7 +623,7 @@ onMounted(async () => {
             v-for="folder in FOLDERS"
             :key="folder.key"
             type="button"
-            class="flex min-h-40 flex-col rounded-lg border border-n-weak bg-n-solid-2 p-4 text-left transition hover:border-n-blue-7 hover:bg-n-blue-2"
+            class="flex min-h-40 flex-col rounded-lg bg-ui-surface shadow-ui-raised p-4 text-left transition hover:border-n-blue-7 hover:bg-n-blue-2"
             @click="openFolder(folder)"
           >
             <svg
@@ -662,7 +662,7 @@ onMounted(async () => {
         <section v-else-if="isFolderView" class="flex flex-col gap-4">
           <form
             v-if="showCreateForm"
-            class="grid gap-3 rounded-lg border border-n-weak bg-n-solid-2 p-4 md:grid-cols-[minmax(0,1fr)_180px_130px_auto]"
+            class="grid gap-3 rounded-lg bg-ui-surface shadow-ui-raised p-4 md:grid-cols-[minmax(0,1fr)_180px_130px_auto]"
             @submit.prevent="createCategory"
           >
             <label class="flex flex-col gap-1 text-sm text-n-slate-12">
@@ -670,14 +670,14 @@ onMounted(async () => {
               <input
                 v-model="categoryForm.name"
                 type="text"
-                class="h-9 rounded border border-n-weak bg-n-surface-1 px-3 outline-none"
+                class="h-9 rounded border border-ui-border-subtle bg-n-surface-1 px-3 outline-none"
               />
             </label>
             <label class="flex flex-col gap-1 text-sm text-n-slate-12">
               <span class="font-medium">{{ pageText.type }}</span>
               <select
                 v-model="categoryForm.kind"
-                class="h-9 rounded border border-n-weak bg-n-surface-1 px-3 outline-none"
+                class="h-9 rounded border border-ui-border-subtle bg-n-surface-1 px-3 outline-none"
               >
                 <option
                   v-for="option in CATEGORY_KIND_OPTIONS"
@@ -693,7 +693,7 @@ onMounted(async () => {
               <input
                 v-model="categoryForm.color"
                 type="color"
-                class="h-9 rounded border border-n-weak bg-n-surface-1 px-2"
+                class="h-9 rounded border border-ui-border-subtle bg-n-surface-1 px-2"
               />
             </label>
             <label
@@ -703,7 +703,7 @@ onMounted(async () => {
               <textarea
                 v-model="categoryForm.description"
                 rows="2"
-                class="resize-none rounded border border-n-weak bg-n-surface-1 px-3 py-2 outline-none"
+                class="resize-none rounded border border-ui-border-subtle bg-n-surface-1 px-3 py-2 outline-none"
               />
             </label>
             <button
@@ -717,7 +717,7 @@ onMounted(async () => {
 
           <div
             v-if="!selectedFolderCategories.length"
-            class="rounded-lg border border-dashed border-n-weak bg-n-solid-2 p-8 text-center text-sm text-n-slate-11"
+            class="rounded-lg border border-dashed border-ui-border-subtle bg-ui-sunken/50 p-8 text-center text-sm text-n-slate-11"
           >
             {{ pageText.folderEmpty }}
           </div>
@@ -726,7 +726,7 @@ onMounted(async () => {
             <article
               v-for="category in selectedFolderCategories"
               :key="category.id"
-              class="rounded-lg border border-n-weak bg-n-solid-2 p-4"
+              class="rounded-lg bg-ui-surface shadow-ui-raised p-4"
             >
               <div class="flex items-start justify-between gap-3">
                 <button
@@ -752,7 +752,7 @@ onMounted(async () => {
                 </button>
                 <button
                   type="button"
-                  class="inline-flex h-8 shrink-0 items-center gap-1 rounded border border-n-weak px-2 text-sm font-medium text-n-slate-11 hover:bg-n-slate-2"
+                  class="inline-flex h-8 shrink-0 items-center gap-1 rounded border border-ui-border-subtle px-2 text-sm font-medium text-n-slate-11 hover:bg-n-slate-2"
                   @click="openCategory(category)"
                 >
                   <span class="i-lucide-folder-open size-4" />
@@ -761,7 +761,7 @@ onMounted(async () => {
               </div>
 
               <div
-                class="mt-4 rounded border border-n-weak bg-n-surface-1 p-3 text-xs text-n-slate-11"
+                class="mt-4 rounded border border-ui-border-subtle bg-n-surface-1 p-3 text-xs text-n-slate-11"
               >
                 <span class="font-medium text-n-slate-12">
                   {{ `${pageText.latestImport}:` }}
@@ -784,7 +784,7 @@ onMounted(async () => {
               <div class="mt-4 flex flex-wrap gap-2">
                 <button
                   type="button"
-                  class="inline-flex h-8 items-center gap-1 rounded border border-n-weak px-2 text-sm font-medium text-n-slate-11 hover:bg-n-slate-2"
+                  class="inline-flex h-8 items-center gap-1 rounded border border-ui-border-subtle px-2 text-sm font-medium text-n-slate-11 hover:bg-n-slate-2"
                   @click="openImportFile(category)"
                 >
                   <span class="i-lucide-upload size-4" />
@@ -792,7 +792,7 @@ onMounted(async () => {
                 </button>
                 <button
                   type="button"
-                  class="inline-flex h-8 items-center gap-1 rounded border border-n-weak px-2 text-sm font-medium text-n-slate-11 hover:bg-n-slate-2"
+                  class="inline-flex h-8 items-center gap-1 rounded border border-ui-border-subtle px-2 text-sm font-medium text-n-slate-11 hover:bg-n-slate-2"
                   @click="exportCategoryCsv(category)"
                 >
                   <span class="i-lucide-download size-4" />
@@ -800,7 +800,7 @@ onMounted(async () => {
                 </button>
                 <button
                   type="button"
-                  class="inline-flex h-8 items-center gap-1 rounded border border-n-weak px-2 text-sm font-medium text-n-slate-11 hover:bg-n-slate-2"
+                  class="inline-flex h-8 items-center gap-1 rounded border border-ui-border-subtle px-2 text-sm font-medium text-n-slate-11 hover:bg-n-slate-2"
                   @click="openEditCategory(category)"
                 >
                   <span class="i-lucide-pencil size-4" />
@@ -823,7 +823,7 @@ onMounted(async () => {
           v-else-if="isCategoryDetail && selectedCategory"
           class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]"
         >
-          <div class="rounded-lg border border-n-weak bg-n-solid-2 p-4">
+          <div class="rounded-lg bg-ui-surface shadow-ui-raised p-4">
             <div class="mb-3 flex items-center justify-between gap-2">
               <h2 class="m-0 text-base font-semibold text-n-slate-12">
                 {{ pageText.contactsListTitle }}
@@ -840,11 +840,14 @@ onMounted(async () => {
             </div>
             <div
               v-else-if="!contacts.length"
-              class="rounded border border-dashed border-n-weak p-8 text-center text-sm text-n-slate-11"
+              class="rounded border border-dashed border-ui-border-subtle p-8 text-center text-sm text-n-slate-11"
             >
               {{ pageText.detailEmpty }}
             </div>
-            <div v-else class="overflow-hidden rounded border border-n-weak">
+            <div
+              v-else
+              class="overflow-hidden rounded border border-ui-border-subtle"
+            >
               <table class="min-w-full text-sm">
                 <thead
                   class="bg-n-slate-2 text-[11px] uppercase text-n-slate-10"
@@ -868,7 +871,7 @@ onMounted(async () => {
                   <tr
                     v-for="contact in contacts"
                     :key="contact.id"
-                    class="border-t border-n-weak text-n-slate-11"
+                    class="border-t border-ui-border-subtle/60 text-n-slate-11"
                   >
                     <td class="px-3 py-3 font-medium text-n-slate-12">
                       {{ contact.name || '-' }}
@@ -891,7 +894,7 @@ onMounted(async () => {
           </div>
 
           <aside class="flex flex-col gap-4">
-            <div class="rounded-lg border border-n-weak bg-n-solid-2 p-4">
+            <div class="rounded-lg bg-ui-surface shadow-ui-raised p-4">
               <h2 class="m-0 text-base font-semibold text-n-slate-12">
                 {{ pageText.importHistory }}
               </h2>
@@ -899,7 +902,7 @@ onMounted(async () => {
                 <div
                   v-for="item in importsForCategory(selectedCategory)"
                   :key="item.id"
-                  class="rounded border border-n-weak bg-n-surface-1 p-3 text-sm"
+                  class="rounded border border-ui-border-subtle bg-n-surface-1 p-3 text-sm"
                 >
                   <div class="flex items-center justify-between gap-2">
                     <span class="font-medium text-n-slate-12">
@@ -935,20 +938,20 @@ onMounted(async () => {
                 </div>
                 <div
                   v-if="!importsForCategory(selectedCategory).length"
-                  class="rounded border border-dashed border-n-weak p-4 text-sm text-n-slate-11"
+                  class="rounded border border-dashed border-ui-border-subtle p-4 text-sm text-n-slate-11"
                 >
                   {{ pageText.noLatestImport }}
                 </div>
               </div>
             </div>
-            <div class="rounded-lg border border-n-weak bg-n-solid-2 p-4">
+            <div class="rounded-lg bg-ui-surface shadow-ui-raised p-4">
               <h2 class="m-0 text-base font-semibold text-n-slate-12">
                 {{ pageText.listActions }}
               </h2>
               <div class="mt-3 grid gap-2">
                 <button
                   type="button"
-                  class="inline-flex h-9 items-center justify-center gap-2 rounded border border-n-weak px-3 text-sm font-medium text-n-slate-11 hover:bg-n-slate-2"
+                  class="inline-flex h-9 items-center justify-center gap-2 rounded border border-ui-border-subtle px-3 text-sm font-medium text-n-slate-11 hover:bg-n-slate-2"
                   @click="openEditCategory(selectedCategory)"
                 >
                   <span class="i-lucide-pencil size-4" />
@@ -984,14 +987,14 @@ onMounted(async () => {
           <input
             v-model="categoryForm.name"
             type="text"
-            class="h-10 rounded border border-n-weak bg-n-surface-1 px-3 outline-none"
+            class="h-10 rounded border border-ui-border-subtle bg-n-surface-1 px-3 outline-none"
           />
         </label>
         <label class="flex flex-col gap-1 text-n-slate-12">
           <span class="font-medium">{{ pageText.type }}</span>
           <select
             v-model="categoryForm.kind"
-            class="h-10 rounded border border-n-weak bg-n-surface-1 px-3 outline-none"
+            class="h-10 rounded border border-ui-border-subtle bg-n-surface-1 px-3 outline-none"
           >
             <option
               v-for="option in CATEGORY_KIND_OPTIONS"
@@ -1007,7 +1010,7 @@ onMounted(async () => {
           <input
             v-model="categoryForm.color"
             type="color"
-            class="h-10 rounded border border-n-weak bg-n-surface-1 px-2"
+            class="h-10 rounded border border-ui-border-subtle bg-n-surface-1 px-2"
           />
         </label>
         <label class="flex flex-col gap-1 text-n-slate-12">
@@ -1015,7 +1018,7 @@ onMounted(async () => {
           <textarea
             v-model="categoryForm.description"
             rows="3"
-            class="resize-none rounded border border-n-weak bg-n-surface-1 px-3 py-2 outline-none"
+            class="resize-none rounded border border-ui-border-subtle bg-n-surface-1 px-3 py-2 outline-none"
           />
         </label>
       </div>

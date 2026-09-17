@@ -545,6 +545,7 @@
         "LABEL": "Fingerprint",
         "TOOLTIP": "SHA-1 fingerprint of the certificate - Use this to verify the certificate in your IdP configuration"
       },
+      "COPY": "Copy",
       "COPY_SUCCESS": "Copied to clipboard",
       "SP_ENTITY_ID": {
         "LABEL": "SP Entity ID",

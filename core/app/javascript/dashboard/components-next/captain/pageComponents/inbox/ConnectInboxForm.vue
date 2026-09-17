@@ -123,7 +123,7 @@ const handleSubmit = async () => {
         :options="inboxList"
         :has-error="!!formErrors.inboxId"
         :placeholder="t('CAPTAIN.INBOXES.FORM.INBOX.PLACEHOLDER')"
-        class="[&>div>button]:bg-n-alpha-black2 [&>div>button:not(.focused)]:dark:outline-n-weak [&>div>button:not(.focused)]:hover:!outline-n-slate-6"
+        class="[&>div>button]:bg-n-alpha-black2 [&>div>button:not(.focused)]:dark:outline-ui-border-subtle [&>div>button:not(.focused)]:hover:!outline-n-slate-6"
         :message="formErrors.inboxId"
       />
     </div>

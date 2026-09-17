@@ -25,7 +25,7 @@
   }
 
   .mx-input {
-    @apply h-[2.5rem] flex border border-solid border-n-weak rounded-md shadow-none;
+    @apply h-[2.5rem] flex border border-solid border-ui-border-subtle rounded-md shadow-none;
   }
 
   .mx-input:disabled,
@@ -54,11 +54,11 @@
   }
 
   .mx-calendar + .mx-calendar {
-    @apply border-l border-n-weak;
+    @apply border-l border-ui-border-subtle;
   }
 
   .mx-datepicker-footer {
-    @apply border border-n-weak;
+    @apply border border-ui-border-subtle;
   }
 
   .mx-time {

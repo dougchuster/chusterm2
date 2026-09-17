@@ -1183,7 +1183,7 @@ onMounted(async () => {
       @import-complete="refreshContactImportsAndCategories"
     >
       <section v-if="isCategoriesView" class="mt-4 flex flex-col gap-4 text-xs">
-        <div class="rounded-lg border border-n-weak bg-n-solid-2 p-4 sm:p-5">
+        <div class="rounded-lg bg-ui-surface shadow-ui-raised p-4 sm:p-5">
           <div
             class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between"
           >
@@ -1204,14 +1204,14 @@ onMounted(async () => {
               <button
                 v-if="hasCrmFilters"
                 type="button"
-                class="inline-flex h-9 items-center justify-center rounded border border-n-weak px-3 font-medium text-n-slate-11 hover:bg-n-slate-2"
+                class="inline-flex h-9 items-center justify-center rounded border border-ui-border-subtle px-3 font-medium text-n-slate-11 hover:bg-n-slate-2"
                 @click="clearCrmFilters"
               >
                 {{ CRM_FILTER_TEXT.clear }}
               </button>
               <button
                 type="button"
-                class="inline-flex h-9 items-center gap-1 rounded border border-n-weak px-3 font-medium text-n-slate-11 transition hover:bg-n-slate-2"
+                class="inline-flex h-9 items-center gap-1 rounded border border-ui-border-subtle px-3 font-medium text-n-slate-11 transition hover:bg-n-slate-2"
                 @click="showCategoryForm = !showCategoryForm"
               >
                 <span class="i-lucide-plus size-3.5" />
@@ -1224,7 +1224,7 @@ onMounted(async () => {
             <article
               v-for="stat in categoriesPageStats"
               :key="stat.key"
-              class="rounded border border-n-weak bg-n-surface-1 p-3"
+              class="rounded border border-ui-border-subtle bg-n-surface-1 p-3"
             >
               <span :class="stat.icon" class="size-4 text-n-slate-10" />
               <p class="mb-1 mt-3 text-n-slate-11">{{ stat.label }}</p>
@@ -1236,7 +1236,7 @@ onMounted(async () => {
 
           <form
             v-if="showCategoryForm"
-            class="mt-4 grid gap-2 rounded border border-n-weak bg-n-surface-1 p-3 sm:grid-cols-[minmax(0,1fr)_190px_auto]"
+            class="mt-4 grid gap-2 rounded border border-ui-border-subtle bg-n-surface-1 p-3 sm:grid-cols-[minmax(0,1fr)_190px_auto]"
             @submit.prevent="createCategory"
           >
             <label class="flex min-w-0 flex-col gap-1">
@@ -1247,7 +1247,7 @@ onMounted(async () => {
                 v-model="newCategoryName"
                 type="text"
                 :placeholder="CRM_FILTER_TEXT.categoryNamePlaceholder"
-                class="h-9 rounded border border-n-weak bg-n-solid-2 px-2 outline-none"
+                class="h-9 rounded bg-ui-surface shadow-ui-raised px-2 outline-none"
               />
             </label>
             <label class="flex min-w-0 flex-col gap-1">
@@ -1256,7 +1256,7 @@ onMounted(async () => {
               </span>
               <select
                 v-model="newCategoryKind"
-                class="h-9 rounded border border-n-weak bg-n-solid-2 px-2 outline-none"
+                class="h-9 rounded bg-ui-surface shadow-ui-raised px-2 outline-none"
               >
                 <option
                   v-for="option in CATEGORY_KIND_OPTIONS"
@@ -1278,7 +1278,7 @@ onMounted(async () => {
         </div>
 
         <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
-          <section class="rounded-lg border border-n-weak bg-n-solid-2 p-4">
+          <section class="rounded-lg bg-ui-surface shadow-ui-raised p-4">
             <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
               <div>
                 <h3 class="m-0 text-sm font-semibold text-n-slate-12">
@@ -1294,7 +1294,7 @@ onMounted(async () => {
                 :class="
                   !crmFilters.label
                     ? 'border-n-blue-8 bg-n-blue-3 text-n-blue-11'
-                    : 'border-n-weak text-n-slate-11 hover:bg-n-slate-2'
+                    : 'border-ui-border-subtle text-n-slate-11 hover:bg-n-slate-2'
                 "
                 @click="applyCategory('')"
               >
@@ -1306,7 +1306,7 @@ onMounted(async () => {
               <article
                 v-for="group in categoryGroups"
                 :key="group.key"
-                class="rounded border border-n-weak bg-n-surface-1 p-3"
+                class="rounded border border-ui-border-subtle bg-n-surface-1 p-3"
               >
                 <div class="mb-3 flex items-start gap-2">
                   <span
@@ -1327,7 +1327,7 @@ onMounted(async () => {
                   <div
                     v-for="label in group.categories"
                     :key="label.id"
-                    class="flex min-w-0 flex-col gap-3 rounded border border-n-weak bg-n-solid-2 p-3 sm:flex-row sm:items-start sm:justify-between"
+                    class="flex min-w-0 flex-col gap-3 rounded bg-ui-surface shadow-ui-raised p-3 sm:flex-row sm:items-start sm:justify-between"
                     :class="{
                       'ring-2 ring-n-blue-7': crmFilters.label === label.title,
                     }"
@@ -1360,7 +1360,7 @@ onMounted(async () => {
                     >
                       <button
                         type="button"
-                        class="inline-flex h-8 items-center gap-1 rounded border border-n-weak px-2 font-medium text-n-slate-11 hover:bg-n-slate-2"
+                        class="inline-flex h-8 items-center gap-1 rounded border border-ui-border-subtle px-2 font-medium text-n-slate-11 hover:bg-n-slate-2"
                         @click="applyCategory(label.title)"
                       >
                         <span class="i-lucide-eye size-3.5" />
@@ -1368,7 +1368,7 @@ onMounted(async () => {
                       </button>
                       <button
                         type="button"
-                        class="inline-flex h-8 items-center gap-1 rounded border border-n-weak px-2 font-medium text-n-slate-11 hover:bg-n-slate-2"
+                        class="inline-flex h-8 items-center gap-1 rounded border border-ui-border-subtle px-2 font-medium text-n-slate-11 hover:bg-n-slate-2"
                         @click="openEditCategoryDialog(label)"
                       >
                         <span class="i-lucide-pencil size-3.5" />
@@ -1392,7 +1392,7 @@ onMounted(async () => {
             </div>
           </section>
 
-          <aside class="rounded-lg border border-n-weak bg-n-solid-2 p-4">
+          <aside class="rounded-lg bg-ui-surface shadow-ui-raised p-4">
             <h3 class="m-0 text-sm font-semibold text-n-slate-12">
               {{ CATEGORIES_PAGE_TEXT.responsiblePortfolio }}
             </h3>
@@ -1408,7 +1408,7 @@ onMounted(async () => {
                     ? 'border-n-blue-8 bg-n-blue-3 text-n-blue-11'
                     : owner.unassigned
                       ? 'border-n-ruby-6 bg-n-ruby-3 text-n-ruby-11'
-                      : 'border-n-weak text-n-slate-11'
+                      : 'border-ui-border-subtle text-n-slate-11'
                 "
                 @click="applyOwnerSummary(owner)"
               >
@@ -1431,14 +1431,14 @@ onMounted(async () => {
 
         <div
           v-if="!crmFilters.label && !searchQuery && !hasAppliedFilters"
-          class="rounded-lg border border-dashed border-n-weak bg-n-solid-2 p-5 text-center text-sm text-n-slate-11"
+          class="rounded-lg border border-dashed border-ui-border-subtle bg-ui-sunken/50 p-5 text-center text-sm text-n-slate-11"
         >
           {{ CATEGORIES_PAGE_TEXT.chooseCategory }}
         </div>
 
         <div
           v-if="crmFilters.label"
-          class="rounded-lg border border-n-weak bg-n-solid-2 p-3"
+          class="rounded-lg bg-ui-surface shadow-ui-raised p-3"
         >
           <div class="flex flex-wrap items-center justify-between gap-2">
             <div>
@@ -1453,7 +1453,7 @@ onMounted(async () => {
             </div>
             <button
               type="button"
-              class="inline-flex h-8 items-center justify-center rounded border border-n-weak px-3 font-medium text-n-slate-11 hover:bg-n-slate-2"
+              class="inline-flex h-8 items-center justify-center rounded border border-ui-border-subtle px-3 font-medium text-n-slate-11 hover:bg-n-slate-2"
               @click="clearCrmFilters"
             >
               {{ CRM_FILTER_TEXT.clear }}
@@ -1463,7 +1463,7 @@ onMounted(async () => {
       </section>
       <section
         v-else-if="isListView"
-        class="mt-4 rounded-lg border border-n-weak bg-n-solid-2 p-3 text-xs sm:p-4"
+        class="mt-4 rounded-lg bg-ui-surface shadow-ui-raised p-3 text-xs sm:p-4"
       >
         <div
           class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between"
@@ -1479,7 +1479,7 @@ onMounted(async () => {
           <button
             v-if="hasCrmFilters"
             type="button"
-            class="inline-flex h-8 items-center justify-center rounded border border-n-weak px-3 font-medium text-n-slate-11 hover:bg-n-slate-2"
+            class="inline-flex h-8 items-center justify-center rounded border border-ui-border-subtle px-3 font-medium text-n-slate-11 hover:bg-n-slate-2"
             @click="clearCrmFilters"
           >
             {{ CRM_FILTER_TEXT.clear }}
@@ -1493,7 +1493,7 @@ onMounted(async () => {
             </span>
             <select
               v-model="crmFilters.relationshipStatus"
-              class="h-9 rounded border border-n-weak bg-n-surface-1 px-2 outline-none"
+              class="h-9 rounded border border-ui-border-subtle bg-n-surface-1 px-2 outline-none"
               @change="applyCrmFilters"
             >
               <option value="">{{ CRM_FILTER_TEXT.all }}</option>
@@ -1507,7 +1507,7 @@ onMounted(async () => {
             </span>
             <select
               v-model="crmFilters.lifecycleStage"
-              class="h-9 rounded border border-n-weak bg-n-surface-1 px-2 outline-none"
+              class="h-9 rounded border border-ui-border-subtle bg-n-surface-1 px-2 outline-none"
               @change="applyCrmFilters"
             >
               <option value="">{{ CRM_FILTER_TEXT.all }}</option>
@@ -1528,7 +1528,7 @@ onMounted(async () => {
             </span>
             <select
               v-model="crmFilters.label"
-              class="h-9 rounded border border-n-weak bg-n-surface-1 px-2 outline-none"
+              class="h-9 rounded border border-ui-border-subtle bg-n-surface-1 px-2 outline-none"
               @change="applyCrmFilters"
             >
               <option value="">{{ CRM_FILTER_TEXT.all }}</option>
@@ -1547,7 +1547,7 @@ onMounted(async () => {
             </span>
             <select
               v-model="listOwnerFilter"
-              class="h-9 rounded border border-n-weak bg-n-surface-1 px-2 outline-none"
+              class="h-9 rounded border border-ui-border-subtle bg-n-surface-1 px-2 outline-none"
               @change="applyCrmFilters"
             >
               <option value="">{{ CRM_FILTER_TEXT.all }}</option>
@@ -1567,7 +1567,7 @@ onMounted(async () => {
       </section>
       <section
         v-else-if="!isListView && !showSegmentationPanel"
-        class="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-n-weak bg-n-solid-2 p-3 text-xs"
+        class="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-ui-surface shadow-ui-raised p-3 text-xs"
       >
         <div class="min-w-0">
           <h3 class="m-0 text-sm font-semibold text-n-slate-12">
@@ -1579,7 +1579,7 @@ onMounted(async () => {
         </div>
         <button
           type="button"
-          class="inline-flex h-9 items-center gap-2 rounded border border-n-weak bg-n-surface-1 px-3 font-medium text-n-slate-11 hover:bg-n-slate-2"
+          class="inline-flex h-9 items-center gap-2 rounded border border-ui-border-subtle bg-n-surface-1 px-3 font-medium text-n-slate-11 hover:bg-n-slate-2"
           @click="showSegmentationPanel = true"
         >
           <span class="i-lucide-list-filter size-4" aria-hidden="true" />
@@ -1588,7 +1588,7 @@ onMounted(async () => {
       </section>
       <section
         v-else-if="!isListView"
-        class="mt-4 rounded-lg border border-n-weak bg-n-solid-2 p-3 text-xs sm:p-4"
+        class="mt-4 rounded-lg bg-ui-surface shadow-ui-raised p-3 text-xs sm:p-4"
       >
         <div
           class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between"
@@ -1605,14 +1605,14 @@ onMounted(async () => {
             <button
               v-if="hasCrmFilters"
               type="button"
-              class="inline-flex h-8 items-center justify-center rounded border border-n-weak px-3 font-medium text-n-slate-11 hover:bg-n-slate-2"
+              class="inline-flex h-8 items-center justify-center rounded border border-ui-border-subtle px-3 font-medium text-n-slate-11 hover:bg-n-slate-2"
               @click="clearCrmFilters"
             >
               {{ CRM_FILTER_TEXT.clear }}
             </button>
             <button
               type="button"
-              class="inline-flex h-8 items-center gap-1 rounded border border-n-weak px-3 font-medium text-n-slate-11 hover:bg-n-slate-2"
+              class="inline-flex h-8 items-center gap-1 rounded border border-ui-border-subtle px-3 font-medium text-n-slate-11 hover:bg-n-slate-2"
               @click="showSegmentationPanel = false"
             >
               <span class="i-lucide-chevron-up size-3.5" aria-hidden="true" />
@@ -1621,7 +1621,9 @@ onMounted(async () => {
           </div>
         </div>
 
-        <div class="mt-4 rounded border border-n-weak bg-n-surface-1 p-3">
+        <div
+          class="mt-4 rounded border border-ui-border-subtle bg-n-surface-1 p-3"
+        >
           <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
             <div>
               <span class="font-semibold text-n-slate-12">
@@ -1637,7 +1639,7 @@ onMounted(async () => {
             <div class="flex flex-wrap gap-2">
               <button
                 type="button"
-                class="inline-flex h-8 items-center gap-1 rounded border border-n-weak px-3 font-medium text-n-slate-11 transition hover:bg-n-slate-2"
+                class="inline-flex h-8 items-center gap-1 rounded border border-ui-border-subtle px-3 font-medium text-n-slate-11 transition hover:bg-n-slate-2"
                 @click="showCategoryForm = !showCategoryForm"
               >
                 <span class="i-lucide-plus size-3.5" />
@@ -1656,7 +1658,7 @@ onMounted(async () => {
 
           <form
             v-if="showCategoryForm"
-            class="mb-3 grid gap-2 rounded border border-n-weak bg-n-solid-2 p-3 sm:grid-cols-[minmax(0,1fr)_180px_auto]"
+            class="mb-3 grid gap-2 rounded bg-ui-surface shadow-ui-raised p-3 sm:grid-cols-[minmax(0,1fr)_180px_auto]"
             @submit.prevent="createCategory"
           >
             <label class="flex min-w-0 flex-col gap-1">
@@ -1667,7 +1669,7 @@ onMounted(async () => {
                 v-model="newCategoryName"
                 type="text"
                 :placeholder="CRM_FILTER_TEXT.categoryNamePlaceholder"
-                class="h-9 rounded border border-n-weak bg-n-surface-1 px-2 outline-none"
+                class="h-9 rounded border border-ui-border-subtle bg-n-surface-1 px-2 outline-none"
               />
             </label>
             <label class="flex min-w-0 flex-col gap-1">
@@ -1676,7 +1678,7 @@ onMounted(async () => {
               </span>
               <select
                 v-model="newCategoryKind"
-                class="h-9 rounded border border-n-weak bg-n-surface-1 px-2 outline-none"
+                class="h-9 rounded border border-ui-border-subtle bg-n-surface-1 px-2 outline-none"
               >
                 <option
                   v-for="option in CATEGORY_KIND_OPTIONS"
@@ -1703,7 +1705,7 @@ onMounted(async () => {
               :class="
                 !crmFilters.label
                   ? 'border-n-blue-8 bg-n-blue-3 text-n-blue-11'
-                  : 'border-n-weak text-n-slate-11 hover:bg-n-slate-2'
+                  : 'border-ui-border-subtle text-n-slate-11 hover:bg-n-slate-2'
               "
               @click="applyCategory('')"
             >
@@ -1715,7 +1717,7 @@ onMounted(async () => {
             <article
               v-for="group in categoryGroups"
               :key="group.key"
-              class="rounded border border-n-weak bg-n-solid-2 p-3"
+              class="rounded bg-ui-surface shadow-ui-raised p-3"
             >
               <div class="mb-3 flex items-start gap-2">
                 <span
@@ -1766,7 +1768,9 @@ onMounted(async () => {
           </div>
         </div>
 
-        <div class="mt-3 rounded border border-n-weak bg-n-surface-1 p-3">
+        <div
+          class="mt-3 rounded border border-ui-border-subtle bg-n-surface-1 p-3"
+        >
           <div class="mb-3 flex items-start gap-2">
             <span class="i-lucide-user-check mt-0.5 size-4 text-n-slate-10" />
             <div>
@@ -1790,7 +1794,7 @@ onMounted(async () => {
                   ? 'border-n-blue-8 bg-n-blue-3 text-n-blue-11'
                   : owner.unassigned
                     ? 'border-n-ruby-6 bg-n-ruby-3 text-n-ruby-11'
-                    : 'border-n-weak text-n-slate-11'
+                    : 'border-ui-border-subtle text-n-slate-11'
               "
               @click="applyOwnerSummary(owner)"
             >
@@ -1813,7 +1817,7 @@ onMounted(async () => {
             :class="
               !hasCrmFilters
                 ? 'border-n-blue-8 bg-n-blue-3 text-n-blue-11'
-                : 'border-n-weak text-n-slate-11 hover:bg-n-slate-2'
+                : 'border-ui-border-subtle text-n-slate-11 hover:bg-n-slate-2'
             "
             @click="clearCrmFilters"
           >
@@ -1825,7 +1829,7 @@ onMounted(async () => {
             :class="
               crmFilters.relationshipStatus === 'lead'
                 ? 'border-n-blue-8 bg-n-blue-3 text-n-blue-11'
-                : 'border-n-weak text-n-slate-11 hover:bg-n-slate-2'
+                : 'border-ui-border-subtle text-n-slate-11 hover:bg-n-slate-2'
             "
             @click="applyRelationshipShortcut('lead')"
           >
@@ -1837,7 +1841,7 @@ onMounted(async () => {
             :class="
               crmFilters.relationshipStatus === 'customer'
                 ? 'border-n-teal-6 bg-n-teal-3 text-n-teal-11'
-                : 'border-n-weak text-n-slate-11 hover:bg-n-slate-2'
+                : 'border-ui-border-subtle text-n-slate-11 hover:bg-n-slate-2'
             "
             @click="applyRelationshipShortcut('customer')"
           >
@@ -1849,7 +1853,7 @@ onMounted(async () => {
             :class="
               crmFilters.withoutCrmOwner
                 ? 'border-n-ruby-6 bg-n-ruby-3 text-n-ruby-11'
-                : 'border-n-weak text-n-slate-11 hover:bg-n-slate-2'
+                : 'border-ui-border-subtle text-n-slate-11 hover:bg-n-slate-2'
             "
             @click="applyWithoutOwnerShortcut"
           >
@@ -1862,7 +1866,7 @@ onMounted(async () => {
             :class="
               crmFilters.crmOwnerId === String(currentUserId)
                 ? 'border-n-blue-8 bg-n-blue-3 text-n-blue-11'
-                : 'border-n-weak text-n-slate-11 hover:bg-n-slate-2'
+                : 'border-ui-border-subtle text-n-slate-11 hover:bg-n-slate-2'
             "
             @click="applyMyCrmContacts"
           >
@@ -1877,7 +1881,7 @@ onMounted(async () => {
             </span>
             <select
               v-model="crmFilters.relationshipStatus"
-              class="h-9 rounded border border-n-weak bg-n-surface-1 px-2 outline-none"
+              class="h-9 rounded border border-ui-border-subtle bg-n-surface-1 px-2 outline-none"
               @change="applyCrmFilters"
             >
               <option value="">{{ CRM_FILTER_TEXT.all }}</option>
@@ -1891,7 +1895,7 @@ onMounted(async () => {
             </span>
             <select
               v-model="crmFilters.lifecycleStage"
-              class="h-9 rounded border border-n-weak bg-n-surface-1 px-2 outline-none"
+              class="h-9 rounded border border-ui-border-subtle bg-n-surface-1 px-2 outline-none"
               @change="applyCrmFilters"
             >
               <option value="">{{ CRM_FILTER_TEXT.all }}</option>
@@ -1912,7 +1916,7 @@ onMounted(async () => {
             </span>
             <select
               v-model="crmFilters.crmOwnerId"
-              class="h-9 rounded border border-n-weak bg-n-surface-1 px-2 outline-none"
+              class="h-9 rounded border border-ui-border-subtle bg-n-surface-1 px-2 outline-none"
               :disabled="crmFilters.withoutCrmOwner"
               @change="applyCrmFilters"
             >
@@ -1932,7 +1936,7 @@ onMounted(async () => {
             </span>
             <select
               v-model="crmFilters.label"
-              class="h-9 rounded border border-n-weak bg-n-surface-1 px-2 outline-none"
+              class="h-9 rounded border border-ui-border-subtle bg-n-surface-1 px-2 outline-none"
               @change="applyCrmFilters"
             >
               <option value="">{{ CRM_FILTER_TEXT.all }}</option>
@@ -1951,7 +1955,7 @@ onMounted(async () => {
             </span>
             <select
               v-model="crmFilters.sourceList"
-              class="h-9 rounded border border-n-weak bg-n-surface-1 px-2 outline-none"
+              class="h-9 rounded border border-ui-border-subtle bg-n-surface-1 px-2 outline-none"
               @change="applyCrmFilters"
             >
               <option value="">{{ CRM_FILTER_TEXT.all }}</option>
@@ -1970,7 +1974,7 @@ onMounted(async () => {
             </span>
             <select
               :model-value="crmFilters.label"
-              class="h-9 rounded border border-n-weak bg-n-surface-1 px-2 outline-none"
+              class="h-9 rounded border border-ui-border-subtle bg-n-surface-1 px-2 outline-none"
               @change="applyLegalAreaCategory($event.target.value)"
             >
               <option value="">{{ CRM_FILTER_TEXT.all }}</option>
@@ -1987,7 +1991,7 @@ onMounted(async () => {
 
         <div
           v-if="hasRecentImports || isLoadingImports"
-          class="mt-4 border-t border-n-weak pt-3"
+          class="mt-4 border-t border-ui-border-subtle/60 pt-3"
         >
           <div class="mb-2 flex items-center justify-between gap-2">
             <span class="font-medium text-n-slate-12">
@@ -2002,7 +2006,7 @@ onMounted(async () => {
               v-for="item in recentImports.slice(0, 4)"
               :key="item.id"
               type="button"
-              class="rounded border border-n-weak bg-n-surface-1 p-2 text-left transition hover:border-n-blue-8 hover:bg-n-blue-2"
+              class="rounded border border-ui-border-subtle bg-n-surface-1 p-2 text-left transition hover:border-n-blue-8 hover:bg-n-blue-2"
               @click="applySourceList(item.metadata?.source_list)"
             >
               <div class="flex items-center justify-between gap-2">
@@ -2117,7 +2121,7 @@ onMounted(async () => {
             <input
               v-model="categoryEditForm.name"
               type="text"
-              class="h-10 rounded border border-n-weak bg-n-surface-1 px-3 outline-none"
+              class="h-10 rounded border border-ui-border-subtle bg-n-surface-1 px-3 outline-none"
             />
           </label>
           <label class="flex min-w-0 flex-col gap-1">
@@ -2126,7 +2130,7 @@ onMounted(async () => {
             </span>
             <select
               v-model="categoryEditForm.kind"
-              class="h-10 rounded border border-n-weak bg-n-surface-1 px-3 outline-none"
+              class="h-10 rounded border border-ui-border-subtle bg-n-surface-1 px-3 outline-none"
             >
               <option
                 v-for="option in CATEGORY_KIND_OPTIONS"
@@ -2142,7 +2146,7 @@ onMounted(async () => {
               {{ CATEGORIES_PAGE_TEXT.categoryColor }}
             </span>
             <span
-              class="flex h-10 items-center gap-2 rounded border border-n-weak bg-n-surface-1 px-3"
+              class="flex h-10 items-center gap-2 rounded border border-ui-border-subtle bg-n-surface-1 px-3"
             >
               <input
                 v-model="categoryEditForm.color"
@@ -2164,7 +2168,7 @@ onMounted(async () => {
               v-model="categoryEditForm.description"
               rows="3"
               :placeholder="CATEGORIES_PAGE_TEXT.categoryDescriptionPlaceholder"
-              class="resize-none rounded border border-n-weak bg-n-surface-1 px-3 py-2 outline-none"
+              class="resize-none rounded border border-ui-border-subtle bg-n-surface-1 px-3 py-2 outline-none"
             />
           </label>
         </div>

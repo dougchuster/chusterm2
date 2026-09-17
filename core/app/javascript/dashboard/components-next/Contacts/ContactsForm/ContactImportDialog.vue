@@ -303,7 +303,7 @@ defineExpose({ dialogRef });
           v-model="importOptions.sourceList"
           type="text"
           :placeholder="fieldText.sourceListPlaceholder"
-          class="h-9 rounded border border-n-weak bg-n-surface-1 px-3 outline-none"
+          class="h-9 rounded border border-ui-border-subtle bg-n-surface-1 px-3 outline-none"
         />
       </label>
       <label class="flex flex-col gap-1 text-sm text-n-slate-12">
@@ -312,7 +312,7 @@ defineExpose({ dialogRef });
           v-model="importOptions.labels"
           type="text"
           :placeholder="fieldText.labelsPlaceholder"
-          class="h-9 rounded border border-n-weak bg-n-surface-1 px-3 outline-none"
+          class="h-9 rounded border border-ui-border-subtle bg-n-surface-1 px-3 outline-none"
         />
       </label>
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -340,7 +340,7 @@ defineExpose({ dialogRef });
             v-model="importOptions.legalArea"
             type="text"
             :placeholder="fieldText.legalAreaPlaceholder"
-            class="h-9 rounded border border-n-weak bg-n-surface-1 px-3 outline-none"
+            class="h-9 rounded border border-ui-border-subtle bg-n-surface-1 px-3 outline-none"
           />
         </label>
         <label class="flex flex-col gap-1 text-sm text-n-slate-12">
@@ -349,7 +349,7 @@ defineExpose({ dialogRef });
             v-model="importOptions.crmOwnerEmail"
             type="email"
             :placeholder="fieldText.ownerPlaceholder"
-            class="h-9 rounded border border-n-weak bg-n-surface-1 px-3 outline-none"
+            class="h-9 rounded border border-ui-border-subtle bg-n-surface-1 px-3 outline-none"
           />
         </label>
       </div>
@@ -402,7 +402,7 @@ defineExpose({ dialogRef });
       </div>
       <div
         v-if="previewHeaders.length"
-        class="rounded border border-n-weak bg-n-slate-1 p-3 text-xs"
+        class="rounded border border-ui-border-subtle bg-n-slate-1 p-3 text-xs"
       >
         <div class="mb-3">
           <div class="font-medium text-n-slate-12">
@@ -416,17 +416,17 @@ defineExpose({ dialogRef });
               <thead>
                 <tr>
                   <th
-                    class="whitespace-nowrap border-b border-n-weak px-2 py-1 text-n-slate-11"
+                    class="whitespace-nowrap border-b border-ui-border-subtle/60 px-2 py-1 text-n-slate-11"
                   >
                     {{ fieldText.columnHeader }}
                   </th>
                   <th
-                    class="whitespace-nowrap border-b border-n-weak px-2 py-1 text-n-slate-11"
+                    class="whitespace-nowrap border-b border-ui-border-subtle/60 px-2 py-1 text-n-slate-11"
                   >
                     {{ fieldText.sampleHeader }}
                   </th>
                   <th
-                    class="whitespace-nowrap border-b border-n-weak px-2 py-1 text-n-slate-11"
+                    class="whitespace-nowrap border-b border-ui-border-subtle/60 px-2 py-1 text-n-slate-11"
                   >
                     {{ fieldText.crmFieldHeader }}
                   </th>
@@ -438,16 +438,16 @@ defineExpose({ dialogRef });
                   :key="header"
                 >
                   <td
-                    class="whitespace-nowrap border-b border-n-weak px-2 py-1 text-n-slate-12"
+                    class="whitespace-nowrap border-b border-ui-border-subtle/60 px-2 py-1 text-n-slate-12"
                   >
                     {{ header }}
                   </td>
                   <td
-                    class="whitespace-nowrap border-b border-n-weak px-2 py-1 text-n-slate-11"
+                    class="whitespace-nowrap border-b border-ui-border-subtle/60 px-2 py-1 text-n-slate-11"
                   >
                     {{ sampleValueForHeader(headerIndex) }}
                   </td>
-                  <td class="border-b border-n-weak px-2 py-1">
+                  <td class="border-b border-ui-border-subtle/60 px-2 py-1">
                     <Select
                       v-model="columnMapping[header]"
                       :options="mappingOptions"
@@ -469,7 +469,7 @@ defineExpose({ dialogRef });
                 <th
                   v-for="header in previewDisplayHeaders"
                   :key="header"
-                  class="whitespace-nowrap border-b border-n-weak px-2 py-1 text-n-slate-11"
+                  class="whitespace-nowrap border-b border-ui-border-subtle/60 px-2 py-1 text-n-slate-11"
                 >
                   {{ header }}
                 </th>
@@ -480,7 +480,7 @@ defineExpose({ dialogRef });
                 <td
                   v-for="(value, valueIndex) in row"
                   :key="`${rowIndex}-${valueIndex}`"
-                  class="whitespace-nowrap border-b border-n-weak px-2 py-1 text-n-slate-12"
+                  class="whitespace-nowrap border-b border-ui-border-subtle/60 px-2 py-1 text-n-slate-12"
                 >
                   {{ value }}
                 </td>

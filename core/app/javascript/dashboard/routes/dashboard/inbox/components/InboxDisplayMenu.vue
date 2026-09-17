@@ -115,7 +115,7 @@ export default {
 
 <template>
   <div
-    class="flex flex-col bg-n-alpha-3 backdrop-blur-[100px] border-0 outline outline-1 outline-n-container shadow-lg z-50 max-w-64 min-w-[170px] w-fit rounded-xl divide-y divide-n-weak dark:divide-n-strong"
+    class="flex flex-col bg-n-alpha-3 backdrop-blur-[100px] border-0 outline outline-1 outline-n-container shadow-lg z-50 max-w-64 min-w-[170px] w-fit rounded-xl divide-y divide-ui-border-subtle/60 dark:divide-n-strong"
   >
     <div class="flex items-center gap-2 justify-between p-3 rounded-t-lg h-11">
       <div class="flex gap-1.5 min-w-0">
@@ -170,7 +170,9 @@ export default {
       <span class="px-3 py-4 text-xs font-medium text-n-slate-11">
         {{ $t('INBOX.DISPLAY_MENU.DISPLAY') }}
       </span>
-      <div class="flex flex-col divide-y divide-n-weak dark:divide-n-strong">
+      <div
+        class="flex flex-col divide-y divide-ui-border-subtle/60 dark:divide-n-strong"
+      >
         <div
           v-for="option in displayOptions"
           :key="option.key"
@@ -181,7 +183,7 @@ export default {
             type="checkbox"
             :name="option.key"
             :checked="option.selected"
-            class="m-0 border-[1.5px] shadow border-n-weak appearance-none rounded-[4px] w-4 h-4 dark:bg-n-background focus:ring-1 focus:ring-n-weak dark:focus:ring-n-strong checked:bg-n-brand dark:checked:bg-n-brand after:content-[''] after:text-white checked:after:content-['✓'] after:flex after:items-center after:justify-center checked:border-t checked:border-n-blue-10 checked:border-b-0 checked:border-r-0 checked:border-l-0 after:text-center after:text-xs after:font-bold after:relative after:-top-[1.5px]"
+            class="m-0 border-[1.5px] shadow border-ui-border-subtle appearance-none rounded-[4px] w-4 h-4 dark:bg-n-background focus:ring-1 focus:ring-ui-border-subtle dark:focus:ring-n-strong checked:bg-n-brand dark:checked:bg-n-brand after:content-[''] after:text-white checked:after:content-['✓'] after:flex after:items-center after:justify-center checked:border-t checked:border-n-blue-10 checked:border-b-0 checked:border-r-0 checked:border-l-0 after:text-center after:text-xs after:font-bold after:relative after:-top-[1.5px]"
             @change="updateDisplayOption(option)"
           />
           <label

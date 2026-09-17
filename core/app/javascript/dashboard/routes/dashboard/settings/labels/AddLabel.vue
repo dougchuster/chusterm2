@@ -143,7 +143,7 @@ export default {
           {{ formText.category }}
           <select
             v-model="category"
-            class="h-10 px-3 rounded-md border border-n-weak bg-n-alpha-2 text-n-slate-12"
+            class="h-10 px-3 rounded-md border border-ui-border-subtle bg-n-alpha-2 text-n-slate-12"
             @change="updateSlugSuggestion"
           >
             <option
@@ -167,7 +167,7 @@ export default {
           {{ formText.scope }}
           <select
             v-model="scope"
-            class="h-10 px-3 rounded-md border border-n-weak bg-n-alpha-2 text-n-slate-12"
+            class="h-10 px-3 rounded-md border border-ui-border-subtle bg-n-alpha-2 text-n-slate-12"
           >
             <option
               v-for="option in scopes"

@@ -54,7 +54,7 @@ onMounted(() => {
 
 <template>
   <div
-    class="flex items-start xl:items-center flex-col md:flex-row gap-4 lg:gap-3 bg-n-solid-1 p-4 outline outline-1 outline-n-weak rounded-xl"
+    class="flex items-start xl:items-center flex-col md:flex-row gap-4 lg:gap-3 bg-n-solid-1 p-4 outline outline-1 outline-ui-border-subtle rounded-xl"
   >
     <div class="flex items-center gap-3">
       <label class="text-sm font-medium text-n-slate-12">

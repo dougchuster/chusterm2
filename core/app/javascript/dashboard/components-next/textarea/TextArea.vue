@@ -152,10 +152,10 @@ onMounted(() => {
       :class="[
         customTextAreaWrapperClass,
         {
-          'cursor-not-allowed opacity-50 !bg-n-alpha-black2 disabled:border-n-weak dark:disabled:border-n-weak':
+          'cursor-not-allowed opacity-50 !bg-n-alpha-black2 disabled:border-ui-border-subtle dark:disabled:border-ui-border-subtle':
             disabled,
           'border-n-brand dark:border-n-brand': isFocused,
-          'hover:border-n-slate-6 dark:hover:border-n-slate-6 border-n-weak dark:border-n-weak':
+          'hover:border-n-slate-6 dark:hover:border-n-slate-6 border-ui-border-subtle dark:border-ui-border-subtle':
             !isFocused && messageType !== 'error',
           'border-n-ruby-8 dark:border-n-ruby-8 hover:border-n-ruby-9 dark:hover:border-n-ruby-9':
             messageType === 'error' && !isFocused,

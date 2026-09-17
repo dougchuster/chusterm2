@@ -302,7 +302,9 @@ onMounted(() => {
           </label>
         </div>
 
-        <div class="flex flex-col gap-3 rounded-lg border border-n-weak p-3">
+        <div
+          class="flex flex-col gap-3 rounded-lg border border-ui-border-subtle p-3"
+        >
           <div
             class="flex items-center gap-2 text-sm font-medium text-n-slate-12"
           >

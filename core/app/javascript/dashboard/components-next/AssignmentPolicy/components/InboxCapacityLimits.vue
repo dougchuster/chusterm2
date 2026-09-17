@@ -113,7 +113,7 @@ const getInboxName = inboxId => {
         class="flex flex-col xs:flex-row items-stretch gap-3"
       >
         <div
-          class="flex items-center rounded-lg outline-1 outline cursor-not-allowed text-n-slate-11 outline-n-weak py-2.5 px-3 text-sm w-full min-w-0"
+          class="flex items-center rounded-lg outline-1 outline cursor-not-allowed text-n-slate-11 outline-ui-border-subtle py-2.5 px-3 text-sm w-full min-w-0"
           :title="getInboxName(limit.inboxId)"
         >
           <span class="truncate min-w-0">
@@ -125,7 +125,9 @@ const getInboxName = inboxId => {
           <div
             class="py-2.5 px-3 rounded-lg gap-2 outline outline-1 flex-1 xs:flex-shrink-0 flex items-center min-w-0"
             :class="[
-              !isLimitValid(limit) ? 'outline-n-ruby-8' : 'outline-n-weak',
+              !isLimitValid(limit)
+                ? 'outline-n-ruby-8'
+                : 'outline-ui-border-subtle',
             ]"
           >
             <label

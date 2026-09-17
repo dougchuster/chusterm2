@@ -90,7 +90,7 @@ const handleEnterKey = event => {
 
 <template>
   <div
-    class="flex flex-col h-full rounded-xl border py-6 border-n-weak text-n-slate-11"
+    class="flex flex-col h-full rounded-xl border py-6 border-ui-border-subtle text-n-slate-11"
   >
     <div class="mb-8 px-6">
       <div class="flex justify-between items-center mb-1">
@@ -113,7 +113,7 @@ const handleEnterKey = event => {
     <MessageList :messages="messages" :is-loading="isLoading" />
 
     <div
-      class="flex items-center mx-6 bg-n-background outline outline-1 outline-n-weak rounded-xl p-3"
+      class="flex items-center mx-6 bg-n-background outline outline-1 outline-ui-border-subtle rounded-xl p-3"
     >
       <input
         v-model="newMessage"

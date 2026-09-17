@@ -115,7 +115,10 @@ const confirmPlaceHolderText = computed(() =>
         {{ $t('TEAMS_SETTINGS.NO_RESULTS') }}
       </span>
 
-      <div v-else class="divide-y divide-n-weak border-t border-n-weak">
+      <div
+        v-else
+        class="divide-y divide-ui-border-subtle/60 border-t border-ui-border-subtle/60"
+      >
         <div
           v-for="team in filteredTeamsList"
           :key="team.id"
@@ -123,7 +126,7 @@ const confirmPlaceHolderText = computed(() =>
         >
           <div class="flex items-start gap-4">
             <div
-              class="flex items-center flex-shrink-0 size-10 justify-center rounded-xl outline outline-1 outline-n-weak -outline-offset-1"
+              class="flex items-center flex-shrink-0 size-10 justify-center rounded-xl outline outline-1 outline-ui-border-subtle -outline-offset-1"
             >
               <Icon
                 icon="i-lucide-users-round"
@@ -145,10 +148,12 @@ const confirmPlaceHolderText = computed(() =>
                 name: 'settings_teams_edit',
                 params: { teamId: team.id },
               }"
+              :aria-label="$t('TEAMS_SETTINGS.LIST.EDIT_TEAM')"
             >
               <Button
                 v-if="isAdmin"
                 v-tooltip.top="$t('TEAMS_SETTINGS.LIST.EDIT_TEAM')"
+                :aria-label="$t('TEAMS_SETTINGS.LIST.EDIT_TEAM')"
                 icon="i-woot-settings"
                 slate
                 sm
@@ -158,6 +163,7 @@ const confirmPlaceHolderText = computed(() =>
             <Button
               v-if="isAdmin"
               v-tooltip.top="$t('TEAMS_SETTINGS.DELETE.BUTTON_TEXT')"
+              :aria-label="$t('TEAMS_SETTINGS.DELETE.BUTTON_TEXT')"
               icon="i-woot-bin"
               slate
               sm

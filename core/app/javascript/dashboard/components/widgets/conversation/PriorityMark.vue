@@ -45,6 +45,7 @@ export default {
       content: tooltipText,
       delay: { show: 1500, hide: 0 },
     }"
+    role="img"
     :aria-label="tooltipText"
     class="inline-flex size-4 shrink-0 items-center justify-center rounded"
     :class="{

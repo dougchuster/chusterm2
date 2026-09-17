@@ -25,7 +25,7 @@ const modelValue = defineModel({ type: Boolean, default: false });
 
 <template>
   <div
-    class="flex flex-col items-start ring-1 ring-inset ring-n-weak rounded-xl [interpolate-size:allow-keywords]"
+    class="flex flex-col items-start ring-1 ring-inset ring-ui-border-subtle rounded-xl [interpolate-size:allow-keywords]"
   >
     <div class="flex flex-col gap-1 items-start w-full px-4 py-3">
       <div class="flex items-center gap-3 w-full justify-between">
@@ -41,7 +41,7 @@ const modelValue = defineModel({ type: Boolean, default: false });
     </div>
     <div
       v-if="$slots.editor"
-      class="w-full border-t border-n-weak"
+      class="w-full border-t border-ui-border-subtle/60"
       :class="{ 'p-0': compact, 'px-4 pb-4 pt-2': !compact }"
     >
       <slot name="editor" />

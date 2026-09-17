@@ -49,7 +49,7 @@ const onLastPage = () => {
 
 <template>
   <div
-    class="flex items-center h-8 outline outline-1 outline-n-weak rounded-lg"
+    class="flex items-center h-8 outline outline-1 outline-ui-border-subtle rounded-lg"
   >
     <NextButton
       faded

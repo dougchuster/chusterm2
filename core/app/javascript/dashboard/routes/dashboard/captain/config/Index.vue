@@ -360,7 +360,7 @@ onMounted(fetchConfig);
     <template #body>
       <div v-if="payload" class="flex flex-col gap-6 pb-10">
         <section
-          class="flex flex-wrap items-start justify-between gap-4 border-b border-n-weak pb-5"
+          class="flex flex-wrap items-start justify-between gap-4 border-b border-ui-border-subtle/60 pb-5"
         >
           <div class="min-w-0">
             <h1 class="text-xl font-medium text-n-slate-12">
@@ -380,7 +380,9 @@ onMounted(fetchConfig);
         </section>
 
         <section class="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
-          <div class="flex flex-col gap-4 rounded-lg border border-n-weak p-4">
+          <div
+            class="flex flex-col gap-4 rounded-lg border border-ui-border-subtle p-4"
+          >
             <div>
               <h2 class="text-base font-medium text-n-slate-12">
                 Identidade e comportamento
@@ -395,7 +397,7 @@ onMounted(fetchConfig);
                 <span class="font-medium text-n-slate-12">Nome</span>
                 <input
                   v-model="assistantForm.name"
-                  class="h-10 rounded-md border border-n-weak bg-n-alpha-1 px-3 text-n-slate-12"
+                  class="h-10 rounded-md border border-ui-border-subtle bg-n-alpha-1 px-3 text-n-slate-12"
                   type="text"
                 />
               </label>
@@ -403,7 +405,7 @@ onMounted(fetchConfig);
                 <span class="font-medium text-n-slate-12">Produto ou área</span>
                 <input
                   v-model="assistantForm.product_name"
-                  class="h-10 rounded-md border border-n-weak bg-n-alpha-1 px-3 text-n-slate-12"
+                  class="h-10 rounded-md border border-ui-border-subtle bg-n-alpha-1 px-3 text-n-slate-12"
                   type="text"
                 />
               </label>
@@ -413,7 +415,7 @@ onMounted(fetchConfig);
               <span class="font-medium text-n-slate-12">Descrição</span>
               <input
                 v-model="assistantForm.description"
-                class="h-10 rounded-md border border-n-weak bg-n-alpha-1 px-3 text-n-slate-12"
+                class="h-10 rounded-md border border-ui-border-subtle bg-n-alpha-1 px-3 text-n-slate-12"
                 type="text"
               />
             </label>
@@ -422,7 +424,7 @@ onMounted(fetchConfig);
               <span class="font-medium text-n-slate-12">Instruções</span>
               <textarea
                 v-model="assistantForm.instructions"
-                class="min-h-44 rounded-md border border-n-weak bg-n-alpha-1 p-3 text-n-slate-12"
+                class="min-h-44 rounded-md border border-ui-border-subtle bg-n-alpha-1 p-3 text-n-slate-12"
               />
             </label>
 
@@ -433,7 +435,7 @@ onMounted(fetchConfig);
                 </span>
                 <textarea
                   v-model="assistantForm.welcome_message"
-                  class="min-h-24 rounded-md border border-n-weak bg-n-alpha-1 p-3 text-n-slate-12"
+                  class="min-h-24 rounded-md border border-ui-border-subtle bg-n-alpha-1 p-3 text-n-slate-12"
                 />
               </label>
               <label class="flex flex-col gap-1 text-sm">
@@ -442,20 +444,22 @@ onMounted(fetchConfig);
                 </span>
                 <textarea
                   v-model="assistantForm.handoff_message"
-                  class="min-h-24 rounded-md border border-n-weak bg-n-alpha-1 p-3 text-n-slate-12"
+                  class="min-h-24 rounded-md border border-ui-border-subtle bg-n-alpha-1 p-3 text-n-slate-12"
                 />
               </label>
               <label class="flex flex-col gap-1 text-sm">
                 <span class="font-medium text-n-slate-12"> Encerramento </span>
                 <textarea
                   v-model="assistantForm.resolution_message"
-                  class="min-h-24 rounded-md border border-n-weak bg-n-alpha-1 p-3 text-n-slate-12"
+                  class="min-h-24 rounded-md border border-ui-border-subtle bg-n-alpha-1 p-3 text-n-slate-12"
                 />
               </label>
             </div>
           </div>
 
-          <div class="flex flex-col gap-4 rounded-lg border border-n-weak p-4">
+          <div
+            class="flex flex-col gap-4 rounded-lg border border-ui-border-subtle p-4"
+          >
             <div>
               <h2 class="text-base font-medium text-n-slate-12">
                 Recursos do agente
@@ -495,7 +499,9 @@ onMounted(fetchConfig);
         </section>
 
         <section class="grid gap-5 xl:grid-cols-2">
-          <div class="flex flex-col gap-4 rounded-lg border border-n-weak p-4">
+          <div
+            class="flex flex-col gap-4 rounded-lg border border-ui-border-subtle p-4"
+          >
             <div>
               <h2 class="text-base font-medium text-n-slate-12">
                 Modelo LLM por agente
@@ -510,7 +516,7 @@ onMounted(fetchConfig);
                 <span class="font-medium text-n-slate-12">Provedor</span>
                 <input
                   v-model="assistantForm.llm_provider"
-                  class="h-10 rounded-md border border-n-weak bg-n-alpha-1 px-3 text-n-slate-12"
+                  class="h-10 rounded-md border border-ui-border-subtle bg-n-alpha-1 px-3 text-n-slate-12"
                   type="text"
                   placeholder="openai"
                 />
@@ -519,7 +525,7 @@ onMounted(fetchConfig);
                 <span class="font-medium text-n-slate-12">Temperatura</span>
                 <input
                   v-model.number="assistantForm.temperature"
-                  class="h-10 rounded-md border border-n-weak bg-n-alpha-1 px-3 text-n-slate-12"
+                  class="h-10 rounded-md border border-ui-border-subtle bg-n-alpha-1 px-3 text-n-slate-12"
                   min="0"
                   max="2"
                   step="0.1"
@@ -544,7 +550,7 @@ onMounted(fetchConfig);
                 </span>
                 <select
                   v-model="assistantForm[field[0]]"
-                  class="h-10 rounded-md border border-n-weak bg-n-alpha-1 px-3 text-n-slate-12"
+                  class="h-10 rounded-md border border-ui-border-subtle bg-n-alpha-1 px-3 text-n-slate-12"
                 >
                   <option value="">Padrão da conta</option>
                   <option
@@ -563,7 +569,7 @@ onMounted(fetchConfig);
                 <span class="font-medium text-n-slate-12">Max tokens</span>
                 <input
                   v-model.number="assistantForm.llm_max_tokens"
-                  class="h-10 rounded-md border border-n-weak bg-n-alpha-1 px-3 text-n-slate-12"
+                  class="h-10 rounded-md border border-ui-border-subtle bg-n-alpha-1 px-3 text-n-slate-12"
                   min="256"
                   max="32000"
                   type="number"
@@ -573,7 +579,7 @@ onMounted(fetchConfig);
                 <span class="font-medium text-n-slate-12">Timeout</span>
                 <input
                   v-model.number="assistantForm.llm_timeout_seconds"
-                  class="h-10 rounded-md border border-n-weak bg-n-alpha-1 px-3 text-n-slate-12"
+                  class="h-10 rounded-md border border-ui-border-subtle bg-n-alpha-1 px-3 text-n-slate-12"
                   min="5"
                   max="120"
                   type="number"
@@ -585,7 +591,7 @@ onMounted(fetchConfig);
                   v-model.number="
                     assistantForm.llm_cost_limit_cents_per_conversation
                   "
-                  class="h-10 rounded-md border border-n-weak bg-n-alpha-1 px-3 text-n-slate-12"
+                  class="h-10 rounded-md border border-ui-border-subtle bg-n-alpha-1 px-3 text-n-slate-12"
                   min="0"
                   type="number"
                 />
@@ -600,7 +606,9 @@ onMounted(fetchConfig);
             </div>
           </div>
 
-          <div class="flex flex-col gap-4 rounded-lg border border-n-weak p-4">
+          <div
+            class="flex flex-col gap-4 rounded-lg border border-ui-border-subtle p-4"
+          >
             <div>
               <h2 class="text-base font-medium text-n-slate-12">
                 Preferencias globais da conta
@@ -617,7 +625,7 @@ onMounted(fetchConfig);
                 </span>
                 <select
                   v-model="accountSettingsForm.captain_auto_resolve_mode"
-                  class="h-10 rounded-md border border-n-weak bg-n-alpha-1 px-3 text-n-slate-12"
+                  class="h-10 rounded-md border border-ui-border-subtle bg-n-alpha-1 px-3 text-n-slate-12"
                 >
                   <option
                     v-for="mode in AUTO_RESOLVE_MODES"
@@ -655,7 +663,7 @@ onMounted(fetchConfig);
                 <select
                   v-model="accountModelForm[feature.key]"
                   :aria-label="`Modelo para ${feature.key}`"
-                  class="h-10 rounded-md border border-n-weak bg-n-solid-1 px-3 text-sm text-n-slate-12"
+                  class="h-10 rounded-md border border-ui-border-subtle bg-n-solid-1 px-3 text-sm text-n-slate-12"
                 >
                   <option
                     v-for="model in feature.models"
@@ -671,7 +679,9 @@ onMounted(fetchConfig);
         </section>
 
         <section class="grid gap-5 xl:grid-cols-2">
-          <div class="flex flex-col gap-4 rounded-lg border border-n-weak p-4">
+          <div
+            class="flex flex-col gap-4 rounded-lg border border-ui-border-subtle p-4"
+          >
             <div>
               <h2 class="text-base font-medium text-n-slate-12">Guardrails</h2>
               <p class="text-sm text-n-slate-11">
@@ -682,11 +692,13 @@ onMounted(fetchConfig);
             <textarea
               v-model="guardrailsText"
               aria-label="Guardrails do agente"
-              class="min-h-52 rounded-md border border-n-weak bg-n-alpha-1 p-3 text-sm text-n-slate-12"
+              class="min-h-52 rounded-md border border-ui-border-subtle bg-n-alpha-1 p-3 text-sm text-n-slate-12"
             />
           </div>
 
-          <div class="flex flex-col gap-4 rounded-lg border border-n-weak p-4">
+          <div
+            class="flex flex-col gap-4 rounded-lg border border-ui-border-subtle p-4"
+          >
             <div>
               <h2 class="text-base font-medium text-n-slate-12">
                 Diretrizes de resposta
@@ -699,13 +711,13 @@ onMounted(fetchConfig);
             <textarea
               v-model="responseGuidelinesText"
               aria-label="Diretrizes de resposta do agente"
-              class="min-h-52 rounded-md border border-n-weak bg-n-alpha-1 p-3 text-sm text-n-slate-12"
+              class="min-h-52 rounded-md border border-ui-border-subtle bg-n-alpha-1 p-3 text-sm text-n-slate-12"
             />
           </div>
         </section>
 
         <section
-          class="flex flex-col gap-4 rounded-lg border border-n-weak p-4"
+          class="flex flex-col gap-4 rounded-lg border border-ui-border-subtle p-4"
         >
           <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -762,7 +774,7 @@ onMounted(fetchConfig);
                 <span class="font-medium text-n-slate-12">Modo IA</span>
                 <select
                   v-model="inbox.ai_mode"
-                  class="h-10 rounded-md border border-n-weak bg-n-solid-1 px-3 text-n-slate-12"
+                  class="h-10 rounded-md border border-ui-border-subtle bg-n-solid-1 px-3 text-n-slate-12"
                 >
                   <option
                     v-for="mode in AI_MODES"
@@ -777,7 +789,7 @@ onMounted(fetchConfig);
                 <span class="font-medium text-n-slate-12">Handoff</span>
                 <select
                   v-model="inbox.handoff_strategy"
-                  class="h-10 rounded-md border border-n-weak bg-n-solid-1 px-3 text-n-slate-12"
+                  class="h-10 rounded-md border border-ui-border-subtle bg-n-solid-1 px-3 text-n-slate-12"
                 >
                   <option
                     v-for="strategy in HANDOFF_STRATEGIES"
@@ -793,7 +805,7 @@ onMounted(fetchConfig);
                   <span class="font-medium text-n-slate-12">Delay</span>
                   <input
                     v-model.number="inbox.response_delay_seconds"
-                    class="h-10 rounded-md border border-n-weak bg-n-solid-1 px-3 text-n-slate-12"
+                    class="h-10 rounded-md border border-ui-border-subtle bg-n-solid-1 px-3 text-n-slate-12"
                     min="0"
                     type="number"
                   />
@@ -802,7 +814,7 @@ onMounted(fetchConfig);
                   <span class="font-medium text-n-slate-12">Espera máx.</span>
                   <input
                     v-model.number="inbox.response_max_wait_seconds"
-                    class="h-10 rounded-md border border-n-weak bg-n-solid-1 px-3 text-n-slate-12"
+                    class="h-10 rounded-md border border-ui-border-subtle bg-n-solid-1 px-3 text-n-slate-12"
                     min="0"
                     type="number"
                   />
@@ -828,7 +840,7 @@ onMounted(fetchConfig);
               v-for="key in Object.keys(INVENTORY_LABELS)"
               :key="key"
               :to="routeTo(key)"
-              class="flex min-h-40 flex-col justify-between rounded-lg border border-n-weak bg-n-alpha-1 p-4 transition-colors hover:bg-n-alpha-2"
+              class="flex min-h-40 flex-col justify-between rounded-lg border border-ui-border-subtle bg-n-alpha-1 p-4 transition-colors hover:bg-n-alpha-2"
             >
               <div>
                 <div class="flex items-center justify-between gap-2">
@@ -854,7 +866,7 @@ onMounted(fetchConfig);
               </div>
               <div
                 v-if="(inventory[key]?.records || []).length"
-                class="mt-3 border-t border-n-weak pt-3"
+                class="mt-3 border-t border-ui-border-subtle/60 pt-3"
               >
                 <p
                   v-for="record in inventory[key].records.slice(0, 2)"

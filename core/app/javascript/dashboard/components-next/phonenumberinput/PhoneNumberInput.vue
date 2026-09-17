@@ -102,7 +102,7 @@ const inputBorderClass = computed(() => {
   if (hasError.value) {
     return errorClass;
   }
-  return `${focusClass} outline-n-weak dark:outline-n-weak hover:outline-n-slate-6 dark:hover:outline-n-slate-6 disabled:outline-n-weak dark:disabled:outline-n-weak`;
+  return `${focusClass} outline-ui-border-subtle dark:outline-ui-border-subtle hover:outline-n-slate-6 dark:hover:outline-n-slate-6 disabled:outline-ui-border-subtle dark:disabled:outline-ui-border-subtle`;
 });
 
 const phoneNumberError = computed(() => {

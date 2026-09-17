@@ -26,7 +26,7 @@ const handleClose = () => emit('close');
 
 <template>
   <div
-    class="absolute top-10 z-50 max-h-[80vh] w-[28rem] min-w-0 overflow-y-auto rounded-xl border border-n-weak bg-n-alpha-3 shadow-md backdrop-blur-[100px] ltr:right-0 rtl:left-0"
+    class="absolute top-10 z-50 max-h-[80vh] w-[28rem] min-w-0 overflow-y-auto rounded-xl border border-ui-border-subtle bg-n-alpha-3 shadow-md backdrop-blur-[100px] ltr:right-0 rtl:left-0"
   >
     <div class="flex flex-col gap-6 p-6">
       <h3 class="flex-shrink-0 text-base font-medium text-n-slate-12">

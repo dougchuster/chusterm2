@@ -70,7 +70,7 @@ const isUrgent = computed(() =>
 <template>
   <div
     v-if="action"
-    class="flex flex-col gap-2 rounded-xl border border-n-weak bg-n-slate-2 p-3"
+    class="flex flex-col gap-2 rounded-xl border border-ui-border-subtle bg-n-slate-2 p-3"
     :class="{
       'border-n-ruby-6 bg-n-ruby-2': isUrgent,
     }"
@@ -112,7 +112,7 @@ const isUrgent = computed(() =>
 
   <div
     v-else
-    class="flex flex-row items-center gap-2 rounded-xl border border-dashed border-n-weak bg-transparent p-3 text-sm text-n-slate-10"
+    class="flex flex-row items-center gap-2 rounded-xl border border-dashed border-ui-border-subtle bg-transparent p-3 text-sm text-n-slate-10"
   >
     <span class="i-lucide-info size-4 shrink-0" />
     <span>Nenhuma próxima ação definida ainda.</span>

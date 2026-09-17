@@ -181,10 +181,10 @@ export default {
       <div v-if="isBusinessHoursEnabled" class="mt-2">
         <div class="w-full">
           <table
-            class="min-w-full table-auto ring-1 ring-inset ring-n-weak rounded-xl"
+            class="min-w-full table-auto ring-1 ring-inset ring-ui-border-subtle rounded-xl"
           >
             <thead>
-              <tr class="border-b border-n-weak">
+              <tr class="border-b border-ui-border-subtle/60">
                 <th
                   class="py-3 ltr:pl-4 ltr:pr-3 rtl:pl-3 rtl:pr-4 text-start text-heading-3 text-n-slate-12"
                 >
@@ -202,7 +202,7 @@ export default {
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-n-weak">
+            <tbody class="divide-y divide-ui-border-subtle/60">
               <BusinessDay
                 v-for="timeSlot in timeSlots"
                 :key="timeSlot.day"

@@ -260,7 +260,7 @@ onMounted(fetchSettings);
     <template #body>
       <div class="flex flex-col gap-6 pb-10">
         <section
-          class="flex flex-col gap-2 border-b border-n-weak pb-5 text-n-slate-11"
+          class="flex flex-col gap-2 border-b border-ui-border-subtle/60 pb-5 text-n-slate-11"
         >
           <h1 class="text-xl font-medium text-n-slate-12">
             Score, memória e triagem por campanha
@@ -273,7 +273,7 @@ onMounted(fetchSettings);
 
         <div
           v-if="!hasCampaigns"
-          class="rounded-lg border border-n-weak bg-n-solid-2 p-6 text-sm text-n-slate-11"
+          class="rounded-lg bg-ui-surface shadow-ui-raised p-6 text-sm text-n-slate-11"
         >
           Nenhuma campanha encontrada para configurar.
         </div>
@@ -289,7 +289,7 @@ onMounted(fetchSettings);
               :class="
                 selectedCampaignId === String(campaign.id)
                   ? 'border-n-brand bg-n-brand/10'
-                  : 'border-n-weak bg-n-solid-2 hover:bg-n-alpha-2'
+                  : 'border-ui-border-subtle bg-ui-surface hover:bg-ui-hover'
               "
               @click="selectedCampaignId = String(campaign.id)"
             >
@@ -315,7 +315,7 @@ onMounted(fetchSettings);
 
           <div class="flex min-w-0 flex-col gap-6">
             <section
-              class="grid gap-3 rounded-lg border border-n-weak bg-n-solid-2 p-4 sm:grid-cols-5"
+              class="grid gap-3 rounded-lg bg-ui-surface shadow-ui-raised p-4 sm:grid-cols-5"
             >
               <div class="sm:col-span-2">
                 <p class="text-xs uppercase text-n-slate-11">Campanha</p>
@@ -347,7 +347,7 @@ onMounted(fetchSettings);
             </section>
 
             <section
-              class="flex flex-col gap-5 rounded-lg border border-n-weak bg-n-solid-2 p-4"
+              class="flex flex-col gap-5 rounded-lg bg-ui-surface shadow-ui-raised p-4"
             >
               <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
@@ -394,7 +394,7 @@ onMounted(fetchSettings);
                 <span class="font-medium text-n-slate-12">Modelo de score</span>
                 <input
                   v-model="form.score_model"
-                  class="h-10 rounded-md border border-n-weak bg-n-alpha-1 px-3 text-sm text-n-slate-12"
+                  class="h-10 rounded-md border border-ui-border-subtle bg-n-alpha-1 px-3 text-sm text-n-slate-12"
                   type="text"
                 />
               </label>
@@ -417,7 +417,7 @@ onMounted(fetchSettings);
                         v-model.number="
                           form.classification_thresholds[classification.key]
                         "
-                        class="h-10 rounded-md border border-n-weak bg-n-alpha-1 px-3 text-sm text-n-slate-12"
+                        class="h-10 rounded-md border border-ui-border-subtle bg-n-alpha-1 px-3 text-sm text-n-slate-12"
                         min="0"
                         max="100"
                         type="number"
@@ -439,7 +439,7 @@ onMounted(fetchSettings);
                       <span class="text-n-slate-11">{{ component.label }}</span>
                       <input
                         v-model.number="form.weights[component.key]"
-                        class="h-10 rounded-md border border-n-weak bg-n-alpha-1 px-3 text-sm text-n-slate-12"
+                        class="h-10 rounded-md border border-ui-border-subtle bg-n-alpha-1 px-3 text-sm text-n-slate-12"
                         min="0"
                         max="100"
                         type="number"
@@ -456,7 +456,7 @@ onMounted(fetchSettings);
                   </span>
                   <textarea
                     v-model="memoryFieldsText"
-                    class="min-h-40 rounded-md border border-n-weak bg-n-alpha-1 p-3 text-sm text-n-slate-12"
+                    class="min-h-40 rounded-md border border-ui-border-subtle bg-n-alpha-1 p-3 text-sm text-n-slate-12"
                   />
                 </label>
                 <label class="flex flex-col gap-2 text-sm">
@@ -465,14 +465,14 @@ onMounted(fetchSettings);
                   </span>
                   <textarea
                     v-model="triageFieldsText"
-                    class="min-h-40 rounded-md border border-n-weak bg-n-alpha-1 p-3 text-sm text-n-slate-12"
+                    class="min-h-40 rounded-md border border-ui-border-subtle bg-n-alpha-1 p-3 text-sm text-n-slate-12"
                   />
                 </label>
               </div>
             </section>
 
             <section
-              class="grid gap-5 rounded-lg border border-n-weak bg-n-solid-2 p-4 xl:grid-cols-[1fr_20rem]"
+              class="grid gap-5 rounded-lg bg-ui-surface shadow-ui-raised p-4 xl:grid-cols-[1fr_20rem]"
             >
               <div class="min-w-0">
                 <div class="mb-3">
@@ -487,7 +487,7 @@ onMounted(fetchSettings);
                 <div class="overflow-x-auto">
                   <table class="w-full min-w-[52rem] text-left text-sm">
                     <thead
-                      class="border-b border-n-weak text-xs text-n-slate-10"
+                      class="border-b border-ui-border-subtle/60 text-xs text-n-slate-10"
                     >
                       <tr>
                         <th class="py-2 pr-3 font-medium">Conversa</th>
@@ -499,7 +499,7 @@ onMounted(fetchSettings);
                         <th class="py-2 pr-3 font-medium" />
                       </tr>
                     </thead>
-                    <tbody class="divide-y divide-n-weak">
+                    <tbody class="divide-y divide-ui-border-subtle/60">
                       <tr v-for="state in recentStates" :key="state.id">
                         <td class="py-2 pr-3 text-n-slate-12">
                           {{
@@ -562,7 +562,7 @@ onMounted(fetchSettings);
                   <span class="text-n-slate-11">Score</span>
                   <input
                     v-model.number="stateForm.score_total"
-                    class="h-10 rounded-md border border-n-weak bg-n-solid-1 px-3"
+                    class="h-10 rounded-md border border-ui-border-subtle bg-n-solid-1 px-3"
                     min="0"
                     max="100"
                     type="number"
@@ -572,7 +572,7 @@ onMounted(fetchSettings);
                   <span class="text-n-slate-11">Classificação</span>
                   <select
                     v-model="stateForm.score_classification"
-                    class="h-10 rounded-md border border-n-weak bg-n-solid-1 px-3"
+                    class="h-10 rounded-md border border-ui-border-subtle bg-n-solid-1 px-3"
                   >
                     <option
                       v-for="classification in CLASSIFICATIONS"
@@ -587,7 +587,7 @@ onMounted(fetchSettings);
                   <span class="text-n-slate-11">Modo da IA</span>
                   <select
                     v-model="stateForm.ai_mode"
-                    class="h-10 rounded-md border border-n-weak bg-n-solid-1 px-3"
+                    class="h-10 rounded-md border border-ui-border-subtle bg-n-solid-1 px-3"
                   >
                     <option
                       v-for="mode in AI_MODES"
@@ -602,14 +602,14 @@ onMounted(fetchSettings);
                   <span class="text-n-slate-11">Resumo persistente</span>
                   <textarea
                     v-model="stateForm.context_summary"
-                    class="min-h-28 rounded-md border border-n-weak bg-n-solid-1 p-3"
+                    class="min-h-28 rounded-md border border-ui-border-subtle bg-n-solid-1 p-3"
                   />
                 </label>
                 <label class="flex flex-col gap-1 text-sm">
                   <span class="text-n-slate-11">Motivo de handoff</span>
                   <textarea
                     v-model="stateForm.handoff_reason"
-                    class="min-h-20 rounded-md border border-n-weak bg-n-solid-1 p-3"
+                    class="min-h-20 rounded-md border border-ui-border-subtle bg-n-solid-1 p-3"
                   />
                 </label>
                 <div class="flex justify-end gap-2">

@@ -92,7 +92,7 @@ const redirectToPortalHomePage = () => {
 
 <template>
   <div
-    class="absolute z-50 flex max-h-[min(32rem,calc(100vh-8rem))] w-[27.5rem] max-w-[calc(100vw-2rem)] flex-col gap-4 overflow-y-auto rounded-xl border border-n-weak bg-n-solid-2 pb-3 pt-5 shadow-md"
+    class="absolute z-50 flex max-h-[min(32rem,calc(100vh-8rem))] w-[27.5rem] max-w-[calc(100vw-2rem)] flex-col gap-4 overflow-y-auto rounded-xl bg-ui-surface shadow-ui-raised pb-3 pt-5 shadow-md"
   >
     <div
       class="flex items-center justify-between gap-4 px-6 pb-3 border-b border-n-alpha-2"

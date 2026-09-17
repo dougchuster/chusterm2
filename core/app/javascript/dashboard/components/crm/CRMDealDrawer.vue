@@ -363,7 +363,7 @@ watch(
         :class="{ 'bg-n-brand/60': dragging }"
         @pointerdown.prevent="startResize"
       />
-      <header class="border-b border-n-weak px-5 py-4">
+      <header class="border-b border-ui-border-subtle/60 px-5 py-4">
         <div class="flex items-start justify-between gap-4">
           <div class="min-w-0">
             <p class="m-0 text-xs font-semibold uppercase text-n-slate-10">
@@ -377,7 +377,7 @@ watch(
             <button
               v-if="deal"
               type="button"
-              class="inline-flex h-8 items-center gap-1.5 rounded-lg border border-n-weak px-3 text-xs font-medium text-n-slate-12 hover:bg-n-slate-2"
+              class="inline-flex h-8 items-center gap-1.5 rounded-lg border border-ui-border-subtle px-3 text-xs font-medium text-n-slate-12 hover:bg-n-slate-2"
               @click="goToDetails"
             >
               <span
@@ -429,7 +429,7 @@ watch(
         />
       </header>
 
-      <div class="flex border-b border-n-weak px-5">
+      <div class="flex border-b border-ui-border-subtle/60 px-5">
         <button
           v-for="tab in [
             ['dados', 'Dados'],
@@ -480,7 +480,7 @@ watch(
             >
             <input
               v-model="form.title"
-              class="h-10 w-full rounded-lg border border-n-weak bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+              class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
               type="text"
               required
             />
@@ -493,7 +493,7 @@ watch(
               >
               <select
                 v-model="form.legal_area"
-                class="h-10 w-full rounded-lg border border-n-weak bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
               >
                 <option value="">Não informado</option>
                 <option
@@ -512,7 +512,7 @@ watch(
               >
               <select
                 v-model="form.urgency_level"
-                class="h-10 w-full rounded-lg border border-n-weak bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
               >
                 <option value="">Não informado</option>
                 <option
@@ -533,7 +533,7 @@ watch(
               >
               <select
                 v-model="form.operational_status"
-                class="h-10 w-full rounded-lg border border-n-weak bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
               >
                 <option
                   v-for="[value, label] in operationalStatusOptions"
@@ -551,7 +551,7 @@ watch(
               >
               <select
                 v-model="form.source"
-                class="h-10 w-full rounded-lg border border-n-weak bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
               >
                 <option
                   v-for="[value, label] in sourceOptions"
@@ -569,7 +569,7 @@ watch(
               >
               <input
                 v-model="form.source_detail"
-                class="h-10 w-full rounded-lg border border-n-weak bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
                 placeholder="Campanha, anúncio, planilha"
                 type="text"
               />
@@ -583,7 +583,7 @@ watch(
               >
               <select
                 v-model="form.consent_channel"
-                class="h-10 w-full rounded-lg border border-n-weak bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
               >
                 <option value="">Não informado</option>
                 <option
@@ -602,7 +602,7 @@ watch(
               >
               <input
                 v-model="form.consent_collected_at"
-                class="h-10 w-full rounded-lg border border-n-weak bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
                 type="datetime-local"
               />
             </label>
@@ -613,7 +613,7 @@ watch(
               >
               <input
                 v-model="form.data_retention_until"
-                class="h-10 w-full rounded-lg border border-n-weak bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
                 type="date"
               />
             </label>
@@ -625,7 +625,7 @@ watch(
             >
             <input
               v-model="form.case_type"
-              class="h-10 w-full rounded-lg border border-n-weak bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+              class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
               type="text"
             />
           </label>
@@ -637,7 +637,7 @@ watch(
               >
               <input
                 v-model="valueEstimate"
-                class="h-10 w-full rounded-lg border border-n-weak bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
                 inputmode="decimal"
                 type="text"
               />
@@ -649,7 +649,7 @@ watch(
               >
               <input
                 v-model="form.probability_pct"
-                class="h-10 w-full rounded-lg border border-n-weak bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
                 max="100"
                 min="0"
                 type="number"
@@ -664,7 +664,7 @@ watch(
               >
               <select
                 v-model="form.documents_status"
-                class="h-10 w-full rounded-lg border border-n-weak bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
               >
                 <option
                   v-for="[value, label] in documentOptions"
@@ -682,7 +682,7 @@ watch(
               >
               <select
                 v-model="form.conflict_check_status"
-                class="h-10 w-full rounded-lg border border-n-weak bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
               >
                 <option
                   v-for="[value, label] in conflictOptions"
@@ -702,7 +702,7 @@ watch(
               >
               <select
                 v-model="form.lgpd_basis"
-                class="h-10 w-full rounded-lg border border-n-weak bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
               >
                 <option value="">Não informado</option>
                 <option
@@ -721,7 +721,7 @@ watch(
               >
               <select
                 v-model="form.consent_status"
-                class="h-10 w-full rounded-lg border border-n-weak bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
               >
                 <option
                   v-for="[value, label] in consentOptions"
@@ -740,7 +740,7 @@ watch(
             >
             <textarea
               v-model="form.summary"
-              class="min-h-24 w-full rounded-lg border border-n-weak bg-n-slate-1 px-3 py-2 text-sm outline-none focus:border-n-brand"
+              class="min-h-24 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 py-2 text-sm outline-none focus:border-n-brand"
             />
           </label>
 
@@ -750,12 +750,12 @@ watch(
             >
             <textarea
               v-model="form.next_best_action"
-              class="min-h-20 w-full rounded-lg border border-n-weak bg-n-slate-1 px-3 py-2 text-sm outline-none focus:border-n-brand"
+              class="min-h-20 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 py-2 text-sm outline-none focus:border-n-brand"
             />
           </label>
 
           <footer
-            class="sticky bottom-0 -mx-5 border-t border-n-weak bg-n-background px-5 py-3"
+            class="sticky bottom-0 -mx-5 border-t border-ui-border-subtle/60 bg-n-background px-5 py-3"
           >
             <button
               type="submit"

@@ -139,7 +139,7 @@ watch(
     <button
       v-else-if="status === 'won' || status === 'lost'"
       type="button"
-      class="inline-flex h-8 items-center gap-1 rounded-lg border border-n-weak bg-n-slate-1 px-2.5 text-xs font-semibold text-n-slate-11 hover:bg-n-slate-3 disabled:opacity-50"
+      class="inline-flex h-8 items-center gap-1 rounded-lg border border-ui-border-subtle bg-n-slate-1 px-2.5 text-xs font-semibold text-n-slate-11 hover:bg-n-slate-3 disabled:opacity-50"
       :disabled="busy"
       @click="emit('reopen')"
     >
@@ -169,7 +169,7 @@ watch(
         Motivo da perda
         <select
           v-model="selectedLossReasonId"
-          class="h-9 min-w-0 rounded-lg border border-n-weak bg-n-slate-1 px-2 text-sm text-n-slate-12 outline-none focus:border-n-brand"
+          class="h-9 min-w-0 rounded-lg border border-ui-border-subtle bg-n-slate-1 px-2 text-sm text-n-slate-12 outline-none focus:border-n-brand"
           required
         >
           <option value="" disabled>Selecione um motivo</option>
@@ -186,7 +186,7 @@ watch(
         Nota (opcional)
         <input
           v-model="lossNoteDraft"
-          class="h-9 min-w-0 rounded-lg border border-n-weak bg-n-slate-1 px-2 text-sm text-n-slate-12 outline-none focus:border-n-brand"
+          class="h-9 min-w-0 rounded-lg border border-ui-border-subtle bg-n-slate-1 px-2 text-sm text-n-slate-12 outline-none focus:border-n-brand"
           type="text"
           placeholder="Contexto do encerramento"
         />
@@ -200,7 +200,7 @@ watch(
       <div class="flex justify-end gap-2 sm:col-span-2">
         <button
           type="button"
-          class="h-8 rounded-lg border border-n-weak px-3 text-xs font-semibold text-n-slate-11 hover:bg-n-slate-3"
+          class="h-8 rounded-lg border border-ui-border-subtle px-3 text-xs font-semibold text-n-slate-11 hover:bg-n-slate-3"
           :disabled="busy"
           @click="cancelLoss"
         >

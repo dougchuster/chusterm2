@@ -63,7 +63,7 @@ defineExpose({ validate });
 <template>
   <li class="list-none">
     <div
-      class="flex items-start gap-2 p-3 rounded-lg border border-n-weak bg-n-alpha-2"
+      class="flex items-start gap-2 p-3 rounded-lg border border-ui-border-subtle bg-n-alpha-2"
       :class="{
         'animate-wiggle border-n-ruby-9': showErrors && validationError,
       }"

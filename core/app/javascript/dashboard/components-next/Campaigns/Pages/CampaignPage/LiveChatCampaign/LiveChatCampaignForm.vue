@@ -233,7 +233,7 @@ defineExpose({ prepareCampaignDetails, isSubmitDisabled });
         :has-error="!!formErrors.inbox"
         :placeholder="t('CAMPAIGN.LIVE_CHAT.CREATE.FORM.INBOX.PLACEHOLDER')"
         :message="formErrors.inbox"
-        class="[&>div>button]:bg-n-alpha-black2 [&>div>button:not(.focused)]:dark:outline-n-weak [&>div>button:not(.focused)]:hover:!outline-n-slate-6"
+        class="[&>div>button]:bg-n-alpha-black2 [&>div>button:not(.focused)]:dark:outline-ui-border-subtle [&>div>button:not(.focused)]:hover:!outline-n-slate-6"
       />
     </div>
 
@@ -248,7 +248,7 @@ defineExpose({ prepareCampaignDetails, isSubmitDisabled });
         :has-error="!!formErrors.sender"
         :disabled="!state.inboxId"
         :placeholder="t('CAMPAIGN.LIVE_CHAT.CREATE.FORM.SENT_BY.PLACEHOLDER')"
-        class="[&>div>button]:bg-n-alpha-black2 [&>div>button:not(.focused)]:dark:outline-n-weak [&>div>button:not(.focused)]:hover:!outline-n-slate-6"
+        class="[&>div>button]:bg-n-alpha-black2 [&>div>button:not(.focused)]:dark:outline-ui-border-subtle [&>div>button:not(.focused)]:hover:!outline-n-slate-6"
         :message="formErrors.sender"
       />
     </div>

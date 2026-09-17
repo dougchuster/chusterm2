@@ -15,7 +15,7 @@ const { t } = useI18n();
   <section
     class="grid grid-cols-1 pt-8 gap-5 [interpolate-size:allow-keywords]"
     :class="{
-      'border-t border-n-weak': withBorder,
+      'border-t border-ui-border-subtle/60': withBorder,
       'pb-8': !hideContent,
     }"
   >

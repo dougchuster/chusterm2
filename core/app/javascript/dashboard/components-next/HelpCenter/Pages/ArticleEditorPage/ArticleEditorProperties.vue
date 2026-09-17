@@ -52,7 +52,7 @@ onMounted(() => {
 
 <template>
   <div
-    class="absolute flex max-h-[calc(100vh-6rem)] w-[25rem] max-w-[calc(100vw-2rem)] flex-col gap-6 overflow-y-auto rounded-xl border border-n-weak bg-n-solid-2 p-4 shadow-lg sm:p-6"
+    class="absolute flex max-h-[calc(100vh-6rem)] w-[25rem] max-w-[calc(100vw-2rem)] flex-col gap-6 overflow-y-auto rounded-xl bg-ui-surface shadow-ui-raised p-4 shadow-lg sm:p-6"
   >
     <div class="flex items-center justify-between">
       <h3>

@@ -46,7 +46,7 @@ const handleChange = () => {
     class="cursor-pointer rounded-xl outline outline-1 p-4 transition-all duration-200 bg-n-solid-1 py-4 ltr:pl-4 rtl:pr-4 ltr:pr-6 rtl:pl-6"
     :class="[
       disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
-      isActive ? 'outline-n-blue-9' : 'outline-n-weak',
+      isActive ? 'outline-n-blue-9' : 'outline-ui-border-subtle',
       !disabled && !isActive ? 'hover:outline-n-strong' : '',
     ]"
     @click="handleChange"

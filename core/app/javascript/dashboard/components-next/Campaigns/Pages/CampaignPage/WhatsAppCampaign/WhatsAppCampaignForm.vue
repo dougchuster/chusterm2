@@ -327,7 +327,7 @@ onMounted(() => {
         :has-error="!!formErrors.inbox"
         :placeholder="t('CAMPAIGN.WHATSAPP.CREATE.FORM.INBOX.PLACEHOLDER')"
         :message="formErrors.inbox"
-        class="[&>div>button]:bg-n-alpha-black2 [&>div>button:not(.focused)]:dark:outline-n-weak [&>div>button:not(.focused)]:hover:!outline-n-slate-6"
+        class="[&>div>button]:bg-n-alpha-black2 [&>div>button:not(.focused)]:dark:outline-ui-border-subtle [&>div>button:not(.focused)]:hover:!outline-n-slate-6"
       />
     </div>
 
@@ -342,7 +342,7 @@ onMounted(() => {
         :has-error="!!formErrors.template"
         :placeholder="t('CAMPAIGN.WHATSAPP.CREATE.FORM.TEMPLATE.PLACEHOLDER')"
         :message="formErrors.template"
-        class="[&>div>button]:bg-n-alpha-black2 [&>div>button:not(.focused)]:dark:outline-n-weak [&>div>button:not(.focused)]:hover:!outline-n-slate-6"
+        class="[&>div>button]:bg-n-alpha-black2 [&>div>button:not(.focused)]:dark:outline-ui-border-subtle [&>div>button:not(.focused)]:hover:!outline-n-slate-6"
       />
       <p class="mt-1 text-xs text-n-slate-11">
         {{ t('CAMPAIGN.WHATSAPP.CREATE.FORM.TEMPLATE.INFO') }}
@@ -377,7 +377,7 @@ onMounted(() => {
       </p>
       <div
         v-if="audiencePreview.length"
-        class="mt-2 rounded-lg border border-n-weak bg-n-alpha-2 p-3"
+        class="mt-2 rounded-lg border border-ui-border-subtle bg-n-alpha-2 p-3"
       >
         <div
           class="mb-2 flex items-center justify-between gap-3 text-xs font-medium text-n-slate-11"
@@ -400,7 +400,7 @@ onMounted(() => {
               </p>
             </div>
             <span
-              class="shrink-0 rounded-md border border-n-weak px-2 py-1 text-n-slate-11"
+              class="shrink-0 rounded-md border border-ui-border-subtle px-2 py-1 text-n-slate-11"
             >
               {{ contact.source_list || contact.relationship_status || 'CRM' }}
             </span>
@@ -421,7 +421,7 @@ onMounted(() => {
 
     <div
       v-if="isReviewing"
-      class="rounded-lg border border-n-weak bg-n-alpha-2 p-3 text-sm"
+      class="rounded-lg border border-ui-border-subtle bg-n-alpha-2 p-3 text-sm"
     >
       <div class="mb-3 flex items-center justify-between gap-3">
         <span class="font-medium text-n-slate-12">{{ reviewText.title }}</span>

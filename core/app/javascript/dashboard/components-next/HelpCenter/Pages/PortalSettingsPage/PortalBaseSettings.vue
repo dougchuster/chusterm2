@@ -320,7 +320,7 @@ const handleAvatarDelete = () => {
           :message="
             t('HELP_CENTER.PORTAL_SETTINGS.FORM.LIVE_CHAT_WIDGET.HELP_TEXT')
           "
-          class="[&>div>button:not(.focused)]:!outline-n-weak"
+          class="[&>div>button:not(.focused)]:!outline-ui-border-subtle"
         />
       </div>
       <div

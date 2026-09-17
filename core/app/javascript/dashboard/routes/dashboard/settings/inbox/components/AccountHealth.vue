@@ -166,7 +166,7 @@ const handleRegisterWebhook = () => {
 <template>
   <div class="gap-4 mx-6">
     <div
-      class="px-5 py-5 space-y-6 rounded-xl ring-1 ring-inset ring-n-weak bg-n-solid-2"
+      class="px-5 py-5 space-y-6 rounded-xl ring-1 ring-inset ring-ui-border-subtle bg-n-solid-2"
     >
       <div
         class="flex flex-col gap-5 justify-between items-start w-full md:flex-row"
@@ -194,7 +194,7 @@ const handleRegisterWebhook = () => {
         <div
           v-for="item in healthItems"
           :key="item.key"
-          class="flex flex-col gap-2 p-4 rounded-lg border border-n-weak bg-n-solid-1"
+          class="flex flex-col gap-2 p-4 rounded-lg border border-ui-border-subtle bg-n-solid-1"
         >
           <div class="flex gap-2 items-center">
             <span class="text-body-main font-medium text-n-slate-11">
@@ -243,7 +243,7 @@ const handleRegisterWebhook = () => {
         <!-- Webhook configuration card -->
         <div
           v-if="showWebhookSection"
-          class="flex flex-col gap-2 p-4 rounded-lg border border-n-weak bg-n-solid-1"
+          class="flex flex-col gap-2 p-4 rounded-lg border border-ui-border-subtle bg-n-solid-1"
         >
           <div class="flex gap-2 items-center">
             <span class="text-body-main font-medium text-n-slate-11">

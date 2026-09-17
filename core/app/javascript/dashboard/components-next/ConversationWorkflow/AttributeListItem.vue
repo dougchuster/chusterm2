@@ -39,7 +39,7 @@ const attributeIcon = computed(() => {
     <div class="flex justify-between flex-row items-center gap-4 min-w-0">
       <div class="flex items-center gap-4 min-w-0">
         <div
-          class="flex items-center flex-shrink-0 size-10 justify-center rounded-xl outline outline-1 outline-n-weak -outline-offset-1"
+          class="flex items-center flex-shrink-0 size-10 justify-center rounded-xl outline outline-1 outline-ui-border-subtle -outline-offset-1"
         >
           <Icon :icon="attributeIcon" class="size-4 text-n-slate-11" />
         </div>

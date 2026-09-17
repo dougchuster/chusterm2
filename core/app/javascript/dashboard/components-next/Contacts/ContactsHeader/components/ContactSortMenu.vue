@@ -106,7 +106,7 @@ const handleOrderChange = value => {
     <div
       v-if="isMenuOpen"
       v-on-clickaway="() => (isMenuOpen = false)"
-      class="absolute top-full mt-1 flex w-72 max-w-[calc(100vw-2rem)] flex-col gap-4 rounded-xl border border-n-weak bg-n-solid-2 p-4 shadow-md ltr:-right-32 rtl:-left-32 sm:ltr:right-0 sm:rtl:left-0"
+      class="absolute top-full mt-1 flex w-72 max-w-[calc(100vw-2rem)] flex-col gap-4 rounded-xl bg-ui-surface shadow-ui-raised p-4 shadow-md ltr:-right-32 rtl:-left-32 sm:ltr:right-0 sm:rtl:left-0"
     >
       <div class="flex items-center justify-between gap-2">
         <span class="text-sm text-n-slate-12">

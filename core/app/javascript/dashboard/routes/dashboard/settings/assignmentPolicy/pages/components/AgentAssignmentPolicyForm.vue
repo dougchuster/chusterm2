@@ -192,7 +192,7 @@ defineExpose({
 
 <template>
   <form @submit.prevent="handleSubmit">
-    <div class="flex flex-col gap-4 divide-y divide-n-weak mb-4">
+    <div class="flex flex-col gap-4 divide-y divide-ui-border-subtle/60 mb-4">
       <BaseInfo
         v-model:policy-name="state.name"
         v-model:description="state.description"
@@ -258,7 +258,7 @@ defineExpose({
 
     <div
       v-if="showInboxSection"
-      class="py-4 flex-col flex gap-4 border-t border-n-weak mt-6"
+      class="py-4 flex-col flex gap-4 border-t border-ui-border-subtle/60 mt-6"
     >
       <div class="flex items-end gap-4 w-full justify-between">
         <div class="flex flex-col items-start gap-1 py-1">

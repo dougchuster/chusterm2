@@ -272,7 +272,7 @@ export default {
     </div>
 
     <div
-      class="flex items-center justify-between w-full gap-2 p-4 border border-solid border-n-weak rounded-xl"
+      class="flex items-center justify-between w-full gap-2 p-4 border border-solid border-ui-border-subtle rounded-xl"
     >
       <div class="flex flex-row items-center gap-2">
         <fluent-icon

@@ -120,10 +120,10 @@ onMounted(() => {
       <div v-if="preChatFormEnabled">
         <div class="w-full">
           <table
-            class="min-w-full table-auto ring-1 ring-inset ring-n-weak rounded-xl"
+            class="min-w-full table-auto ring-1 ring-inset ring-ui-border-subtle rounded-xl"
           >
             <thead>
-              <tr class="border-b border-n-weak">
+              <tr class="border-b border-ui-border-subtle/60">
                 <th
                   v-for="(header, index) in tableHeaders"
                   :key="index"

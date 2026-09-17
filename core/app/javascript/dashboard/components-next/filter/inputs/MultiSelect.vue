@@ -101,7 +101,7 @@ const toggleOption = option => {
         <div
           v-for="item in selectedVisibleItems"
           :key="item.name"
-          class="px-3 border-r rtl:border-l rtl:border-r-0 border-n-weak text-n-slate-12 text-sm flex gap-2 items-center max-w-[100px]"
+          class="px-3 border-r rtl:border-l rtl:border-r-0 border-ui-border-subtle text-n-slate-12 text-sm flex gap-2 items-center max-w-[100px]"
         >
           <Icon v-if="item.icon" :icon="item.icon" class="flex-shrink-0" />
           <span class="truncate">{{ item.name }}</span>
@@ -109,7 +109,7 @@ const toggleOption = option => {
         <div
           v-if="remainingItems.length > 0"
           v-tooltip.top="remainingTooltip"
-          class="px-3 border-r rtl:border-l rtl:border-r-0 border-n-weak text-n-slate-12 text-sm flex gap-2 items-center max-w-[100px]"
+          class="px-3 border-r rtl:border-l rtl:border-r-0 border-ui-border-subtle text-n-slate-12 text-sm flex gap-2 items-center max-w-[100px]"
         >
           <span class="truncate">{{
             t('COMBOBOX.MORE', { count: remainingItems.length })

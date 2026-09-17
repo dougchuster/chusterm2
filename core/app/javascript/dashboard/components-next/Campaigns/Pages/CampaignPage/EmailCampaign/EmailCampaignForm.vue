@@ -259,7 +259,7 @@ onMounted(() => {
       </p>
       <div
         v-if="audiencePreview.length"
-        class="mt-2 flex max-h-40 flex-col gap-2 overflow-y-auto rounded-lg border border-n-weak bg-n-alpha-2 p-3"
+        class="mt-2 flex max-h-40 flex-col gap-2 overflow-y-auto rounded-lg border border-ui-border-subtle bg-n-alpha-2 p-3"
       >
         <div
           v-for="contact in audiencePreview"
@@ -285,7 +285,7 @@ onMounted(() => {
 
     <div
       v-if="isReviewing"
-      class="rounded-lg border border-n-weak bg-n-alpha-2 p-3 text-sm"
+      class="rounded-lg border border-ui-border-subtle bg-n-alpha-2 p-3 text-sm"
     >
       <strong class="text-n-slate-12">{{ copy.reviewTitle }}</strong>
       <dl class="mt-3 grid gap-2 text-xs text-n-slate-11">

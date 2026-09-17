@@ -100,7 +100,7 @@ const handleClickOutside = () => {
     <div
       v-if="showPopover"
       ref="dropdownRef"
-      class="z-50 flex flex-col items-start absolute bg-n-alpha-3 backdrop-blur-[50px] border-0 gap-4 outline outline-1 outline-n-weak rounded-xl max-w-96 min-w-80 max-h-[20rem] overflow-y-auto py-2"
+      class="z-50 flex flex-col items-start absolute bg-n-alpha-3 backdrop-blur-[50px] border-0 gap-4 outline outline-1 outline-ui-border-subtle rounded-xl max-w-96 min-w-80 max-h-[20rem] overflow-y-auto py-2"
       :class="[
         shouldShowAbove ? 'bottom-full mb-2' : 'top-full mt-2',
         shouldAlignRight ? 'right-0' : 'left-0',

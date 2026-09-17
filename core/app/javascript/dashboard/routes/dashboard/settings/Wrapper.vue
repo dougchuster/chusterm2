@@ -19,7 +19,7 @@ const showSettingsHeader = computed(
 
 <template>
   <div
-    class="settings-screen-shell flex h-full w-full flex-col overflow-hidden bg-n-surface-1 text-n-slate-12"
+    class="settings-screen-shell flex h-full w-full flex-col overflow-hidden bg-ui-canvas text-ui-text"
   >
     <div
       class="settings-screen-content flex min-h-0 flex-1 flex-col px-3 pb-6 pt-3 sm:px-6 sm:pt-4"

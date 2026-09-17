@@ -1164,7 +1164,7 @@ onBeforeUnmount(() => {
         </label>
 
         <CRMDealOutcomeControl
-          class="col-span-full rounded-lg border border-n-weak bg-n-slate-1 p-2 dark:bg-n-slate-2"
+          class="col-span-full rounded-lg border border-ui-border-subtle bg-n-slate-1 p-2 dark:bg-n-slate-2"
           :status="currentDealStatus"
           :loss-reasons="lossReasons"
           :loss-reason-id="currentLossReasonId"

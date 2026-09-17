@@ -10,7 +10,7 @@ defineProps({
 <template>
   <div class="p-6">
     <div class="space-y-4">
-      <div class="flex gap-4 pb-3 border-b border-n-weak">
+      <div class="flex gap-4 pb-3 border-b border-ui-border-subtle/60">
         <div class="h-4 w-32 rounded bg-n-slate-3 animate-pulse" />
         <div class="h-4 w-28 rounded bg-n-slate-3 animate-pulse" />
         <div class="h-4 w-20 rounded bg-n-slate-3 animate-pulse" />

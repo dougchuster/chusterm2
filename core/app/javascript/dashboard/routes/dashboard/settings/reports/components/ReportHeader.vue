@@ -18,7 +18,7 @@ defineProps({
 </script>
 
 <template>
-  <section class="border-b border-n-weak pb-5 pt-5">
+  <section class="border-b border-ui-border-subtle/60 pb-5 pt-5">
     <div>
       <BackButton v-if="hasBackButton" compact class="mb-3" />
 

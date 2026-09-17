@@ -13,15 +13,17 @@ defineProps({
 
 <template>
   <div
-    class="flex relative flex-col sm:flex-row p-4 gap-4 sm:p-6 justify-between group outline outline-n-container outline-1 bg-n-solid-2 rounded-2xl shadow w-full"
+    class="group relative flex w-full flex-col justify-between gap-4 rounded-xl bg-ui-surface p-4 shadow-ui-raised transition-shadow duration-ui-base hover:shadow-ui-overlay sm:flex-row sm:p-5"
   >
     <slot name="leftSection">
-      <div class="flex flex-col min-w-0 items-start gap-3 max-w-[480px] w-full">
+      <div
+        class="flex min-w-0 w-full max-w-[480px] flex-col items-start gap-2.5"
+      >
         <div
-          class="flex items-center justify-between w-full gap-3 sm:justify-normal whitespace-nowrap"
+          class="flex w-full items-center justify-between gap-3 whitespace-nowrap sm:justify-normal"
         >
           <h3
-            class="justify-between tracking-tight font-medium truncate w-fit sm:justify-normal text-n-slate-12"
+            class="w-fit justify-between truncate font-manrope font-semibold tracking-tight text-ui-text sm:justify-normal"
           >
             <slot name="title">
               {{ title }}
@@ -29,7 +31,9 @@ defineProps({
           </h3>
           <slot name="label" />
         </div>
-        <p class="text-base text-n-slate-11 max-w-[25rem] w-full line-clamp-2">
+        <p
+          class="line-clamp-2 w-full max-w-[25rem] text-ui-body-sm text-ui-text-muted"
+        >
           <slot name="description">
             {{ description }}
           </slot>

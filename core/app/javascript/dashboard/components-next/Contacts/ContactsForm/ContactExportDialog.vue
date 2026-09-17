@@ -204,7 +204,7 @@ defineExpose({ dialogRef });
     :disable-confirm-button="isBusy"
     @confirm="handleDialogConfirm"
   >
-    <div class="rounded-lg border border-n-weak bg-n-alpha-2 p-4">
+    <div class="rounded-lg border border-ui-border-subtle bg-n-alpha-2 p-4">
       <p class="mb-3 text-sm text-n-slate-11">
         {{ t('CONTACTS_LAYOUT.HEADER.ACTIONS.EXPORT_CONTACT.CSV_DESCRIPTION') }}
       </p>
@@ -220,7 +220,9 @@ defineExpose({ dialogRef });
         @click="downloadContactsCsv"
       />
     </div>
-    <div class="mt-3 rounded-lg border border-n-weak bg-n-alpha-2 p-4">
+    <div
+      class="mt-3 rounded-lg border border-ui-border-subtle bg-n-alpha-2 p-4"
+    >
       <p class="mb-3 text-sm text-n-slate-11">
         {{ googleSheetText.description }}
       </p>

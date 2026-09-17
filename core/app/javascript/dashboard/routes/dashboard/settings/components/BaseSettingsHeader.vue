@@ -42,7 +42,7 @@ const helpURL = getHelpUrlForFeature(props.featureName);
 
 <template>
   <div class="flex w-full flex-col gap-3">
-    <div class="border-b border-n-weak pb-4">
+    <div class="pb-1">
       <BackButton
         v-if="backButtonLabel"
         compact
@@ -56,22 +56,24 @@ const helpURL = getHelpUrlForFeature(props.featureName);
         <div class="min-w-0 flex-1">
           <div v-if="title" class="flex min-w-0 items-center gap-3">
             <div
-              class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-n-alpha-2 text-n-slate-11"
+              class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-ui-sunken text-ui-text-muted"
             >
               <Icon icon="i-lucide-settings-2" class="size-4" />
             </div>
-            <h1 class="m-0 min-w-0 text-xl font-semibold text-n-slate-12">
+            <h1
+              class="m-0 min-w-0 font-manrope text-ui-title font-semibold tracking-tight text-ui-text"
+            >
               {{ title }}
             </h1>
           </div>
 
           <div
             v-if="description || $slots.description || linkText || helpURL"
-            class="mt-3 flex max-w-3xl flex-col gap-2 text-n-slate-11"
+            class="mt-2.5 flex max-w-3xl flex-col gap-2 text-ui-text-muted"
           >
             <p
               v-if="description || $slots.description"
-              class="mb-0 line-clamp-5 text-body-main sm:line-clamp-none"
+              class="mb-0 line-clamp-5 text-ui-body sm:line-clamp-none"
             >
               <slot name="description">{{ description }}</slot>
             </p>
@@ -81,12 +83,12 @@ const helpURL = getHelpUrlForFeature(props.featureName);
                 :href="helpURL"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="inline-flex w-fit items-center gap-1 text-sm font-medium text-n-blue-11 hover:underline"
+                class="inline-flex w-fit items-center gap-1 text-ui-body-sm font-medium text-ui-brand hover:underline"
               >
                 {{ linkText }}
                 <Icon
                   icon="i-lucide-chevron-right"
-                  class="size-4 flex-shrink-0 text-n-blue-11"
+                  class="size-4 flex-shrink-0 text-ui-brand"
                 />
               </a>
             </CustomBrandPolicyWrapper>
@@ -97,7 +99,7 @@ const helpURL = getHelpUrlForFeature(props.featureName);
 
     <div
       v-if="searchPlaceholder || slots.actions || slots.tabs"
-      class="flex flex-col justify-between gap-3 rounded-xl border border-n-weak bg-n-solid-2 p-3 lg:flex-row lg:items-center"
+      class="flex flex-col justify-between gap-3 rounded-xl bg-ui-sunken/70 p-3 lg:flex-row lg:items-center"
       :class="{
         'hidden sm:flex': searchPlaceholder && !slots.actions && !slots.tabs,
       }"
@@ -114,7 +116,7 @@ const helpURL = getHelpUrlForFeature(props.featureName);
           v-if="searchPlaceholder"
           v-model="searchQuery"
           :placeholder="searchPlaceholder"
-          class="group hidden w-64 min-w-0 sm:flex [&>input]:!rounded-lg [&>input]:!border-n-weak [&>input]:!bg-n-surface-1 [&>input]:!py-2 [&>input]:ltr:!pl-9 [&>input]:rtl:!pr-9"
+          class="group hidden w-64 min-w-0 sm:flex [&>input]:!rounded-lg [&>input]:!border-ui-border-subtle [&>input]:!bg-n-surface-1 [&>input]:!py-2 [&>input]:ltr:!pl-9 [&>input]:rtl:!pr-9"
           size="sm"
           type="search"
         >
@@ -152,7 +154,7 @@ const helpURL = getHelpUrlForFeature(props.featureName);
       v-if="searchPlaceholder"
       v-model="searchQuery"
       :placeholder="searchPlaceholder"
-      class="group w-full [&>input]:!rounded-lg [&>input]:!border-n-weak [&>input]:!bg-n-surface-1 [&>input]:!py-2 [&>input]:ltr:!pl-9 [&>input]:rtl:!pr-9"
+      class="group w-full [&>input]:!rounded-lg [&>input]:!border-ui-border-subtle [&>input]:!bg-n-surface-1 [&>input]:!py-2 [&>input]:ltr:!pl-9 [&>input]:rtl:!pr-9"
       size="sm"
       type="search"
     >

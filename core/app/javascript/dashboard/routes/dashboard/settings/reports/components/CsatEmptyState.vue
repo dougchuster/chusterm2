@@ -18,7 +18,7 @@ defineProps({
 <template>
   <div class="px-4 py-12 text-center sm:px-6">
     <div
-      class="mx-auto max-w-xl rounded-lg border border-dashed border-n-weak bg-n-solid-2 px-5 py-9"
+      class="mx-auto max-w-xl rounded-lg border border-dashed border-ui-border-subtle bg-ui-sunken/50 px-5 py-9"
     >
       <div
         class="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-n-alpha-2"

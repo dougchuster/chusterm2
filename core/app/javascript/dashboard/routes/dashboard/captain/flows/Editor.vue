@@ -191,7 +191,7 @@ onMounted(async () => {
 
           <div
             v-if="nodes.length === 0"
-            class="py-6 text-center text-n-slate-11 text-sm rounded-lg border border-dashed border-n-weak"
+            class="py-6 text-center text-n-slate-11 text-sm rounded-lg border border-dashed border-ui-border-subtle"
           >
             Nenhum nó adicionado. Clique em "Adicionar nó" para começar.
           </div>
@@ -200,7 +200,7 @@ onMounted(async () => {
             <div
               v-for="(node, index) in nodes"
               :key="node.node_id"
-              class="flex flex-col gap-3 p-4 rounded-lg border border-n-weak bg-n-surface-1"
+              class="flex flex-col gap-3 p-4 rounded-lg border border-ui-border-subtle bg-n-surface-1"
             >
               <div class="flex items-center justify-between gap-2">
                 <span
@@ -226,7 +226,7 @@ onMounted(async () => {
                     v-model="node.node_id"
                     type="text"
                     placeholder="node_id"
-                    class="w-full px-3 py-2 rounded-lg border border-n-weak bg-n-surface-1 text-sm text-n-slate-12 placeholder:text-n-slate-10 focus:outline-none focus:ring-2 focus:ring-n-brand/30 focus:border-n-brand transition-all"
+                    class="w-full px-3 py-2 rounded-lg border border-ui-border-subtle bg-n-surface-1 text-sm text-n-slate-12 placeholder:text-n-slate-10 focus:outline-none focus:ring-2 focus:ring-n-brand/30 focus:border-n-brand transition-all"
                   />
                 </div>
 
@@ -236,7 +236,7 @@ onMounted(async () => {
                   >
                   <select
                     v-model="node.node_type"
-                    class="w-full px-3 py-2 rounded-lg border border-n-weak bg-n-surface-1 text-sm text-n-slate-12 focus:outline-none focus:ring-2 focus:ring-n-brand/30 focus:border-n-brand transition-all"
+                    class="w-full px-3 py-2 rounded-lg border border-ui-border-subtle bg-n-surface-1 text-sm text-n-slate-12 focus:outline-none focus:ring-2 focus:ring-n-brand/30 focus:border-n-brand transition-all"
                   >
                     <option
                       v-for="nt in NODE_TYPES"
@@ -255,7 +255,7 @@ onMounted(async () => {
                   v-model="node.config.label"
                   rows="2"
                   placeholder="Texto exibido neste nó"
-                  class="w-full px-3 py-2 rounded-lg border border-n-weak bg-n-surface-1 text-sm text-n-slate-12 placeholder:text-n-slate-10 focus:outline-none focus:ring-2 focus:ring-n-brand/30 focus:border-n-brand transition-all resize-none"
+                  class="w-full px-3 py-2 rounded-lg border border-ui-border-subtle bg-n-surface-1 text-sm text-n-slate-12 placeholder:text-n-slate-10 focus:outline-none focus:ring-2 focus:ring-n-brand/30 focus:border-n-brand transition-all resize-none"
                 />
               </div>
             </div>
@@ -276,7 +276,7 @@ onMounted(async () => {
 
           <div
             v-if="edges.length === 0"
-            class="py-6 text-center text-n-slate-11 text-sm rounded-lg border border-dashed border-n-weak"
+            class="py-6 text-center text-n-slate-11 text-sm rounded-lg border border-dashed border-ui-border-subtle"
           >
             Nenhuma aresta adicionada.
           </div>
@@ -285,7 +285,7 @@ onMounted(async () => {
             <div
               v-for="(edge, index) in edges"
               :key="edge.edge_id"
-              class="flex flex-col gap-3 p-4 rounded-lg border border-n-weak bg-n-surface-1"
+              class="flex flex-col gap-3 p-4 rounded-lg border border-ui-border-subtle bg-n-surface-1"
             >
               <div class="flex items-center justify-between">
                 <span class="text-xs font-medium text-n-slate-11"
@@ -308,7 +308,7 @@ onMounted(async () => {
                     v-model="edge.source_node_id"
                     type="text"
                     placeholder="source_node_id"
-                    class="w-full px-3 py-2 rounded-lg border border-n-weak bg-n-surface-1 text-sm text-n-slate-12 placeholder:text-n-slate-10 focus:outline-none focus:ring-2 focus:ring-n-brand/30 focus:border-n-brand transition-all"
+                    class="w-full px-3 py-2 rounded-lg border border-ui-border-subtle bg-n-surface-1 text-sm text-n-slate-12 placeholder:text-n-slate-10 focus:outline-none focus:ring-2 focus:ring-n-brand/30 focus:border-n-brand transition-all"
                   />
                 </div>
                 <div class="flex flex-col gap-1">
@@ -319,7 +319,7 @@ onMounted(async () => {
                     v-model="edge.target_node_id"
                     type="text"
                     placeholder="target_node_id"
-                    class="w-full px-3 py-2 rounded-lg border border-n-weak bg-n-surface-1 text-sm text-n-slate-12 placeholder:text-n-slate-10 focus:outline-none focus:ring-2 focus:ring-n-brand/30 focus:border-n-brand transition-all"
+                    class="w-full px-3 py-2 rounded-lg border border-ui-border-subtle bg-n-surface-1 text-sm text-n-slate-12 placeholder:text-n-slate-10 focus:outline-none focus:ring-2 focus:ring-n-brand/30 focus:border-n-brand transition-all"
                   />
                 </div>
                 <div class="flex flex-col gap-1">
@@ -330,7 +330,7 @@ onMounted(async () => {
                     v-model="edge.label"
                     type="text"
                     placeholder="Label da aresta"
-                    class="w-full px-3 py-2 rounded-lg border border-n-weak bg-n-surface-1 text-sm text-n-slate-12 placeholder:text-n-slate-10 focus:outline-none focus:ring-2 focus:ring-n-brand/30 focus:border-n-brand transition-all"
+                    class="w-full px-3 py-2 rounded-lg border border-ui-border-subtle bg-n-surface-1 text-sm text-n-slate-12 placeholder:text-n-slate-10 focus:outline-none focus:ring-2 focus:ring-n-brand/30 focus:border-n-brand transition-all"
                   />
                 </div>
               </div>

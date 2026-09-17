@@ -179,12 +179,16 @@ const onToggleAll = event => {
 </script>
 
 <template>
-  <div class="overflow-hidden rounded-lg border border-n-weak bg-n-surface-1">
+  <div
+    class="overflow-hidden rounded-lg border border-ui-border-subtle bg-n-surface-1"
+  >
     <div class="overflow-x-auto">
       <table class="min-w-[1180px] border-collapse text-sm">
         <thead class="bg-n-solid-2 text-[11px] uppercase text-n-slate-10">
           <tr>
-            <th class="w-12 border-b border-r border-n-weak px-4 py-3">
+            <th
+              class="w-12 border-b border-r border-ui-border-subtle px-4 py-3"
+            >
               <Checkbox
                 :model-value="allVisibleSelected"
                 :indeterminate="hasPartialSelection"
@@ -192,42 +196,42 @@ const onToggleAll = event => {
               />
             </th>
             <th
-              class="min-w-64 border-b border-r border-n-weak px-3 py-3 text-left font-semibold"
+              class="min-w-64 border-b border-r border-ui-border-subtle px-3 py-3 text-left font-semibold"
             >
               {{ tableText.name }}
             </th>
             <th
-              class="min-w-36 border-b border-r border-n-weak px-3 py-3 text-left font-semibold"
+              class="min-w-36 border-b border-r border-ui-border-subtle px-3 py-3 text-left font-semibold"
             >
               {{ tableText.relationship }}
             </th>
             <th
-              class="min-w-44 border-b border-r border-n-weak px-3 py-3 text-left font-semibold"
+              class="min-w-44 border-b border-r border-ui-border-subtle px-3 py-3 text-left font-semibold"
             >
               {{ tableText.lifecycle }}
             </th>
             <th
-              class="min-w-56 border-b border-r border-n-weak px-3 py-3 text-left font-semibold"
+              class="min-w-56 border-b border-r border-ui-border-subtle px-3 py-3 text-left font-semibold"
             >
               {{ tableText.categories }}
             </th>
             <th
-              class="min-w-48 border-b border-r border-n-weak px-3 py-3 text-left font-semibold"
+              class="min-w-48 border-b border-r border-ui-border-subtle px-3 py-3 text-left font-semibold"
             >
               {{ tableText.owner }}
             </th>
             <th
-              class="min-w-52 border-b border-r border-n-weak px-3 py-3 text-left font-semibold"
+              class="min-w-52 border-b border-r border-ui-border-subtle px-3 py-3 text-left font-semibold"
             >
               {{ tableText.company }}
             </th>
             <th
-              class="min-w-52 border-b border-r border-n-weak px-3 py-3 text-left font-semibold"
+              class="min-w-52 border-b border-r border-ui-border-subtle px-3 py-3 text-left font-semibold"
             >
               {{ tableText.phone }}
             </th>
             <th
-              class="min-w-64 border-b border-n-weak px-3 py-3 text-left font-semibold"
+              class="min-w-64 border-b border-ui-border-subtle/60 px-3 py-3 text-left font-semibold"
             >
               {{ tableText.email }}
             </th>
@@ -237,16 +241,16 @@ const onToggleAll = event => {
           <tr
             v-for="contact in contacts"
             :key="contact.id"
-            class="border-b border-n-weak text-n-slate-11 last:border-b-0 hover:bg-n-slate-2"
+            class="border-b border-ui-border-subtle/60 text-n-slate-11 last:border-b-0 hover:bg-n-slate-2"
             :class="{ 'bg-n-slate-2': selectedIdsSet.has(contact.id) }"
           >
-            <td class="border-r border-n-weak px-4 py-2">
+            <td class="border-r border-ui-border-subtle px-4 py-2">
               <Checkbox
                 :model-value="selectedIdsSet.has(contact.id)"
                 @change="event => onToggleContact(contact, event)"
               />
             </td>
-            <td class="border-r border-n-weak px-3 py-2">
+            <td class="border-r border-ui-border-subtle px-3 py-2">
               <button
                 type="button"
                 class="max-w-80 truncate text-left font-medium text-n-blue-11 hover:underline"
@@ -256,7 +260,7 @@ const onToggleAll = event => {
                 {{ contact.name || tableText.empty }}
               </button>
             </td>
-            <td class="border-r border-n-weak px-3 py-2">
+            <td class="border-r border-ui-border-subtle px-3 py-2">
               <span
                 class="inline-flex h-7 items-center rounded-full px-2.5 text-xs font-semibold"
                 :class="
@@ -270,7 +274,7 @@ const onToggleAll = event => {
                 {{ relationshipLabel(contact) }}
               </span>
             </td>
-            <td class="border-r border-n-weak px-3 py-2">
+            <td class="border-r border-ui-border-subtle px-3 py-2">
               <span
                 class="block max-w-40 truncate"
                 :title="lifecycleLabel(contact)"
@@ -278,7 +282,7 @@ const onToggleAll = event => {
                 {{ lifecycleLabel(contact) }}
               </span>
             </td>
-            <td class="border-r border-n-weak px-3 py-2">
+            <td class="border-r border-ui-border-subtle px-3 py-2">
               <div
                 v-if="contactLabelTitles(contact).length"
                 class="flex max-w-56 flex-wrap gap-1"
@@ -305,12 +309,12 @@ const onToggleAll = event => {
               </div>
               <span v-else>{{ tableText.empty }}</span>
             </td>
-            <td class="border-r border-n-weak px-3 py-2">
+            <td class="border-r border-ui-border-subtle px-3 py-2">
               <span class="block max-w-44 truncate" :title="ownerName(contact)">
                 {{ ownerName(contact) || tableText.empty }}
               </span>
             </td>
-            <td class="border-r border-n-weak px-3 py-2">
+            <td class="border-r border-ui-border-subtle px-3 py-2">
               <span
                 class="block max-w-72 truncate"
                 :title="companyName(contact)"
@@ -318,7 +322,7 @@ const onToggleAll = event => {
                 {{ companyName(contact) || tableText.empty }}
               </span>
             </td>
-            <td class="border-r border-n-weak px-3 py-2">
+            <td class="border-r border-ui-border-subtle px-3 py-2">
               <a
                 v-if="contactPhoneNumber(contact)"
                 :href="phoneLink(contactPhoneNumber(contact))"

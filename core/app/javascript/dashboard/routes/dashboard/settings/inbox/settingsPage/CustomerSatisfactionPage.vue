@@ -552,7 +552,7 @@ const handleConfirmTemplateUpdate = async () => {
 
                 <div
                   v-if="utilityAnalysisResult"
-                  class="flex flex-col gap-3 p-3 rounded-xl outline outline-1 outline-n-weak bg-n-alpha-1"
+                  class="flex flex-col gap-3 p-3 rounded-xl outline outline-1 outline-ui-border-subtle bg-n-alpha-1"
                 >
                   <div class="flex gap-2 items-center">
                     <span class="text-sm font-medium text-n-slate-12">
@@ -637,7 +637,7 @@ const handleConfirmTemplateUpdate = async () => {
               </div>
 
               <div
-                class="flex flex-col flex-shrink-0 justify-start items-center p-6 mt-1 rounded-xl basis-2/5 bg-n-slate-2 outline outline-1 outline-n-weak"
+                class="flex flex-col flex-shrink-0 justify-start items-center p-6 mt-1 rounded-xl basis-2/5 bg-n-slate-2 outline outline-1 outline-ui-border-subtle"
               >
                 <p
                   class="inline-flex items-center text-sm font-medium text-n-slate-11"

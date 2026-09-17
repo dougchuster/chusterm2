@@ -126,7 +126,7 @@ watch(() => props.dealId, loadActivities, { immediate: true });
       <article
         v-for="activity in pendingActivities"
         :key="activity.id"
-        class="rounded-lg border border-n-weak bg-n-slate-1 p-3"
+        class="rounded-lg border border-ui-border-subtle bg-n-slate-1 p-3"
       >
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
@@ -156,7 +156,7 @@ watch(() => props.dealId, loadActivities, { immediate: true });
           <div class="flex shrink-0 items-center gap-1">
             <button
               type="button"
-              class="inline-flex h-8 items-center gap-1 rounded-lg border border-n-weak px-2 text-xs font-medium text-n-slate-12 hover:bg-n-slate-3 disabled:opacity-50"
+              class="inline-flex h-8 items-center gap-1 rounded-lg border border-ui-border-subtle px-2 text-xs font-medium text-n-slate-12 hover:bg-n-slate-3 disabled:opacity-50"
               :disabled="snoozingId === activity.id"
               @click="snoozeActivity(activity, 24)"
             >
@@ -165,7 +165,7 @@ watch(() => props.dealId, loadActivities, { immediate: true });
             </button>
             <button
               type="button"
-              class="inline-flex h-8 items-center gap-1 rounded-lg border border-n-weak px-2 text-xs font-medium text-n-slate-12 hover:bg-n-slate-3 disabled:opacity-50"
+              class="inline-flex h-8 items-center gap-1 rounded-lg border border-ui-border-subtle px-2 text-xs font-medium text-n-slate-12 hover:bg-n-slate-3 disabled:opacity-50"
               :disabled="completingId === activity.id"
               @click="completeActivity(activity)"
             >
@@ -183,7 +183,7 @@ watch(() => props.dealId, loadActivities, { immediate: true });
         <article
           v-for="activity in completedActivities"
           :key="activity.id"
-          class="rounded-lg border border-n-weak bg-n-slate-2 p-3 opacity-80"
+          class="rounded-lg border border-ui-border-subtle bg-n-slate-2 p-3 opacity-80"
         >
           <p class="m-0 text-sm font-medium text-n-slate-12">
             {{ activity.title }}

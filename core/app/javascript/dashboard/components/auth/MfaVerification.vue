@@ -163,7 +163,7 @@ const handleTryAnotherMethod = () => {
       <!-- Header -->
       <div class="text-center mb-6">
         <div
-          class="inline-flex items-center justify-center size-14 bg-n-solid-1 outline outline-n-weak rounded-full mb-4"
+          class="inline-flex items-center justify-center size-14 bg-n-solid-1 outline outline-ui-border-subtle rounded-full mb-4"
         >
           <Icon icon="i-lucide-lock-keyhole" class="size-6 text-n-slate-10" />
         </div>
@@ -213,7 +213,7 @@ const handleTryAnotherMethod = () => {
               maxlength="1"
               pattern="[0-9]"
               inputmode="numeric"
-              class="w-12 h-12 text-center text-lg font-semibold border-2 border-n-weak hover:border-n-strong rounded-lg focus:border-n-brand bg-n-alpha-black2 text-n-slate-12 placeholder:text-n-slate-10"
+              class="w-12 h-12 text-center text-lg font-semibold border-2 border-ui-border-subtle hover:border-n-strong rounded-lg focus:border-n-brand bg-n-alpha-black2 text-n-slate-12 placeholder:text-n-slate-10"
               @input="handleOtpInput(i)"
               @keydown.left.prevent="focusInput(i - 1)"
               @keydown.right.prevent="focusInput(i + 1)"

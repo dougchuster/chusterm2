@@ -74,7 +74,7 @@ export default {
           :class="{
             'is-unread': notificationItem.read_at === null,
           }"
-          class="border-b border-n-weak"
+          class="border-b border-ui-border-subtle/60"
           @click="() => onClickNotification(notificationItem)"
         >
           <td class="p-2.5 text-n-slate-12">

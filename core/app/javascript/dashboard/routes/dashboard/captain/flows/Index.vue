@@ -98,7 +98,7 @@ onMounted(() => {
           <div
             v-for="flow in flows"
             :key="flow.id"
-            class="flex items-start justify-between gap-4 p-4 rounded-lg border border-n-weak bg-n-surface-1"
+            class="flex items-start justify-between gap-4 p-4 rounded-lg border border-ui-border-subtle bg-n-surface-1"
           >
             <div class="flex flex-col gap-1 min-w-0">
               <div class="flex items-center gap-2">
@@ -165,7 +165,7 @@ onMounted(() => {
       @click.self="closeCreateModal"
     >
       <div
-        class="w-full max-w-md rounded-xl bg-n-surface-1 border border-n-weak shadow-xl p-6 flex flex-col gap-4"
+        class="w-full max-w-md rounded-xl bg-n-surface-1 border border-ui-border-subtle shadow-xl p-6 flex flex-col gap-4"
       >
         <div class="flex items-center justify-between">
           <h2 class="text-base font-semibold text-n-slate-12">Novo fluxo</h2>
@@ -184,7 +184,7 @@ onMounted(() => {
               v-model="newFlowName"
               type="text"
               placeholder="Nome do fluxo"
-              class="w-full px-3 py-2 rounded-lg border border-n-weak bg-n-surface-1 text-sm text-n-slate-12 placeholder:text-n-slate-10 focus:outline-none focus:ring-2 focus:ring-n-brand/30 focus:border-n-brand transition-all"
+              class="w-full px-3 py-2 rounded-lg border border-ui-border-subtle bg-n-surface-1 text-sm text-n-slate-12 placeholder:text-n-slate-10 focus:outline-none focus:ring-2 focus:ring-n-brand/30 focus:border-n-brand transition-all"
             />
           </div>
           <div class="flex flex-col gap-1">
@@ -193,7 +193,7 @@ onMounted(() => {
               v-model="newFlowDescription"
               rows="3"
               placeholder="Descrição opcional"
-              class="w-full px-3 py-2 rounded-lg border border-n-weak bg-n-surface-1 text-sm text-n-slate-12 placeholder:text-n-slate-10 focus:outline-none focus:ring-2 focus:ring-n-brand/30 focus:border-n-brand transition-all resize-none"
+              class="w-full px-3 py-2 rounded-lg border border-ui-border-subtle bg-n-surface-1 text-sm text-n-slate-12 placeholder:text-n-slate-10 focus:outline-none focus:ring-2 focus:ring-n-brand/30 focus:border-n-brand transition-all resize-none"
             />
           </div>
         </div>

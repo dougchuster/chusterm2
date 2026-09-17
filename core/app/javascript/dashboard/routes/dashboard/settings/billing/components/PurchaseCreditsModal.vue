@@ -145,7 +145,9 @@ defineExpose({ open, close });
         />
       </div>
 
-      <div class="p-4 mt-6 rounded-lg bg-n-solid-2 border border-n-weak">
+      <div
+        class="p-4 mt-6 rounded-lg bg-n-solid-2 border border-ui-border-subtle"
+      >
         <p class="text-sm text-n-slate-11">
           <span class="font-semibold text-n-slate-12">{{
             $t('BILLING_SETTINGS.TOPUP.NOTE_TITLE')

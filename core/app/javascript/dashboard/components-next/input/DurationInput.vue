@@ -70,7 +70,7 @@ watch(unit, () => {
   <select
     v-model="unit"
     :disabled="disabled"
-    class="mb-0 text-sm disabled:outline-n-weak disabled:opacity-40"
+    class="mb-0 text-sm disabled:outline-ui-border-subtle disabled:opacity-40"
   >
     <option :value="DURATION_UNITS.MINUTES">
       {{ t('DURATION_INPUT.MINUTES') }}

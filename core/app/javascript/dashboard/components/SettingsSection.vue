@@ -25,7 +25,8 @@ export default {
   <div
     class="ml-0 mr-0 py-8 w-full"
     :class="{
-      'border-b border-solid border-n-weak/60 dark:border-n-weak': showBorder,
+      'border-b border-solid border-ui-border-subtle/60 dark:border-ui-border-subtle':
+        showBorder,
     }"
   >
     <div class="grid grid-cols-1 lg:grid-cols-8 gap-6">

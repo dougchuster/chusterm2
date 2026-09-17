@@ -29,19 +29,19 @@ const VARIANT_CLASSES = {
     outline: 'bg-transparent text-ds-accent border-ds-accent',
   },
   info: {
-    soft: 'bg-ds-state-info-soft text-ds-state-info border-ds-state-info/20',
+    soft: 'bg-ds-state-info-soft text-ds-state-info-fg border-ds-state-info/20',
     outline: 'bg-transparent text-ds-state-info border-ds-state-info',
   },
   success: {
-    soft: 'bg-ds-state-success-soft text-ds-state-success border-ds-state-success/20',
+    soft: 'bg-ds-state-success-soft text-ds-state-success-fg border-ds-state-success/20',
     outline: 'bg-transparent text-ds-state-success border-ds-state-success',
   },
   warning: {
-    soft: 'bg-ds-state-warning-soft text-ds-state-warning border-ds-state-warning/20',
+    soft: 'bg-ds-state-warning-soft text-ds-state-warning-fg border-ds-state-warning/20',
     outline: 'bg-transparent text-ds-state-warning border-ds-state-warning',
   },
   danger: {
-    soft: 'bg-ds-state-danger-soft text-ds-state-danger border-ds-state-danger/20',
+    soft: 'bg-ds-state-danger-soft text-ds-state-danger-fg border-ds-state-danger/20',
     outline: 'bg-transparent text-ds-state-danger border-ds-state-danger',
   },
 };

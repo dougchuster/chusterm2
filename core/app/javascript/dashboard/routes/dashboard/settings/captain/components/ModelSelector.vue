@@ -29,7 +29,7 @@ const handleModelChange = ({ feature, model }) => {
 
 <template>
   <div
-    class="flex items-center justify-between gap-4 p-4 rounded-xl border border-n-weak bg-n-solid-1"
+    class="flex items-center justify-between gap-4 p-4 rounded-xl border border-ui-border-subtle bg-n-solid-1"
     :class="{ 'opacity-60 pointer-events-none relative': !isAllowed }"
   >
     <div class="flex-1 min-w-0">
