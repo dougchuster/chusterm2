@@ -1,18 +1,58 @@
 {
   "MARKETING": {
     "TITLE": "Marketing",
+    "PERIOD": {
+      "D7": "Últimos 7 dias",
+      "D14": "Últimos 14 dias",
+      "D30": "Últimos 30 dias",
+      "D90": "Últimos 90 dias"
+    },
     "OVERVIEW": {
       "TITLE": "Visão geral",
+      "SPEND_CHART": "Investimento por dia",
+      "BY_PROVIDER": "Investimento por plataforma",
+      "KPI": {
+        "SPEND": "Investimento",
+        "LEADS": "Leads",
+        "CPL": "Custo por lead",
+        "ROAS": "ROAS",
+        "IMPRESSIONS": "Impressões",
+        "CTR": "CTR"
+      },
       "EMPTY": {
         "TITLE": "Visão geral de marketing",
         "MESSAGE": "Conecte uma conta de anúncios para ver investimento, leads e retorno."
-      }
+      },
+      "ERROR": {
+        "TITLE": "Não foi possível carregar as métricas",
+        "MESSAGE": "Verifique suas conexões e tente novamente."
+      },
+      "DAY_TOOLTIP": "{date} · {spend} · {leads} leads",
+      "PROVIDER_LINE": "{leads} leads · {conversions} conversões"
     },
     "CAMPAIGNS": {
       "TITLE": "Campanhas de anúncios",
+      "FILTERS": {
+        "ALL_PROVIDERS": "Todas as plataformas"
+      },
+      "COLUMNS": {
+        "NAME": "Campanha",
+        "PROVIDER": "Plataforma",
+        "STATUS": "Status",
+        "SPEND": "Investimento",
+        "IMPRESSIONS": "Impressões",
+        "CTR": "CTR",
+        "CPC": "CPC",
+        "LEADS": "Leads",
+        "CPL": "CPL"
+      },
       "EMPTY": {
         "TITLE": "Nenhuma campanha ainda",
         "MESSAGE": "Sincronize uma conta de anúncios conectada para listar campanhas de Meta e Google aqui."
+      },
+      "ERROR": {
+        "TITLE": "Não foi possível carregar as campanhas",
+        "MESSAGE": "Verifique suas conexões e tente novamente."
       }
     },
     "LEADS": {

@@ -85,4 +85,49 @@ test.describe('area de marketing — conexoes', () => {
     const body = await response.json();
     expect(body.error).toBe('oauth_not_configured');
   });
+
+  test('o overview agrega KPIs a partir dos snapshots sincronizados', async ({
+    page,
+  }) => {
+    await page.goto(`/app/accounts/${accountId}/marketing`);
+    const response = await page.request.get(
+      `/api/v1/accounts/${accountId}/marketing/metrics/overview`,
+      { headers: await apiHeaders(page) }
+    );
+    expect(response.ok()).toBeTruthy();
+    const body = await response.json();
+    expect(body.totals.spend).toBeGreaterThan(0);
+    expect(body.series.length).toBeGreaterThan(0);
+    expect(
+      body.by_provider.some(
+        (p: { provider: string }) => p.provider === 'meta_ads'
+      )
+    ).toBeTruthy();
+
+    await expect(
+      page.getByText('Investimento', { exact: false }).first()
+    ).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(/Meta Ads/).first()).toBeVisible();
+  });
+
+  test('a grade de campanhas lista campanhas sincronizadas com metricas', async ({
+    page,
+  }) => {
+    await page.goto(`/app/accounts/${accountId}/marketing/campaigns`);
+    const response = await page.request.get(
+      `/api/v1/accounts/${accountId}/marketing/campaigns`,
+      { headers: await apiHeaders(page) }
+    );
+    expect(response.ok()).toBeTruthy();
+    const names = response
+      .json()
+      .then((b: { campaigns: { name: string }[] }) =>
+        b.campaigns.map(c => c.name)
+      );
+    expect(await names).toContain('Campanha Leads Previdenciário');
+
+    await expect(
+      page.getByText('Campanha Leads Previdenciário').first()
+    ).toBeVisible({ timeout: 15_000 });
+  });
 });

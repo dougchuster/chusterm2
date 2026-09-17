@@ -1,18 +1,58 @@
 {
   "MARKETING": {
     "TITLE": "Marketing",
+    "PERIOD": {
+      "D7": "Last 7 days",
+      "D14": "Last 14 days",
+      "D30": "Last 30 days",
+      "D90": "Last 90 days"
+    },
     "OVERVIEW": {
       "TITLE": "Overview",
+      "SPEND_CHART": "Daily spend",
+      "BY_PROVIDER": "Spend by platform",
+      "KPI": {
+        "SPEND": "Spend",
+        "LEADS": "Leads",
+        "CPL": "Cost per lead",
+        "ROAS": "ROAS",
+        "IMPRESSIONS": "Impressions",
+        "CTR": "CTR"
+      },
       "EMPTY": {
         "TITLE": "Marketing overview",
         "MESSAGE": "Connect an ads account to see spend, leads and return on investment."
-      }
+      },
+      "ERROR": {
+        "TITLE": "Could not load metrics",
+        "MESSAGE": "Check your connections and try again."
+      },
+      "DAY_TOOLTIP": "{date} · {spend} · {leads} leads",
+      "PROVIDER_LINE": "{leads} leads · {conversions} conversions"
     },
     "CAMPAIGNS": {
       "TITLE": "Ad campaigns",
+      "FILTERS": {
+        "ALL_PROVIDERS": "All platforms"
+      },
+      "COLUMNS": {
+        "NAME": "Campaign",
+        "PROVIDER": "Platform",
+        "STATUS": "Status",
+        "SPEND": "Spend",
+        "IMPRESSIONS": "Impressions",
+        "CTR": "CTR",
+        "CPC": "CPC",
+        "LEADS": "Leads",
+        "CPL": "CPL"
+      },
       "EMPTY": {
         "TITLE": "No campaigns yet",
         "MESSAGE": "Sync a connected ads account to list Meta and Google campaigns here."
+      },
+      "ERROR": {
+        "TITLE": "Could not load campaigns",
+        "MESSAGE": "Check your connections and try again."
       }
     },
     "LEADS": {

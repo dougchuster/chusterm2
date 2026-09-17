@@ -1,12 +1,10 @@
 class Marketing::SyncAccountJob < ApplicationJob
-  queue_as :low
+  queue_as :default
 
   def perform(connection_id)
     connection = CrmExternalConnection.marketing.find_by(id: connection_id)
-    return unless connection&.active?
+    return if connection.nil?
 
-    # Implementado na FASE 2 do plano de marketing: sincroniza campanhas e
-    # metricas do provider conectado.
-    Marketing::Sync::AccountService.new(connection).perform!
+    Marketing::Sync::AccountService.new(connection: connection).perform!
   end
 end

@@ -240,6 +240,8 @@ Rails.application.routes.draw do
                 post :sync
               end
             end
+            resources :campaigns, only: [:index]
+            get 'metrics/overview', to: 'metrics#overview'
           end
           namespace :channels do
             resource :twilio_channel, only: [:create]

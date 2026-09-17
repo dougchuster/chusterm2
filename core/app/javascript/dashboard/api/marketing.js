@@ -44,7 +44,9 @@ class MarketingAPI {
 
   getOverview(params = {}) {
     const query = queryString(params);
-    return axios.get(marketingUrl(`overview${query ? `?${query}` : ''}`));
+    return axios.get(
+      marketingUrl(`metrics/overview${query ? `?${query}` : ''}`)
+    );
   }
 
   getCampaigns(params = {}) {

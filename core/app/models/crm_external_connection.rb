@@ -5,6 +5,7 @@ class CrmExternalConnection < ApplicationRecord
 
   belongs_to :account
   belongs_to :user, optional: true
+  has_many :marketing_campaigns, dependent: :delete_all
 
   encryption_enabled = defined?(::ChusteRM) &&
                        ::ChusteRM.respond_to?(:encryption_configured?) &&

@@ -96,3 +96,9 @@ evolution_connection_health_job:
   cron: '*/10 * * * *'
   class: 'Channels::EvolutionConnectionHealthJob'
   queue: scheduled_jobs
+
+# Marketing: sincroniza campanhas/metricas das conexoes ativas a cada 6h
+marketing_sync_all_job:
+  cron: '17 */6 * * *'
+  class: 'Marketing::SyncAllJob'
+  queue: scheduled_jobs
