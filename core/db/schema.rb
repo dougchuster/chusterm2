@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_16_000003) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -22,8 +22,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.string "owner_type"
     t.bigint "owner_id"
     t.string "token"
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["owner_type", "owner_id"], name: "index_access_tokens_on_owner_type_and_owner_id"
     t.index ["token"], name: "index_access_tokens_on_token", unique: true
   end
@@ -45,8 +45,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.bigint "user_id"
     t.integer "role", default: 0
     t.bigint "inviter_id"
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.datetime "active_at", precision: nil
     t.integer "availability", default: 0, null: false
     t.boolean "auto_offline", default: true, null: false
@@ -80,8 +80,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.integer "status", default: 0, null: false
     t.string "message_id", null: false
     t.string "message_checksum", null: false
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["message_id", "message_checksum"], name: "index_action_mailbox_inbound_emails_uniqueness", unique: true
   end
 
@@ -117,8 +117,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.integer "inbox_id"
     t.integer "agent_bot_id"
     t.integer "status", default: 0
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.integer "account_id"
   end
 
@@ -126,12 +126,11 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.string "name"
     t.string "description"
     t.string "outgoing_url"
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.bigint "account_id"
     t.integer "bot_type", default: 0
     t.jsonb "bot_config", default: {}
-    t.string "secret"
     t.index ["account_id"], name: "index_agent_bots_on_account_id"
   end
 
@@ -177,8 +176,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.text "content"
     t.integer "status"
     t.integer "views"
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.bigint "author_id"
     t.bigint "associated_article_id"
     t.jsonb "meta", default: {}
@@ -255,34 +254,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.string "event_name", null: false
     t.jsonb "conditions", default: "{}", null: false
     t.jsonb "actions", default: "{}", null: false
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
-    t.boolean "active", default: true, null: false
-    t.index ["account_id"], name: "index_automation_rules_on_account_id"
-  end
-
-  create_table "calls", force: :cascade do |t|
-    t.bigint "account_id", null: false
-    t.bigint "inbox_id", null: false
-    t.bigint "conversation_id", null: false
-    t.bigint "contact_id", null: false
-    t.bigint "message_id"
-    t.bigint "accepted_by_agent_id"
-    t.string "provider_call_id", null: false
-    t.integer "provider", default: 0, null: false
-    t.integer "direction", null: false
-    t.string "status", default: "ringing", null: false
-    t.datetime "started_at"
-    t.integer "duration_seconds"
-    t.string "end_reason"
-    t.jsonb "meta", default: {}
-    t.text "transcript"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["account_id", "contact_id"], name: "index_calls_on_account_id_and_contact_id"
-    t.index ["account_id", "conversation_id"], name: "index_calls_on_account_id_and_conversation_id"
-    t.index ["message_id"], name: "index_calls_on_message_id"
-    t.index ["provider", "provider_call_id"], name: "index_calls_on_provider_and_provider_call_id", unique: true
+    t.boolean "active", default: true, null: false
+    t.index ["account_id"], name: "index_automation_rules_on_account_id"
   end
 
   create_table "campaign_delivery_events", force: :cascade do |t|
@@ -319,8 +294,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.bigint "account_id", null: false
     t.bigint "inbox_id", null: false
     t.jsonb "trigger_rules", default: {}
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.integer "campaign_type", default: 0, null: false
     t.integer "campaign_status", default: 0, null: false
     t.jsonb "audience", default: []
@@ -359,7 +334,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.datetime "updated_at", null: false
     t.integer "status", default: 1, null: false
     t.string "documentable_type"
-    t.boolean "edited", default: false, null: false
     t.index ["account_id"], name: "index_captain_assistant_responses_on_account_id"
     t.index ["assistant_id"], name: "index_captain_assistant_responses_on_assistant_id"
     t.index ["documentable_id", "documentable_type"], name: "idx_cap_asst_resp_on_documentable"
@@ -466,14 +440,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.datetime "updated_at", null: false
     t.integer "status", default: 0, null: false
     t.jsonb "metadata", default: {}
-    t.integer "sync_status"
-    t.datetime "last_synced_at"
-    t.datetime "last_sync_attempted_at"
     t.string "sync_step"
     t.string "last_sync_error_code"
     t.string "content_fingerprint"
-    t.index ["account_id", "assistant_id", "sync_status", "last_synced_at"], name: "idx_captain_documents_on_account_assistant_sync_stats"
-    t.index ["account_id", "sync_status"], name: "index_captain_documents_on_account_id_and_sync_status"
     t.index ["account_id"], name: "index_captain_documents_on_account_id"
     t.index ["assistant_id", "external_link"], name: "index_captain_documents_on_assistant_id_and_external_link", unique: true
     t.index ["assistant_id"], name: "index_captain_documents_on_assistant_id"
@@ -590,8 +559,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.string "name"
     t.text "description"
     t.integer "position"
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.string "locale", default: "en"
     t.string "slug", null: false
     t.bigint "parent_category_id"
@@ -607,13 +576,12 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
   create_table "channel_api", force: :cascade do |t|
     t.integer "account_id", null: false
     t.string "webhook_url"
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.string "identifier"
     t.string "hmac_token"
     t.boolean "hmac_mandatory", default: false
     t.jsonb "additional_attributes", default: {}
-    t.string "secret"
     t.index ["hmac_token"], name: "index_channel_api_on_hmac_token", unique: true
     t.index ["identifier"], name: "index_channel_api_on_identifier", unique: true
   end
@@ -622,8 +590,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.integer "account_id", null: false
     t.string "email", null: false
     t.string "forward_to_email", null: false
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.boolean "imap_enabled", default: false
     t.string "imap_address", default: ""
     t.integer "imap_port", default: 0
@@ -643,7 +611,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.jsonb "provider_config", default: {}
     t.string "provider"
     t.boolean "verified_for_sending", default: false, null: false
-    t.string "imap_authentication", default: "plain"
     t.index ["email"], name: "index_channel_email_on_email", unique: true
     t.index ["forward_to_email"], name: "index_channel_email_on_forward_to_email", unique: true
   end
@@ -675,8 +642,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.string "line_channel_id", null: false
     t.string "line_channel_secret", null: false
     t.string "line_channel_token", null: false
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["line_channel_id"], name: "index_channel_line_on_line_channel_id", unique: true
   end
 
@@ -685,8 +652,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.string "phone_number", null: false
     t.string "provider", default: "default"
     t.jsonb "provider_config", default: {}
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["phone_number"], name: "index_channel_sms_on_phone_number", unique: true
   end
 
@@ -694,8 +661,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.string "bot_name"
     t.integer "account_id", null: false
     t.string "bot_token", null: false
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["bot_token"], name: "index_channel_telegram_on_bot_token", unique: true
   end
 
@@ -716,16 +683,13 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.string "auth_token", null: false
     t.string "account_sid", null: false
     t.integer "account_id", null: false
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.integer "medium", default: 0
     t.string "messaging_service_sid"
     t.string "api_key_sid"
     t.jsonb "content_templates", default: {}
     t.datetime "content_templates_last_updated"
-    t.boolean "voice_enabled", default: false, null: false
-    t.string "twiml_app_sid"
-    t.string "api_key_secret"
     t.index ["account_sid", "phone_number"], name: "index_channel_twilio_sms_on_account_sid_and_phone_number", unique: true
     t.index ["messaging_service_sid"], name: "index_channel_twilio_sms_on_messaging_service_sid", unique: true
     t.index ["phone_number"], name: "index_channel_twilio_sms_on_phone_number", unique: true
@@ -736,10 +700,22 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.string "twitter_access_token", null: false
     t.string "twitter_access_token_secret", null: false
     t.integer "account_id", null: false
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.boolean "tweets_enabled", default: true
     t.index ["account_id", "profile_id"], name: "index_channel_twitter_profiles_on_account_id_and_profile_id", unique: true
+  end
+
+  create_table "channel_voice", force: :cascade do |t|
+    t.string "phone_number", null: false
+    t.string "provider", default: "twilio", null: false
+    t.jsonb "provider_config", null: false
+    t.integer "account_id", null: false
+    t.jsonb "additional_attributes", default: {}
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_channel_voice_on_account_id"
+    t.index ["phone_number"], name: "index_channel_voice_on_phone_number", unique: true
   end
 
   create_table "channel_web_widgets", id: :serial, force: :cascade do |t|
@@ -768,8 +744,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.string "phone_number", null: false
     t.string "provider", default: "default"
     t.jsonb "provider_config", default: {}
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.jsonb "message_templates", default: {}
     t.datetime "message_templates_last_updated", precision: nil
     t.index ["phone_number"], name: "index_channel_whatsapp_on_phone_number", unique: true
@@ -782,10 +758,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.bigint "account_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "contacts_count", default: 0, null: false
-    t.jsonb "additional_attributes", default: {}
-    t.jsonb "custom_attributes", default: {}
-    t.datetime "last_activity_at", precision: nil
+    t.integer "contacts_count"
     t.index ["account_id", "domain"], name: "index_companies_on_account_and_domain", unique: true, where: "(domain IS NOT NULL)"
     t.index ["account_id"], name: "index_companies_on_account_id"
     t.index ["name", "account_id"], name: "index_companies_on_name_and_account_id"
@@ -795,8 +768,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.bigint "contact_id"
     t.bigint "inbox_id"
     t.text "source_id", null: false
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.boolean "hmac_verified", default: false
     t.string "pubsub_token"
     t.index ["contact_id"], name: "index_contact_inboxes_on_contact_id"
@@ -824,8 +797,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.string "country_code", default: ""
     t.boolean "blocked", default: false, null: false
     t.bigint "company_id"
-    t.integer "novacrm_lead_score", default: 0
-    t.datetime "novacrm_lead_score_updated_at"
     t.string "lifecycle_stage", default: "visitor", null: false
     t.datetime "lifecycle_stage_changed_at"
     t.datetime "became_lead_at"
@@ -854,7 +825,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.index ["identifier", "account_id"], name: "uniq_identifier_per_account_contact", unique: true
     t.index ["lifecycle_stage"], name: "index_contacts_on_lifecycle_stage"
     t.index ["name", "email", "phone_number", "identifier"], name: "index_contacts_on_name_email_phone_number_identifier", opclass: :gin_trgm_ops, using: :gin
-    t.index ["novacrm_lead_score"], name: "index_contacts_on_novacrm_lead_score"
     t.index ["phone_number", "account_id"], name: "index_contacts_on_phone_number_and_account_id"
   end
 
@@ -862,8 +832,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.bigint "account_id", null: false
     t.bigint "user_id", null: false
     t.bigint "conversation_id", null: false
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_conversation_participants_on_account_id"
     t.index ["conversation_id"], name: "index_conversation_participants_on_conversation_id"
     t.index ["user_id", "conversation_id"], name: "index_conversation_participants_on_user_id_and_conversation_id", unique: true
@@ -1247,6 +1217,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.datetime "updated_at", null: false
     t.integer "wip_limit"
     t.index ["account_id"], name: "index_crm_pipeline_stages_on_account_id"
+    t.index ["crm_pipeline_id", "slug"], name: "index_crm_pipeline_stages_on_crm_pipeline_id_and_slug", unique: true
     t.index ["crm_pipeline_id"], name: "index_crm_pipeline_stages_on_crm_pipeline_id"
   end
 
@@ -1277,8 +1248,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.text "feedback_message"
     t.bigint "contact_id", null: false
     t.bigint "assigned_agent_id"
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.text "csat_review_notes"
     t.datetime "review_notes_updated_at"
     t.bigint "review_notes_updated_by_id"
@@ -1297,8 +1268,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.integer "default_value"
     t.integer "attribute_model", default: 0
     t.bigint "account_id"
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.text "attribute_description"
     t.jsonb "attribute_values", default: []
     t.string "regex_pattern"
@@ -1313,8 +1284,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.jsonb "query", default: "{}", null: false
     t.bigint "account_id", null: false
     t.bigint "user_id", null: false
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_custom_filters_on_account_id"
     t.index ["user_id"], name: "index_custom_filters_on_user_id"
   end
@@ -1334,8 +1305,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.jsonb "content", default: []
     t.bigint "account_id", null: false
     t.bigint "user_id"
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_dashboard_apps_on_account_id"
     t.index ["user_id"], name: "index_dashboard_apps_on_user_id"
   end
@@ -1347,8 +1318,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.text "processing_errors"
     t.integer "total_records"
     t.integer "processed_records"
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.jsonb "metadata", default: {}, null: false
     t.index ["account_id"], name: "index_data_imports_on_account_id"
   end
@@ -1359,8 +1330,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.integer "account_id"
     t.integer "template_type", default: 1
     t.integer "locale", default: 0, null: false
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["name", "account_id"], name: "index_email_templates_on_name_and_account_id", unique: true
   end
 
@@ -1441,8 +1412,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.integer "account_id", null: false
     t.integer "category_id", null: false
     t.string "name"
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "inbox_assignment_policies", force: :cascade do |t|
@@ -1505,8 +1476,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
   create_table "installation_configs", force: :cascade do |t|
     t.string "name", null: false
     t.jsonb "serialized_value", default: {}, null: false
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.boolean "locked", default: true, null: false
     t.index ["name", "created_at"], name: "index_installation_configs_on_name_and_created_at", unique: true
     t.index ["name"], name: "index_installation_configs_on_name", unique: true
@@ -1520,8 +1491,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.integer "hook_type", default: 0
     t.string "reference_id"
     t.string "access_token"
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.jsonb "settings", default: {}
   end
 
@@ -1531,8 +1502,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.string "color", default: "#1f93ff", null: false
     t.boolean "show_on_sidebar"
     t.bigint "account_id"
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.string "category"
     t.string "slug"
     t.string "scope", default: "both", null: false
@@ -1568,9 +1539,70 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.bigint "created_by_id"
     t.bigint "updated_by_id"
     t.jsonb "actions", default: {}, null: false
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_macros_on_account_id"
+  end
+
+  create_table "marketing_campaigns", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "crm_external_connection_id", null: false
+    t.string "provider", limit: 40, null: false
+    t.string "external_id", null: false
+    t.string "external_parent_id"
+    t.string "level", limit: 20, default: "campaign", null: false
+    t.string "name", null: false
+    t.string "status", limit: 40
+    t.string "objective", limit: 60
+    t.decimal "daily_budget", precision: 14, scale: 2
+    t.string "currency", limit: 8
+    t.jsonb "metadata", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "provider"], name: "idx_marketing_campaigns_provider"
+    t.index ["account_id"], name: "idx_marketing_campaigns_account"
+    t.index ["crm_external_connection_id", "level", "external_id"], name: "idx_marketing_campaigns_unique", unique: true
+  end
+
+  create_table "marketing_leads", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "crm_external_connection_id"
+    t.bigint "contact_id"
+    t.bigint "crm_deal_id"
+    t.string "leadgen_id", null: false
+    t.string "form_id"
+    t.string "form_name"
+    t.string "campaign_id"
+    t.string "adset_id"
+    t.string "ad_id"
+    t.string "platform", limit: 30
+    t.string "status", limit: 20, default: "new", null: false
+    t.jsonb "field_data", default: {}, null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.datetime "converted_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "leadgen_id"], name: "idx_marketing_leads_unique", unique: true
+    t.index ["account_id", "status"], name: "idx_marketing_leads_status"
+    t.index ["account_id"], name: "idx_marketing_leads_account"
+  end
+
+  create_table "marketing_metric_snapshots", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "marketing_campaign_id", null: false
+    t.date "date", null: false
+    t.bigint "impressions", default: 0, null: false
+    t.bigint "clicks", default: 0, null: false
+    t.decimal "spend", precision: 14, scale: 4, default: "0.0", null: false
+    t.bigint "leads", default: 0, null: false
+    t.bigint "conversions", default: 0, null: false
+    t.decimal "conversion_value", precision: 14, scale: 2, default: "0.0", null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "date"], name: "idx_marketing_snapshots_date"
+    t.index ["account_id"], name: "idx_marketing_snapshots_account"
+    t.index ["marketing_campaign_id", "date"], name: "idx_marketing_snapshots_campaign_date", unique: true
   end
 
   create_table "mentions", force: :cascade do |t|
@@ -1578,8 +1610,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.bigint "conversation_id", null: false
     t.bigint "account_id", null: false
     t.datetime "mentioned_at", precision: nil, null: false
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_mentions_on_account_id"
     t.index ["conversation_id"], name: "index_mentions_on_conversation_id"
     t.index ["user_id", "conversation_id"], name: "index_mentions_on_user_id_and_conversation_id", unique: true
@@ -1625,8 +1657,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.bigint "account_id", null: false
     t.bigint "contact_id", null: false
     t.bigint "user_id"
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_notes_on_account_id"
     t.index ["contact_id"], name: "index_notes_on_contact_id"
     t.index ["user_id"], name: "index_notes_on_user_id"
@@ -1636,8 +1668,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.integer "account_id"
     t.integer "user_id"
     t.integer "email_flags", default: 0, null: false
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.integer "push_flags", default: 0, null: false
     t.index ["account_id", "user_id"], name: "by_account_user", unique: true
   end
@@ -1646,8 +1678,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.bigint "user_id", null: false
     t.integer "subscription_type", null: false
     t.jsonb "subscription_attributes", default: {}, null: false
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.text "identifier"
     t.index ["identifier"], name: "index_notification_subscriptions_on_identifier", unique: true
     t.index ["user_id"], name: "index_notification_subscriptions_on_user_id"
@@ -1662,8 +1694,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.string "secondary_actor_type"
     t.bigint "secondary_actor_id"
     t.datetime "read_at", precision: nil
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.datetime "snoozed_until"
     t.datetime "last_activity_at", default: -> { "CURRENT_TIMESTAMP" }
     t.jsonb "meta", default: {}
@@ -1675,285 +1707,12 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.index ["user_id"], name: "index_notifications_on_user_id"
   end
 
-  create_table "nova_ai_agent_inboxes", force: :cascade do |t|
-    t.bigint "nova_ai_agent_id", null: false
-    t.bigint "inbox_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["inbox_id"], name: "index_nova_ai_agent_inboxes_on_inbox_id", unique: true
-    t.index ["nova_ai_agent_id", "inbox_id"], name: "index_nova_ai_agent_inboxes_on_nova_ai_agent_id_and_inbox_id", unique: true
-    t.index ["nova_ai_agent_id"], name: "index_nova_ai_agent_inboxes_on_nova_ai_agent_id"
-  end
-
-  create_table "nova_ai_agents", force: :cascade do |t|
-    t.bigint "account_id", null: false
-    t.bigint "provider_id"
-    t.string "name", null: false
-    t.text "description"
-    t.string "model"
-    t.text "system_prompt"
-    t.jsonb "config", default: {}, null: false
-    t.jsonb "response_guidelines"
-    t.jsonb "guardrails"
-    t.string "template_type"
-    t.boolean "enabled", default: true, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["account_id"], name: "index_nova_ai_agents_on_account_id"
-    t.index ["provider_id"], name: "index_nova_ai_agents_on_provider_id"
-  end
-
-  create_table "nova_ai_copilot_messages", force: :cascade do |t|
-    t.bigint "account_id", null: false
-    t.bigint "copilot_thread_id", null: false
-    t.jsonb "message"
-    t.integer "message_type", default: 0, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["account_id"], name: "index_nova_ai_copilot_messages_on_account_id"
-    t.index ["copilot_thread_id"], name: "index_nova_ai_copilot_messages_on_copilot_thread_id"
-  end
-
-  create_table "nova_ai_copilot_threads", force: :cascade do |t|
-    t.bigint "account_id", null: false
-    t.bigint "user_id"
-    t.bigint "agent_id"
-    t.string "title"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["account_id"], name: "index_nova_ai_copilot_threads_on_account_id"
-    t.index ["agent_id"], name: "index_nova_ai_copilot_threads_on_agent_id"
-    t.index ["user_id"], name: "index_nova_ai_copilot_threads_on_user_id"
-  end
-
-  create_table "nova_ai_documents", force: :cascade do |t|
-    t.bigint "account_id", null: false
-    t.bigint "agent_id", null: false
-    t.string "name"
-    t.string "external_link", null: false
-    t.text "content"
-    t.integer "status", default: 0, null: false
-    t.jsonb "metadata"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["account_id"], name: "index_nova_ai_documents_on_account_id"
-    t.index ["agent_id", "external_link"], name: "index_nova_ai_documents_on_agent_id_and_external_link", unique: true
-    t.index ["agent_id"], name: "index_nova_ai_documents_on_agent_id"
-    t.index ["status"], name: "index_nova_ai_documents_on_status"
-  end
-
-  create_table "nova_ai_providers", force: :cascade do |t|
-    t.bigint "account_id", null: false
-    t.string "name", null: false
-    t.string "provider_type", null: false
-    t.text "api_key"
-    t.text "endpoint_url"
-    t.jsonb "models", default: {}
-    t.jsonb "settings", default: {}
-    t.boolean "enabled", default: true, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["account_id", "name"], name: "index_nova_ai_providers_on_account_id_and_name", unique: true
-    t.index ["account_id"], name: "index_nova_ai_providers_on_account_id"
-  end
-
-  create_table "nova_ai_responses", force: :cascade do |t|
-    t.bigint "account_id", null: false
-    t.bigint "agent_id", null: false
-    t.string "question", null: false
-    t.text "answer", null: false
-    t.vector "embedding", limit: 1536
-    t.integer "status", default: 1, null: false
-    t.string "documentable_type"
-    t.bigint "documentable_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["account_id"], name: "index_nova_ai_responses_on_account_id"
-    t.index ["agent_id"], name: "index_nova_ai_responses_on_agent_id"
-    t.index ["documentable_id", "documentable_type"], name: "idx_nova_ai_resp_on_documentable"
-    t.index ["embedding"], name: "vector_idx_nova_ai_responses_embedding", using: :ivfflat
-    t.index ["status"], name: "index_nova_ai_responses_on_status"
-  end
-
-  create_table "nova_ai_scenarios", force: :cascade do |t|
-    t.bigint "account_id", null: false
-    t.bigint "agent_id", null: false
-    t.string "title"
-    t.text "description"
-    t.text "instruction"
-    t.jsonb "tools"
-    t.boolean "enabled", default: true, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["account_id"], name: "index_nova_ai_scenarios_on_account_id"
-    t.index ["agent_id", "enabled"], name: "index_nova_ai_scenarios_on_agent_id_and_enabled"
-    t.index ["agent_id"], name: "index_nova_ai_scenarios_on_agent_id"
-    t.index ["enabled"], name: "index_nova_ai_scenarios_on_enabled"
-  end
-
-  create_table "nova_ai_tools", force: :cascade do |t|
-    t.bigint "account_id", null: false
-    t.string "slug", limit: 64, null: false
-    t.string "title", null: false
-    t.text "description"
-    t.text "endpoint_url", null: false
-    t.string "http_method", default: "GET", null: false
-    t.string "auth_type", default: "none", null: false
-    t.jsonb "auth_config"
-    t.jsonb "param_schema"
-    t.text "request_template"
-    t.text "response_template"
-    t.boolean "enabled", default: true, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["account_id", "slug"], name: "index_nova_ai_tools_on_account_id_and_slug", unique: true
-    t.index ["account_id"], name: "index_nova_ai_tools_on_account_id"
-  end
-
-  create_table "novacrm_activities", force: :cascade do |t|
-    t.bigint "account_id", null: false
-    t.bigint "user_id"
-    t.bigint "contact_id"
-    t.bigint "conversation_id"
-    t.bigint "pipeline_card_id"
-    t.integer "activity_type", null: false
-    t.string "title", null: false
-    t.text "description"
-    t.datetime "due_at"
-    t.datetime "completed_at"
-    t.integer "status", default: 0
-    t.jsonb "metadata", default: {}
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["account_id"], name: "index_novacrm_activities_on_account_id"
-    t.index ["contact_id"], name: "index_novacrm_activities_on_contact_id"
-    t.index ["conversation_id"], name: "index_novacrm_activities_on_conversation_id"
-    t.index ["due_at"], name: "idx_novacrm_activities_due_at_pending", where: "(status = 0)"
-    t.index ["pipeline_card_id"], name: "index_novacrm_activities_on_pipeline_card_id"
-    t.index ["user_id"], name: "idx_novacrm_activities_user"
-  end
-
-  create_table "novacrm_ai_flows", force: :cascade do |t|
-    t.string "name", null: false
-    t.text "description"
-    t.boolean "active", default: true, null: false
-    t.jsonb "config", default: {}
-    t.bigint "account_id", null: false
-    t.bigint "inbox_id", null: false
-    t.bigint "captain_assistant_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.boolean "catch_all", default: false, null: false
-    t.index ["account_id", "active"], name: "index_novacrm_ai_flows_on_account_id_and_active"
-    t.index ["account_id"], name: "index_novacrm_ai_flows_on_account_id"
-    t.index ["captain_assistant_id"], name: "index_novacrm_ai_flows_on_captain_assistant_id"
-    t.index ["inbox_id", "account_id"], name: "index_novacrm_ai_flows_catch_all_active", where: "((catch_all = true) AND (active = true))"
-    t.index ["inbox_id"], name: "index_novacrm_ai_flows_on_inbox_id"
-  end
-
-  create_table "novacrm_campaign_analytics", force: :cascade do |t|
-    t.bigint "campaign_id", null: false
-    t.bigint "contact_id"
-    t.integer "event_type", null: false
-    t.jsonb "metadata", default: {}
-    t.datetime "created_at", null: false
-    t.index ["campaign_id", "event_type"], name: "idx_novacrm_campaign_analytics_campaign_event"
-    t.index ["campaign_id"], name: "index_novacrm_campaign_analytics_on_campaign_id"
-    t.index ["contact_id"], name: "index_novacrm_campaign_analytics_on_contact_id"
-  end
-
-  create_table "novacrm_lead_forms", force: :cascade do |t|
-    t.bigint "account_id", null: false
-    t.string "name", null: false
-    t.text "description"
-    t.string "token", null: false
-    t.jsonb "fields", default: "[]", null: false
-    t.jsonb "settings", default: {}
-    t.boolean "is_active", default: true
-    t.integer "submissions_count", default: 0
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["account_id"], name: "index_novacrm_lead_forms_on_account_id"
-    t.index ["token"], name: "index_novacrm_lead_forms_on_token", unique: true
-  end
-
-  create_table "novacrm_lead_score_rules", force: :cascade do |t|
-    t.bigint "account_id", null: false
-    t.string "name", null: false
-    t.string "event_type", null: false
-    t.integer "score_delta", null: false
-    t.jsonb "conditions", default: {}
-    t.boolean "is_active", default: true
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["account_id"], name: "index_novacrm_lead_score_rules_on_account_id"
-  end
-
-  create_table "novacrm_pipeline_card_conversations", force: :cascade do |t|
-    t.bigint "pipeline_card_id", null: false
-    t.bigint "conversation_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["pipeline_card_id", "conversation_id"], name: "idx_on_pipeline_card_id_conversation_id_da5d033953", unique: true
-    t.index ["pipeline_card_id"], name: "index_novacrm_pipeline_card_conversations_on_pipeline_card_id"
-  end
-
-  create_table "novacrm_pipeline_cards", force: :cascade do |t|
-    t.bigint "account_id", null: false
-    t.bigint "pipeline_id", null: false
-    t.bigint "pipeline_stage_id", null: false
-    t.bigint "contact_id"
-    t.bigint "assignee_id"
-    t.bigint "team_id"
-    t.string "title", null: false
-    t.text "description"
-    t.integer "priority", default: 0
-    t.integer "status", default: 0
-    t.string "source"
-    t.date "due_date"
-    t.datetime "closed_at"
-    t.jsonb "custom_attributes", default: {}
-    t.integer "position", default: 0
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["account_id"], name: "index_novacrm_pipeline_cards_on_account_id"
-    t.index ["assignee_id"], name: "index_novacrm_pipeline_cards_on_assignee_id"
-    t.index ["contact_id"], name: "index_novacrm_pipeline_cards_on_contact_id"
-    t.index ["pipeline_id"], name: "index_novacrm_pipeline_cards_on_pipeline_id"
-    t.index ["pipeline_stage_id"], name: "index_novacrm_pipeline_cards_on_pipeline_stage_id"
-    t.index ["team_id"], name: "index_novacrm_pipeline_cards_on_team_id"
-  end
-
-  create_table "novacrm_pipeline_stages", force: :cascade do |t|
-    t.bigint "pipeline_id", null: false
-    t.bigint "account_id", null: false
-    t.string "name", null: false
-    t.integer "position", default: 0
-    t.integer "stage_type", default: 0
-    t.string "color", default: "#1976D2"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["account_id"], name: "index_novacrm_pipeline_stages_on_account_id"
-    t.index ["pipeline_id"], name: "index_novacrm_pipeline_stages_on_pipeline_id"
-  end
-
-  create_table "novacrm_pipelines", force: :cascade do |t|
-    t.bigint "account_id", null: false
-    t.string "name", null: false
-    t.text "description"
-    t.boolean "is_default", default: false
-    t.integer "position", default: 0
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["account_id"], name: "index_novacrm_pipelines_on_account_id"
-  end
-
   create_table "platform_app_permissibles", force: :cascade do |t|
     t.bigint "platform_app_id", null: false
     t.string "permissible_type", null: false
     t.bigint "permissible_id", null: false
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["permissible_type", "permissible_id"], name: "index_platform_app_permissibles_on_permissibles"
     t.index ["platform_app_id", "permissible_id", "permissible_type"], name: "unique_permissibles_index", unique: true
     t.index ["platform_app_id"], name: "index_platform_app_permissibles_on_platform_app_id"
@@ -1961,14 +1720,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
 
   create_table "platform_apps", force: :cascade do |t|
     t.string "name", null: false
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
-  end
-
-  create_table "platform_banners", force: :cascade do |t|
-    t.text "banner_message", null: false
-    t.integer "banner_type", default: 0, null: false
-    t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -1982,8 +1733,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.string "homepage_link"
     t.string "page_title"
     t.text "header_text"
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.jsonb "config", default: {"allowed_locales" => ["en"]}
     t.boolean "archived", default: false
     t.bigint "channel_web_widget_id"
@@ -2004,8 +1755,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
   create_table "related_categories", force: :cascade do |t|
     t.bigint "category_id"
     t.bigint "related_category_id"
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["category_id", "related_category_id"], name: "index_related_categories_on_category_id_and_related_category_id", unique: true
     t.index ["related_category_id", "category_id"], name: "index_related_categories_on_related_category_id_and_category_id", unique: true
   end
@@ -2017,8 +1768,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.integer "inbox_id"
     t.integer "user_id"
     t.integer "conversation_id"
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.float "value_in_business_hours"
     t.datetime "event_start_time", precision: nil
     t.datetime "event_end_time", precision: nil
@@ -2107,8 +1858,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
   create_table "team_members", force: :cascade do |t|
     t.bigint "team_id", null: false
     t.bigint "user_id", null: false
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["team_id", "user_id"], name: "index_team_members_on_team_id_and_user_id", unique: true
     t.index ["team_id"], name: "index_team_members_on_team_id"
     t.index ["user_id"], name: "index_team_members_on_user_id"
@@ -2119,8 +1870,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.text "description"
     t.boolean "allow_auto_assign", default: true
     t.bigint "account_id", null: false
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_teams_on_account_id"
     t.index ["name", "account_id"], name: "index_teams_on_name_and_account_id", unique: true
   end
@@ -2155,7 +1906,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.text "message_signature"
     t.string "otp_secret"
     t.integer "consumed_timestep"
-    t.boolean "otp_required_for_login", default: false, null: false
+    t.boolean "otp_required_for_login", default: false
     t.text "otp_backup_codes"
     t.index ["email"], name: "index_users_on_email"
     t.index ["otp_required_for_login"], name: "index_users_on_otp_required_for_login"
@@ -2169,8 +1920,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.integer "account_id"
     t.integer "inbox_id"
     t.text "url"
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.integer "webhook_type", default: 0
     t.jsonb "subscriptions", default: ["conversation_status_changed", "conversation_updated", "conversation_created", "contact_created", "contact_updated", "message_created", "message_updated", "webwidget_triggered"]
     t.string "name"
@@ -2210,8 +1961,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
     t.integer "open_minutes"
     t.integer "close_hour"
     t.integer "close_minutes"
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.boolean "open_all_day", default: false
     t.index ["account_id"], name: "index_working_hours_on_account_id"
     t.index ["inbox_id"], name: "index_working_hours_on_inbox_id"
@@ -2270,38 +2021,14 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_15_000001) do
   add_foreign_key "evolution_webhook_events", "evolution_instances"
   add_foreign_key "evolution_webhook_events", "inboxes"
   add_foreign_key "inboxes", "portals"
-  add_foreign_key "nova_ai_agent_inboxes", "inboxes", on_delete: :cascade, validate: false
-  add_foreign_key "nova_ai_agent_inboxes", "nova_ai_agents"
-  add_foreign_key "nova_ai_agents", "nova_ai_providers", column: "provider_id"
-  add_foreign_key "nova_ai_copilot_messages", "nova_ai_copilot_threads", column: "copilot_thread_id"
-  add_foreign_key "nova_ai_copilot_threads", "nova_ai_agents", column: "agent_id"
-  add_foreign_key "nova_ai_copilot_threads", "users"
-  add_foreign_key "nova_ai_documents", "nova_ai_agents", column: "agent_id"
-  add_foreign_key "nova_ai_responses", "nova_ai_agents", column: "agent_id"
-  add_foreign_key "nova_ai_scenarios", "nova_ai_agents", column: "agent_id"
-  add_foreign_key "novacrm_activities", "accounts"
-  add_foreign_key "novacrm_activities", "contacts"
-  add_foreign_key "novacrm_activities", "conversations"
-  add_foreign_key "novacrm_activities", "novacrm_pipeline_cards", column: "pipeline_card_id"
-  add_foreign_key "novacrm_activities", "users"
-  add_foreign_key "novacrm_ai_flows", "accounts"
-  add_foreign_key "novacrm_ai_flows", "captain_assistants"
-  add_foreign_key "novacrm_ai_flows", "inboxes", on_delete: :cascade, validate: false
-  add_foreign_key "novacrm_campaign_analytics", "campaigns"
-  add_foreign_key "novacrm_campaign_analytics", "contacts"
-  add_foreign_key "novacrm_lead_forms", "accounts"
-  add_foreign_key "novacrm_lead_score_rules", "accounts"
-  add_foreign_key "novacrm_pipeline_card_conversations", "conversations"
-  add_foreign_key "novacrm_pipeline_card_conversations", "novacrm_pipeline_cards", column: "pipeline_card_id"
-  add_foreign_key "novacrm_pipeline_cards", "accounts"
-  add_foreign_key "novacrm_pipeline_cards", "contacts"
-  add_foreign_key "novacrm_pipeline_cards", "novacrm_pipeline_stages", column: "pipeline_stage_id"
-  add_foreign_key "novacrm_pipeline_cards", "novacrm_pipelines", column: "pipeline_id"
-  add_foreign_key "novacrm_pipeline_cards", "teams"
-  add_foreign_key "novacrm_pipeline_cards", "users", column: "assignee_id"
-  add_foreign_key "novacrm_pipeline_stages", "accounts"
-  add_foreign_key "novacrm_pipeline_stages", "novacrm_pipelines", column: "pipeline_id"
-  add_foreign_key "novacrm_pipelines", "accounts"
+  add_foreign_key "marketing_campaigns", "accounts"
+  add_foreign_key "marketing_campaigns", "crm_external_connections"
+  add_foreign_key "marketing_leads", "accounts"
+  add_foreign_key "marketing_leads", "contacts"
+  add_foreign_key "marketing_leads", "crm_deals"
+  add_foreign_key "marketing_leads", "crm_external_connections"
+  add_foreign_key "marketing_metric_snapshots", "accounts"
+  add_foreign_key "marketing_metric_snapshots", "marketing_campaigns"
   add_foreign_key "whatsapp_embedded_onboardings", "accounts"
   add_foreign_key "whatsapp_embedded_onboardings", "inboxes"
   add_foreign_key "whatsapp_embedded_onboardings", "users"

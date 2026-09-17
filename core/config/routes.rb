@@ -241,6 +241,12 @@ Rails.application.routes.draw do
               end
             end
             resources :campaigns, only: [:index]
+            resources :leads, only: [:index, :show] do
+              member do
+                post :discard
+                post :convert
+              end
+            end
             get 'metrics/overview', to: 'metrics#overview'
           end
           namespace :channels do
@@ -740,6 +746,8 @@ Rails.application.routes.draw do
   post 'webhooks/instagram', to: 'webhooks/instagram#events'
   post 'webhooks/tiktok', to: 'webhooks/tiktok#events'
   post 'webhooks/shopify', to: 'webhooks/shopify#events'
+  get 'webhooks/meta_leadgen', to: 'webhooks/meta_leadgen#verify'
+  post 'webhooks/meta_leadgen', to: 'webhooks/meta_leadgen#process_payload'
 
   namespace :twitter do
     resource :callback, only: [:show]

@@ -57,9 +57,40 @@
     },
     "LEADS": {
       "TITLE": "Leads de anúncios",
+      "LOADING": "Carregando leads…",
+      "FILTERS": {
+        "NEW": "Novos",
+        "CONVERTED": "Convertidos",
+        "DISCARDED": "Descartados",
+        "ALL": "Todos"
+      },
+      "TABLE": {
+        "LEAD": "Lead",
+        "CONTACT": "Contato",
+        "CAMPAIGN": "Campanha",
+        "STATUS": "Status",
+        "RECEIVED": "Recebido",
+        "ACTIONS": "Ações"
+      },
+      "STATUS": {
+        "NEW": "Novo",
+        "CONVERTED": "Convertido",
+        "DISCARDED": "Descartado"
+      },
+      "ACTIONS": {
+        "CONVERT": "Enviar ao CRM",
+        "DISCARD": "Descartar"
+      },
       "EMPTY": {
         "TITLE": "Nenhum lead de anúncio ainda",
         "MESSAGE": "Leads capturados por formulários da Meta aparecem aqui em tempo real."
+      },
+      "ERROR": {
+        "LOAD": "Não foi possível carregar os leads.",
+        "ACTION": "Não foi possível atualizar o lead."
+      },
+      "SUCCESS": {
+        "ACTION": "Lead atualizado."
       }
     },
     "EVENTS": {

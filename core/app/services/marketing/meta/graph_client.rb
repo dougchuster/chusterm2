@@ -61,6 +61,26 @@ class Marketing::Meta::GraphClient
             })
   end
 
+  # Detalhe de um leadgen: GET /{leadgen_id}?fields=field_data,form_id,...
+  # Retorna hash de campos já normalizado {name => value}.
+  def leadgen_form_data(leadgen_id)
+    body = get("/#{leadgen_id}", params: { fields: 'field_data,form_id,campaign_id,adset_id,ad_id,created_time,platform' })
+    (body['field_data'] || []).each_with_object({}) do |entry, acc|
+      acc[entry['name']] = entry['values']&.first
+    end.merge(
+      '_meta' => {
+        'form_id' => body['form_id'],
+        'campaign_id' => body['campaign_id'],
+        'adset_id' => body['adset_id'],
+        'ad_id' => body['ad_id'],
+        'created_time' => body['created_time'],
+        'platform' => body['platform']
+      }.compact
+    )
+  rescue ApiError
+    nil
+  end
+
   private
 
   def perform_get(url, params_hash)

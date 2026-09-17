@@ -57,9 +57,40 @@
     },
     "LEADS": {
       "TITLE": "Ads leads",
+      "LOADING": "Loading leads…",
+      "FILTERS": {
+        "NEW": "New",
+        "CONVERTED": "Converted",
+        "DISCARDED": "Discarded",
+        "ALL": "All"
+      },
+      "TABLE": {
+        "LEAD": "Lead",
+        "CONTACT": "Contact",
+        "CAMPAIGN": "Campaign",
+        "STATUS": "Status",
+        "RECEIVED": "Received",
+        "ACTIONS": "Actions"
+      },
+      "STATUS": {
+        "NEW": "New",
+        "CONVERTED": "Converted",
+        "DISCARDED": "Discarded"
+      },
+      "ACTIONS": {
+        "CONVERT": "Send to CRM",
+        "DISCARD": "Discard"
+      },
       "EMPTY": {
         "TITLE": "No ad leads yet",
         "MESSAGE": "Leads captured by Meta lead forms appear here in real time."
+      },
+      "ERROR": {
+        "LOAD": "Could not load leads.",
+        "ACTION": "Could not update the lead."
+      },
+      "SUCCESS": {
+        "ACTION": "Lead updated."
       }
     },
     "EVENTS": {
