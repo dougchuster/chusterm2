@@ -57,5 +57,101 @@
   },
   "CHANNEL_SELECTOR": {
     "COMING_SOON": "Em breve!"
+  },
+  "DATA_GRID": {
+    "EMPTY_TITLE": "Nenhum registro encontrado",
+    "EMPTY_DESCRIPTION": "Não há entradas para exibir nesta grade.",
+    "SELECT_ALL": "Selecionar todas as linhas",
+    "SELECT_ROW": "Selecionar linha",
+    "SORT_ASCENDING": "Ordenar crescente",
+    "SORT_DESCENDING": "Ordenar decrescente",
+    "SORT_CLEAR": "Limpar ordenação",
+    "RESIZE_COLUMN": "Redimensionar coluna",
+    "EDIT_CELL": "Editar célula",
+    "SAVE_EDIT": "Salvar edição",
+    "CANCEL_EDIT": "Cancelar edição"
+  },
+  "BULK_ACTION_BAR": {
+    "SELECTED_COUNT": "{count} selecionados",
+    "CLEAR_SELECTION": "Limpar seleção"
+  },
+  "RECORD_DRAWER": {
+    "CLOSE": "Fechar painel do registro",
+    "TABS_LABEL": "Navegação de detalhes do registro",
+    "TABS": {
+      "OVERVIEW": "Visão geral",
+      "TIMELINE": "Linha do tempo",
+      "NOTES": "Notas"
+    },
+    "FIELDS": {
+      "EMPTY_TITLE": "Nenhum campo para exibir",
+      "EMPTY_DESCRIPTION": "Não há campos configurados para este registro.",
+      "CLICK_TO_EDIT": "Clique para editar",
+      "NOT_SET": "—",
+      "SAVE": "Salvar",
+      "CANCEL": "Cancelar"
+    },
+    "TIMELINE": {
+      "EMPTY_TITLE": "Nenhuma atividade registrada",
+      "EMPTY_DESCRIPTION": "Atividades, mensagens e eventos da linha do tempo aparecerão aqui."
+    },
+    "NOTES": {
+      "EMPTY_TITLE": "Nenhuma nota ainda",
+      "EMPTY_DESCRIPTION": "Adicione notas para registrar contexto importante."
+    },
+    "CUSTOM_TAB": {
+      "EMPTY_TITLE": "Sem conteúdo",
+      "EMPTY_DESCRIPTION": "Nenhum conteúdo disponível para esta aba."
+    },
+    "QUICK_ACTIONS_LABEL": "Ações rápidas"
+  },
+  "PAGINATION": {
+    "NAVIGATION": "Paginação",
+    "PREVIOUS_PAGE": "Página anterior",
+    "NEXT_PAGE": "Próxima página"
+  },
+  "TOAST": {
+    "DISMISS": "Dispensar notificação"
+  },
+  "DRAWER": {
+    "CLOSE": "Fechar painel"
+  },
+  "ONBOARDING_CHECKLIST": {
+    "TITLE": "Guia de Ativação",
+    "COLLAPSED_LABEL": "Primeiros Passos",
+    "DEMO_DATA_LABEL": "Ativar Dados de Demonstração",
+    "PROGRESS_SUBTITLE": "{completed} de {total} tarefas concluídas ({percent}%)",
+    "EXPAND": "Expandir Guia de Ativação",
+    "COLLAPSE": "Recolher",
+    "CLOSE": "Fechar",
+    "REGION": "Guia de Ativação",
+    "COMPLETION_TITLE": "Tudo pronto!",
+    "COMPLETION_SUBTITLE": "Você concluiu todas as etapas de ativação.",
+    "MARK_PENDING": "Marcar como pendente",
+    "MARK_COMPLETED": "Marcar como concluída",
+    "MARK_STEP_PENDING": "Marcar {title} como pendente",
+    "MARK_STEP_COMPLETED": "Marcar {title} como concluída",
+    "STEPS": {
+      "CONNECT_CHANNEL": {
+        "TITLE": "Conectar Canal WhatsApp",
+        "DESCRIPTION": "Conecte sua conta via Evolution API, Baileys ou Cloud API para enviar e receber mensagens.",
+        "ACTION": "Conectar Canal"
+      },
+      "IMPORT_CONTACTS": {
+        "TITLE": "Importar Contatos",
+        "DESCRIPTION": "Envie sua planilha CSV de leads ou sincronize contatos para iniciar cadências de vendas.",
+        "ACTION": "Importar Contatos"
+      },
+      "CREATE_PIPELINE": {
+        "TITLE": "Criar Primeiro Pipeline",
+        "DESCRIPTION": "Estruture as etapas do seu processo de vendas no CRM e configure cadências.",
+        "ACTION": "Criar Pipeline"
+      },
+      "SEND_MESSAGE": {
+        "TITLE": "Enviar Primeira Mensagem",
+        "DESCRIPTION": "Inicie uma conversa direta na Caixa de Entrada ou teste a qualificação do seu pipeline ativo.",
+        "ACTION": "Abrir Caixa de Entrada"
+      }
+    }
   }
 }

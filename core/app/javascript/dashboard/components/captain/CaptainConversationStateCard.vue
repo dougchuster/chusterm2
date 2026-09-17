@@ -27,6 +27,14 @@ const copy = {
   nextActionFallback: 'Revisar dados do atendimento.',
   openDeal: 'Abrir negócio no CRM',
   documentsPrefix: 'Docs:',
+  documentsStatusLabels: {
+    pending: 'pendente',
+    waiting_document: 'aguardando documento',
+    requested: 'solicitado',
+    parcial: 'parcial',
+    received: 'recebidos',
+    complete: 'completos',
+  },
   scoreWhy: 'Por que este score?',
   interventionContext: 'Contexto para intervenção humana',
   protectedService: 'Atendimento protegido contra respostas concorrentes',
@@ -485,7 +493,11 @@ watch(
             v-if="state.crm_deal_documents_status"
             class="rounded-full bg-ds-bg-surface px-2 py-1"
           >
-            {{ copy.documentsPrefix }} {{ state.crm_deal_documents_status }}
+            {{ copy.documentsPrefix }}
+            {{
+              copy.documentsStatusLabels[state.crm_deal_documents_status] ||
+              state.crm_deal_documents_status
+            }}
           </span>
           <span
             v-if="state.crm_deal_owner_name"

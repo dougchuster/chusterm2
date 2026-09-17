@@ -1011,11 +1011,40 @@
           "LABEL": "Caixa de Entrada",
           "PLACEHOLDER": "Selecione a caixa de entrada para implantar o assistente.",
           "ERROR": "É obrigatório selecionar uma caixa de entrada."
+        },
+        "AI_MODE": {
+          "LABEL": "Modo de atendimento",
+          "AUTO": "Automático",
+          "SUPERVISED": "Supervisionado",
+          "PAUSED": "Pausado",
+          "HUMAN_ONLY": "Somente humano"
+        },
+        "HANDOFF": {
+          "LABEL": "Transferência para humano",
+          "HUMAN_REQUEST_OR_SCORE": "Pedido de humano ou score",
+          "HUMAN_REQUEST": "Pedido de humano",
+          "SCORE_THRESHOLD": "Limite de score",
+          "MANUAL_ONLY": "Manual"
+        },
+        "ENABLED": {
+          "LABEL": "Captain responsável pela caixa de entrada",
+          "HELP": "Quando ativado, esta caixa de entrada usa este assistente como dono da IA."
+        },
+        "AUTO_REPLY": {
+          "LABEL": "Responder automaticamente",
+          "HELP": "Quando ativado no modo automático, o Captain envia respostas sem aguardar um humano."
         }
       },
       "EMPTY_STATE": {
         "TITLE": "Caixa de entrada não conectada",
         "SUBTITLE": "Conectar uma caixa de entrada permite ao assistente lidar com perguntas iniciais de seus clientes antes de transferi-las para você."
+      },
+      "CONFIG": {
+        "RESPONSIBLE": "Captain responsável",
+        "AUTO_REPLY": "Resposta automática",
+        "SAVE": "Salvar configuração",
+        "SUCCESS_MESSAGE": "A configuração da caixa de entrada foi salva com sucesso.",
+        "ERROR_MESSAGE": "Ocorreu um erro ao salvar a configuração da caixa de entrada."
       }
     }
   }

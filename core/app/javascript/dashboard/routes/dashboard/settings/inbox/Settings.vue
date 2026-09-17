@@ -293,6 +293,29 @@ export default {
       }
       return this.$t('INBOX_MGMT.ADD.CHANNEL_NAME.LABEL');
     },
+    provisioningStatusLabel() {
+      const labels = {
+        creating: 'criando',
+        connecting: 'conectando',
+        waiting_qr: 'aguardando QR',
+        connected: 'conectado',
+        disconnected: 'desconectado',
+        failed: 'falhou',
+        removed: 'removido',
+      };
+      return labels[this.evolutionInstance?.provisioning_status] || '';
+    },
+    connectionStateLabel() {
+      const labels = {
+        open: 'conectado',
+        close: 'desconectado',
+        connecting: 'conectando',
+      };
+      const raw =
+        this.evolutionInstance?.connection_state ||
+        this.evolutionHealth?.last_connection_state;
+      return labels[raw] || raw || 'desconhecido';
+    },
     inboxNamePlaceHolder() {
       if (this.isAWebWidgetInbox) {
         return this.$t('INBOX_MGMT.ADD.WEBSITE_NAME.PLACEHOLDER');
@@ -1217,17 +1240,13 @@ export default {
                       {{ evolutionInstance.instance_name }}
                     </span>
                     <span class="rounded-md bg-n-alpha-2 px-2 py-1 text-xs">
-                      {{
-                        evolutionInstance.connection_state ||
-                        evolutionHealth?.last_connection_state ||
-                        'unknown'
-                      }}
+                      {{ connectionStateLabel }}
                     </span>
                     <span
-                      v-if="evolutionInstance.provisioning_status"
+                      v-if="provisioningStatusLabel"
                       class="rounded-md bg-n-alpha-2 px-2 py-1 text-xs"
                     >
-                      {{ evolutionInstance.provisioning_status }}
+                      {{ provisioningStatusLabel }}
                     </span>
                   </div>
                   <div class="text-xs text-n-slate-10">

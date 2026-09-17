@@ -1,8 +1,8 @@
 ﻿{
   "CONVERSATION": {
+    "404": "Desculpe, não conseguimos encontrar a conversa. Por favor, tente novamente",
     "SELECT_A_CONVERSATION": "Por favor, selecione uma conversa no painel da esquerda",
     "CSAT_REPLY_MESSAGE": "Por favor, classifique a conversa",
-    "404": "Desculpe, não conseguimos encontrar a conversa. Por favor, tente novamente",
     "SWITCH_VIEW_LAYOUT": "Alternar o layout",
     "DASHBOARD_APP_TAB_MESSAGES": "Mensagens",
     "UNVERIFIED_SESSION": "A identidade deste usuário não foi verificada",
@@ -315,6 +315,10 @@
       "REJECT_CALL": "Recusar",
       "JOIN_CALL": "Entrar na chamada",
       "END_CALL": "Encerrar chamada"
+    },
+    "RESIZE": {
+      "RESIZE_LIST": "Redimensionar lista de conversas",
+      "RESIZE_SIDEBAR": "Redimensionar barra lateral do contato"
     }
   },
   "EMAIL_TRANSCRIPT": {
@@ -462,7 +466,49 @@
     "MULTIPLE": "{user} e {count} outros estão digitando"
   },
   "COPILOT": {
-    "TRY_THESE_PROMPTS": "Experimente estes comandos"
+    "TRY_THESE_PROMPTS": "Experimente estes comandos",
+    "SIDEBAR_TITLE": "Copilot do Captain AI",
+    "SUBTITLE": "Ferramentas de IA contextual para resolução mais rápida",
+    "HEADER_BADGE": "Com IA",
+    "SMART_SUMMARY": {
+      "TITLE": "Resumo Inteligente",
+      "DESCRIPTION": "Gere um resumo conciso desta conversa com IA.",
+      "GENERATE_BUTTON": "Gerar resumo",
+      "REFRESH_BUTTON": "Atualizar resumo",
+      "EMPTY": "Nenhum resumo gerado ainda. Clique acima para analisar esta conversa.",
+      "COPIED": "Resumo copiado para a área de transferência",
+      "COPY": "Copiar resumo",
+      "INSERT": "Inserir no editor",
+      "ERROR": "Não foi possível gerar o resumo. Tente novamente."
+    },
+    "REPLY_ASSISTANT": {
+      "TITLE": "Assistente de Resposta",
+      "DESCRIPTION": "Redija respostas com base na sua base de conhecimento e no contexto da conversa.",
+      "GENERATE_BUTTON": "Sugerir resposta",
+      "REFRESH_BUTTON": "Nova sugestão",
+      "EMPTY": "Clique acima para redigir uma resposta sugerida com base no contexto da conversa.",
+      "COPIED": "Resposta copiada para a área de transferência",
+      "COPY": "Copiar resposta",
+      "INSERT": "Inserir no editor",
+      "REFINE_LABEL": "Refinar resposta",
+      "TONE_PROFESSIONAL": "Profissional",
+      "TONE_CASUAL": "Amigável",
+      "TONE_SHORTEN": "Encurtar",
+      "TONE_EXPAND": "Expandir",
+      "TONE_GRAMMAR": "Corrigir gramática",
+      "ERROR": "Não foi possível gerar a sugestão de resposta. Tente novamente."
+    },
+    "TABS": {
+      "ASSISTANT": "Ferramentas Contextuais",
+      "CHAT": "Perguntar ao Copilot"
+    },
+    "AI_MODE": {
+      "TITLE": "Status da IA",
+      "AUTO": "IA ativa",
+      "SUPERVISED": "Supervisionada",
+      "PAUSED": "IA pausada",
+      "HUMAN_ONLY": "Humano no controle"
+    }
   },
   "GALLERY_VIEW": {
     "ERROR_DOWNLOADING": "Não foi possível baixar o anexo. Por favor, tente novamente"

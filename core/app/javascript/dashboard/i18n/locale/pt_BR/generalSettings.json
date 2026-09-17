@@ -150,8 +150,8 @@
       "EMPTY_MESSAGE": "Você não tem notificações não lidas"
     },
     "LIST": {
-      "LOADING_MESSAGE": "Carregando notificações...",
       "404": "Sem Notificações",
+      "LOADING_MESSAGE": "Carregando notificações...",
       "TABLE_HEADER": [
         "Nome",
         "Número de Telefone",
@@ -197,7 +197,12 @@
       "SETTINGS": "Configurações",
       "AI_ASSIST": "Assistente IA",
       "APPEARANCE": "Tema",
-      "SNOOZE_NOTIFICATION": "Adiar Notificação"
+      "SNOOZE_NOTIFICATION": "Adiar Notificação",
+      "CRM": "CRM e Vendas",
+      "CONTACTS": "Contatos e Empresas",
+      "RECENT_CONTACTS": "Contatos Recentes",
+      "DEALS": "Negócios e Oportunidades",
+      "RECENT_DEALS": "Negócios Recentes"
     },
     "COMMANDS": {
       "GO_TO_CONVERSATION_DASHBOARD": "Ir para Painel de Conversação",
@@ -239,7 +244,26 @@
       "LIGHT_MODE": "Claro",
       "DARK_MODE": "Escuro",
       "SYSTEM_MODE": "Sistema",
-      "SNOOZE_NOTIFICATION": "Adiar Notificação"
+      "SNOOZE_NOTIFICATION": "Adiar Notificação",
+      "GO_TO_COMPANIES_DASHBOARD": "Ir para o Painel de Empresas",
+      "GO_TO_CRM_DASHBOARD": "Ir para o Quadro de Negócios e Pipelines",
+      "GO_TO_CRM_LEADS": "Ir para Leads e Negócios",
+      "GO_TO_CRM_ACTIVITIES": "Ir para Atividades do CRM",
+      "GO_TO_CRM_AGENDA": "Ir para Calendário e Agenda",
+      "GO_TO_CRM_METRICS": "Ir para Métricas de Vendas do CRM",
+      "GO_TO_CRM_REPORTS": "Ir para Relatórios do CRM",
+      "GO_TO_CRM_CADENCES": "Ir para Cadências de Vendas",
+      "GO_TO_CRM_AUTOMATIONS": "Ir para Automações do CRM",
+      "GO_TO_CRM_PIPELINE_SETTINGS": "Ir para Configurações de Pipeline",
+      "GO_TO_CRM_LOSS_REASONS": "Ir para Motivos de Perda",
+      "GO_TO_CRM_CHECKLIST_TEMPLATES": "Ir para Modelos de Checklist",
+      "GO_TO_CRM_SCORING_CONFIG": "Ir para Configurações de Lead Scoring",
+      "GO_TO_CRM_AI_CENTER": "Ir para a Central de IA do CRM",
+      "GO_TO_SETTINGS_AUTOMATIONS": "Ir para Configurações de Automação",
+      "GO_TO_SETTINGS_MACROS": "Ir para Configurações de Macros",
+      "GO_TO_SETTINGS_CUSTOM_ATTRIBUTES": "Ir para Configurações de Atributos Personalizados",
+      "GO_TO_SETTINGS_SLA": "Ir para Configurações de SLA",
+      "GO_TO_SETTINGS_AUDIT_LOGS": "Ir para Configurações de Logs de Auditoria"
     }
   },
   "DASHBOARD_APPS": {

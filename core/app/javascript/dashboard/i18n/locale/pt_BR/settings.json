@@ -588,7 +588,8 @@
       "INFO_SECTION": {
         "TITLE": "Informações do Provedor de Serviço",
         "TOOLTIP": "Copie esses valores e configure-os no seu Provedor de Identidade para estabelecer a conexão SAML"
-      }
+      },
+      "COPY": "Copiar"
     }
   },
   "CONVERSATION_WORKFLOW": {

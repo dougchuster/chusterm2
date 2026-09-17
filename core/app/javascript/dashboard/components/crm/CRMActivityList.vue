@@ -49,6 +49,16 @@ function kindLabel(kind) {
   return labels[kind] || kind || 'Atividade';
 }
 
+function priorityLabel(priority) {
+  const labels = {
+    baixa: 'Baixa',
+    normal: 'Normal',
+    alta: 'Alta',
+    critica: 'Crítica',
+  };
+  return labels[priority] || 'Normal';
+}
+
 async function loadActivities() {
   if (!props.dealId) return;
   loading.value = true;
@@ -137,7 +147,7 @@ watch(() => props.dealId, loadActivities, { immediate: true });
               <span
                 class="rounded-full bg-n-slate-3 px-2 py-0.5 text-xs text-n-slate-11"
               >
-                {{ activity.priority || 'normal' }}
+                {{ priorityLabel(activity.priority) }}
               </span>
             </div>
             <p class="m-0 mt-1 text-sm font-medium text-n-slate-12">

@@ -76,8 +76,16 @@ const tierConfig = computed(() => {
   return configs[tier.value] || configs.baixo_potencial;
 });
 
+const CLASSIFICATION_LABELS = {
+  prioridade_alta: 'Alta prioridade',
+  qualificado: 'Qualificado',
+  medio_potencial: 'Médio potencial',
+  baixo_potencial: 'Baixo potencial',
+  sem_score: 'Score pendente',
+};
+
 const displayLabel = computed(() => {
-  return props.classification || tierConfig.value.label;
+  return CLASSIFICATION_LABELS[props.classification] || tierConfig.value.label;
 });
 
 const sizeClasses = computed(() => {

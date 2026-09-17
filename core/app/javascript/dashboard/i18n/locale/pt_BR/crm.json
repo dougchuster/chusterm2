@@ -268,6 +268,723 @@
       "LABEL": "Modo de exibição",
       "KANBAN": "Quadro Kanban",
       "TABLE": "Visão em tabela"
+    },
+    "TABLE": {
+      "DEAL": "Negócio",
+      "CONTACT": "Contato",
+      "STAGE": "Etapa",
+      "VALUE": "Valor",
+      "OWNER": "Responsável",
+      "EXPECTED_CLOSE": "Fechamento previsto",
+      "DAYS_INACTIVE": "Inatividade",
+      "ACTIONS": "Ações",
+      "NO_DATE": "Sem data"
+    },
+    "ROTTING": {
+      "BADGE": "Parado há {days}d",
+      "TOOLTIP": "Negócio inativo há {days} dias (limite: {threshold} dias)"
+    },
+    "ANALYTICS": {
+      "TITLE": "Central de Análises",
+      "BREADCRUMB": "CRM",
+      "BACK": "Voltar ao CRM",
+      "EYEBROW": "Inteligência e Relatórios",
+      "SUBTITLE": "Painel unificado conectando métricas de vendas, velocidade do funil e desempenho do atendimento.",
+      "REFRESH": "Atualizar métricas",
+      "LOADING": "Carregando análises...",
+      "ERROR_LOAD": "Não foi possível carregar alguns dados analíticos. Exibindo indicadores disponíveis.",
+      "EXPORT": {
+        "BUTTON": "Exportar CSV",
+        "EXPORTING": "Exportando...",
+        "SUCCESS": "Exportação iniciada. Você receberá um e-mail quando estiver pronta.",
+        "ERROR": "Falha ao exportar dados."
+      },
+      "PERIOD": {
+        "LABEL": "Período",
+        "TODAY": "Hoje",
+        "LAST_7_DAYS": "Últimos 7 dias",
+        "LAST_30_DAYS": "Últimos 30 dias",
+        "THIS_MONTH": "Este mês",
+        "CUSTOM": "Intervalo personalizado",
+        "START_DATE": "Data inicial",
+        "END_DATE": "Data final",
+        "APPLY": "Aplicar filtro"
+      },
+      "TABS": {
+        "LABEL": "Seções de análise",
+        "EXECUTIVE": "Visão Executiva",
+        "FUNNEL": "Funil de Vendas",
+        "SUPPORT": "Suporte e SLA"
+      },
+      "EXECUTIVE": {
+        "TITLE": "Visão Executiva",
+        "SUBTITLE": "Indicadores de alto nível sobre receita, conversões de vendas e tempos de resposta.",
+        "KPIS": {
+          "REVENUE_WON": "Receita Gerada",
+          "CONVERSATIONS": "Volume de Conversas",
+          "CONVERSION_RATE": "Taxa de Conversão de Vendas",
+          "AVG_FIRST_RESPONSE": "Tempo Médio de Primeira Resposta",
+          "AVG_TIME_TO_CLOSE": "Ciclo Médio de Vendas",
+          "OPEN_DEALS": "Negócios Abertos",
+          "WON_DEALS": "Negócios Ganhos",
+          "PIPELINE_VALUE": "Valor do Pipeline Ativo"
+        },
+        "TRENDS": {
+          "TITLE": "Tendência Mensal de Ganhos e Perdas",
+          "EMPTY": "Nenhum negócio fechado registrado no período",
+          "WON_LABEL": "Ganhos",
+          "LOST_LABEL": "Perdidos"
+        },
+        "INSIGHTS": {
+          "TITLE": "Alertas Operacionais e Insights Acionáveis",
+          "OVERDUE_TITLE": "Atividades Vencidas",
+          "OVERDUE_BODY": "{count} atividades vencidas exigem acompanhamento imediato.",
+          "HOT_LEADS_TITLE": "Oportunidades Prioritárias",
+          "HOT_LEADS_BODY": "{count} negócios de prioridade alta/crítica aguardando no pipeline.",
+          "QUALIFICATION_TITLE": "Atenção à Qualificação",
+          "QUALIFICATION_BODY": "Negócios abertos precisam de avaliação inicial de qualificação.",
+          "HEALTHY_TITLE": "Operação nos Trilhos",
+          "HEALTHY_BODY": "Nenhum gargalo crítico detectado no período ativo."
+        },
+        "TOP_DEALS": {
+          "TITLE": "Principais Negócios por Score",
+          "EMPTY": "Nenhum negócio encontrado",
+          "DEAL": "Negócio",
+          "CONTACT": "Contato",
+          "STAGE": "Etapa",
+          "SCORE": "Score",
+          "URGENCY": "Urgência",
+          "OPEN": "Abrir negócio {title}"
+        }
+      },
+      "FUNNEL": {
+        "TITLE": "Funil de Vendas e Eficiência por Etapa",
+        "SUBTITLE": "Taxas de perda por etapa, velocidade e principais motivos de perda.",
+        "EMPTY": "Nenhuma etapa de pipeline encontrada.",
+        "CONVERSION_FROM_PREV": "Passagem da etapa anterior",
+        "ENTRY_STAGE": "Etapa de Entrada",
+        "TOTAL_DEALS": "{count} negócios no funil",
+        "STAGE_VALUE": "Valor: {value}",
+        "TIME_IN_STAGE": {
+          "TITLE": "Duração Média por Etapa",
+          "EMPTY": "Sem dados de tempo de transição",
+          "STAGE": "Etapa",
+          "AVG_TIME": "Tempo médio",
+          "SAMPLES": "{count} negócios analisados (mín {min}, máx {max})"
+        },
+        "LOSS_REASONS": {
+          "TITLE": "Principais Motivos de Perda",
+          "EMPTY": "Nenhum motivo de perda registrado no período",
+          "RANK": "#",
+          "REASON": "Motivo",
+          "COUNT": "Negócios perdidos"
+        },
+        "SCORE_BY_STAGE": {
+          "TITLE": "Score Médio de Lead por Etapa",
+          "EMPTY": "Sem dados de scoring por etapa"
+        },
+        "AREA_DISTRIBUTION": {
+          "TITLE": "Negócios por Área Jurídica",
+          "EMPTY": "Nenhuma área jurídica registrada"
+        },
+        "STALE_DEALS": {
+          "TITLE": "Negócios Estagnados (7+ dias sem atividade)",
+          "EMPTY": "Nenhum negócio estagnado no período",
+          "DAYS": "{days}d inativo",
+          "NEVER": "Nunca contatado"
+        },
+        "ANALYST": {
+          "TITLE": "Analista de Vendas e Funil IA",
+          "SUBTITLE": "Pergunte sobre gargalos de conversão, leads sem responsável e perdas por etapa.",
+          "QUESTION_LABEL": "Perguntar ao Analista IA",
+          "PLACEHOLDER": "Ex.: Qual etapa tem a maior taxa de perda?",
+          "ASK": "Perguntar",
+          "ASKING": "Analisando dados…",
+          "ERROR": "Não foi possível contatar o analista do CRM agora."
+        }
+      },
+      "SUPPORT": {
+        "TITLE": "Desempenho do Suporte e Conformidade de SLA",
+        "SUBTITLE": "Satisfação do cliente, métricas de resolução e acompanhamento de violações de SLA.",
+        "KPIS": {
+          "CSAT_SCORE": "Score de Satisfação CSAT",
+          "CSAT_RESPONSES": "Total de Respostas CSAT",
+          "CSAT_RESPONSE_RATE": "Taxa de Resposta CSAT",
+          "SLA_HIT_RATE": "Taxa de Conformidade de SLA",
+          "SLA_MISSES": "Violações de SLA",
+          "SLA_CONVERSATIONS": "Conversas com SLA",
+          "FRT": "Tempo Médio de Primeira Resposta",
+          "RESOLUTION_TIME": "Tempo Médio de Resolução",
+          "RESOLUTIONS_COUNT": "Conversas Resolvidas"
+        },
+        "CSAT_DISTRIBUTION": {
+          "TITLE": "Distribuição de Avaliações CSAT",
+          "EMPTY": "Nenhuma resposta de pesquisa registrada no período selecionado",
+          "STARS": "{rating} Estrelas",
+          "RESPONSES": "{count} respostas ({pct}%)"
+        },
+        "INBOXES": {
+          "TITLE": "Desempenho por Canal e Caixa de Entrada",
+          "EMPTY": "Nenhuma atividade de canal registrada no período",
+          "INBOX": "Caixa de Entrada / Canal",
+          "CONVERSATIONS": "Conversas",
+          "FRT": "Primeira Resposta Média",
+          "RESOLUTION_TIME": "Resolução Média"
+        }
+      }
+    },
+    "AUTOMATION_RULES": {
+      "BREADCRUMB": "CRM",
+      "TITLE": "Regras de Automação",
+      "EYEBROW": "Automação de Fluxo de Trabalho",
+      "SUBTITLE": "Automações visuais baseadas em nós para negócios, etapas e gatilhos do CRM.",
+      "NEW_RULE": "Nova automação",
+      "LOADING": "Carregando regras de automação...",
+      "ERROR_LOAD": "Não foi possível carregar as regras de automação.",
+      "ERROR_SAVE": "Não foi possível salvar a regra de automação.",
+      "ERROR_TOGGLE": "Não foi possível atualizar o status da regra.",
+      "ERROR_DELETE": "Não foi possível excluir a regra de automação.",
+      "EMPTY_TITLE": "Nenhuma regra de automação configurada",
+      "EMPTY_DESCRIPTION": "Crie fluxos visuais para automatizar tarefas quando negócios mudam de etapa ou eventos ocorrem.",
+      "EMPTY_ACTION": "Criar primeira automação",
+      "SUMMARY": {
+        "TITLE": "Resumo das automações",
+        "TOTAL": "Total",
+        "ACTIVE": "Ativas",
+        "PAUSED": "Pausadas",
+        "FAST": "Resposta rápida (≤12h)",
+        "CRITICAL": "Prioridade crítica"
+      },
+      "FILTERS": {
+        "SEARCH_LABEL": "Buscar regras",
+        "SEARCH_PLACEHOLDER": "Buscar automações...",
+        "STATUS_LABEL": "Filtrar por status",
+        "STATUS_ALL": "Todos os status",
+        "STATUS_ACTIVE": "Ativas",
+        "STATUS_PAUSED": "Pausadas",
+        "STAGE_LABEL": "Filtrar por etapa",
+        "STAGE_ALL": "Todas as etapas",
+        "CLEAR": "Limpar filtros"
+      },
+      "CARD": {
+        "STATUS_ACTIVE": "Ativa",
+        "STATUS_PAUSED": "Pausada",
+        "TRIGGER_PREFIX": "Gatilho: Ao entrar na etapa ",
+        "STAGE_UNLINKED": "Etapa desvinculada",
+        "DUE": "Vence em {hours}h",
+        "CONDITIONS_COUNT": "Sem condições | 1 condição | {count} condições",
+        "UNTITLED": "Tarefa sem título",
+        "ACTIVATE": "Ativar",
+        "PAUSE": "Pausar",
+        "EDIT": "Editar fluxo",
+        "DELETE": "Excluir",
+        "RUNS": "Execuções",
+        "RUNS_EMPTY": "Nenhuma execução registrada para esta regra.",
+        "RUN_STATUS_EXECUTED": "Executada",
+        "RUN_STATUS_SKIPPED": "Ignorada",
+        "RUN_STATUS_FAILED": "Falhou"
+      },
+      "DELETE_MODAL": {
+        "TITLE": "Excluir regra de automação",
+        "DESCRIPTION": "Tem certeza que deseja excluir a regra \"{name}\"? Esta ação não pode ser desfeita.",
+        "CONFIRM": "Excluir regra",
+        "CANCEL": "Cancelar"
+      },
+      "ACTION_TYPES": {
+        "CREATE_ACTIVITY": "Criar Atividade",
+        "SET_CAPTAIN_MODE": "Definir Modo do Captain AI",
+        "MOVE_TO_STAGE": "Mover para Etapa",
+        "ASSIGN_OWNER": "Atribuir Responsável"
+      },
+      "TRIGGER_EVENTS": {
+        "STAGE_ENTERED": "Negócio entra na etapa",
+        "SCORE_CHANGED": "Score do lead alterado",
+        "STALE_DETECTED": "Negócio inativo / estagnado detectado",
+        "HANDOFF": "Transferência para atendente",
+        "MESSAGE_RECEIVED": "Mensagem recebida",
+        "MARKETING_LEAD_CREATED": "Lead de anúncio chega na etapa"
+      },
+      "ACTION_KINDS": {
+        "LIGACAO": "Ligação",
+        "SOLICITACAO_DOCUMENTOS": "Solicitar documentos",
+        "FOLLOW_UP": "Follow-up",
+        "REUNIAO": "Reunião",
+        "REVISAO_JURIDICA": "Revisão jurídica",
+        "ANALISE_DOCUMENTAL": "Análise documental",
+        "RETORNO_CLIENTE": "Retorno ao cliente",
+        "ENVIO_PROPOSTA": "Envio de proposta",
+        "ENVIO_CONTRATO": "Envio de contrato",
+        "ARQUIVAMENTO": "Arquivamento"
+      },
+      "PRIORITIES": {
+        "BAIXA": "Baixa",
+        "NORMAL": "Normal",
+        "ALTA": "Alta",
+        "CRITICA": "Crítica"
+      },
+      "CONDITION_FIELDS": {
+        "LEGAL_AREA": "Área jurídica",
+        "CASE_TYPE": "Tipo de caso",
+        "URGENCY_LEVEL": "Nível de urgência",
+        "SCORE_TOTAL": "Score total",
+        "RELATIONSHIP_STATUS": "Status do relacionamento",
+        "LIFECYCLE_STAGE": "Estágio do ciclo de vida",
+        "HAS_PHONE": "Possui telefone",
+        "CAMPAIGN_OPT_OUT": "Opt-out de campanhas",
+        "STAGE": "Etapa do negócio",
+        "STATUS": "Status do negócio"
+      },
+      "CONDITION_OPERATORS": {
+        "EQ": "Igual a (=)",
+        "NOT_EQ": "Diferente de (≠)",
+        "PRESENT": "Está presente / não vazio",
+        "BLANK": "Está vazio",
+        "GT": "Maior que (>)",
+        "GTE": "Maior ou igual (≥)",
+        "LT": "Menor que (<)",
+        "LTE": "Menor ou igual (≤)",
+        "IN": "Na lista",
+        "NOT_IN": "Fora da lista"
+      },
+      "BUILDER": {
+        "TITLE_NEW": "Nova automação visual",
+        "TITLE_EDIT": "Editar automação visual",
+        "DESCRIPTION": "Desenhe o grafo de automação configurando gatilhos, condições e ações.",
+        "SAVE": "Salvar automação",
+        "SAVING": "Salvando...",
+        "CANCEL": "Cancelar",
+        "CLOSE": "Fechar construtor",
+        "ADD_TRIGGER": "Adicionar Gatilho",
+        "ADD_CONDITION": "Adicionar Condição",
+        "ADD_ACTION": "Adicionar Ação",
+        "AUTO_LAYOUT": "Layout automático",
+        "ZOOM_IN": "Ampliar",
+        "ZOOM_OUT": "Reduzir",
+        "FIT_VIEW": "Ajustar à tela",
+        "EMPTY_CANVAS": "Sem nós no fluxo. Adicione um gatilho para começar.",
+        "NODE_TRIGGER_LABEL": "Gatilho",
+        "NODE_CONDITION_LABEL": "Condição",
+        "NODE_ACTION_LABEL": "Ação",
+        "DRAWER_TITLE": "Configurações do Nó",
+        "DRAWER_DESCRIPTION": "Configure as propriedades do nó selecionado.",
+        "RULE_NAME_LABEL": "Nome da Regra",
+        "RULE_NAME_PLACEHOLDER": "ex.: Follow-up ao entrar na etapa de qualificação",
+        "TRIGGER_EVENT_LABEL": "Evento Gatilho",
+        "TRIGGER_STAGE_LABEL": "Etapa do Pipeline",
+        "TRIGGER_STAGE_PLACEHOLDER": "Selecione uma etapa do pipeline...",
+        "ACTION_TYPE_LABEL": "Tipo de Ação",
+        "ACTION_KIND_LABEL": "Tipo de Atividade",
+        "ACTION_TITLE_LABEL": "Título da Tarefa",
+        "ACTION_TITLE_PLACEHOLDER": "ex.: Agendar ligação com o cliente",
+        "ACTION_DESC_LABEL": "Descrição da Tarefa",
+        "ACTION_DESC_PLACEHOLDER": "Detalhes e contexto para o responsável...",
+        "ACTION_PRIORITY_LABEL": "Prioridade",
+        "ACTION_DUE_HOURS_LABEL": "Vence em (horas)",
+        "ACTION_AI_MODE_LABEL": "Modo do Captain AI",
+        "ACTION_AI_MODE_COPILOT": "Copilot (Assistido)",
+        "ACTION_AI_MODE_AUTONOMOUS": "Autônomo",
+        "ACTION_AI_MODE_DISABLED": "Desativado",
+        "ACTION_AI_MODE_ASSIST": "Assistir",
+        "ACTION_REASON_LABEL": "Motivo / Justificativa",
+        "ACTION_REASON_PLACEHOLDER": "Por que o modo de IA está mudando...",
+        "ACTION_TARGET_STAGE_LABEL": "Etapa de Destino",
+        "ACTION_TARGET_STAGE_PLACEHOLDER": "Selecione a etapa de destino...",
+        "ACTION_USER_LABEL": "Atribuir ao Usuário",
+        "ACTION_USER_PLACEHOLDER": "Selecione o usuário...",
+        "CONDITION_FIELD_LABEL": "Campo",
+        "CONDITION_OPERATOR_LABEL": "Operador",
+        "CONDITION_VALUE_LABEL": "Valor",
+        "CONDITION_VALUE_PLACEHOLDER": "Valor de comparação...",
+        "VALIDATION_NAME_REQUIRED": "O nome da automação é obrigatório.",
+        "VALIDATION_STAGE_REQUIRED": "A etapa do pipeline é obrigatória para gatilho por etapa.",
+        "VALIDATION_ACTION_TITLE_REQUIRED": "O título da atividade é obrigatório.",
+        "VALIDATION_TRIGGER_REQUIRED": "O fluxo deve conter um nó de gatilho.",
+        "VALIDATION_ACTION_REQUIRED": "O fluxo deve conter pelo menos um nó de ação.",
+        "DELETE_NODE": "Excluir nó"
+      }
+    },
+    "SCORING_CONFIG": {
+      "BREADCRUMB": "Configurações de scoring",
+      "TITLE": "Lead scoring",
+      "SUBTITLE": "Equilibre critérios, classificações e movimentações automáticas no pipeline.",
+      "LOADING": "Carregando configurações de scoring…",
+      "LOAD_ERROR": "Não foi possível carregar as configurações de scoring.",
+      "EMPTY_PIPELINES": "Crie um pipeline antes de configurar o scoring.",
+      "DEFAULT_BADGE": "Padrão",
+      "CRITERIA_HEADER": "Critério",
+      "WEIGHT_HEADER": "Peso",
+      "DEFAULT_HEADER": "Valor padrão",
+      "DEFAULT_VALUE": "Padrão: {value}",
+      "WEIGHT_ARIA": "Peso para {criterion}",
+      "THRESHOLDS_TITLE": "Limites de classificação",
+      "THRESHOLDS_SUBTITLE": "Defina o score mínimo para cada faixa de prioridade.",
+      "KANBAN_TITLE": "Movimentação automática no pipeline",
+      "KANBAN_SUBTITLE": "Escolha a etapa para cada classificação.",
+      "AUTO_MOVE": "Mover negócios automaticamente",
+      "NO_STAGE": "Não mover",
+      "TOTAL_LABEL": "Peso total",
+      "TOTAL_OK": "Pesos equilibrados.",
+      "TOTAL_WARNING": "Os pesos devem somar 100%.",
+      "RESTORE_DEFAULTS": "Restaurar padrões",
+      "SAVE": "Salvar configurações",
+      "SAVING": "Salvando…",
+      "SAVED": "Configurações de scoring salvas.",
+      "SAVE_PIPELINE_ERROR": "Não foi possível salvar as configurações de scoring.",
+      "CRITERIA": {
+        "FIT": {
+          "LABEL": "Fit do perfil",
+          "DESCRIPTION": "Quão próximo o lead está do perfil de cliente ideal."
+        },
+        "URGENCY": {
+          "LABEL": "Urgência",
+          "DESCRIPTION": "Quão rápido o lead precisa de uma solução."
+        },
+        "ECONOMIC": {
+          "LABEL": "Potencial econômico",
+          "DESCRIPTION": "Valor financeiro estimado da oportunidade."
+        },
+        "DOCUMENTS": {
+          "LABEL": "Documentos",
+          "DESCRIPTION": "Disponibilidade e qualidade dos documentos necessários."
+        },
+        "CLARITY": {
+          "LABEL": "Clareza do caso",
+          "DESCRIPTION": "Quão claras são a necessidade e o resultado esperado."
+        },
+        "ENGAGEMENT": {
+          "LABEL": "Engajamento",
+          "DESCRIPTION": "Responsividade e participação do lead."
+        },
+        "PAYMENT_CAPACITY": {
+          "LABEL": "Capacidade de pagamento",
+          "DESCRIPTION": "Condição de arcar com o serviço proposto."
+        },
+        "CONFLICT": {
+          "LABEL": "Risco de conflito",
+          "DESCRIPTION": "Conflitos potenciais ou impedimentos para o caso."
+        }
+      },
+      "CLASSIFICATIONS": {
+        "BAIXO_POTENCIAL": "Baixo potencial",
+        "MEDIO_POTENCIAL": "Médio potencial",
+        "QUALIFICADO": "Qualificado",
+        "PRIORIDADE_ALTA": "Prioridade alta"
+      },
+      "CAMPAIGNS": {
+        "TITLE": "Exceções por campanha",
+        "SUBTITLE": "Use regras de scoring diferentes para campanhas específicas.",
+        "EMPTY": "Nenhuma exceção de campanha configurada.",
+        "OVERRIDE_BADGE": "Exceção",
+        "PIPELINE_LABEL": "Pipeline",
+        "THRESHOLDS_TITLE": "Limites da campanha",
+        "KANBAN_TITLE": "Movimentação no pipeline da campanha",
+        "REMOVE_OVERRIDE": "Remover exceção",
+        "SAVE": "Salvar exceção",
+        "SAVE_ERROR": "Não foi possível salvar a exceção da campanha."
+      }
+    },
+    "CHECKLIST_TEMPLATES": {
+      "BREADCRUMB": "Configurações do CRM",
+      "TITLE": "Modelos de checklist",
+      "EYEBROW": "Qualidade de processo",
+      "SUBTITLE": "Padronize documentos, tarefas e validações exigidos em cada caso.",
+      "NEW_TEMPLATE": "Novo modelo",
+      "LOADING": "Carregando modelos…",
+      "ERROR_LOAD": "Não foi possível carregar os modelos de checklist.",
+      "ERROR_SAVE": "Não foi possível salvar o modelo de checklist.",
+      "ERROR_ARCHIVE": "Não foi possível arquivar o modelo de checklist.",
+      "EMPTY_TITLE": "Nenhum modelo de checklist ainda",
+      "EMPTY_DESCRIPTION": "Crie um checklist reutilizável para os processos recorrentes da equipe.",
+      "EMPTY_ACTION": "Criar primeiro modelo",
+      "SUMMARY": {
+        "TITLE": "Resumo de checklists",
+        "ACTIVE_TEMPLATES": "Modelos ativos",
+        "LEGAL_AREAS": "Áreas jurídicas",
+        "TOTAL_ITEMS": "Total de itens",
+        "REQUIRED_ITEMS": "Itens obrigatórios"
+      },
+      "FILTERS": {
+        "SEARCH_LABEL": "Buscar modelos",
+        "SEARCH_PLACEHOLDER": "Buscar por nome ou tipo de caso…",
+        "CASE_TYPE_LABEL": "Tipo de caso",
+        "ALL_CASE_TYPES": "Todos os tipos de caso",
+        "LEGAL_AREA_LABEL": "Área jurídica",
+        "ALL_LEGAL_AREAS": "Todas as áreas jurídicas",
+        "CLEAR": "Limpar filtros"
+      },
+      "CARD": {
+        "ITEMS_COUNT": "{count} itens",
+        "REQUIRED_COUNT": "{count} obrigatórios",
+        "EDIT": "Editar modelo",
+        "ARCHIVE": "Arquivar modelo"
+      },
+      "KINDS": {
+        "DOCUMENT": "Documento",
+        "TASK": "Tarefa",
+        "VALIDATION": "Validação"
+      },
+      "FORM": {
+        "NEW_TITLE": "Novo modelo de checklist",
+        "EDIT_TITLE": "Editar modelo de checklist",
+        "DESCRIPTION": "Defina quando este checklist se aplica e quais itens ele contém.",
+        "NAME_LABEL": "Nome do modelo",
+        "NAME_PLACEHOLDER": "ex.: Documentos iniciais de aposentadoria",
+        "LEGAL_AREA_LABEL": "Área jurídica",
+        "LEGAL_AREA_PLACEHOLDER": "Selecione uma área jurídica",
+        "CASE_TYPE_LABEL": "Tipo de caso",
+        "CASE_TYPE_PLACEHOLDER": "ex.: Aposentadoria por idade",
+        "POSITION_LABEL": "Posição",
+        "ITEMS_TITLE": "Itens do checklist",
+        "ADD_ITEM": "Adicionar item",
+        "ITEM_TITLE_LABEL": "Título do item",
+        "ITEM_TITLE_PLACEHOLDER": "ex.: Comprovante de residência",
+        "ITEM_KEY_LABEL": "Chave interna",
+        "ITEM_KEY_PLACEHOLDER": "ex.: comprovante_residencia",
+        "ITEM_KIND_LABEL": "Tipo do item",
+        "ITEM_REQUIRED": "Obrigatório",
+        "REMOVE_ITEM": "Remover item",
+        "CANCEL": "Cancelar",
+        "SAVE": "Salvar modelo",
+        "SAVING": "Salvando…"
+      },
+      "ARCHIVE_CONFIRM": {
+        "TITLE": "Arquivar modelo de checklist",
+        "DESCRIPTION": "Arquivar o modelo {name}? Checklists existentes serão preservados.",
+        "CANCEL": "Cancelar",
+        "CONFIRM": "Arquivar"
+      }
+    },
+    "CADENCES": {
+      "BREADCRUMB": "CRM",
+      "TITLE": "Cadências de vendas",
+      "SUBTITLE": "Organize follow-ups entre canais e mantenha cada oportunidade em movimento.",
+      "NEW": "Nova cadência",
+      "LOADING": "Carregando cadências…",
+      "ERROR": {
+        "LOAD": "Não foi possível carregar as cadências.",
+        "SAVE": "Não foi possível salvar a cadência.",
+        "STATUS": "Não foi possível atualizar o status da cadência.",
+        "ARCHIVE": "Não foi possível arquivar a cadência.",
+        "CONDITIONS_JSON": "Informe condições válidas em formato JSON."
+      },
+      "STATUSES": {
+        "DRAFT": "Rascunho",
+        "ACTIVE": "Ativa",
+        "PAUSED": "Pausada"
+      },
+      "CHANNELS": {
+        "WHATSAPP": "WhatsApp",
+        "EMAIL": "E-mail",
+        "SMS": "SMS",
+        "TASK": "Tarefa"
+      },
+      "ACTIONS": {
+        "SEND_MESSAGE": "Enviar mensagem",
+        "CREATE_ACTIVITY": "Criar atividade",
+        "WAIT": "Aguardar"
+      },
+      "CONDITION_MISS": {
+        "SKIP_STEP": "Pular passo",
+        "PAUSE_ENROLLMENT": "Pausar inscrição",
+        "CANCEL_ENROLLMENT": "Cancelar inscrição"
+      },
+      "STATS": {
+        "SECTION_LABEL": "Resumo de cadências",
+        "TOTAL": {
+          "LABEL": "Total",
+          "HINT": "Todas as cadências"
+        },
+        "ACTIVE": {
+          "LABEL": "Ativas",
+          "HINT": "Em execução"
+        },
+        "PAUSED": {
+          "LABEL": "Pausadas",
+          "HINT": "Interrompidas temporariamente"
+        },
+        "STEPS": {
+          "LABEL": "Passos",
+          "HINT": "Em todas as cadências"
+        }
+      },
+      "FILTERS": {
+        "SEARCH_LABEL": "Buscar cadências",
+        "SEARCH_PLACEHOLDER": "Buscar por nome ou passo…",
+        "STATUS_LABEL": "Status",
+        "ALL_STATUSES": "Todos os status",
+        "CHANNEL_LABEL": "Canal",
+        "ALL_CHANNELS": "Todos os canais",
+        "CLEAR": "Limpar filtros"
+      },
+      "EMPTY": {
+        "TITLE": "Nenhuma cadência ainda",
+        "DESCRIPTION": "Crie uma cadência ou comece de um modelo pronto.",
+        "ACTION": "Criar primeira cadência"
+      },
+      "CARD": {
+        "STEPS_COUNT": "{count} passos",
+        "STEP_META": "Passo {position} · {channel} · após {hours}h",
+        "STEP_CONDITIONS": "{count} condições",
+        "STEP_INACTIVE": "Passo inativo",
+        "ACTIVATE": "Ativar",
+        "PAUSE": "Pausar",
+        "EDIT": "Editar cadência",
+        "ARCHIVE": "Arquivar cadência"
+      },
+      "DRAWER": {
+        "TITLE_NEW": "Nova cadência",
+        "TITLE_EDIT": "Editar cadência",
+        "DESCRIPTION_NEW": "Crie uma sequência de follow-ups para leads e clientes.",
+        "DESCRIPTION_EDIT": "Atualize os detalhes e passos da cadência.",
+        "CANCEL": "Cancelar",
+        "SAVE": "Salvar cadência",
+        "SAVING": "Salvando…"
+      },
+      "FORM": {
+        "DETAILS_TITLE": "Detalhes da cadência",
+        "DETAILS_DESCRIPTION": "Nomeie a cadência e escolha como ela começa.",
+        "NAME": "Nome",
+        "NAME_PLACEHOLDER": "ex.: Follow-up de novo lead",
+        "STATUS": "Status",
+        "CHANNEL": "Canal principal",
+        "STARTS_AT": "Inicia em",
+        "STEPS_TITLE": "Passos da cadência",
+        "STEPS_DESCRIPTION": "Organize mensagens, tarefas e períodos de espera.",
+        "ADD_STEP": "Adicionar passo"
+      },
+      "STEP": {
+        "DEFAULT_NAME": "Passo {position}",
+        "DUPLICATED_NAME": "{name} (cópia)",
+        "SUMMARY": "Passo {position}",
+        "TITLE": "Configurações do passo",
+        "NAME": "Nome do passo",
+        "CHANNEL": "Canal",
+        "ACTION": "Ação",
+        "WAIT_HOURS": "Tempo de espera (horas)",
+        "BODY_LABEL": "Mensagem ou instruções",
+        "BODY_PLACEHOLDER": "Escreva a mensagem ou as instruções da tarefa…",
+        "CONDITIONS_LABEL": "Condições (JSON)",
+        "CONDITION_MISS_LABEL": "Quando as condições não forem atendidas",
+        "ACTIVE": "Passo ativo",
+        "DUPLICATE": "Duplicar passo",
+        "REMOVE": "Remover passo"
+      },
+      "TEMPLATES": {
+        "KICKER": "Modelos prontos",
+        "DESCRIPTION": "Comece com um fluxo comum e personalize cada passo.",
+        "USE": "Usar {name}",
+        "LEAD_SEM_RESPOSTA": {
+          "NAME": "Lead sem resposta",
+          "DESCRIPTION": "Reconecte com um lead que parou de responder.",
+          "STEPS": {
+            "STEP_1": {
+              "NAME": "Primeiro follow-up",
+              "BODY": "Olá! Posso ajudar a dar continuidade ao seu pedido?"
+            },
+            "STEP_2": {
+              "NAME": "Criar tarefa de follow-up",
+              "BODY": "Revise o lead e escolha a próxima tentativa de contato."
+            },
+            "STEP_3": {
+              "NAME": "Follow-up final",
+              "BODY": "Estamos à disposição quando quiser continuar."
+            }
+          }
+        },
+        "DOCUMENTOS_PENDENTES": {
+          "NAME": "Documentos pendentes",
+          "DESCRIPTION": "Lembre o cliente sobre documentos ainda necessários.",
+          "STEPS": {
+            "STEP_1": {
+              "NAME": "Lembrete de documentos",
+              "BODY": "Por favor, envie os documentos pendentes para darmos continuidade."
+            },
+            "STEP_2": {
+              "NAME": "Segundo lembrete",
+              "BODY": "Ainda estamos aguardando os documentos necessários para a próxima etapa."
+            }
+          }
+        },
+        "CONSULTA_AGENDADA": {
+          "NAME": "Consulta agendada",
+          "DESCRIPTION": "Confirme um agendamento e reduza faltas.",
+          "STEPS": {
+            "STEP_1": {
+              "NAME": "Confirmação de agendamento",
+              "BODY": "Seu agendamento está marcado. Por favor, confirme sua presença."
+            },
+            "STEP_2": {
+              "NAME": "Lembrete de agendamento",
+              "BODY": "Lembrete: seu agendamento está chegando."
+            }
+          }
+        },
+        "REATIVACAO_LEAD_FRIO": {
+          "NAME": "Reativação de lead frio",
+          "DESCRIPTION": "Reabra a conversa com uma oportunidade inativa.",
+          "STEPS": {
+            "STEP_1": {
+              "NAME": "Mensagem de reativação",
+              "BODY": "Gostaria de retomar seu pedido? Podemos ajudar com o próximo passo."
+            },
+            "STEP_2": {
+              "NAME": "Revisar reativação",
+              "BODY": "Verifique se o lead respondeu e decida a próxima ação."
+            }
+          }
+        },
+        "POS_ATENDIMENTO": {
+          "NAME": "Pós-atendimento",
+          "DESCRIPTION": "Verifique a satisfação após um serviço concluído.",
+          "STEPS": {
+            "STEP_1": {
+              "NAME": "Mensagem de satisfação",
+              "BODY": "Como foi sua experiência com nosso atendimento?"
+            },
+            "STEP_2": {
+              "NAME": "Revisar feedback",
+              "BODY": "Revise o feedback e faça follow-up quando necessário."
+            }
+          }
+        },
+        "CLIENTE_BASE_REMARKETING": {
+          "NAME": "Remarketing para base de clientes",
+          "DESCRIPTION": "Reconecte com clientes existentes sobre serviços relevantes.",
+          "STEPS": {
+            "STEP_1": {
+              "NAME": "Reconexão",
+              "BODY": "Temos uma novidade que pode ser relevante para você."
+            },
+            "STEP_2": {
+              "NAME": "Revisar interesse",
+              "BODY": "Verifique o interesse do cliente e planeje o próximo contato."
+            }
+          }
+        }
+      },
+      "ARCHIVE_MODAL": {
+        "TITLE": "Arquivar cadência",
+        "DESCRIPTION": "Arquivar a cadência {name}? Inscrições ativas serão interrompidas.",
+        "CANCEL": "Cancelar",
+        "CONFIRM": "Arquivar"
+      }
+    },
+    "DEAL_INSIGHTS": {
+      "TITLE": "Insights de IA do Negócio",
+      "SUBTITLE": "Inteligência contextual e próxima melhor ação",
+      "SUMMARY_TITLE": "Resumo do Negócio",
+      "NO_SUMMARY": "Nenhum resumo de IA gerado para este negócio ainda.",
+      "NEXT_ACTION_TITLE": "Próxima Melhor Ação",
+      "NO_NEXT_ACTION": "Nenhuma próxima ação sugerida ainda.",
+      "SCORE_TITLE": "Score e Qualificação do Lead",
+      "RECOMPUTE_SCORE": "Recalcular score",
+      "RECOMPUTING_SCORE": "Recalculando...",
+      "SCORE_REASON": "Justificativa do score",
+      "AI_STATUS_TITLE": "Modo do Captain AI",
+      "HANDOFF_REASON": "Motivo da transferência",
+      "OPEN_CONVERSATION": "Abrir conversa com o Copilot",
+      "SCORE_UPDATED": "Score do lead atualizado com sucesso.",
+      "SCORE_UPDATE_ERROR": "Não foi possível recalcular o score. Tente novamente."
     }
   }
 }

@@ -334,7 +334,11 @@
           "DESCRIPTION": "Exporte rapidamente um arquivo CSV com detalhes completos dos seus contatos",
           "CONFIRM": "Exportar",
           "SUCCESS_MESSAGE": "Exportando. Você será notificado por e-mail quando o arquivo estiver pronto para ser baixado.",
-          "ERROR_MESSAGE": "Ocorreu um erro, por favor tente novamente"
+          "ERROR_MESSAGE": "Ocorreu um erro, por favor tente novamente",
+          "CSV_DESCRIPTION": "Baixe um CSV imediatamente usando o segmento, lista, filtros e etiquetas atuais. Ideal para Google Sheets ou públicos de campanha.",
+          "CSV_CONFIRM": "Baixar CSV agora",
+          "CSV_SUCCESS": "CSV gerado com os contatos filtrados.",
+          "CSV_ERROR": "Não foi possível gerar o CSV agora."
         },
         "SORT_BY": {
           "LABEL": "Classificar por",
@@ -658,6 +662,53 @@
         "DISCARD": "Descartar",
         "SEND": "Enviar ({keyCode})"
       }
+    }
+  },
+  "CONTACTS_DATA_GRID": {
+    "TITLE": "Contatos",
+    "SUBTITLE": "Gerencie e inspecione seus contatos com edição inline e ações em massa.",
+    "SEARCH_PLACEHOLDER": "Buscar contatos...",
+    "UPDATE_SUCCESS": "Contato atualizado com sucesso.",
+    "UPDATE_ERROR": "Não foi possível atualizar o contato. Tente novamente.",
+    "COLUMNS": {
+      "NAME": "Nome",
+      "EMAIL": "E-mail",
+      "PHONE": "Telefone",
+      "COMPANY": "Empresa",
+      "RELATIONSHIP": "Relacionamento",
+      "LIFECYCLE_STAGE": "Estágio do Ciclo de Vida",
+      "LOCATION": "Localização",
+      "LAST_ACTIVITY": "Última Atividade"
+    },
+    "FIELDS": {
+      "NAME": "Nome Completo",
+      "EMAIL": "Endereço de E-mail",
+      "PHONE": "Número de Telefone",
+      "COMPANY": "Empresa",
+      "RELATIONSHIP": "Relacionamento",
+      "LIFECYCLE_STAGE": "Estágio do Ciclo de Vida",
+      "LOCATION": "Localização"
+    },
+    "RELATIONSHIPS": {
+      "LEAD": "Lead",
+      "CUSTOMER": "Cliente"
+    },
+    "STAGES": {
+      "VISITOR": "Visitante",
+      "LEAD": "Lead",
+      "QUALIFIED_LEAD": "Lead Qualificado",
+      "TRIAGE": "Triagem",
+      "CONSULTATION_SCHEDULED": "Consulta Agendada",
+      "CUSTOMER": "Cliente",
+      "ACTIVE_CUSTOMER": "Cliente Ativo",
+      "RECURRING_CUSTOMER": "Cliente Recorrente",
+      "EX_CUSTOMER": "Ex-Cliente",
+      "LOST": "Perdido"
+    },
+    "DRAWER": {
+      "BLOCK_CONTACT": "Bloquear Contato",
+      "UNBLOCK_CONTACT": "Desbloquear Contato",
+      "SEND_MESSAGE": "Enviar Mensagem"
     }
   }
 }

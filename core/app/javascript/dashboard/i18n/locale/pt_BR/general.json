@@ -10,7 +10,8 @@
     "BETA_DESCRIPTION": "Este recurso está em fase BETA e deve sofre alterações assim que Nós melhorarmos ele.",
     "ACCEPT": "Aceitar",
     "DISCARD": "Descartar",
-    "PREFERRED": "Preferido"
+    "PREFERRED": "Preferido",
+    "PREMIUM_ACCESS": "Acesso premium"
   },
   "CHOICE_TOGGLE": {
     "YES": "Sim",
