@@ -29,6 +29,34 @@ RSpec.describe Crm::StageAutomation do
     build_rule('assign_owner', config)
   end
 
+  describe 'trigger filtering' do
+    it 'runs only stage_entered rules by default' do
+      account.crm_automation_rules.create!(
+        crm_pipeline_stage: stage, name: 'Regra marketing',
+        trigger_event: 'marketing_lead_created', action_type: 'assign_owner',
+        action_config: { 'user_id' => owner.id }
+      )
+
+      described_class.new(deal: deal, actor: nil).perform
+
+      expect(deal.reload.owner_id).to be_nil
+      expect(CrmAutomationRun.where(crm_deal: deal)).to be_empty
+    end
+
+    it 'runs marketing_lead_created rules when that trigger is requested' do
+      account.crm_automation_rules.create!(
+        crm_pipeline_stage: stage, name: 'Regra marketing',
+        trigger_event: 'marketing_lead_created', action_type: 'assign_owner',
+        action_config: { 'user_id' => owner.id }
+      )
+
+      described_class.new(deal: deal, actor: nil).perform(trigger: 'marketing_lead_created')
+
+      expect(deal.reload.owner_id).to eq(owner.id)
+      expect(CrmAutomationRun.where(crm_deal: deal).last.status).to eq('executed')
+    end
+  end
+
   describe 'assign_owner action' do
     it 'assigns the configured user as the deal owner' do
       build_assign_owner_rule({ 'user_id' => owner.id })

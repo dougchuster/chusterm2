@@ -52,7 +52,19 @@
       },
       "ERROR": {
         "TITLE": "Could not load campaigns",
-        "MESSAGE": "Check your connections and try again."
+        "MESSAGE": "Check your connections and try again.",
+        "STATUS": "Could not change status. Does the connection allow writes?"
+      },
+      "ACTIONS": {
+        "PAUSE": "Pause",
+        "RESUME": "Resume"
+      },
+      "CONFIRM": {
+        "PAUSE": "Pause campaign \"{name}\" on Meta? The change is applied async and audited.",
+        "RESUME": "Resume campaign \"{name}\" on Meta? The change is applied async and audited."
+      },
+      "SUCCESS": {
+        "STATUS": "Status change sent — applied on Meta in a few seconds."
       }
     },
     "LEADS": {

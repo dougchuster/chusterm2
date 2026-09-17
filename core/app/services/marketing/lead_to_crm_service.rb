@@ -21,10 +21,21 @@ class Marketing::LeadToCrmService
       attrs[:converted_at] = Time.current
     end
     lead.update!(attrs)
+    run_lead_automations(deal) if deal.present?
     lead
   end
 
   private
+
+  # Regras com gatilho marketing_lead_created presas ao estágio onde o deal
+  # aterrissa rodam aqui (assign_owner, create_activity, ...). Uma regra
+  # quebrada nunca derruba a conversão — StageAutomation já registra o run
+  # como failed para auditoria antes de propagar.
+  def run_lead_automations(deal)
+    Crm::StageAutomation.new(deal: deal).perform(trigger: 'marketing_lead_created')
+  rescue StandardError => e
+    Rails.logger.error("[Marketing LeadToCrm] automação do lead falhou: #{e.class}: #{e.message}")
+  end
 
   def find_or_create_lead
     @account.marketing_leads.find_or_create_by!(leadgen_id: @leadgen_id) do |lead|

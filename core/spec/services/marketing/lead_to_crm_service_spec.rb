@@ -103,4 +103,43 @@ RSpec.describe Marketing::LeadToCrmService do
     expect(other_account.marketing_leads.count).to eq(0)
     expect(other_account.crm_deals.count).to eq(0)
   end
+
+  it 'dispara regras marketing_lead_created do estagio de destino' do
+    owner = create(:user, account: account, role: 'agent')
+    account.crm_automation_rules.create!(
+      crm_pipeline_stage: stage, name: 'Atribuir dono',
+      trigger_event: 'marketing_lead_created', action_type: 'assign_owner',
+      action_config: { 'user_id' => owner.id }
+    )
+
+    lead = perform
+
+    expect(lead.crm_deal.owner_id).to eq(owner.id)
+  end
+
+  it 'nao roda regras de outros gatilhos na conversao' do
+    owner = create(:user, account: account, role: 'agent')
+    account.crm_automation_rules.create!(
+      crm_pipeline_stage: stage, name: 'Regra de estagio',
+      trigger_event: 'stage_entered', action_type: 'assign_owner',
+      action_config: { 'user_id' => owner.id }
+    )
+
+    lead = perform
+
+    expect(lead.crm_deal.owner_id).to be_nil
+  end
+
+  it 'sobrevive a regra quebrada sem derrubar a conversao' do
+    account.crm_automation_rules.create!(
+      crm_pipeline_stage: stage, name: 'Move para estagio inexistente',
+      trigger_event: 'marketing_lead_created', action_type: 'move_to_stage',
+      action_config: { 'stage_id' => 999_999 }
+    )
+
+    lead = perform
+
+    expect(lead.status).to eq('converted')
+    expect(lead.crm_deal).to be_present
+  end
 end

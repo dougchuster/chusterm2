@@ -1,8 +1,10 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useAlert } from 'dashboard/composables';
 import MarketingAPI from 'dashboard/api/marketing';
 import {
+  DsButton,
   DsCard,
   DsDataGrid,
   DsEmptyState,
@@ -15,6 +17,7 @@ const { t } = useI18n();
 const loading = ref(true);
 const error = ref(null);
 const campaigns = ref([]);
+const busyCampaignId = ref(null);
 const providerFilter = ref('');
 const days = ref(30);
 
@@ -106,6 +109,12 @@ const columns = computed(() => [
     accessorKey: 'cpl_display',
     width: 110,
   },
+  {
+    id: 'actions',
+    header: '',
+    accessorKey: 'actions',
+    width: 140,
+  },
 ]);
 
 const gridData = computed(() =>
@@ -138,6 +147,28 @@ const load = async () => {
     error.value = e;
   } finally {
     loading.value = false;
+  }
+};
+
+// Escrita governada: pausar/reativar pede confirmação e vai por job —
+// a resposta 202 não garante que a Meta aplicou, só que foi aceito e auditado.
+const toggleStatus = async campaign => {
+  const next = campaign.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE';
+  const confirmKey =
+    next === 'PAUSED'
+      ? 'MARKETING.CAMPAIGNS.CONFIRM.PAUSE'
+      : 'MARKETING.CAMPAIGNS.CONFIRM.RESUME';
+  if (!window.confirm(t(confirmKey, { name: campaign.name }))) return;
+
+  busyCampaignId.value = campaign.id;
+  try {
+    await MarketingAPI.setCampaignStatus(campaign.id, next);
+    useAlert(t('MARKETING.CAMPAIGNS.SUCCESS.STATUS'));
+    campaign.status = next;
+  } catch (e) {
+    useAlert(t('MARKETING.CAMPAIGNS.ERROR.STATUS'));
+  } finally {
+    busyCampaignId.value = null;
   }
 };
 
@@ -191,7 +222,25 @@ onMounted(load);
         :empty-description="t('MARKETING.CAMPAIGNS.EMPTY.MESSAGE')"
         row-key="id"
         min-width-class="min-w-[1100px]"
-      />
+      >
+        <template #cell-actions="{ row }">
+          <div class="flex justify-end">
+            <DsButton
+              v-if="row.writable && ['ACTIVE', 'PAUSED'].includes(row.status)"
+              size="sm"
+              variant="ghost"
+              :loading="busyCampaignId === row.id"
+              @click="toggleStatus(row)"
+            >
+              {{
+                row.status === 'ACTIVE'
+                  ? t('MARKETING.CAMPAIGNS.ACTIONS.PAUSE')
+                  : t('MARKETING.CAMPAIGNS.ACTIONS.RESUME')
+              }}
+            </DsButton>
+          </div>
+        </template>
+      </DsDataGrid>
     </div>
   </section>
 </template>

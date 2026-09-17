@@ -9,8 +9,9 @@ class Crm::StageAutomation
     @automation_depth = automation_depth
   end
 
-  def perform
-    rules = CrmAutomationRule.active.for_stage(@deal.crm_pipeline_stage_id)
+  def perform(trigger: 'stage_entered')
+    @trigger = trigger
+    rules = CrmAutomationRule.active.for_stage(@deal.crm_pipeline_stage_id).where(trigger_event: trigger)
     return if rules.none?
 
     rules.each { |rule| process_rule(rule) }
@@ -51,7 +52,7 @@ class Crm::StageAutomation
         actor: @actor,
         action: "automation_executed_#{rule.action_type}",
         target: @deal,
-        payload: { automation: 'stage', stage_slug: @deal.crm_pipeline_stage&.slug, rule_id: rule.id, action_type: rule.action_type }
+        payload: { automation: @trigger || 'stage', stage_slug: @deal.crm_pipeline_stage&.slug, rule_id: rule.id, action_type: rule.action_type }
       )
     else
       record_run(rule, status: 'skipped', skip_reason: result.to_s, started_at: started_at)
@@ -67,7 +68,7 @@ class Crm::StageAutomation
       status: status,
       skip_reason: skip_reason,
       error: error,
-      payload: { automation: 'stage', stage_slug: @deal.crm_pipeline_stage&.slug, action_type: rule.action_type },
+      payload: { automation: @trigger || 'stage', stage_slug: @deal.crm_pipeline_stage&.slug, action_type: rule.action_type },
       started_at: started_at,
       finished_at: Time.current
     )
@@ -83,7 +84,7 @@ class Crm::StageAutomation
       actor: @actor,
       action: action,
       target: @deal,
-      payload: { automation: 'stage', rule_id: rule.id, conditions: config[:conditions] }
+      payload: { automation: @trigger || 'stage', rule_id: rule.id, conditions: config[:conditions] }
     )
   end
 
@@ -201,7 +202,7 @@ class Crm::StageAutomation
       actor: @actor,
       action: 'automation_preserved_assignee',
       target: @deal,
-      payload: { automation: 'stage', assignee_id: assignee_id }
+      payload: { automation: @trigger || 'stage', assignee_id: assignee_id }
     )
   end
 

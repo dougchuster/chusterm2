@@ -42,6 +42,12 @@ class MarketingAPI {
     return axios.post(marketingUrl(`connections/${connectionId}/sync`));
   }
 
+  setCampaignStatus(campaignId, status) {
+    return axios.post(marketingUrl(`campaigns/${campaignId}/set_status`), {
+      status,
+    });
+  }
+
   getOverview(params = {}) {
     const query = queryString(params);
     return axios.get(

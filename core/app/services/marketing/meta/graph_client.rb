@@ -44,6 +44,13 @@ class Marketing::Meta::GraphClient
     parse_response(response)
   end
 
+  # Escrita governada: status da campanha (PAUSED/ACTIVE/ARCHIVED).
+  # Só é chamada quando a conexão tem ads_write_enabled — o gate fica no
+  # controller/job, aqui é o transporte puro.
+  def update_campaign_status(campaign_external_id, status)
+    post("/#{campaign_external_id}", payload: { status: status })
+  end
+
   # Campanhas + adsets + ads de uma ad account (act_xxx).
   def campaigns_for(ad_account_id)
     get_all("/#{ad_account_id}/campaigns",

@@ -462,7 +462,8 @@
         "SCORE_CHANGED": "Lead score changed",
         "STALE_DETECTED": "Deal inactive / stale detected",
         "HANDOFF": "Attendant handoff",
-        "MESSAGE_RECEIVED": "Message received"
+        "MESSAGE_RECEIVED": "Message received",
+        "MARKETING_LEAD_CREATED": "Ad lead arrives in stage"
       },
       "ACTION_KINDS": {
         "LIGACAO": "Phone call",
@@ -727,7 +728,11 @@
         "ARCHIVE": "Could not archive the cadence.",
         "CONDITIONS_JSON": "Enter valid conditions in JSON format."
       },
-      "STATUSES": { "DRAFT": "Draft", "ACTIVE": "Active", "PAUSED": "Paused" },
+      "STATUSES": {
+        "DRAFT": "Draft",
+        "ACTIVE": "Active",
+        "PAUSED": "Paused"
+      },
       "CHANNELS": {
         "WHATSAPP": "WhatsApp",
         "EMAIL": "Email",
@@ -746,10 +751,22 @@
       },
       "STATS": {
         "SECTION_LABEL": "Cadence summary",
-        "TOTAL": { "LABEL": "Total", "HINT": "All cadences" },
-        "ACTIVE": { "LABEL": "Active", "HINT": "Currently running" },
-        "PAUSED": { "LABEL": "Paused", "HINT": "Temporarily stopped" },
-        "STEPS": { "LABEL": "Steps", "HINT": "Across all cadences" }
+        "TOTAL": {
+          "LABEL": "Total",
+          "HINT": "All cadences"
+        },
+        "ACTIVE": {
+          "LABEL": "Active",
+          "HINT": "Currently running"
+        },
+        "PAUSED": {
+          "LABEL": "Paused",
+          "HINT": "Temporarily stopped"
+        },
+        "STEPS": {
+          "LABEL": "Steps",
+          "HINT": "Across all cadences"
+        }
       },
       "FILTERS": {
         "SEARCH_LABEL": "Search cadences",

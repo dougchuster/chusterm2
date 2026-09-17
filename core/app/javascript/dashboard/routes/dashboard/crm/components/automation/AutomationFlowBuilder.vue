@@ -90,6 +90,10 @@ const triggerEventOptions = computed(() => [
     value: 'message_received',
     label: t('CRM.AUTOMATION_RULES.TRIGGER_EVENTS.MESSAGE_RECEIVED'),
   },
+  {
+    value: 'marketing_lead_created',
+    label: t('CRM.AUTOMATION_RULES.TRIGGER_EVENTS.MARKETING_LEAD_CREATED'),
+  },
 ]);
 
 const actionTypeOptions = computed(() => [

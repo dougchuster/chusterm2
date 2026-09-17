@@ -52,7 +52,19 @@
       },
       "ERROR": {
         "TITLE": "Não foi possível carregar as campanhas",
-        "MESSAGE": "Verifique suas conexões e tente novamente."
+        "MESSAGE": "Verifique suas conexões e tente novamente.",
+        "STATUS": "Não foi possível alterar o status. A conexão permite escrita?"
+      },
+      "ACTIONS": {
+        "PAUSE": "Pausar",
+        "RESUME": "Reativar"
+      },
+      "CONFIRM": {
+        "PAUSE": "Pausar a campanha \"{name}\" na Meta? A mudança é aplicada de forma assíncrona e auditada.",
+        "RESUME": "Reativar a campanha \"{name}\" na Meta? A mudança é aplicada de forma assíncrona e auditada."
+      },
+      "SUCCESS": {
+        "STATUS": "Mudança de status enviada — aplicada na Meta em instantes."
       }
     },
     "LEADS": {

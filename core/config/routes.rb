@@ -240,7 +240,11 @@ Rails.application.routes.draw do
                 post :sync
               end
             end
-            resources :campaigns, only: [:index]
+            resources :campaigns, only: [:index] do
+              member do
+                post :set_status
+              end
+            end
             resources :leads, only: [:index, :show] do
               member do
                 post :discard

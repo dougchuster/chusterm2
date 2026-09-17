@@ -2,8 +2,33 @@ class Api::V1::Accounts::Marketing::CampaignsController < Api::V1::Accounts::Bas
   before_action :check_feature_flag
 
   def index
-    campaigns = filtered_campaigns.includes(:metric_snapshots)
+    campaigns = filtered_campaigns.includes(:metric_snapshots, :crm_external_connection)
     render json: { campaigns: campaigns.map { |c| serialize_campaign(c) } }
+  end
+
+  # Escrita governada: pausar/reativar campanha Meta exige ads_write_enabled
+  # na conexão + vai por job (auditoria em marketing_events + crm_audit_events).
+  def set_status
+    campaign = Current.account.marketing_campaigns.find(params[:id])
+    status = params[:status].to_s.upcase
+    unless Marketing::CampaignStatusJob::ALLOWED_STATUSES.include?(status)
+      return render json: { error: 'invalid_status' }, status: :unprocessable_entity
+    end
+
+    connection = campaign.crm_external_connection
+    unless connection&.provider == 'meta_ads' && connection.metadata&.dig('ads_write_enabled').present?
+      return render json: { error: 'write_not_enabled' }, status: :forbidden
+    end
+
+    Marketing::CampaignStatusJob.perform_later(campaign.id, status)
+    Crm::AuditLogger.log(
+      account: Current.account,
+      actor: current_user,
+      action: 'marketing_campaign_status_requested',
+      target: campaign,
+      payload: { status: status, campaign_external_id: campaign.external_id }
+    )
+    head :accepted
   end
 
   private
@@ -37,8 +62,13 @@ class Api::V1::Accounts::Marketing::CampaignsController < Api::V1::Accounts::Bas
       objective: campaign.objective,
       currency: campaign.currency,
       daily_budget: campaign.daily_budget,
+      writable: writable_connection?(campaign.crm_external_connection),
       metrics: serialize_metrics(snapshots.totals)
     }
+  end
+
+  def writable_connection?(connection)
+    connection&.provider == 'meta_ads' && connection.metadata&.dig('ads_write_enabled').present?
   end
 
   def serialize_metrics(totals)

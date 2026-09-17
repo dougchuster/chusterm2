@@ -6,6 +6,7 @@ class Marketing::CapiDispatchJob < ApplicationJob
   def perform(deal_id)
     deal = CrmDeal.includes(:crm_pipeline_stage, :contact).find_by(id: deal_id)
     return if deal.nil?
+    return log_consent_block(deal) if deal.consent_status == 'denied'
 
     connection = ads_connection_for(deal)
     return if connection.nil?
@@ -19,6 +20,19 @@ class Marketing::CapiDispatchJob < ApplicationJob
   end
 
   private
+
+  # LGPD: consentimento negado no deal impede envio de dados pessoais à Meta.
+  # O bloqueio fica auditado — sem ele, um "não" do titular viraria evento
+  # silenciosamente descartado e ninguém saberia por que o CAPI parou.
+  def log_consent_block(deal)
+    Crm::AuditLogger.log(
+      account: deal.account,
+      action: 'capi_blocked_no_consent',
+      target: deal,
+      payload: { consent_status: deal.consent_status, stage_slug: deal.crm_pipeline_stage&.slug }
+    )
+    nil
+  end
 
   def lead_for(deal)
     deal.account.marketing_leads

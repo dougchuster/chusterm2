@@ -102,3 +102,9 @@ marketing_sync_all_job:
   cron: '17 */6 * * *'
   class: 'Marketing::SyncAllJob'
   queue: scheduled_jobs
+
+# Marketing: relatório semanal de KPIs toda segunda às 08:00 (audit trail)
+marketing_weekly_report_job:
+  cron: '0 8 * * 1'
+  class: 'Marketing::WeeklyReportJob'
+  queue: scheduled_jobs

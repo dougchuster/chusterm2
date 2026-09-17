@@ -93,4 +93,54 @@ RSpec.describe 'Marketing Campaigns + Metrics API', type: :request do
       expect(response).to have_http_status(:forbidden)
     end
   end
+
+  describe 'POST set_status' do
+    let(:campaign) { seed_campaign! }
+
+    def url_for(record)
+      "/api/v1/accounts/#{account.id}/marketing/campaigns/#{record.id}/set_status"
+    end
+
+    it 'enfileira a mudanca quando a conexao permite escrita' do
+      connection.update!(metadata: { 'ads_write_enabled' => true })
+
+      expect do
+        post url_for(campaign), params: { status: 'PAUSED' }, headers: headers, as: :json
+      end.to have_enqueued_job(Marketing::CampaignStatusJob).with(campaign.id, 'PAUSED')
+
+      expect(response).to have_http_status(:accepted)
+      expect(account.crm_audit_events.where(action: 'marketing_campaign_status_requested').count).to eq(1)
+    end
+
+    it 'recusa sem ads_write_enabled na conexao' do
+      expect do
+        post url_for(campaign), params: { status: 'PAUSED' }, headers: headers, as: :json
+      end.not_to have_enqueued_job(Marketing::CampaignStatusJob)
+
+      expect(response).to have_http_status(:forbidden)
+    end
+
+    it 'rejeita status invalido' do
+      connection.update!(metadata: { 'ads_write_enabled' => true })
+      post url_for(campaign), params: { status: 'DELETED' }, headers: headers, as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+
+    it 'nao enxerga campanha de outra conta' do
+      other = create(:account)
+      other_conn = other.crm_external_connections.create!(
+        provider: 'meta_ads', status: 'active', access_token: 'x',
+        metadata: { 'ads_write_enabled' => true }
+      )
+      foreign = other.marketing_campaigns.create!(
+        crm_external_connection: other_conn, provider: 'meta_ads',
+        level: 'campaign', external_id: 'fx', name: 'Alheia', status: 'ACTIVE'
+      )
+
+      post url_for(foreign), params: { status: 'PAUSED' }, headers: headers, as: :json
+
+      expect(response).to have_http_status(:not_found)
+    end
+  end
 end

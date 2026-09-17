@@ -130,4 +130,34 @@ test.describe('area de marketing — conexoes', () => {
       page.getByText('Campanha Leads Previdenciário').first()
     ).toBeVisible({ timeout: 15_000 });
   });
+
+  test('escrita governada: botao de pausa so aparece com ads_write_enabled', async ({
+    page,
+  }) => {
+    // Estado base: conexão sem escrita — nenhum botão de pausa/reativação.
+    await page.goto(`/app/accounts/${accountId}/marketing/campaigns`);
+    await expect(
+      page.getByText('Campanha Leads Previdenciário').first()
+    ).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole('button', { name: /Pausar|Pause/ })).toHaveCount(
+      0
+    );
+
+    // Sem permissão de escrita o backend recusa com 403.
+    const list = await page.request.get(
+      `/api/v1/accounts/${accountId}/marketing/campaigns`,
+      { headers: await apiHeaders(page) }
+    );
+    const campaignId = list
+      .json()
+      .then(
+        (b: { campaigns: { id: number; name: string; writable: boolean }[] }) =>
+          b.campaigns.find(c => c.name === 'Campanha Leads Previdenciário')!.id
+      );
+    const denied = await page.request.post(
+      `/api/v1/accounts/${accountId}/marketing/campaigns/${await campaignId}/set_status`,
+      { headers: await apiHeaders(page), data: { status: 'PAUSED' } }
+    );
+    expect(denied.status()).toBe(403);
+  });
 });
