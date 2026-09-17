@@ -5,7 +5,8 @@
       "D7": "Last 7 days",
       "D14": "Last 14 days",
       "D30": "Last 30 days",
-      "D90": "Last 90 days"
+      "D90": "Last 90 days",
+      "LABEL": "Period"
     },
     "OVERVIEW": {
       "TITLE": "Overview",
@@ -33,7 +34,8 @@
     "CAMPAIGNS": {
       "TITLE": "Ad campaigns",
       "FILTERS": {
-        "ALL_PROVIDERS": "All platforms"
+        "ALL_PROVIDERS": "All platforms",
+        "PROVIDER": "Platform"
       },
       "COLUMNS": {
         "NAME": "Campaign",

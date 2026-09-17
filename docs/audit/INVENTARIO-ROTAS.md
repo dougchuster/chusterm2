@@ -246,6 +246,19 @@ Fonte: `core/app/javascript/dashboard/routes/dashboard/crm/crm.routes.js`. Todas
 | `/app/accounts/:accountId/crm/settings/cadences` (`crm_cadences`) | `pages/Cadences.vue` | Cadências de contato | `P-ADMIN`; `VA-A` |
 | `/app/accounts/:accountId/crm/settings/scoring` (`crm_scoring_config`) | `pages/ScoringConfig.vue` | Regras de lead scoring | `P-ADMIN`; `VA-A` |
 
+### Marketing
+
+Fonte: `core/app/javascript/dashboard/routes/dashboard/marketing/marketing.routes.js`. Todas as rotas usam `F:marketing`.
+
+| Rota (`name`) | Componente | Propósito | Gate / VA |
+|---|---|---|---|
+| `/app/accounts/:accountId/marketing` (`marketing_overview`) | `pages/MarketingOverview.vue` | Overview/KPIs de ads | `P-ADMIN`; `VA-A` |
+| `/app/accounts/:accountId/marketing/connections` (`marketing_connections`) | `pages/MarketingConnections.vue` | Conexões Meta/Google/GA4 | `P-ADMIN`; `VA-A` |
+| `/app/accounts/:accountId/marketing/campaigns` (`marketing_campaigns`) | `pages/MarketingCampaigns.vue` | Campanhas sincronizadas + escrita governada | `P-ADMIN`; `VA-A` |
+| `/app/accounts/:accountId/marketing/leads` (`marketing_leads`) | `pages/MarketingLeads.vue` | Leads de anúncios (Meta Lead Ads) | `P-ADMIN`; `VA-A` |
+| `/app/accounts/:accountId/marketing/insights` (`marketing_insights`) | `pages/MarketingInsights.vue` | Alertas e insights de IA | `P-ADMIN`; `VA-A` |
+| `/app/accounts/:accountId/marketing/events` (`marketing_events`) | `pages/MarketingEvents.vue` | Trilha CAPI/outbound events | `P-ADMIN`; `VA-A` |
+
 ### Campanhas
 
 Fonte: `campaigns/campaigns.routes.js`; wrapper `CampaignsPageRouteView.vue`.

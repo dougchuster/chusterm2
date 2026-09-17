@@ -129,6 +129,8 @@ onMounted(load);
         <DsSelect
           v-model="days"
           :options="periodOptions"
+          :label="t('MARKETING.PERIOD.LABEL')"
+          hide-label
           class="w-40"
           @update:model-value="load"
         />
@@ -154,7 +156,7 @@ onMounted(load);
       <template v-else>
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
           <DsCard v-for="kpi in kpis" :key="kpi.key" class="p-4">
-            <div class="flex items-center gap-2 text-ui-text-subtle">
+            <div class="flex items-center gap-2 text-ui-text-muted">
               <span :class="kpi.icon" class="size-4" aria-hidden="true" />
               <span class="text-ui-caption font-medium uppercase tracking-wide">
                 {{ kpi.label }}
@@ -217,7 +219,7 @@ onMounted(load);
                 :key="row.provider"
                 class="rounded-ui-surface bg-ui-surface-sunken p-4"
               >
-                <p class="m-0 text-ui-body-sm font-medium text-ui-text-subtle">
+                <p class="m-0 text-ui-body-sm font-medium text-ui-text-muted">
                   {{ providerLabel(row.provider) }}
                 </p>
                 <p
@@ -225,7 +227,7 @@ onMounted(load);
                 >
                   {{ fmtMoney(row.spend) }}
                 </p>
-                <p class="m-0 mt-1 text-ui-caption text-ui-text-subtle">
+                <p class="m-0 mt-1 text-ui-caption text-ui-text-muted">
                   {{
                     t('MARKETING.OVERVIEW.PROVIDER_LINE', {
                       leads: fmtNumber(row.leads),

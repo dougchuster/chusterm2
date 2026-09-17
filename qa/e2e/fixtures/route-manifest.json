@@ -259,6 +259,30 @@
       "family": "conversations"
     },
     {
+      "route": "/app/accounts/:accountId/marketing",
+      "family": "marketing"
+    },
+    {
+      "route": "/app/accounts/:accountId/marketing/campaigns",
+      "family": "marketing"
+    },
+    {
+      "route": "/app/accounts/:accountId/marketing/connections",
+      "family": "marketing"
+    },
+    {
+      "route": "/app/accounts/:accountId/marketing/events",
+      "family": "marketing"
+    },
+    {
+      "route": "/app/accounts/:accountId/marketing/insights",
+      "family": "marketing"
+    },
+    {
+      "route": "/app/accounts/:accountId/marketing/leads",
+      "family": "marketing"
+    },
+    {
       "route": "/app/accounts/:accountId/mentions/conversations",
       "family": "conversations"
     },

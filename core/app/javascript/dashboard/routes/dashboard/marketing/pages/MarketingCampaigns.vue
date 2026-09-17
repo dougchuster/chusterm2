@@ -191,12 +191,16 @@ onMounted(load);
           <DsSelect
             v-model="providerFilter"
             :options="providerOptions"
+            :label="t('MARKETING.CAMPAIGNS.FILTERS.PROVIDER')"
+            hide-label
             class="w-44"
             @update:model-value="load"
           />
           <DsSelect
             v-model="days"
             :options="periodOptions"
+            :label="t('MARKETING.PERIOD.LABEL')"
+            hide-label
             class="w-40"
             @update:model-value="load"
           />

@@ -259,8 +259,8 @@ const availableStageOptions = computed(() =>
       :data-tone="nextAction.tone"
       class="mt-2 flex items-center gap-2 text-ui-caption font-medium"
       :class="{
-        'text-ui-danger': nextAction.tone === 'overdue',
-        'text-ui-warning': nextAction.tone === 'today',
+        'text-ui-danger-foreground': nextAction.tone === 'overdue',
+        'text-ui-warning-foreground': nextAction.tone === 'today',
         'text-ui-text-muted':
           nextAction.tone === 'future' || nextAction.tone === 'undated',
       }"
@@ -324,7 +324,7 @@ const availableStageOptions = computed(() =>
       <span
         v-if="rotting.level === 'late'"
         data-testid="crm-card-stale"
-        class="shrink-0 font-medium text-ui-danger"
+        class="shrink-0 font-medium text-ui-danger-foreground"
       >
         {{ $t('CRM.CARD.STALE', { days: rotting.daysInStage }) }}
       </span>

@@ -176,7 +176,7 @@ onMounted(async () => {
               class="rounded-ui-control bg-ui-sunken p-2.5"
             >
               <p
-                class="m-0 mb-1.5 text-ui-caption font-medium uppercase tracking-wide text-ui-text-subtle"
+                class="m-0 mb-1.5 text-ui-caption font-medium uppercase tracking-wide text-ui-text-muted"
               >
                 {{ t('MARKETING.CONNECTIONS.AD_ACCOUNTS') }}
               </p>
@@ -187,15 +187,13 @@ onMounted(async () => {
                   class="truncate text-ui-body-sm text-ui-text"
                 >
                   {{ acc.name }}
-                  <span class="text-ui-text-subtle"
-                    >· {{ acc.account_id }}</span
-                  >
+                  <span class="text-ui-text-muted">· {{ acc.account_id }}</span>
                 </li>
               </ul>
             </div>
             <p
               v-if="item.last_synced_at"
-              class="m-0 text-ui-caption text-ui-text-subtle"
+              class="m-0 text-ui-caption text-ui-text-muted"
             >
               {{
                 t('MARKETING.CONNECTIONS.LAST_SYNC', {
