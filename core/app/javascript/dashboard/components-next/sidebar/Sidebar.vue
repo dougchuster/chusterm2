@@ -1,5 +1,5 @@
 <script setup>
-import { h, ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { h, ref, computed, onMounted, watch } from 'vue';
 import { provideSidebarContext, useSidebarResize } from './provider';
 import { useAccount } from 'dashboard/composables/useAccount';
 import { useMapGetter } from 'dashboard/composables/store';
@@ -361,7 +361,6 @@ const conversationCustomViews = useMapGetter(
   'customViews/getConversationCustomViews'
 );
 const crmPipelines = ref([]);
-let crmPipelinesRefreshTimer = null;
 
 const extractData = response => {
   const payload = response?.data ?? response;
@@ -388,17 +387,10 @@ onMounted(() => {
   loadCrmPipelines();
   loadPinnedItems();
   loadCollapsedSections();
-  crmPipelinesRefreshTimer = window.setInterval(loadCrmPipelines, 30000);
 });
 
-onUnmounted(() => {
-  if (crmPipelinesRefreshTimer) {
-    window.clearInterval(crmPipelinesRefreshTimer);
-    crmPipelinesRefreshTimer = null;
-  }
-});
-
-useEventListener(window, 'focus', loadCrmPipelines);
+// Sem polling: a lista muda só quando um admin edita pipelines, e a tela de
+// pipelines dispara `crm:pipelines:changed` para atualizar a sidebar.
 useEventListener(window, 'crm:pipelines:changed', loadCrmPipelines);
 
 const sortedInboxes = computed(() =>

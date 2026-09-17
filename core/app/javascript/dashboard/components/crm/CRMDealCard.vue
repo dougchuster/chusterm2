@@ -157,7 +157,7 @@ const availableStageOptions = computed(() =>
       class="crm-drag-handle -mx-3.5 -mt-3 mb-2 flex h-5 cursor-grab touch-none items-center justify-center rounded-t-xl text-ui-text-subtle/70 transition-[color,background-color] duration-ui-fast hover:bg-ui-hover hover:text-ui-text active:cursor-grabbing active:bg-ui-hover"
       draggable="true"
       role="button"
-      :aria-label="$t('CRM.CARD.OPEN_RECORD', { name: label })"
+      :aria-label="$t('CRM.CARD.DRAG', { name: label })"
       @dragstart.stop="emit('nativeDragStart', $event)"
       @dragend.stop="emit('nativeDragEnd', $event)"
     >
@@ -394,7 +394,7 @@ const availableStageOptions = computed(() =>
         data-testid="crm-card-area"
         class="shrink-0 truncate rounded-full bg-ui-info-soft px-2 py-0.5 font-medium text-ui-info-foreground"
       >
-        {{ deal.legal_area }}
+        {{ deal.legal_area_label || deal.legal_area }}
       </span>
       <span
         v-if="rotting.level === 'late'"

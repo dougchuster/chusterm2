@@ -4,6 +4,9 @@ import { useMapGetter } from 'dashboard/composables/store';
 
 const attrs = useAttrs();
 const globalConfig = useMapGetter('globalConfig/get');
+// Public-dir path: binding dinâmico proposital — `src` estático faz o Vite
+// tentar resolver o asset em build-time e falhar.
+const fallbackLogo = '/brand-assets/logo_thumbnail.svg';
 </script>
 
 <template>
@@ -14,11 +17,5 @@ const globalConfig = useMapGetter('globalConfig/get');
     aria-hidden="true"
     :src="globalConfig.logoThumbnail"
   />
-  <img
-    v-else
-    v-bind="attrs"
-    :src="'/brand-assets/logo_thumbnail.svg'"
-    alt=""
-    aria-hidden="true"
-  />
+  <img v-else v-bind="attrs" :src="fallbackLogo" alt="" aria-hidden="true" />
 </template>

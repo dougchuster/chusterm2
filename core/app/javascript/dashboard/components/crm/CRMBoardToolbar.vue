@@ -135,7 +135,7 @@ const advancedFiltersOpen = ref(false);
     <span
       class="col-span-2 col-start-1 row-start-5 self-center justify-self-end whitespace-nowrap rounded-full bg-ui-sunken px-2.5 py-1 text-ui-caption font-medium tabular-nums text-ui-text-muted sm:col-span-3 sm:row-start-3 xl:col-auto xl:row-auto xl:ml-auto"
     >
-      {{ $t('CRM.TOOLBAR.TOTAL', { count: totalVisible }) }}
+      {{ $t('CRM.TOOLBAR.TOTAL', { count: filteredTotal ?? totalVisible }) }}
     </span>
   </div>
 

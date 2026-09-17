@@ -23,6 +23,8 @@ const { t } = useI18n();
 
 const loading = ref(true);
 const periodDays = ref(parseInt(route.query.period, 10) || 30);
+const pipelines = ref([]);
+const selectedPipelineId = ref(route.query.pipeline || '');
 
 const overview = ref({});
 const funnel = ref([]);
@@ -77,6 +79,16 @@ const periodOptions = computed(() => [
   { value: 90, label: t('CRM.METRICS.PERIODS.DAYS_90') },
   { value: 180, label: t('CRM.METRICS.PERIODS.MONTHS_6') },
   { value: 365, label: t('CRM.METRICS.PERIODS.YEAR_1') },
+]);
+
+// Funil default da conta quando nenhum esta selecionado — o backend nunca
+// mistura etapas de funis diferentes no mesmo grafico.
+const pipelineOptions = computed(() => [
+  { value: '', label: t('CRM.METRICS.DEFAULT_PIPELINE') },
+  ...pipelines.value.map(pipeline => ({
+    value: String(pipeline.id),
+    label: pipeline.name,
+  })),
 ]);
 
 const analystExamples = computed(() => [
@@ -186,6 +198,17 @@ function changePeriod() {
   fetchAll();
 }
 
+function changePipeline() {
+  const query = { ...route.query };
+  if (selectedPipelineId.value) {
+    query.pipeline = selectedPipelineId.value;
+  } else {
+    delete query.pipeline;
+  }
+  router.replace({ query });
+  fetchAll();
+}
+
 async function fetchAll() {
   loading.value = true;
   try {
@@ -193,6 +216,9 @@ async function fetchAll() {
       period_days: periodDays.value,
       months: Math.max(6, Math.ceil(periodDays.value / 30)),
     };
+    if (selectedPipelineId.value) {
+      params.pipeline_id = selectedPipelineId.value;
+    }
     const [ovRes, flRes, wlRes, lrRes, ssRes, adRes, tdRes, stRes, tsRes] =
       await Promise.all([
         CrmAPI.getMetricsOverview(params),
@@ -304,7 +330,19 @@ async function askAnalyst(question = analystQuestion.value) {
   }
 }
 
-onMounted(fetchAll);
+async function fetchPipelines() {
+  try {
+    const response = await CrmAPI.getPipelines();
+    pipelines.value = response.data || [];
+  } catch {
+    pipelines.value = [];
+  }
+}
+
+onMounted(() => {
+  fetchPipelines();
+  fetchAll();
+});
 </script>
 
 <template>
@@ -325,6 +363,15 @@ onMounted(fetchAll);
           variant="ghost"
           :aria-label="$t('CRM.METRICS.BACK')"
           @click="goBack"
+        />
+        <DsSelect
+          v-if="pipelines.length > 1"
+          v-model="selectedPipelineId"
+          :label="$t('CRM.METRICS.PIPELINE_LABEL')"
+          hide-label
+          :options="pipelineOptions"
+          class="min-w-44"
+          @change="changePipeline"
         />
         <DsSelect
           v-model="periodDays"

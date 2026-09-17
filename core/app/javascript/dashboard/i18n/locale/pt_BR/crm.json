@@ -25,6 +25,7 @@
       "ATTEND": "Atender {name} no WhatsApp",
       "MORE_ACTIONS": "Mais ações para {name}",
       "OPEN_RECORD": "Abrir ficha de {name}",
+      "DRAG": "Arrastar {name} para outra etapa",
       "RECOMPUTE_SCORE": "Recalcular score",
       "MARK_BASE_CLIENT": "Marcar como cliente da base",
       "DISCARD": "Descartar negócio",
@@ -128,6 +129,8 @@
       "BREADCRUMB": "CRM",
       "BACK": "Voltar para o CRM",
       "PERIOD_LABEL": "Período",
+      "PIPELINE_LABEL": "Funil",
+      "DEFAULT_PIPELINE": "Funil padrão",
       "LOADING": "Carregando métricas…",
       "PERIODS": {
         "DAYS_7": "7 dias",

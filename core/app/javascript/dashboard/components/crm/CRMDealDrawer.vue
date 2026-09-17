@@ -489,7 +489,7 @@ watch(
           <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label class="block">
               <span class="mb-1 block text-xs font-medium text-n-slate-11"
-                >Setor jurídico</span
+                >Categoria</span
               >
               <select
                 v-model="form.legal_area"

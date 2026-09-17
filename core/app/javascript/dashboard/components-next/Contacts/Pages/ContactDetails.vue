@@ -29,8 +29,8 @@ const { t } = useI18n();
 const store = useStore();
 
 const CRM_TEXT = {
-  title: 'CRM jurídico',
-  description: 'Altere rapidamente se este contato e lead ou cliente.',
+  title: 'CRM',
+  description: 'Altere rapidamente se este contato é lead ou cliente.',
 };
 const ASSIGNMENT_TEXT = {
   title: 'Delegar resposta',

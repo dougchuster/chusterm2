@@ -455,7 +455,7 @@ function normalizeMessage(message) {
   const sender = message.sender || {};
   return {
     id: message.id || message.echo_id || `pending-${Date.now()}`,
-    content: message.content || message.content_for_llm || '',
+    content: message.content || message.transcription || '',
     contentType: message.content_type,
     messageType: message.message_type,
     status: message.status,

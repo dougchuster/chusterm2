@@ -429,8 +429,15 @@ const statusVariant = value =>
   ({ open: 'info', won: 'success', lost: 'danger', archived: 'neutral' })[
     value
   ] || 'neutral';
-const statusLabel = value =>
-  STATUS_OPTIONS.find(item => item.value === value)?.label || 'Sem status';
+// O filtro usa plural ("Abertos"), mas a badge por negócio precisa do
+// singular — "Abertos" numa linha lê como se o negócio fosse vários.
+const STATUS_LABELS = {
+  open: 'Aberto',
+  won: 'Ganho',
+  lost: 'Perdido',
+  archived: 'Arquivado',
+};
+const statusLabel = value => STATUS_LABELS[value] || 'Sem status';
 
 onMounted(async () => {
   store.dispatch('agents/get');

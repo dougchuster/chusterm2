@@ -41,7 +41,7 @@ const props = defineProps({
   },
 });
 
-const CRM_SIDEBAR_TITLE = 'CRM jurídico';
+const CRM_SIDEBAR_TITLE = 'CRM';
 const INTELLIGENCE_TITLE = 'Inteligência da conversa';
 const INTELLIGENCE_DESCRIPTION =
   'Contexto, qualificação e controle em um só lugar';

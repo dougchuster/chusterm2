@@ -25,6 +25,7 @@
       "ATTEND": "Reply to {name} on WhatsApp",
       "MORE_ACTIONS": "More actions for {name}",
       "OPEN_RECORD": "Open record for {name}",
+      "DRAG": "Drag {name} to another stage",
       "RECOMPUTE_SCORE": "Recompute score",
       "MARK_BASE_CLIENT": "Mark as existing client",
       "DISCARD": "Discard deal",
@@ -148,6 +149,8 @@
       "BREADCRUMB": "CRM",
       "BACK": "Back to CRM",
       "PERIOD_LABEL": "Period",
+      "PIPELINE_LABEL": "Pipeline",
+      "DEFAULT_PIPELINE": "Default pipeline",
       "LOADING": "Loading metrics…",
       "PERIODS": {
         "DAYS_7": "7 days",
