@@ -34,7 +34,7 @@ RSpec.describe 'Rack::Attack CRM throttles', type: :request do
 
     # travel_to fixa os requests no mesmo bucket do período — sem ele, um
     # loop que cruza a virada do minuto divide a contagem em duas janelas.
-    travel_to Time.current do
+    freeze_time do
       limit.times { authed_post(analyst_path) }
       authed_post(analyst_path)
     end
@@ -45,7 +45,7 @@ RSpec.describe 'Rack::Attack CRM throttles', type: :request do
   it 'throttles CRM exports beyond the per-user limit' do
     limit = ENV.fetch('RATE_LIMIT_CRM_EXPORT', '10').to_i
 
-    travel_to Time.current do
+    freeze_time do
       limit.times { authed_post(export_path) }
       authed_post(export_path)
     end
@@ -56,7 +56,7 @@ RSpec.describe 'Rack::Attack CRM throttles', type: :request do
   it 'tracks different users independently' do
     limit = ENV.fetch('RATE_LIMIT_CRM_ANALYST', '20').to_i
 
-    travel_to Time.current do
+    freeze_time do
       limit.times { authed_post(analyst_path) }
       authed_post(analyst_path, uid: 'other-agent@example.com')
     end

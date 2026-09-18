@@ -68,7 +68,7 @@ RSpec.describe 'CRM Packs API', type: :request do
       patch "/api/v1/accounts/#{account.id}/crm/packs/ai_settings",
             params: { prompt_override: 'x' }, headers: agent_headers, as: :json
 
-      expect(response).to have_http_status(:unauthorized)
+      expect(response).to have_http_status(:forbidden)
     end
   end
 
@@ -104,7 +104,7 @@ RSpec.describe 'CRM Packs API', type: :request do
       post "/api/v1/accounts/#{account.id}/crm/packs",
            params: { slug: 'legal' }, headers: agent_headers, as: :json
 
-      expect(response).to have_http_status(:unauthorized)
+      expect(response).to have_http_status(:forbidden)
       expect(account.crm_account_packs.pluck(:slug)).not_to include('legal')
     end
   end

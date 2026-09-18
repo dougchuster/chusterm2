@@ -55,6 +55,6 @@ class Api::V1::Accounts::Crm::PacksController < Api::V1::Accounts::Crm::BaseCont
   end
 
   def check_admin!
-    head :unauthorized unless administrator?
+    head :forbidden unless administrator?
   end
 end

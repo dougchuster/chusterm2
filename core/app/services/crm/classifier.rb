@@ -36,7 +36,15 @@ class Crm::Classifier
     required: %w[category urgency_level intent summary confidence]
   }.freeze
 
-  MODEL = 'gpt-4o-mini'
+  # Mesma resolução dos demais serviços LLM: CRM_CLASSIFIER_MODEL (env) >
+  # CAPTAIN_OPEN_AI_MODEL (super admin) > modelo padrão da instalação. Um
+  # slug fixo aqui apontava para a OpenAI num projeto que roda OpenRouter.
+  def self.model
+    Llm::Config.resolve_model(
+      ENV.fetch('CRM_CLASSIFIER_MODEL', nil).presence ||
+      InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_MODEL')&.value
+    )
+  end
 
   def initialize(conversation:, account: nil)
     @conversation = conversation
@@ -67,7 +75,7 @@ class Crm::Classifier
     return if text.blank?
 
     Llm::Config.with_api_key(Llm::Config.system_api_key) do |context|
-      chat = Llm::Config.chat_for(client: context, model: MODEL)
+      chat = Llm::Config.chat_for(client: context, model: self.class.model)
       chat.with_instructions(system_prompt)
       chat.with_schema(SCHEMA)
       response = chat.ask(user_prompt(text))
