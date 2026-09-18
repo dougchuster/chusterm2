@@ -18,6 +18,15 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  badge: {
+    type: String,
+    default: '',
+  },
+  badgeVariant: {
+    type: String,
+    default: 'warning',
+    validator: value => ['warning', 'success', 'neutral'].includes(value),
+  },
 });
 </script>
 
@@ -30,6 +39,17 @@ defineProps({
       'cursor-not-allowed disabled:opacity-80': isComingSoon,
     }"
   >
+    <span
+      v-if="badge"
+      class="absolute top-3 right-3 px-2 py-0.5 rounded-md text-label-small font-medium"
+      :class="{
+        'bg-n-amber-3 text-n-amber-11': badgeVariant === 'warning',
+        'bg-n-teal-3 text-n-teal-11': badgeVariant === 'success',
+        'bg-n-alpha-2 text-n-slate-11': badgeVariant === 'neutral',
+      }"
+    >
+      {{ badge }}
+    </span>
     <div
       class="flex size-10 items-center justify-center rounded-full bg-n-alpha-2"
     >

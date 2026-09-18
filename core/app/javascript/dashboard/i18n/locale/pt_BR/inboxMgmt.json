@@ -9,6 +9,7 @@
     "RECONNECTION_REQUIRED": "Sua caixa de entrada está desconectada. Você não receberá novas mensagens até reautorizar.",
     "CLICK_TO_RECONNECT": "Clique aqui para reconectar.",
     "WHATSAPP_REGISTRATION_INCOMPLETE": "Seu registro no WhatsApp Business não foi concluído. Verifique o status do seu nome de exibição no Meta Business Manager antes de reconectar.",
+    "UNOFFICIAL_CHANNEL_BANNER": "Esta caixa usa uma API não-oficial do WhatsApp (Evolution/Baileys). A Meta pode banir o número a qualquer momento — {count} conversas abertas dependem deste canal. Considere migrar para a WhatsApp Cloud API oficial.",
     "COMPLETE_REGISTRATION": "Concluir registro",
     "LIST": {
       "404": "Não há caixas de entrada anexadas a esta conta."
@@ -241,7 +242,9 @@
           "TWILIO_DESC": "Conectar através de credenciais Twilio",
           "360_DIALOG": "360Dialog",
           "EVOLUTION": "Evolution API (Baileys)",
-          "EVOLUTION_DESC": "WhatsApp não-oficial via QR Code — sem aprovação da Meta"
+          "EVOLUTION_DESC": "WhatsApp não-oficial via QR Code — sem aprovação da Meta",
+          "RECOMMENDED": "Recomendado",
+          "UNOFFICIAL": "API não oficial"
         },
         "SELECT_PROVIDER": {
           "TITLE": "Selecione seu provedor de API",
@@ -367,6 +370,7 @@
             "QR_GENERATE": "Gerar QR code",
             "QR_POLL_ERROR": "Não foi possível obter o QR code. Verifique se a instância Evolution está rodando e tente novamente."
           },
+          "UNOFFICIAL_WARNING": "Canal não-oficial (Evolution/Baileys): a Meta pode banir este número sem aviso e não há garantia de entrega. Use para testes ou baixo volume; para produção, prefira a WhatsApp Cloud API oficial.",
           "INFO": {
             "TITLE": "Sobre Evolution API + Baileys",
             "QR_CODE": "Após a criação, você precisará escanear um QR code para conectar seu número WhatsApp.",

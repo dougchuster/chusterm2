@@ -1019,6 +1019,18 @@ export default {
           class="mx-6 mb-4"
           :class="bannerMaxWidth"
         />
+        <!-- A2: canal WhatsApp não-oficial — aviso permanente com contador
+             de conversas abertas que dependem da sessão. -->
+        <DuplicateInboxBanner
+          v-if="isEvolutionWhatsAppChannel"
+          :content="
+            $t('INBOX_MGMT.UNOFFICIAL_CHANNEL_BANNER', {
+              count: evolutionInstance.open_conversations_count || 0,
+            })
+          "
+          class="mx-6 mb-4"
+          :class="bannerMaxWidth"
+        />
 
         <div
           v-if="selectedTabKey === 'inbox-settings'"

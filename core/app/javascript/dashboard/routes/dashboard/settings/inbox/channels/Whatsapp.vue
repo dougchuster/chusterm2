@@ -42,6 +42,8 @@ const availableProviders = computed(() => [
     title: t('INBOX_MGMT.ADD.WHATSAPP.PROVIDERS.WHATSAPP_CLOUD'),
     description: t('INBOX_MGMT.ADD.WHATSAPP.PROVIDERS.WHATSAPP_CLOUD_DESC'),
     icon: 'i-woot-whatsapp',
+    badge: t('INBOX_MGMT.ADD.WHATSAPP.PROVIDERS.RECOMMENDED'),
+    badgeVariant: 'success',
   },
   {
     key: PROVIDER_TYPES.TWILIO,
@@ -54,6 +56,8 @@ const availableProviders = computed(() => [
     title: t('INBOX_MGMT.ADD.WHATSAPP.PROVIDERS.EVOLUTION'),
     description: t('INBOX_MGMT.ADD.WHATSAPP.PROVIDERS.EVOLUTION_DESC'),
     icon: 'i-woot-whatsapp',
+    badge: t('INBOX_MGMT.ADD.WHATSAPP.PROVIDERS.UNOFFICIAL'),
+    badgeVariant: 'warning',
   },
 ]);
 
@@ -96,6 +100,8 @@ const handleManualLinkClick = () => {
           :title="provider.title"
           :description="provider.description"
           :icon="provider.icon"
+          :badge="provider.badge"
+          :badge-variant="provider.badgeVariant"
           @click="selectProvider(provider.key)"
         />
       </div>

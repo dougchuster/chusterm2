@@ -9,6 +9,7 @@
     "RECONNECTION_REQUIRED": "Your inbox is disconnected. You won't receive new messages until you reauthorize it.",
     "CLICK_TO_RECONNECT": "Click here to reconnect.",
     "WHATSAPP_REGISTRATION_INCOMPLETE": "Your WhatsApp Business registration isnâ€™t complete. Please check your display name status in Meta Business Manager before reconnecting.",
+    "UNOFFICIAL_CHANNEL_BANNER": "This inbox uses an unofficial WhatsApp API (Evolution/Baileys). Meta may ban the number at any time — {count} open conversations depend on this channel. Consider migrating to the official WhatsApp Cloud API.",
     "COMPLETE_REGISTRATION": "Complete Registration",
     "LIST": {
       "404": "There are no inboxes attached to this account."
@@ -241,7 +242,9 @@
           "TWILIO_DESC": "Connect via Twilio credentials",
           "360_DIALOG": "360Dialog",
           "EVOLUTION": "Evolution API (Baileys)",
-          "EVOLUTION_DESC": "Unofficial WhatsApp via QR Code — no Meta approval needed"
+          "EVOLUTION_DESC": "Unofficial WhatsApp via QR Code — no Meta approval needed",
+          "RECOMMENDED": "Recommended",
+          "UNOFFICIAL": "Unofficial API"
         },
         "SELECT_PROVIDER": {
           "TITLE": "Select your API provider",
@@ -367,6 +370,7 @@
             "QR_GENERATE": "Generate QR code",
             "QR_POLL_ERROR": "Could not get the QR code. Check that the Evolution instance is running and try again."
           },
+          "UNOFFICIAL_WARNING": "Unofficial channel (Evolution/Baileys): Meta may ban this number without notice and there is no deliverability guarantee. Use it for testing or low volume; for production, prefer the official WhatsApp Cloud API.",
           "INFO": {
             "TITLE": "About Evolution API + Baileys",
             "QR_CODE": "After creation, you'll need to scan a QR code to connect your WhatsApp number.",

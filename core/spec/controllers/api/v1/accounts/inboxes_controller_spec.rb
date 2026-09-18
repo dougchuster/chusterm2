@@ -190,6 +190,36 @@ RSpec.describe 'Inboxes API', type: :request do
 
         expect(data[:hmac_token]).to be_nil
       end
+
+      # A2: o aviso de canal não-oficial precisa do contador de conversas
+      # abertas — exposto no payload da instância Evolution.
+      it 'returns open_conversations_count for evolution inboxes' do
+        channel = create(
+          :channel_whatsapp,
+          account: account,
+          provider: 'evolution',
+          provider_config: { 'source' => 'managed_evolution', 'webhook_verify_token' => 'token' },
+          sync_templates: false,
+          validate_provider_config: false
+        )
+        evolution_inbox = channel.inbox
+        config = create(:evolution_api_configuration, account: account)
+        EvolutionInstance.create!(
+          account: account, inbox: evolution_inbox, channel_whatsapp: channel,
+          configuration: config, instance_name: 'instancia_teste',
+          connection_state: 'open', provisioning_status: 'connected'
+        )
+        create(:conversation, account: account, inbox: evolution_inbox)
+        create(:conversation, account: account, inbox: evolution_inbox, status: :resolved)
+
+        get "/api/v1/accounts/#{account.id}/inboxes/#{evolution_inbox.id}",
+            headers: admin.create_new_auth_token,
+            as: :json
+
+        expect(response).to have_http_status(:success)
+        data = JSON.parse(response.body, symbolize_names: true)
+        expect(data[:evolution_instance][:open_conversations_count]).to eq(1)
+      end
     end
   end
 

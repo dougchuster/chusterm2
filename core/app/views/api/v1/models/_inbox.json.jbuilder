@@ -152,6 +152,9 @@ if resource.whatsapp?
       json.last_sync_at instance.last_sync_at
       json.last_error instance.last_error
       json.circuit_open_until instance.circuit_open_until
+      # A2: contador do aviso de canal não-oficial — conversas abertas que
+      # dependem desta sessão Evolution e morreriam junto num banimento.
+      json.open_conversations_count resource.conversations.open.count
     end
   end
 end

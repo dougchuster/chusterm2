@@ -7,10 +7,12 @@ import { required } from '@vuelidate/validators';
 import { useBranding } from 'shared/composables/useBranding';
 import router from '../../../../index';
 import NextButton from 'dashboard/components-next/button/Button.vue';
+import Icon from 'dashboard/components-next/icon/Icon.vue';
 
 export default {
   components: {
     NextButton,
+    Icon,
   },
   setup() {
     const { replaceInstallationName } = useBranding();
@@ -101,6 +103,17 @@ export default {
 
 <template>
   <form class="flex flex-wrap flex-col mx-0" @submit.prevent="createChannel()">
+    <!-- A2: canal não-oficial — aviso permanente de risco de banimento -->
+    <div
+      class="mb-4 p-4 rounded-lg bg-n-amber-3 text-sm text-n-amber-11 flex gap-2"
+    >
+      <Icon
+        icon="i-lucide-alert-triangle"
+        class="w-4 h-4 flex-shrink-0 mt-0.5"
+      />
+      <p>{{ $t('INBOX_MGMT.ADD.WHATSAPP.EVOLUTION.UNOFFICIAL_WARNING') }}</p>
+    </div>
+
     <div
       v-if="!evolutionConfigLoading && !evolutionConfigured"
       class="mb-4 p-4 rounded-lg bg-n-ruby-3 text-sm text-n-ruby-11"
