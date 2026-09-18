@@ -1,4 +1,7 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
+# O hooksPath aponta para core/.husky mas o git roda o hook na raiz do repo:
+# bin/validate_push fica em core/bin, entao entramos em core/ antes.
+cd "$(dirname "$0")/.."
 sh bin/validate_push
