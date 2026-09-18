@@ -87,11 +87,11 @@
       # Use this if we wanna match splitting the words
       # split_query = search_query.split.map { |term| "#{term} | #{term}:*" }.join(' & ')
 
-      # This will do entire sentence matching using phrase distance operator
-      tsquery = search_query.split.join(' <-> ')
-
-      # Apply the text search using the GIN index
-      base_query.where('content @@ to_tsquery(?)', tsquery)
+      # This will do entire sentence matching using phrase distance operator.
+      # phraseto_tsquery gera o mesmo `a <-> b` que montar a string na mao,
+      # mas escapa a entrada: com to_tsquery, um apostrofo ou `&|!():*` na
+      # busca ("d'agua", "O'Brien") virava PG::SyntaxError e a tela dava 500.
+      base_query.where('content @@ phraseto_tsquery(?)', search_query)
                 .reorder('created_at DESC')
                 .page(params[:page])
                 .per(15)

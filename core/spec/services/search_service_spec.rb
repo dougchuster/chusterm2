@@ -136,6 +136,19 @@ describe SearchService do
           expect(gin_results).to match_array(like_results)
           expect(gin_results).to include(message.id, message2.id, message3.id)
         end
+
+        # Check-up 2026-09-18: to_tsquery com a string montada a mao quebrava
+        # com apostrofo/operadores e a busca global devolvia 500.
+        it 'does not raise on punctuation or tsquery operators with GIN search' do
+          create(:message, account: account, inbox: inbox, content: "caixa d'agua do O'Brien")
+          allow(account).to receive(:feature_enabled?).and_call_original
+          allow(account).to receive(:feature_enabled?).with('search_with_gin').and_return(true)
+
+          ["d'agua", "' OR 1=1 --", 'a & b | !c (d):*'].each do |term|
+            gin_search = described_class.new(current_user: user, current_account: account, params: { q: term }, search_type: search_type)
+            expect { gin_search.perform[:messages].to_a }.not_to raise_error
+          end
+        end
       end
 
       # rubocop:disable RSpec/MultipleMemoizedHelpers
