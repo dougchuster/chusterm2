@@ -19,6 +19,12 @@ RSpec.describe Macro do
       expect(macro).not_to be_valid
       expect(macro.errors.full_messages).to eq(['Actions Macro execution actions update_last_seen not supported.'])
     end
+
+    it 'requires a name' do
+      macro = FactoryBot.build(:macro, account: account, created_by: admin, updated_by: admin, actions: [], name: '')
+      expect(macro).not_to be_valid
+      expect(macro.errors[:name]).to be_present
+    end
   end
 
   describe '#set_visibility' do

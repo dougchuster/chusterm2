@@ -29,6 +29,8 @@ class Macro < ApplicationRecord
   enum visibility: { personal: 0, global: 1 }
 
   validate :json_actions_format
+  # A coluna é NOT NULL mas '' passava: macro sem nome aparecia em branco na lista.
+  validates :name, presence: true
 
   ACTIONS_ATTRS = %w[send_message add_label assign_team assign_agent mute_conversation change_status remove_label remove_assigned_team
                      resolve_conversation snooze_conversation change_priority send_email_transcript send_attachment

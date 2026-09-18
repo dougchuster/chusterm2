@@ -22,6 +22,8 @@ class CustomFilter < ApplicationRecord
 
   enum filter_type: { conversation: 0, contact: 1, report: 2 }
   validate :validate_number_of_filters
+  # A coluna é NOT NULL mas '' passava: a UI exige nome, a API salvava vazio.
+  validates :name, presence: true
 
   def validate_number_of_filters
     return true if account.custom_filters.where(user_id: user_id).size < Limits::MAX_CUSTOM_FILTERS_PER_USER
