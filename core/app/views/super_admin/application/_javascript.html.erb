@@ -1,4 +1,4 @@
-﻿<%#
+<%#
 # Javascript Partial
 
 This partial imports the necessary javascript on each page.
@@ -20,6 +20,10 @@ by providing a `content_for(:javascript)` block.
   <% end %>
 <% end %>
 
+<%# Sem token de suporte configurado o SDK rodava mesmo assim e cada página do
+    super admin disparava GET /widget?website_token= (404 e, em seguida, 429 do
+    Rack::Attack). Só embute o widget quando há token. %>
+<% if ChatwootHub.support_config[:support_website_token].present? %>
 <script>
 window.chatwootSettings = {
   hideMessageBubble: true,
@@ -48,3 +52,4 @@ window.addEventListener('chatwoot:ready', function() {
 })
 
 </script>
+<% end %>

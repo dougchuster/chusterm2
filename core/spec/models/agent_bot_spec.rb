@@ -13,6 +13,14 @@ RSpec.describe AgentBot do
     it_behaves_like 'avatarable'
   end
 
+  context 'when it validates name' do
+    it 'is invalid without a name' do
+      agent_bot = build(:agent_bot, name: '')
+      expect(agent_bot).not_to be_valid
+      expect(agent_bot.errors[:name]).to be_present
+    end
+  end
+
   context 'when it validates outgoing_url length' do
     let(:agent_bot) { create(:agent_bot) }
 

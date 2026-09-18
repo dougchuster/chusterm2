@@ -37,6 +37,8 @@ class AgentBot < ApplicationRecord
   enum bot_type: { webhook: 0 }
 
   validates :outgoing_url, length: { maximum: Limits::URL_LENGTH_LIMIT }
+  # Super admin e settings/agent-bots aceitavam salvar bot sem nome (aparecia em branco nas listas).
+  validates :name, presence: true
 
   def available_name
     name
