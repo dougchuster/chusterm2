@@ -38,6 +38,8 @@ const areaDistribution = ref([]);
 const topDeals = ref([]);
 const staleDeals = ref([]);
 const timeInStage = ref([]);
+const firstResponse = ref({});
+const forecast = ref({});
 const analystQuestion = ref('');
 const analystLoading = ref(false);
 const analystResult = ref(null);
@@ -200,6 +202,54 @@ const staleDealsHeaders = computed(() => [
   { key: 'days', label: t('CRM.METRICS.STALE_DEALS.STALE_FOR'), class: 'w-20' },
 ]);
 
+const forecastHeaders = computed(() => [
+  { key: 'stage', label: t('CRM.METRICS.FORECAST.STAGE') },
+  { key: 'prob', label: t('CRM.METRICS.FORECAST.PROB'), class: 'w-16' },
+  { key: 'count', label: t('CRM.METRICS.FORECAST.DEALS'), class: 'w-16' },
+  { key: 'total', label: t('CRM.METRICS.FORECAST.TOTAL'), class: 'w-28' },
+  {
+    key: 'weighted',
+    label: t('CRM.METRICS.FORECAST.WEIGHTED'),
+    class: 'w-28',
+  },
+]);
+
+const unansweredHeaders = computed(() => [
+  { key: 'title', label: t('CRM.METRICS.TOP_DEALS.DEAL') },
+  {
+    key: 'waiting',
+    label: t('CRM.METRICS.FIRST_RESPONSE.WAITING'),
+    class: 'w-24',
+  },
+]);
+
+const firstResponseKpis = computed(() => {
+  const fr = firstResponse.value;
+  return [
+    {
+      key: 'avg',
+      label: t('CRM.METRICS.FIRST_RESPONSE.AVG'),
+      value: formatMinutes(fr.avg_first_response_minutes),
+    },
+    {
+      key: 'sla',
+      label: t('CRM.METRICS.FIRST_RESPONSE.WITHIN_SLA', {
+        minutes: fr.sla_minutes || 15,
+      }),
+      value: `${fr.within_sla_pct || 0}%`,
+      valueClass: 'text-ui-success',
+    },
+    {
+      key: 'unanswered',
+      label: t('CRM.METRICS.FIRST_RESPONSE.UNANSWERED', {
+        hours: fr.unattended_hours || 1,
+      }),
+      value: (fr.unanswered || []).length,
+      valueClass: (fr.unanswered || []).length ? 'text-ui-danger' : '',
+    },
+  ];
+});
+
 function changePeriod() {
   const days = Number(periodDays.value) || 30;
   periodDays.value = days;
@@ -228,7 +278,7 @@ async function fetchAll() {
     if (selectedPipelineId.value) {
       params.pipeline_id = selectedPipelineId.value;
     }
-    const [ovRes, flRes, wlRes, lrRes, ssRes, adRes, tdRes, stRes, tsRes] =
+    const [ovRes, flRes, wlRes, lrRes, ssRes, adRes, tdRes, stRes, tsRes, frRes, wfRes] =
       await Promise.all([
         CrmAPI.getMetricsOverview(params),
         CrmAPI.getMetricsStageFunnel(params),
@@ -239,6 +289,8 @@ async function fetchAll() {
         CrmAPI.getMetricsTopDeals(params),
         CrmAPI.getMetricsStaleDeals(params),
         CrmAPI.getMetricsTimeInStage(params),
+        CrmAPI.getMetricsFirstResponse(params),
+        CrmAPI.getMetricsWeightedForecast(params),
       ]);
     overview.value = ovRes.data;
     funnel.value = flRes.data;
@@ -249,6 +301,8 @@ async function fetchAll() {
     topDeals.value = tdRes.data;
     staleDeals.value = stRes.data;
     timeInStage.value = tsRes.data;
+    firstResponse.value = frRes.data;
+    forecast.value = wfRes.data;
   } catch {
     // Mantem a pagina aberta mesmo quando algum endpoint de metrica falha.
   } finally {
@@ -264,10 +318,25 @@ function formatCurrency(cents) {
   }).format(cents / 100);
 }
 
+// Os endpoints first_response/weighted_forecast já devolvem valores em reais.
+function formatReais(reais) {
+  if (!reais) return 'R$ 0';
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(reais);
+}
+
 function formatHours(h) {
   if (!h) return '-';
   if (h < 24) return `${h}h`;
   return `${(h / 24).toFixed(1)}d`;
+}
+
+function formatMinutes(min) {
+  if (!min) return '-';
+  if (min < 60) return `${Math.round(min)}min`;
+  return `${(min / 60).toFixed(1)}h`;
 }
 
 function funnelBarPct(count) {
@@ -622,6 +691,114 @@ onMounted(() => {
               </div>
             </div>
           </DsCard>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+          <DsCard as="section" aria-labelledby="first-response-title">
+            <h3
+              id="first-response-title"
+              class="m-0 mb-4 font-manrope text-ui-label font-semibold text-ui-text"
+            >
+              {{ $t('CRM.METRICS.FIRST_RESPONSE.TITLE') }}
+            </h3>
+            <dl class="mb-4 grid grid-cols-3 gap-3">
+              <div v-for="kpi in firstResponseKpis" :key="kpi.key">
+                <dt
+                  class="truncate text-ui-caption font-medium uppercase tracking-wide text-ui-text-muted"
+                >
+                  {{ kpi.label }}
+                </dt>
+                <dd
+                  class="m-0 mt-1 font-manrope text-ui-heading font-semibold text-ui-text"
+                  :class="kpi.valueClass"
+                >
+                  {{ kpi.value }}
+                </dd>
+              </div>
+            </dl>
+            <DsTable
+              :caption="$t('CRM.METRICS.FIRST_RESPONSE.UNANSWERED_LIST')"
+              :headers="unansweredHeaders"
+              :items="firstResponse.unanswered || []"
+              :empty-title="$t('CRM.METRICS.FIRST_RESPONSE.EMPTY')"
+              min-width-class="min-w-[20rem]"
+            >
+              <template #row="{ item: deal }">
+                <tr
+                  tabindex="0"
+                  class="cursor-pointer bg-ui-surface transition-colors duration-ui-fast hover:bg-ui-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ui-border-focus"
+                  :aria-label="
+                    $t('CRM.METRICS.STALE_DEALS.OPEN', { title: deal.title })
+                  "
+                  @click="openDeal(deal)"
+                  @keydown.enter="openDeal(deal)"
+                >
+                  <td class="px-3 py-2 text-ui-body-sm font-medium text-ui-text">
+                    {{ deal.title }}
+                  </td>
+                  <td class="px-3 py-2">
+                    <DsBadge
+                      variant="danger"
+                      :label="
+                        $t('CRM.METRICS.FIRST_RESPONSE.WAITING_VALUE', {
+                          waiting: formatMinutes(deal.waiting_minutes),
+                        })
+                      "
+                    />
+                  </td>
+                </tr>
+              </template>
+            </DsTable>
+          </DsCard>
+
+          <section aria-labelledby="forecast-title">
+            <h3
+              id="forecast-title"
+              class="m-0 mb-2 font-manrope text-ui-label font-semibold text-ui-text"
+            >
+              {{ $t('CRM.METRICS.FORECAST.TITLE') }}
+            </h3>
+            <DsTable
+              :caption="$t('CRM.METRICS.FORECAST.TITLE')"
+              :headers="forecastHeaders"
+              :items="forecast.stages || []"
+              :empty-title="$t('CRM.METRICS.FORECAST.EMPTY')"
+              min-width-class="min-w-[28rem]"
+            >
+              <template #row="{ item: s }">
+                <tr class="bg-ui-surface">
+                  <td class="px-3 py-2 text-ui-body-sm font-medium text-ui-text">
+                    {{ s.stage_name }}
+                  </td>
+                  <td class="px-3 py-2 text-ui-body-sm text-ui-text-muted">
+                    {{ s.probability_pct }}%
+                  </td>
+                  <td class="px-3 py-2 text-ui-body-sm text-ui-text-muted">
+                    {{ s.deal_count }}
+                  </td>
+                  <td class="px-3 py-2 text-ui-body-sm text-ui-text">
+                    {{ formatReais(s.total_value) }}
+                  </td>
+                  <td
+                    class="px-3 py-2 text-ui-body-sm font-semibold text-ui-text"
+                  >
+                    {{ formatReais(s.weighted_value) }}
+                  </td>
+                </tr>
+              </template>
+            </DsTable>
+            <p
+              v-if="forecast.weighted_value"
+              class="m-0 mt-2 text-right text-ui-caption text-ui-text-muted"
+            >
+              {{
+                $t('CRM.METRICS.FORECAST.SUMMARY', {
+                  total: formatReais(forecast.total_value),
+                  weighted: formatReais(forecast.weighted_value),
+                })
+              }}
+            </p>
+          </section>
         </div>
 
         <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">

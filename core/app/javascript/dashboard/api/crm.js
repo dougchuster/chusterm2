@@ -465,6 +465,14 @@ class CrmAPI {
     return axios.get(crmUrl('metrics/stale_deals'), { params });
   }
 
+  getMetricsFirstResponse(params = {}) {
+    return axios.get(crmUrl('metrics/first_response'), { params });
+  }
+
+  getMetricsWeightedForecast(params = {}) {
+    return axios.get(crmUrl('metrics/weighted_forecast'), { params });
+  }
+
   askAnalyst(data = {}) {
     return axios.post(crmUrl('analyst/ask'), data);
   }

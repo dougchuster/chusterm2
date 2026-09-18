@@ -228,6 +228,26 @@
         "STALE_FOR": "Parado há",
         "OPEN": "Abrir deal {title}"
       },
+      "FIRST_RESPONSE": {
+        "TITLE": "Primeira resposta humana",
+        "AVG": "Tempo médio",
+        "WITHIN_SLA": "Em até {minutes} min",
+        "UNANSWERED": "Sem resposta > {hours}h",
+        "UNANSWERED_LIST": "Leads aguardando a primeira resposta",
+        "WAITING": "Aguardando",
+        "WAITING_VALUE": "{waiting}",
+        "EMPTY": "Nenhum lead esperando além do limite"
+      },
+      "FORECAST": {
+        "TITLE": "Previsão ponderada por etapa",
+        "STAGE": "Etapa",
+        "PROB": "Prob.",
+        "DEALS": "Deals",
+        "TOTAL": "Funil",
+        "WEIGHTED": "Ponderado",
+        "SUMMARY": "Funil {total} · ponderado {weighted}",
+        "EMPTY": "Nenhum deal aberto neste funil"
+      },
       "URGENCY": {
         "CRITICA": "crítica",
         "ALTA": "alta",

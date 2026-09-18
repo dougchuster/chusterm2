@@ -248,6 +248,26 @@
         "STALE_FOR": "Stale for",
         "OPEN": "Open deal {title}"
       },
+      "FIRST_RESPONSE": {
+        "TITLE": "First human response",
+        "AVG": "Avg time",
+        "WITHIN_SLA": "Within {minutes} min",
+        "UNANSWERED": "No reply > {hours}h",
+        "UNANSWERED_LIST": "Leads waiting for a first reply",
+        "WAITING": "Waiting",
+        "WAITING_VALUE": "{waiting}",
+        "EMPTY": "No lead waiting past the threshold"
+      },
+      "FORECAST": {
+        "TITLE": "Weighted forecast by stage",
+        "STAGE": "Stage",
+        "PROB": "Prob.",
+        "DEALS": "Deals",
+        "TOTAL": "Pipeline",
+        "WEIGHTED": "Weighted",
+        "SUMMARY": "Pipeline {total} · weighted {weighted}",
+        "EMPTY": "No open deals in this pipeline"
+      },
       "URGENCY": {
         "CRITICA": "critical",
         "ALTA": "high",
