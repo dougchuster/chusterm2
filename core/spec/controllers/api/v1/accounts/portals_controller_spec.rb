@@ -100,6 +100,16 @@ RSpec.describe 'Api::V1::Accounts::Portals', type: :request do
         expect(json_response['name']).to eql('test_portal')
         expect(json_response['custom_domain']).to eql('support.ChusteRM.dev')
       end
+
+      # Check-up 2026-09-18: sem custom_domain o URI.parse(nil) dava 500.
+      it 'creates portal without custom_domain' do
+        post "/api/v1/accounts/#{account.id}/portals",
+             params: { portal: { name: 'sem dominio', slug: 'sem_dominio' } },
+             headers: admin.create_new_auth_token
+
+        expect(response).to have_http_status(:success)
+        expect(response.parsed_body['custom_domain']).to be_nil
+      end
     end
   end
 

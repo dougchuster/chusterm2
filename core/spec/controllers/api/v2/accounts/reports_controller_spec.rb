@@ -6,6 +6,26 @@ RSpec.describe Api::V2::Accounts::ReportsController, type: :request do
   let(:agent) { create(:user, account: account, role: :agent) }
   let(:inbox) { create(:inbox, account: account) }
 
+  # Check-up 2026-09-18: parâmetros malformados devolviam 500.
+  describe 'GET /api/v2/accounts/{account.id}/reports/summary com parâmetros inválidos' do
+    it 'responde 422 quando since/until não são epoch' do
+      get "/api/v2/accounts/#{account.id}/reports/summary",
+          params: { since: 'abc', until: 'xyz', type: 'account' },
+          headers: admin.create_new_auth_token, as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.parsed_body['error']).to be_present
+    end
+
+    it 'responde 422 quando type está ausente' do
+      get "/api/v2/accounts/#{account.id}/reports/bot_summary",
+          params: { since: 1.day.ago.to_i.to_s, until: Time.current.to_i.to_s },
+          headers: admin.create_new_auth_token, as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+  end
+
   describe 'GET /api/v2/accounts/{account.id}/reports' do
     context 'when authenticated and authorized' do
       before do

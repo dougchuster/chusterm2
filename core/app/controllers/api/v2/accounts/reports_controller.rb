@@ -3,6 +3,8 @@ class Api::V2::Accounts::ReportsController < Api::V1::Accounts::BaseController
   include Api::V2::Accounts::HeatmapHelper
 
   before_action :check_authorization
+  # since/until fora do formato epoch chegavam ao DateTime.strptime e viravam 500.
+  rescue_from Date::Error, with: :render_invalid_date_range
 
   def index
     builder = V2::Reports::Conversations::ReportBuilder.new(Current.account, report_params)
@@ -99,9 +101,15 @@ class Api::V2::Accounts::ReportsController < Api::V1::Accounts::BaseController
     authorize :report, :view?
   end
 
+  def render_invalid_date_range(exception)
+    log_handled_error(exception)
+    render json: { error: 'since/until devem ser timestamps epoch válidos' }, status: :unprocessable_entity
+  end
+
   def common_params
     {
-      type: params[:type].to_sym,
+      # sem `type` o `.to_sym` em nil dava 500; ParameterMissing vira 422 no handler.
+      type: params.require(:type).to_sym,
       id: params[:id],
       group_by: params[:group_by],
       business_hours: ActiveModel::Type::Boolean.new.cast(params[:business_hours])

@@ -99,6 +99,10 @@ class Api::V1::Accounts::PortalsController < Api::V1::Accounts::BaseController
   end
 
   def parsed_custom_domain
+    # Sem custom_domain (criação pela API ou formulário sem o campo) o
+    # URI.parse(nil) estourava e a criação do portal devolvia 500.
+    return @portal.custom_domain if @portal.custom_domain.blank?
+
     domain = URI.parse(@portal.custom_domain)
     domain.is_a?(URI::HTTP) ? domain.host : @portal.custom_domain
   end
