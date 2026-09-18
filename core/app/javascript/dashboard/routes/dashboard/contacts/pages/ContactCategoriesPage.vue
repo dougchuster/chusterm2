@@ -8,6 +8,7 @@ import ContactAPI from 'dashboard/api/contacts';
 import ContactCategoriesAPI from 'dashboard/api/contactCategories';
 import Dialog from 'dashboard/components-next/dialog/Dialog.vue';
 import Spinner from 'dashboard/components-next/spinner/Spinner.vue';
+import { DsPageHeader } from 'dashboard/design-system/templates';
 
 const route = useRoute();
 const router = useRouter();
@@ -72,8 +73,7 @@ const pageText = {
   subtitle:
     'Organize suas listas em pastas, importe contatos, exporte audiências e acompanhe duplicados.',
   allFolders: 'Pastas',
-  backToFolders: 'Voltar para pastas',
-  backToFolder: 'Voltar para pasta',
+
   createCategory: 'Criar lista',
   newCategory: 'Nova lista',
   name: 'Nome',
@@ -176,6 +176,46 @@ const categoryDisplayName = category => {
     .replace(/\b\w/g, char => char.toUpperCase());
 };
 const categoryContactCount = category => category?.contacts_count || 0;
+
+const foldersRouteHref = computed(
+  () =>
+    router.resolve({
+      name: 'contacts_dashboard_categories',
+      params: route.params,
+    }).href
+);
+const folderRouteHref = computed(
+  () =>
+    router.resolve({
+      name: 'contacts_dashboard_category_kind',
+      params: { ...route.params, kind: selectedKind.value },
+    }).href
+);
+
+const headerTitle = computed(() =>
+  isCategoryDetail.value
+    ? categoryDisplayName(selectedCategory.value)
+    : pageText.title
+);
+const headerDescription = computed(() =>
+  isCategoryDetail.value
+    ? pageText.duplicateHint
+    : selectedFolder.value?.description || pageText.subtitle
+);
+const headerBreadcrumbs = computed(() => {
+  if (isFolderOverview.value) {
+    return [{ label: pageText.allFolders }];
+  }
+  const crumbs = [
+    { label: pageText.allFolders, href: foldersRouteHref.value },
+    { label: selectedFolder.value?.title || '' },
+  ];
+  if (isCategoryDetail.value) {
+    crumbs[1].href = folderRouteHref.value;
+    crumbs.push({ label: categoryDisplayName(selectedCategory.value) });
+  }
+  return crumbs;
+});
 const folderCategories = kind =>
   categories.value.filter(category => categoryFolderKind(category) === kind);
 const selectedFolderCategories = computed(() =>
@@ -299,14 +339,6 @@ const openCategory = category => {
       kind: categoryFolderKind(category),
       categoryId: category.id,
     },
-    query: {},
-  });
-};
-
-const backToFolders = () => {
-  router.push({
-    name: 'contacts_dashboard_categories',
-    params: route.params,
     query: {},
   });
 };
@@ -524,91 +556,55 @@ onMounted(async () => {
     <main
       class="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-4 px-4 py-6 sm:px-6"
     >
-      <header class="rounded-lg bg-ui-surface shadow-ui-raised p-4 sm:p-5">
-        <div
-          class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between"
-        >
-          <div class="min-w-0">
+      <DsPageHeader
+        :title="headerTitle"
+        :description="headerDescription"
+        :breadcrumbs="headerBreadcrumbs"
+      >
+        <template #actions>
+          <button
+            v-if="isFolderView"
+            type="button"
+            class="inline-flex h-9 items-center gap-2 rounded bg-n-blue-9 px-3 text-sm font-semibold text-white hover:bg-n-blue-10"
+            @click="
+              showCreateForm = !showCreateForm;
+              resetCategoryForm(selectedKind);
+            "
+          >
+            <span class="i-lucide-plus size-4" />
+            {{ pageText.newCategory }}
+          </button>
+          <template v-if="isCategoryDetail && selectedCategory">
             <button
-              v-if="!isFolderOverview"
               type="button"
-              class="mb-3 inline-flex h-8 items-center gap-2 rounded border border-ui-border-subtle px-3 text-sm font-medium text-n-slate-11 hover:bg-n-slate-2"
-              @click="isCategoryDetail ? backToFolder() : backToFolders()"
+              class="inline-flex h-9 items-center gap-2 rounded border border-ui-border-subtle px-3 text-sm font-medium text-n-slate-11 hover:bg-n-slate-2"
+              :disabled="isImporting"
+              @click="openImportFile(selectedCategory)"
             >
-              <span class="i-lucide-arrow-left size-4" />
-              {{
-                isCategoryDetail
-                  ? pageText.backToFolder
-                  : pageText.backToFolders
-              }}
+              <span class="i-lucide-upload size-4" />
+              {{ pageText.import }}
             </button>
-            <p
-              class="text-[11px] font-semibold uppercase tracking-normal text-n-slate-10"
-            >
-              {{
-                isFolderOverview ? pageText.allFolders : selectedFolder?.title
-              }}
-            </p>
-            <h1 class="m-0 mt-1 text-2xl font-semibold text-n-slate-12">
-              {{
-                isCategoryDetail
-                  ? categoryDisplayName(selectedCategory)
-                  : pageText.title
-              }}
-            </h1>
-            <p class="mt-1 max-w-3xl text-sm text-n-slate-11">
-              {{
-                isCategoryDetail
-                  ? pageText.duplicateHint
-                  : selectedFolder?.description || pageText.subtitle
-              }}
-            </p>
-          </div>
-          <div class="flex flex-wrap gap-2">
             <button
-              v-if="isFolderView"
               type="button"
-              class="inline-flex h-9 items-center gap-2 rounded bg-n-blue-9 px-3 text-sm font-semibold text-white hover:bg-n-blue-10"
-              @click="
-                showCreateForm = !showCreateForm;
-                resetCategoryForm(selectedKind);
-              "
+              class="inline-flex h-9 items-center gap-2 rounded border border-ui-border-subtle px-3 text-sm font-medium text-n-slate-11 hover:bg-n-slate-2"
+              :disabled="isExportingCsv"
+              @click="exportCategoryCsv(selectedCategory)"
             >
-              <span class="i-lucide-plus size-4" />
-              {{ pageText.newCategory }}
+              <span class="i-lucide-download size-4" />
+              {{ pageText.exportCsv }}
             </button>
-            <template v-if="isCategoryDetail && selectedCategory">
-              <button
-                type="button"
-                class="inline-flex h-9 items-center gap-2 rounded border border-ui-border-subtle px-3 text-sm font-medium text-n-slate-11 hover:bg-n-slate-2"
-                :disabled="isImporting"
-                @click="openImportFile(selectedCategory)"
-              >
-                <span class="i-lucide-upload size-4" />
-                {{ pageText.import }}
-              </button>
-              <button
-                type="button"
-                class="inline-flex h-9 items-center gap-2 rounded border border-ui-border-subtle px-3 text-sm font-medium text-n-slate-11 hover:bg-n-slate-2"
-                :disabled="isExportingCsv"
-                @click="exportCategoryCsv(selectedCategory)"
-              >
-                <span class="i-lucide-download size-4" />
-                {{ pageText.exportCsv }}
-              </button>
-              <button
-                type="button"
-                class="inline-flex h-9 items-center gap-2 rounded border border-ui-border-subtle px-3 text-sm font-medium text-n-slate-11 hover:bg-n-slate-2"
-                :disabled="isExportingSheet"
-                @click="exportCategoryGoogleSheet(selectedCategory)"
-              >
-                <span class="i-lucide-table-2 size-4" />
-                {{ pageText.exportSheet }}
-              </button>
-            </template>
-          </div>
-        </div>
-      </header>
+            <button
+              type="button"
+              class="inline-flex h-9 items-center gap-2 rounded border border-ui-border-subtle px-3 text-sm font-medium text-n-slate-11 hover:bg-n-slate-2"
+              :disabled="isExportingSheet"
+              @click="exportCategoryGoogleSheet(selectedCategory)"
+            >
+              <span class="i-lucide-table-2 size-4" />
+              {{ pageText.exportSheet }}
+            </button>
+          </template>
+        </template>
+      </DsPageHeader>
 
       <div v-if="isLoading" class="flex justify-center py-12 text-n-slate-11">
         <Spinner />

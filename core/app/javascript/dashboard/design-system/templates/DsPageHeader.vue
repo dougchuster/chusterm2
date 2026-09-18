@@ -5,6 +5,7 @@ import DsSkeleton from '../components/DsSkeleton.vue';
 defineProps({
   title: { type: String, required: true },
   breadcrumbs: { type: Array, default: () => [] },
+  description: { type: String, default: '' },
   loading: { type: Boolean, default: false },
 });
 
@@ -51,6 +52,12 @@ const BREADCRUMB_NAV_LABEL = 'Navegação estrutural';
         <h1 class="m-0 truncate text-ui-title font-semibold text-ui-text">
           {{ title }}
         </h1>
+        <p
+          v-if="description"
+          class="mt-1 max-w-3xl text-ui-body-sm text-ui-text-muted"
+        >
+          {{ description }}
+        </p>
       </template>
     </div>
 
