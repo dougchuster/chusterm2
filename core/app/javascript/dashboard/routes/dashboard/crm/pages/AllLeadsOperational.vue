@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/no-bare-strings-in-template, @intlify/vue-i18n/no-raw-text -->
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import CrmAPI from 'dashboard/api/crm';
@@ -256,6 +256,63 @@ const applyFilters = async () => {
   page.value = 1;
   selectedIds.value = [];
   await loadDeals({ silent: true });
+};
+
+// 4.4: filtros vivos — digitar já filtra (debounce), sem botão "Buscar".
+let searchDebounce = null;
+watch(search, () => {
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(() => applyFilters(), 400);
+});
+
+// Chips dos filtros ativos — cada um sabe se limpar.
+const filterChips = computed(() => {
+  const chips = [];
+  if (search.value.trim()) {
+    chips.push({ key: 'search', label: 'Busca', value: search.value.trim() });
+  }
+  if (stageId.value) {
+    chips.push({
+      key: 'stage',
+      label: 'Etapa',
+      value: stages.value.find(s => String(s.id) === String(stageId.value))?.name || stageId.value,
+    });
+  }
+  if (status.value !== 'open') {
+    chips.push({
+      key: 'status',
+      label: 'Status',
+      value: STATUS_OPTIONS.find(o => o.value === status.value)?.label || status.value,
+    });
+  }
+  if (score.value) {
+    chips.push({
+      key: 'score',
+      label: 'Score',
+      value: SCORE_OPTIONS.find(o => o.value === score.value)?.label || score.value,
+    });
+  }
+  Object.entries(customFieldFilters.value).forEach(([key, value]) => {
+    if (value) {
+      chips.push({ key: `cf:${key}`, label: fieldDefinitionLabel(key), value });
+    }
+  });
+  return chips;
+});
+
+const removeFilterChip = async key => {
+  if (key === 'search') search.value = '';
+  else if (key === 'stage') stageId.value = '';
+  else if (key === 'status') status.value = 'open';
+  else if (key === 'score') score.value = '';
+  else if (key.startsWith('cf:')) {
+    customFieldFilters.value = {
+      ...customFieldFilters.value,
+      [key.slice(3)]: '',
+    };
+  }
+  clearTimeout(searchDebounce);
+  await applyFilters();
 };
 const clearFilters = async () => {
   search.value = '';
@@ -561,18 +618,31 @@ onMounted(async () => {
         @change="applyFilters"
       />
       <DsButton
-        label="Buscar"
-        icon="i-lucide-search"
-        variant="secondary"
-        @click="applyFilters"
-      />
-      <DsButton
         v-if="hasActiveFilters"
         label="Limpar"
         variant="ghost"
         @click="clearFilters"
       />
     </template>
+
+    <!-- 4.4: chips dos filtros ativos — o atendente vê o que está filtrado -->
+    <div
+      v-if="filterChips.length"
+      class="mb-3 flex flex-wrap items-center gap-2"
+      data-testid="leads-filter-chips"
+    >
+      <button
+        v-for="chip in filterChips"
+        :key="chip.key"
+        type="button"
+        class="inline-flex min-h-6 items-center gap-1.5 rounded-ui-control border border-ui-border-subtle/80 bg-ui-sunken/80 px-2.5 text-ui-caption font-medium text-ui-text shadow-sm transition-colors hover:border-ui-border hover:bg-ui-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus"
+        @click="removeFilterChip(chip.key)"
+      >
+        <span class="text-ui-text-muted">{{ chip.label }}:</span>
+        <span class="max-w-48 truncate font-semibold">{{ chip.value }}</span>
+        <Icon icon="i-lucide-x" class="size-3.5 text-ui-text-muted" />
+      </button>
+    </div>
 
     <template v-if="selectedCount" #selection>
       <p class="m-0 mr-auto text-ui-body-sm font-medium text-ui-text">
