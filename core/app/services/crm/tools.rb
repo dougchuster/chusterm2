@@ -145,8 +145,11 @@ class Crm::Tools
                                  end
   end
 
+  # Ganho/perdido é decisão humana: a IA move entre etapas de trabalho, mas
+  # nunca para uma etapa terminal (2.6) — isso passaria por `mark_won!`/
+  # `mark_lost!` sem motivo de perda nem revisão.
   def allowed_stages
-    @deal.crm_pipeline.crm_pipeline_stages.active
+    @deal.crm_pipeline.crm_pipeline_stages.active.where(terminal_outcome: nil)
   end
 
   def allowed_stage_slugs

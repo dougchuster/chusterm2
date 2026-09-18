@@ -9,12 +9,47 @@ class Crm::Pack
 
   PACKS_DIR = Rails.root.join('config/crm_packs').freeze
   DEFAULT_SLUG = 'sales_default'
+  # O slug vira nome de arquivo: sem esta guarda, `packs#create` com
+  # `../../config/database` leria qualquer YAML do repositório.
+  SLUG_FORMAT = /\A[a-z0-9_]+\z/
+
+  # Cache de definições já parseadas, por slug. O board serializa
+  # `category_label_for` três vezes por card (150 cards = 450 leituras de
+  # YAML por requisição sem isto). Invalida sozinho quando o arquivo muda.
+  DEFINITIONS_MUTEX = Mutex.new
 
   attr_reader :slug, :definition
 
   def initialize(slug)
     @slug = slug.to_s
-    @definition = load_definition!
+    raise UnknownPackError, "CRM pack slug inválido: #{@slug.inspect}" unless SLUG_FORMAT.match?(@slug)
+
+    @definition = self.class.definition_for(@slug)
+  end
+
+  def self.definition_for(slug)
+    path = PACKS_DIR.join("#{slug}.yml")
+    raise UnknownPackError, "CRM pack '#{slug}' não existe em #{PACKS_DIR}" unless path.exist?
+
+    mtime = path.mtime
+    DEFINITIONS_MUTEX.synchronize do
+      cached = definitions_cache[slug]
+      return cached[:definition] if cached && cached[:mtime] == mtime
+
+      definition = parse_definition!(slug, path)
+      definitions_cache[slug] = { mtime: mtime, definition: definition }
+      definition
+    end
+  end
+
+  def self.definitions_cache
+    @definitions_cache ||= {}
+  end
+
+  def self.parse_definition!(slug, path)
+    (YAML.safe_load(path.read, permitted_classes: [Symbol], aliases: false) || {}).freeze
+  rescue Psych::SyntaxError => e
+    raise UnknownPackError, "CRM pack '#{slug}' inválido: #{e.message}"
   end
 
   def self.all
@@ -88,16 +123,5 @@ class Crm::Pack
   # vêm do pack instalado em vez de um serviço paralelo.
   def ai
     (definition['ai'] || {}).with_indifferent_access
-  end
-
-  private
-
-  def load_definition!
-    path = PACKS_DIR.join("#{slug}.yml")
-    raise UnknownPackError, "CRM pack '#{slug}' não existe em #{PACKS_DIR}" unless path.exist?
-
-    YAML.safe_load(path.read, permitted_classes: [Symbol], aliases: false) || {}
-  rescue Psych::SyntaxError => e
-    raise UnknownPackError, "CRM pack '#{slug}' inválido: #{e.message}"
   end
 end
