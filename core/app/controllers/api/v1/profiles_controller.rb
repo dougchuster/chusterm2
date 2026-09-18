@@ -10,6 +10,13 @@ class Api::V1::ProfilesController < Api::BaseController
       @user.update!(password_params.except(:current_password))
     end
 
+    # A tela de perfil exige nome; a API aceitava '' e o usuário aparecia sem nome
+    # na lista de agentes. O model não valida porque AgentBuilder cria convidados
+    # sem nome de propósito — a regra vale para quem edita o próprio perfil.
+    if profile_params.key?(:name) && profile_params[:name].blank?
+      render_could_not_create_error(I18n.t('errors.validations.presence', default: 'Nome não pode ficar em branco')) and return
+    end
+
     @user.assign_attributes(profile_params)
     @user.custom_attributes.merge!(custom_attributes_params)
     @user.save!

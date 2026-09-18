@@ -59,6 +59,16 @@ RSpec.describe 'Profile API', type: :request do
         expect(agent.name).to eq('test')
       end
 
+      it 'rejects a blank name' do
+        put '/api/v1/profile',
+            params: { profile: { name: '' } },
+            headers: agent.create_new_auth_token,
+            as: :json
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(agent.reload.name).not_to eq('')
+      end
+
       it 'updates custom attributes' do
         put '/api/v1/profile',
             params: { profile: { phone_number: '+123456789' } },
