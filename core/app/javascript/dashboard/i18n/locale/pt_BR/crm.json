@@ -270,7 +270,32 @@
         "SUPERVISED": "Supervisionada",
         "PAUSED": "Pausada",
         "HUMAN_ONLY": "Humano no controle"
-      }
+      },
+      "TABS_LABEL": "Seções da central de IA",
+      "TABS": {
+        "OPERATION": "Operação",
+        "ASSISTANT": "Assistente"
+      },
+      "ASSISTANT_TITLE": "Assistente",
+      "ASSISTANT_SUBTITLE": "Persona do pack, prompt e acesso rápido às configurações profundas do assistente.",
+      "ASSISTANT_SELECT": "Assistente",
+      "ASSISTANT_LINKS_LABEL": "Configuração do assistente",
+      "ASSISTANT_LINKS": {
+        "CONFIG": "Painel do agente",
+        "CONFIG_DESC": "Identidade, modelos de LLM, limites e recursos.",
+        "GUARDRAILS": "Guardrails",
+        "GUARDRAILS_DESC": "O que a IA nunca pode dizer ou fazer.",
+        "GUIDELINES": "Diretrizes",
+        "GUIDELINES_DESC": "Regras de resposta aplicadas em toda mensagem.",
+        "TOOLS": "Ferramentas",
+        "TOOLS_DESC": "Ações que a IA pode executar no CRM.",
+        "INBOXES": "Canais",
+        "INBOXES_DESC": "Onde o assistente responde e em qual modo.",
+        "PLAYGROUND": "Playground",
+        "PLAYGROUND_DESC": "Teste o assistente antes de ir ao ar."
+      },
+      "NO_ASSISTANT_TITLE": "Nenhum assistente configurado",
+      "NO_ASSISTANT_DESC": "Crie um assistente Captain para vê-lo aqui."
     },
     "VIEW_SWITCHER": {
       "LABEL": "Modo de exibição",
@@ -1005,7 +1030,16 @@
       "MORE_CATEGORIES": "+{count} outras",
       "FIELDS_COUNT": "{count} tipos e campos inclusos",
       "ERROR_LOAD": "Não foi possível carregar os packs.",
-      "ERROR_INSTALL": "Não foi possível instalar o pack."
+      "ERROR_INSTALL": "Não foi possível instalar o pack.",
+      "ERROR_AI_SAVE": "Não foi possível salvar o prompt da IA.",
+      "AI": {
+        "TITLE": "IA do segmento",
+        "SUBTITLE": "O pack instalado define a persona e o prompt base da assistente. Escreva um override para adaptar a IA a esta conta.",
+        "OVERRIDE_LABEL": "Prompt personalizado desta conta",
+        "OVERRIDE_PLACEHOLDER": "Deixe vazio para usar o prompt do pack.",
+        "SAVE": "Salvar prompt da IA",
+        "SAVED": "Prompt salvo"
+      }
     },
     "SORT": {
       "LABEL": "Ordenar cards",

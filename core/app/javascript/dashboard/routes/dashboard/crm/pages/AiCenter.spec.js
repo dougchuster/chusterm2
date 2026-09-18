@@ -1,3 +1,4 @@
+import { computed } from 'vue';
 import { flushPromises, mount } from '@vue/test-utils';
 import CaptainAiCenterAPI from 'dashboard/api/captain/aiCenter';
 import CaptainConversationStateAPI from 'dashboard/api/captain/conversationState';
@@ -6,6 +7,8 @@ import AiCenter from './AiCenter.vue';
 const mocks = vi.hoisted(() => ({
   alert: vi.fn(),
   routerPush: vi.fn(),
+  dispatch: vi.fn(),
+  assistants: [],
 }));
 
 vi.mock('dashboard/api/captain/aiCenter', () => ({
@@ -14,9 +17,26 @@ vi.mock('dashboard/api/captain/aiCenter', () => ({
   },
 }));
 
+vi.mock('dashboard/api/crm', () => ({
+  default: {
+    getPacks: vi.fn().mockResolvedValue({ data: { packs: [] } }),
+  },
+}));
+
+vi.mock('dashboard/composables/store', () => ({
+  useStore: () => ({ dispatch: mocks.dispatch }),
+  useMapGetter: key => {
+    if (key === 'captainAssistants/getRecords') {
+      return computed(() => mocks.assistants);
+    }
+    return computed(() => vi.fn().mockReturnValue(false));
+  },
+}));
+
 vi.mock('vue-router', () => ({
   useRoute: () => ({ params: { accountId: 1 } }),
   useRouter: () => ({ push: mocks.routerPush }),
+  RouterLink: { template: '<a><slot /></a>' },
 }));
 
 vi.mock('dashboard/composables', () => ({

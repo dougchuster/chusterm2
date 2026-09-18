@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import CrmAPI from '../../../../api/crm';
+import CRMPackAiCard from 'dashboard/components/crm/CRMPackAiCard.vue';
 import {
   DsBadge,
   DsButton,
@@ -21,6 +22,7 @@ const packs = ref([]);
 const loading = ref(true);
 const installingSlug = ref('');
 const error = ref('');
+const promptOverride = ref('');
 
 async function loadPacks() {
   loading.value = true;
@@ -28,11 +30,20 @@ async function loadPacks() {
   try {
     const { data } = await CrmAPI.getPacks();
     packs.value = data?.packs || [];
+    promptOverride.value = data?.ai_settings?.prompt_override || '';
   } catch {
     error.value = t('CRM.SEGMENT.ERROR_LOAD');
   } finally {
     loading.value = false;
   }
+}
+
+function onAiSaved(value) {
+  promptOverride.value = value;
+}
+
+function onAiError(message) {
+  error.value = message;
 }
 
 async function install(pack) {
@@ -77,6 +88,13 @@ onMounted(loadPacks);
           {{ t('CRM.SEGMENT.SUBTITLE') }}
         </p>
       </DsCard>
+
+      <CRMPackAiCard
+        :packs="packs"
+        :prompt-override="promptOverride"
+        @saved="onAiSaved"
+        @error="onAiError"
+      />
 
       <p
         v-if="error"

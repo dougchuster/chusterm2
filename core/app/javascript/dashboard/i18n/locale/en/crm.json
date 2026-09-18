@@ -992,7 +992,32 @@
         "SUPERVISED": "Supervised",
         "PAUSED": "Paused",
         "HUMAN_ONLY": "Human in control"
-      }
+      },
+      "TABS_LABEL": "AI Center sections",
+      "TABS": {
+        "OPERATION": "Operation",
+        "ASSISTANT": "Assistant"
+      },
+      "ASSISTANT_TITLE": "Assistant",
+      "ASSISTANT_SUBTITLE": "Pack persona, prompt and quick access to the assistant's deep configuration.",
+      "ASSISTANT_SELECT": "Assistant",
+      "ASSISTANT_LINKS_LABEL": "Assistant configuration",
+      "ASSISTANT_LINKS": {
+        "CONFIG": "Agent panel",
+        "CONFIG_DESC": "Identity, LLM models, limits and features.",
+        "GUARDRAILS": "Guardrails",
+        "GUARDRAILS_DESC": "What the AI must never say or do.",
+        "GUIDELINES": "Guidelines",
+        "GUIDELINES_DESC": "Response rules applied to every reply.",
+        "TOOLS": "Tools",
+        "TOOLS_DESC": "Actions the AI can run on the CRM.",
+        "INBOXES": "Channels",
+        "INBOXES_DESC": "Where the assistant responds and with which mode.",
+        "PLAYGROUND": "Playground",
+        "PLAYGROUND_DESC": "Test the assistant before going live."
+      },
+      "NO_ASSISTANT_TITLE": "No assistant configured",
+      "NO_ASSISTANT_DESC": "Create a Captain assistant to see it here."
     },
     "SEGMENT": {
       "TITLE": "Segment",
@@ -1005,7 +1030,16 @@
       "MORE_CATEGORIES": "+{count} more",
       "FIELDS_COUNT": "{count} types and fields included",
       "ERROR_LOAD": "Could not load packs.",
-      "ERROR_INSTALL": "Could not install the pack."
+      "ERROR_INSTALL": "Could not install the pack.",
+      "ERROR_AI_SAVE": "Could not save the AI prompt.",
+      "AI": {
+        "TITLE": "Segment AI",
+        "SUBTITLE": "The installed pack defines the assistant persona and base prompt. Write an override to adapt the AI to this account.",
+        "OVERRIDE_LABEL": "Prompt override for this account",
+        "OVERRIDE_PLACEHOLDER": "Leave empty to use the pack prompt.",
+        "SAVE": "Save AI prompt",
+        "SAVED": "Prompt saved"
+      }
     },
     "SORT": {
       "LABEL": "Sort cards",

@@ -253,6 +253,13 @@ class CrmAPI {
     return axios.post(crmUrl('packs'), { slug });
   }
 
+  // 3.4: prompt override da IA da conta (vazio volta ao prompt do pack).
+  updateAiSettings(promptOverride) {
+    return axios.patch(crmUrl('packs/ai_settings'), {
+      prompt_override: promptOverride,
+    });
+  }
+
   getLossReasons() {
     return axios.get(crmUrl('loss-reasons'));
   }

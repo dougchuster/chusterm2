@@ -33,7 +33,42 @@ RSpec.describe 'CRM Packs API', type: :request do
         legal = packs.find { |p| p['slug'] == 'legal' }
         expect(legal['installed']).to be(false)
         expect(legal['field_definitions'].map { |f| f['key'] }).to include('numero_processo')
+        expect(legal['ai']['prompt_base']).to include('advocacia')
       end
+
+      it 'devolve ai_settings no payload' do
+        get "/api/v1/accounts/#{account.id}/crm/packs", headers: headers
+
+        expect(response.parsed_body['ai_settings']).to eq('prompt_override' => nil)
+      end
+    end
+  end
+
+  describe 'PATCH /api/v1/accounts/:account_id/crm/packs/ai_settings' do
+    before { account.enable_features('crm_universal') }
+
+    it 'salva o override do prompt da IA na conta' do
+      patch "/api/v1/accounts/#{account.id}/crm/packs/ai_settings",
+            params: { prompt_override: 'Fale como um concierge.' }, headers: headers, as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(account.reload.custom_attributes['crm_ai_prompt_override']).to eq('Fale como um concierge.')
+    end
+
+    it 'prompt vazio volta ao prompt do pack' do
+      account.update!(custom_attributes: { 'crm_ai_prompt_override' => 'x' })
+
+      patch "/api/v1/accounts/#{account.id}/crm/packs/ai_settings",
+            params: { prompt_override: '' }, headers: headers, as: :json
+
+      expect(account.reload.custom_attributes['crm_ai_prompt_override']).to be_nil
+    end
+
+    it 'nega para agente comum' do
+      patch "/api/v1/accounts/#{account.id}/crm/packs/ai_settings",
+            params: { prompt_override: 'x' }, headers: agent_headers, as: :json
+
+      expect(response).to have_http_status(:unauthorized)
     end
   end
 

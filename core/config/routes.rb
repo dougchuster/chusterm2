@@ -151,7 +151,12 @@ Rails.application.routes.draw do
             get :dashboard, to: 'dashboard#index'
             get :options, to: 'options#index'
             # Fase 2: packs de vertical (só responde com crm_universal ligado).
-            resources :packs, only: [:index, :create]
+            resources :packs, only: [:index, :create] do
+              collection do
+                # 3.4: prompt da IA do pack + override por conta.
+                patch :ai_settings
+              end
+            end
             resource :health, only: [:show], controller: :health
 
             # F2.7: visoes salvas do board (lacuna K-05).

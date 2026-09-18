@@ -43,6 +43,93 @@ Estimativa: **~7 meses com 2 devs + designer meio período** (10–11 meses com 
 
 ---
 
+## 0.1 Status de execução (ledger) — atualizado 2026-09-17, HEAD `307fd5e6b5` + worktree
+
+> Revisão independente do que foi commitado desde a auditoria (12 commits, 112 arquivos, +6.132/−2.865). Legenda: ✅ feito e verificado · 🟡 parcial · ⬜ pendente · 🔁 feito de forma diferente do plano (aceito) · ⚠️ ajuste necessário. "Evidência" = commit ou arquivo:linha.
+
+### Fase 0 — Decidir e estancar
+
+| Item | Status | Evidência | Observações da revisão |
+|---|---|---|---|
+| 0.1–0.3 ADRs A0–A3 | ✅ | `4a62e1dd13`, `DECISOES.md` (4 ADRs aceitos) | A1 decidiu orchestrator como IA única; **nenhum commit ainda liga o orchestrator ao core** (ver 3.1b). |
+| 0.4 Triagem com acentos + áudio/OCR | ✅ | `74cb34b0c8`; `legal_triage_analyzer.rb:57,102` | `I18n.transliterate` no texto; transcrição/OCR entram no transcript. |
+| 0.5 Métricas coerentes | ✅ | `metrics_service.rb:18,39-40` | fechamento por `closed_at`; funil resolve o funil default quando sem `pipeline_id`. |
+| 0.6 Contador / labels / aria / polling / "CRM jurídico" | ✅ | `ae715ce114`; `CRMBoardToolbar.vue:71`, `CRMDealCard.vue:197`, `Sidebar.vue` (0 `setInterval`), 0 ocorrências de "CRM jurídico" | — |
+| 0.7 Payload limpo | ✅ | `deals_controller.rb:737` (comentário), 0 `content_for_llm`/`identifier` | — |
+| 0.8 gitleaks + throttle | ✅ | `42556c57f2`; `.github/workflows/ci.yml:57`, `rack_attack.rb:251,265` | Rotação dos segredos históricos **não é verificável pelo repo** — confirmar manualmente nas VPS. |
+| 0.9 Pastas órfãs / `docs/execution` no git / `.nvmrc` | ✅ | `services/` só tem `orchestrator/`; `.gitignore:103-104` libera `docs/execution` (19 arquivos rastreados); `core/.nvmrc` existe | — |
+| B10 Stale por `expected_duration_hours` | 🟡 | `stale_detector_job.rb:49-58` | threshold da etapa ✅ (conta universal); **ainda ignora `conversation.last_activity_at`** e mantém 1 query de audit por deal (`find_each` L22, L63). |
+| B13 CapiDispatchJob sem guard | ⬜ | `crm_deal.rb:89-92` | enfileira em todo save com contato. |
+| B14 bulk síncrono | ⬜ | `deals_controller.rb` | — |
+| D6 Cadência sem guard de consentimento | ⬜ | — | — |
+
+### Fase 1 — Chat = CRM
+
+| Item | Status | Evidência | Observações |
+|---|---|---|---|
+| 1.1 `CRMConversationPanel` com `ConversationHeader`+`MessagesView` (ReplyBox embutido) | ✅ | `46c06479fe`; `CRMConversationPanel.vue` (628 linhas); `CRMKanbanChatDrawer.vue` **apagado** | Aceite E2E "anexo/áudio/nota privada pelo board" — `qa/e2e/shot-panel.mjs` existe; confirmar que cobre envio, não só screenshot. |
+| 1.2 Barra de contexto CRM no painel | ✅ | idem (`CRMDealOutcomeControl`, `CRMNextActionBox`, `CaptainConversationStateCard`, `CRMScoreBadge`) | — |
+| 1.3 Card v5 (canal, prévia, não lidas, espera) | ✅ | `21c8c89aba`; `deals_controller.rb:331-373` (`DISTINCT ON`, unread agregado) | ⬜ Aviso de canal não-oficial (E6): o serializer manda `channel_type`, mas não o `provider` (`evolution` vs `whatsapp_cloud`) — o card não consegue avisar. Adicionar `channel_provider` ao payload do board. |
+| 1.4 Sort "cliente esperando" | ✅ | `21c8c89aba` | — |
+| 1.5 Resumo de handoff no topo | ✅ | `crm_handoff_summary_builder.rb` alterado | — |
+| 1.6 Atalhos unificados | ✅ | `useCrmCommandHotKeys.js` | — |
+
+### Fase 2 — Núcleo universal + packs
+
+| Item | Status | Evidência | Observações |
+|---|---|---|---|
+| 2.1 Schema universal | 🔁 | `20260917000001_create_crm_universal_foundation.rb` | **Melhor que o plano**: 100% aditivo (`category`/`subcategory` novos + backfill + dual-write; `legal_area`/`case_type` mantidos). Remoção das colunas legadas fica para depois de 2 releases — registrar como item 2.9. `conflict_check_status`/`documents_status` **ainda são colunas** (⬜ migrar para checklist/custom_fields). |
+| 2.2 `PackInstaller` + YAML + tela de segmento | 🔁 ✅ | `Crm::Pack`, `Crm::PackInstaller`, `config/crm_packs/*.yml`, `SegmentSettings.vue`, `packs_controller.rb`, rake `crm:packs:install` | Desvio aceito: categorias/subcategorias são lidas do **YAML em runtime** (o plano previa persistir tudo). Funciona, mas `crm_account_packs.settings` (overrides por conta) ainda não é usado. ⚠️ Corrigido nesta revisão: **cache de definições + validação de slug** (antes: 3 leituras de YAML por card no board; `packs#create` aceitava `../../config/x` como slug). |
+| 2.3 Núcleo genérico (stale/score/analyst/options) | ✅ | `a9683585c1`; `PackOptions`, `lead_score_calculator.rb:99`, `analyst_service.rb:222` | Tudo atrás da flag `crm_universal` (`features.yml:191`, default off) — produção jurídica intacta. |
+| 2.4 Frontend genérico | 🟡 | `4a5939653d`; `CRMCategoryBadge.vue`, `useCrmPack.js`, options-driven activities | ⚠️ `grep -rli "legal_area\|juridic\|INSS\|advogad" app lib` = **96** (era 92 — subiu, porque os novos arquivos mantêm compat com `legal_area`). Métrica precisa ser reescrita: contar só ocorrências **fora** de `legal_area` (campo legado mantido de propósito) e de `config/crm_packs/legal.yml`. Renderização de `crm_field_definitions`: só em `CRMDealDrawer.vue` e `SegmentSettings.vue`; lista, filtros e `group_by` ⬜. |
+| 2.5 Deal por contato N:N | ✅ | `1cfd6641b4`; `crm_deal_conversations`, `CrmDeal#attach_conversation!` | — |
+| 2.6 Visibilidade por papel | ✅ | `CrmDeal.visible_to` (`crm_deal.rb:46-64`); `filtered_deals` (L927-929) aplica em index/board/export; `#deal` (L481) em show/update/move; activities e export job | — |
+| 2.7 Dono único / lifecycle / título / etapas terminais | ✅ | `sync_single_owner`, `retitle!`, `terminal_outcome` em `crm_pipeline_stages`, `move_to_terminal_stage!` | — |
+| 2.8 Packs clinic/real_estate/education + fixture + E2E de isolamento | ✅ | `96c18653ca`; `lib/tasks/crm_qa.rake` | — |
+| 2.9 (novo) Remover `legal_area`/`case_type`/`conflict_check_status`/`documents_status` após 2 releases com flag ligada | ⬜ | — | pré-requisito: 100% das contas com pack instalado. |
+
+### Fase 3 — IA parametrizada pelo pack
+
+| Item | Status | Evidência | Observações |
+|---|---|---|---|
+| 3.1 Tools de CRM auditadas | 🟡 | `307fd5e6b5`; `Crm::Tools` (`get_deal_context`, `set_category`, `set_urgency`, `set_field`, `move_stage`, `create_activity`, `schedule_appointment`, `request_info`, `mark_qualified`) + `tools_spec.rb` | ⚠️ **Sem consumidor**: `grep Crm::Tools app enterprise lib` = 0 fora do próprio arquivo. Falta a camada de exposição (3.1b). ⚠️ Corrigido nesta revisão: `move_stage` **não pode mais mover para etapa terminal** (a IA fechava negócio como ganho/perdido sem motivo nem revisão). |
+| 3.1b (novo) Expor as tools à IA | ⬜ | — | Endpoint autenticado por `AgentBot` (`POST /api/v1/accounts/:id/crm/ai/tools/:name`) para o orchestrator **ou** wrappers `Captain::Tools::Crm*` — conforme ADR-A1, o primeiro. Sem isto a Fase 3 não entrega "IA escreve no CRM". |
+| 3.2 Classificador LLM por pack | 🟡 | `Crm::Classifier` (worktree, em edição) + `crm_deals.triage` (`20260918000003`) | ⚠️ `MODEL = 'gpt-4o-mini'` hardcoded (`classifier.rb:40`) — o projeto usa OpenRouter/qwen; ler de `Llm::Config`/env. Set rotulado de 200 conversas por pack (aceite) ⬜. |
+| 3.3 Intake por categoria + checklist como gate | 🟡 | `intake_questions` no pack; `request_info` na tool | gates de etapa por checklist ⬜. |
+| 3.4 Tela única de IA | 🟡 em andamento | `SegmentSettings.vue` + `packs#ai_settings` (worktree) | Está sendo feito como **override de prompt por conta** dentro de Segmento. Cuidado: `check_admin!` devolve 401 (deveria ser 403 — o usuário está autenticado). `Captain > Assistentes` e `AiCenter` continuam existindo — fusão ⬜. |
+| 3.5 Desligar IA redundante | ⬜ | — | `enterprise/` continua carregado; orchestrator continua sem consumidor. Depende de 3.1b. |
+
+### Fases 4–6
+
+⬜ Não iniciadas. Observação: `F1` (tokens) e `F2` (i18n) ficaram **piores** temporariamente — os novos componentes (`CRMConversationPanel`, `SegmentSettings`) precisam ser checados contra `n-slate`/`ds-*` e `no-raw-text` antes de fechar a Fase 4.
+
+### Ajustes feitos nesta revisão (sem tocar nos arquivos em edição no worktree)
+
+| Arquivo | O quê | Por quê |
+|---|---|---|
+| `core/app/services/crm/pack.rb` | `SLUG_FORMAT` + `definition_for` com cache por slug/mtime | segurança (`packs#create` com slug de traversal) e performance (YAML parse por card) |
+| `core/app/services/crm/tools.rb` | `allowed_stages` exclui `terminal_outcome` | IA não fecha negócio sozinha |
+| `core/spec/services/crm/pack_spec.rb` (novo) | 4 exemplos | cobre slug inválido e cache |
+| `core/spec/services/crm/tools_terminal_stage_spec.rb` (novo) | 2 exemplos | cobre a guarda |
+| `PLANO_17_09.md` | este ledger + itens 2.9 e 3.1b + métrica A0 reescrita | — |
+
+### Evidência de testes desta revisão (árvore com worktree, 17/09 noite)
+
+- RSpec `spec/services/crm spec/controllers/api/v1/accounts/crm spec/models spec/jobs/crm spec/services/captain` → **1.307 exemplos, 7 falhas, 22 pendentes**. As 7 falhas **não são regressão do trabalho atual**: 5 em `spec/models/message_spec.rb` (`undefined method 'reindex'` — Searchkick/advanced search, código upstream não tocado desde `b336eac110`) e 2 em `spec/models/crm_board_view_spec.rb:81,93` que **passam isoladas** (dependência de ordem — abrir item de flakiness na Fase 4).
+- RSpec packs/tools/classifier (inclui os 2 specs novos) → 37/0.
+- Vitest CRM + composables → **63 arquivos / 539 testes verdes**. ESLint limpo em `CRMConversationPanel.vue`, `SegmentSettings.vue`, `CRMDealCard.vue`.
+- `CRMConversationPanel.vue` usa 16 classes `n-slate-*` + 1 `eslint-disable no-raw-text` — entra na conta da Fase 4 (F1/F2).
+
+### Próximos passos sugeridos (ordem)
+
+1. Terminar 3.4 no worktree (trocar 401→403 em `check_admin!`; ler modelo do `Llm::Config` em `classifier.rb`).
+2. **3.1b** — expor `Crm::Tools` ao orchestrator (endpoint AgentBot) e registrar as tools no perfil do pack. É o que transforma a Fase 3 em valor real.
+3. 2.4 restante — renderizar `crm_field_definitions` em drawer/lista/filtros; depois medir a métrica A0 corrigida.
+4. B10 (última atividade da conversa + 1 query), B13, B14, D6 — pequenos, ainda abertos da Fase 0.
+5. Ligar `crm_universal` na conta Chuster (canário) e rodar `crm:packs:install[legal]` na KVM4 **antes** de ligar a flag lá.
+
+---
+
 ## 1. Como esta auditoria foi feita
 
 | Fonte | O que foi feito |
@@ -473,7 +560,7 @@ Score = R×I×C/E (R = % usuários, I = 0,5–3, C = %, E = pessoa-semana).
 
 | Métrica | Hoje | 90 dias | 180 dias |
 |---|---|---|---|
-| Arquivos com termos de vertical no núcleo (`grep -rli "legal_area\|juridic\|INSS\|advogad"` em `app/ lib/ services/`) | 92 + 41 | ≤ 20 (só migrações/packs) | 0 fora de `config/crm_packs/` |
+| Arquivos com termos de vertical no núcleo — **métrica corrigida**: `grep -rli "juridic\|INSS\|advogad\|previdenci\|LegalTriage\|LegalLabel"` em `app/ lib/ services/` **excluindo** `config/crm_packs/` e o campo legado `legal_area` (mantido de propósito até 2.9) | 96 (bruto, 17/09 pós-Fase 2) — recontar com a métrica corrigida | ≤ 20 | 0 |
 | Conta nova de outro segmento operante sem ver nada jurídico | impossível | sim (pack `sales_default`) | 3 packs disponíveis |
 | % de respostas enviadas sem sair do board | ~0 | 40% | 70% |
 | Tempo até 1ª resposta humana pós-handoff | não medido | < 15 min em 60% | 80% |

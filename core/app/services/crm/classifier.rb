@@ -177,9 +177,11 @@ class Crm::Classifier
     PROMPT
   end
 
-  # 3.5: o prompt base do pack (persona/regras do setor) encabeça o prompt.
+  # 3.4/3.5: override por conta vence o prompt base do pack; sem os dois,
+  # o prompt é só a taxonomia.
   def prompt_base
-    packs.filter_map { |p| p.ai[:prompt_base].presence }.join(' ')
+    override = (@account.custom_attributes || {})['crm_ai_prompt_override'].presence
+    override || packs.filter_map { |p| p.ai[:prompt_base].presence }.join(' ')
   end
 
   def categories_summary
