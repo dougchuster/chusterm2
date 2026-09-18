@@ -14,13 +14,20 @@ class Crm::CadenceMessageSenderJob < ApplicationJob
     inbox = whatsapp_inbox(account)
     return unless inbox
 
+    # D6: re-checa consentimento aqui também — o job pode rodar depois de o
+    # executor e a situação LGPD do deal pode ter mudado.
+    return unless allowed_by_consent?(deal)
+
     conversation = deal.conversation || find_or_create_conversation(account, inbox, contact)
     return unless conversation
+
+    # D6: WhatsApp só aceita texto livre dentro da janela de 24h após a
+    # última mensagem do cliente — fora dela a mensagem seria rejeitada.
+    return unless within_messaging_window?(conversation, deal, enrollment, step_id)
 
     conversation.messages.create!(
       account: account,
       inbox: inbox,
-      contact: contact,
       content: body,
       message_type: :outgoing,
       source_id: "cadence-#{enrollment.crm_cadence_id}-#{step_id}"
@@ -31,6 +38,26 @@ class Crm::CadenceMessageSenderJob < ApplicationJob
   end
 
   private
+
+  def within_messaging_window?(conversation, deal, enrollment, step_id)
+    return true if Conversations::MessageWindowService.new(conversation).can_reply?
+
+    Crm::AuditLogger.log(
+      account: deal.account,
+      actor: nil,
+      action: 'cadence_message_blocked_window',
+      target: deal,
+      payload: { cadence_id: enrollment.crm_cadence_id, step_id: step_id, conversation_id: conversation.id }
+    )
+    false
+  end
+
+  def allowed_by_consent?(deal)
+    return true unless deal.consent_status == 'denied'
+
+    Rails.logger.info "[CRM Cadence] envio bloqueado — deal ##{deal.id} com consentimento negado"
+    false
+  end
 
   def whatsapp_inbox(account)
     account.inboxes.where(channel_type: 'Channel::Whatsapp').first

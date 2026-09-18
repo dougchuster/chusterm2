@@ -99,7 +99,19 @@ class Crm::CadenceExecutorJob < ApplicationJob
     contact = deal.contact
     return unless contact&.phone_number.present?
 
-    config = step.action_config || {}
+    # D6: consentimento negado bloqueia envio — o step é pulado e auditado,
+    # a cadência continua no próximo passo.
+    if deal.consent_status == 'denied'
+      Crm::AuditLogger.log(
+        account: enrollment.account,
+        actor: nil,
+        action: 'cadence_step_blocked_consent',
+        target: deal,
+        payload: { cadence_id: enrollment.crm_cadence_id, step_id: step.id, action_type: step.action_type }
+      )
+      return
+    end
+
     body = interpolate_template(step.template_body || '', deal, contact)
 
     # Dispatch via WhatsApp (Evolution API)
