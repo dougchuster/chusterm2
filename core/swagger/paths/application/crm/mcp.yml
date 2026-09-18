@@ -1,0 +1,74 @@
+tags:
+  - CRM
+operationId: crm-mcp
+summary: CRM MCP endpoint (JSON-RPC 2.0)
+description: >
+  Stateless Model Context Protocol server for the CRM. Send one JSON-RPC 2.0
+  request per POST. Supported methods: `initialize`, `ping`, `tools/list`,
+  `tools/call` and `notifications/*` (notifications return 202). Available
+  tools: `deals.search`, `deals.move`, `activities.create`,
+  `contacts.timeline`, `fields.list`. All data is scoped to the account.
+security:
+  - userApiKey: []
+  - agentBotApiKey: []
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        required: [jsonrpc, method]
+        properties:
+          jsonrpc:
+            type: string
+            enum: ['2.0']
+          id:
+            type: [integer, string, 'null']
+            description: Omit for notifications (server returns 202)
+          method:
+            type: string
+            description: initialize | ping | tools/list | tools/call | notifications/*
+          params:
+            type: object
+            description: "For tools/call — { name: '<tool>', arguments: {...} }"
+      examples:
+        initialize:
+          value: { jsonrpc: '2.0', id: 1, method: 'initialize' }
+        list_tools:
+          value: { jsonrpc: '2.0', id: 2, method: 'tools/list' }
+        call_tool:
+          value:
+            jsonrpc: '2.0'
+            id: 3
+            method: 'tools/call'
+            params: { name: 'deals.search', arguments: { q: 'Maria', limit: 10 } }
+responses:
+  '200':
+    description: JSON-RPC 2.0 response (result or error object)
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            jsonrpc:
+              type: string
+            id:
+              type: [integer, string, 'null']
+            result:
+              type: object
+            error:
+              type: object
+              properties:
+                code:
+                  type: integer
+                  description: '-32700 parse, -32601 method not found, -32602 invalid params/unknown tool, -32603 internal'
+                message:
+                  type: string
+  '202':
+    description: Notification accepted (no response body)
+  '401':
+    description: Unauthorized
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/bad_request_error'

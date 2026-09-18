@@ -244,6 +244,7 @@ Rails.application.routes.draw do
             get 'metrics/stale_deals', to: 'metrics#stale_deals'
             get 'metrics/first_response', to: 'metrics#first_response'
             get 'metrics/weighted_forecast', to: 'metrics#weighted_forecast'
+            post 'mcp', to: 'mcp#create'
           end
           namespace :marketing do
             resources :connections, only: [:index, :destroy] do

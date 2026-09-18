@@ -1,0 +1,60 @@
+tags:
+  - CRM
+operationId: crm-agent-tools-execute
+summary: Execute a CRM tool on behalf of an AgentBot
+description: >
+  Executes one of the tools returned by GET /agent_tools. `deal_id` can be
+  provided directly or resolved from `conversation_id`. All operations are
+  scoped to the account and audited.
+security:
+  - userApiKey: []
+  - agentBotApiKey: []
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        required: [tool]
+        properties:
+          tool:
+            type: string
+            description: Tool name, e.g. get_deal_context, set_category, move_stage
+          deal_id:
+            type: integer
+          conversation_id:
+            type: integer
+            description: Resolves the deal linked to the conversation when deal_id is absent
+          arguments:
+            type: object
+            description: Extra arguments passed to the tool
+responses:
+  '200':
+    description: Tool executed
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            tool:
+              type: string
+            data:
+              type: object
+  '400':
+    description: Invalid params or tool rejected the operation
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/bad_request_error'
+  '401':
+    description: Unauthorized
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/bad_request_error'
+  '404':
+    description: Deal or conversation not found in this account
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/bad_request_error'

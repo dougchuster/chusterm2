@@ -1,0 +1,42 @@
+tags:
+  - CRM
+operationId: crm-agent-tools-list
+summary: List CRM tools available to AgentBots
+description: >
+  Returns the allowlisted CRM tools (name, description, parameters) that an
+  AgentBot can execute via POST /agent_tools/execute or through the MCP
+  endpoint.
+security:
+  - userApiKey: []
+  - agentBotApiKey: []
+responses:
+  '200':
+    description: Success
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            tools:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  description:
+                    type: string
+                  positional:
+                    type: array
+                    items:
+                      type: string
+                  kwargs:
+                    type: array
+                    items:
+                      type: string
+  '401':
+    description: Unauthorized
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/bad_request_error'

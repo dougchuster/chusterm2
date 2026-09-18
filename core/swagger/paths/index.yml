@@ -836,3 +836,22 @@
           application/json:
             schema:
               $ref: '#/components/schemas/conversation_messages'
+
+# CRM — MCP server (JSON-RPC 2.0)
+/api/v1/accounts/{account_id}/crm/mcp:
+  parameters:
+    - $ref: '#/components/parameters/account_id'
+  post:
+    $ref: ./application/crm/mcp.yml
+
+# CRM — Agent tools (AgentBot-facing)
+/api/v1/accounts/{account_id}/crm/agent_tools:
+  parameters:
+    - $ref: '#/components/parameters/account_id'
+  get:
+    $ref: ./application/crm/agent_tools_index.yml
+/api/v1/accounts/{account_id}/crm/agent_tools/execute:
+  parameters:
+    - $ref: '#/components/parameters/account_id'
+  post:
+    $ref: ./application/crm/agent_tools_execute.yml

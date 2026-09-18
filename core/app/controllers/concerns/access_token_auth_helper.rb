@@ -4,7 +4,9 @@ module AccessTokenAuthHelper
     'api/v1/accounts/conversations/messages' => ['create'],
     'api/v1/accounts/conversations/assignments' => ['create'],
     # 3.1b: o orchestrator executa tools de CRM com o token do AgentBot.
-    'api/v1/accounts/crm/agent_tools' => %w[index execute]
+    'api/v1/accounts/crm/agent_tools' => %w[index execute],
+    # 5.4: MCP server — o bot chama tools pela porta JSON-RPC também.
+    'api/v1/accounts/crm/mcp' => %w[create]
   }.freeze
 
   def ensure_access_token
