@@ -72,6 +72,7 @@ const currentInputType = computed(() => {
       <slot />
     </template>
     <input
+      :id="name"
       v-bind="$attrs"
       v-model="model"
       :name="name"

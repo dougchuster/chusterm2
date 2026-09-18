@@ -84,6 +84,7 @@ export default {
         <FormInput
           v-model="credentials.email"
           name="email_address"
+          :label="$t('RESET_PASSWORD.EMAIL.LABEL')"
           :has-error="v$.credentials.email.$error"
           :error-message="$t('RESET_PASSWORD.EMAIL.ERROR')"
           :placeholder="$t('RESET_PASSWORD.EMAIL.PLACEHOLDER')"
@@ -101,7 +102,7 @@ export default {
       </div>
       <p class="mt-4 -mb-1 text-sm text-n-slate-11">
         {{ $t('RESET_PASSWORD.GO_BACK_TO_LOGIN') }}
-        <router-link to="/auth/login" class="text-link text-n-brand">
+        <router-link to="/app/login" class="text-link text-n-brand">
           {{ $t('COMMON.CLICK_HERE') }}.
         </router-link>
       </p>

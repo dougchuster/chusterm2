@@ -22,6 +22,14 @@ RSpec.describe DeviseOverrides::SessionsController, type: :controller do
 
         expect(response).to have_http_status(:unauthorized)
       end
+
+      it 'responde a credenciais inválidas em pt_BR (locale do app; test.rb usa :en)' do
+        post :create, params: { email: user.email, password: 'wrong', locale: 'pt_BR' }
+
+        errors = response.parsed_body['errors']
+        expect(errors).to eq([I18n.t('devise_token_auth.sessions.bad_credentials', locale: :pt_BR)])
+        expect(errors.first).not_to include('Invalid login credentials')
+      end
     end
 
     context 'with MFA authentication' do
