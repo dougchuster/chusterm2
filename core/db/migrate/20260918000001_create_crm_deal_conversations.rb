@@ -13,11 +13,15 @@ class CreateCrmDealConversations < ActiveRecord::Migration[7.1]
 
     # Backfill: a conversa primária (crm_deals.conversation_id) vira o primeiro
     # elo do join; a coluna segue existindo como "conversa principal".
+    # `crm_deals.conversation_id` não tem FK, então negócios que apontam para
+    # conversas já apagadas existem em produção — sem o EXISTS o INSERT viola a
+    # FK nova e cancela a migration inteira (visto no banco local: 2 órfãos).
     execute <<~SQL.squish
       INSERT INTO crm_deal_conversations (account_id, crm_deal_id, conversation_id, created_at, updated_at)
-      SELECT account_id, id, conversation_id, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
-      FROM crm_deals
-      WHERE conversation_id IS NOT NULL
+      SELECT d.account_id, d.id, d.conversation_id, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+      FROM crm_deals d
+      WHERE d.conversation_id IS NOT NULL
+        AND EXISTS (SELECT 1 FROM conversations c WHERE c.id = d.conversation_id)
     SQL
   end
 
