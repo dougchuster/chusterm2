@@ -35,6 +35,9 @@ class Crm::DealCreator
     return reuse_existing_deal(existing_deal, attributes) if existing_deal
 
     deal = @account.crm_deals.create!(attributes)
+    # 2.5: a conversa principal entra no join — o deal aceita outras conversas
+    # do mesmo contato depois (WhatsApp + Instagram = um deal só).
+    deal.attach_conversation!(Conversation.find(attributes[:conversation_id]), actor: @actor) if attributes[:conversation_id].present?
     Crm::AuditLogger.log(account: @account, actor: @actor, action: 'deal_created', target: deal)
     Crm::ApplyChecklistTemplate.new(deal: deal, actor: @actor).perform if deal.case_type.present?
     deal
@@ -118,6 +121,7 @@ class Crm::DealCreator
     %i[conversation_id inbox_id team_id owner_id assignee_id].each do |key|
       updates[key] = attributes[key] if attributes[key].present? && deal.public_send(key) != attributes[key]
     end
+    deal.attach_conversation!(Conversation.find(attributes[:conversation_id]), actor: @actor) if attributes[:conversation_id].present?
     clear_stale_captain_state_links(deal, updates[:conversation_id])
     deal.update!(updates) if updates.present?
     Crm::AuditLogger.log(

@@ -295,6 +295,10 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
                               .where(conversation_id: deals.filter_map(&:conversation_id))
                               .index_by(&:conversation_id)
     conversation_metas = conversation_metas_for(deals)
+    linked_conversations = CrmDealConversation.where(crm_deal_id: ids)
+                                            .group(:crm_deal_id)
+                                            .pluck(:crm_deal_id, Arel.sql('array_agg(conversation_id)'))
+                                            .to_h
 
     deals.map do |deal|
       serialize_deal(
@@ -303,7 +307,8 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
         is_stale: stale_ids.include?(deal.id),
         next_activity_due_at: next_due[deal.id],
         ai_state: ai_states[deal.conversation_id],
-        conversation_meta: conversation_metas[deal.conversation_id] || {}
+        conversation_meta: conversation_metas[deal.conversation_id] || {},
+        linked_conversation_ids: linked_conversations[deal.id]
       )
     end
   end
@@ -472,7 +477,8 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
   end
 
   def deal
-    @deal = Current.account.crm_deals.find(params[:id])
+    # 2.6: agente sem acesso ao canal do negócio recebe 404 (visão por papel).
+    @deal = Current.account.crm_deals.visible_to(Current.user, Current.account).find(params[:id])
   end
 
   def deal_params
@@ -513,7 +519,7 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
     attributes
   end
 
-  def serialize_deal(deal, detailed: false, pending_activities_count: nil, is_stale: nil, next_activity_due_at: :not_loaded, ai_state: :not_loaded, conversation_meta: :not_loaded)
+  def serialize_deal(deal, detailed: false, pending_activities_count: nil, is_stale: nil, next_activity_due_at: :not_loaded, ai_state: :not_loaded, conversation_meta: :not_loaded, linked_conversation_ids: nil)
     ai_state = deal.conversation&.captain_conversation_state if ai_state == :not_loaded
     conversation_meta = conversation_meta_for(deal) if conversation_meta == :not_loaded
     avatar_url = contact_avatar_url(deal.contact)
@@ -571,6 +577,9 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
       contact_avatar_url: avatar_url,
       conversation_id: deal.conversation_id,
       conversation_display_id: deal.conversation&.display_id,
+      # 2.5: todas as conversas anexadas ao negócio (o canal principal fica em
+      # `conversation_id`, os demais chegam por outros canais do contato).
+      conversation_ids: linked_conversation_ids || deal.crm_deal_conversations.pluck(:conversation_id),
       owner_id: deal.owner_id,
       assignee_id: deal.assignee_id,
       position: deal.position,
@@ -916,7 +925,8 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
   # quais aceitam lista. O controller manter a própria cópia foi o que fez a
   # exportação descartar filtros em silêncio.
   def filtered_deals(scope, filters = filter_params)
-    Crm::DealFilterService.new(scope: scope, filters: filters, account: Current.account).perform
+    visible = scope.visible_to(Current.user, Current.account)
+    Crm::DealFilterService.new(scope: visible, filters: filters, account: Current.account).perform
   end
 
   def filter_params
@@ -933,7 +943,8 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
     selected = Crm::DealFilterService.permitted_filters(params[:filters])
     return filtered_deals(Current.account.crm_deals, selected) if select_all_requested?
 
-    Current.account.crm_deals.where(id: Array(params[:deal_ids]).compact_blank)
+    Current.account.crm_deals.visible_to(Current.user, Current.account)
+           .where(id: Array(params[:deal_ids]).compact_blank)
   end
 
   # BUG-04: sem fallback para params[:action] (que no Rails é o nome da action

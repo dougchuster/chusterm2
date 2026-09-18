@@ -7,8 +7,10 @@ class Crm::AccountInitializer
     { name: 'Apresentação / Proposta', slug: 'apresentacao-proposta', position: 3, probability_pct: 60, color: '#a855f7',
       expected_duration_hours: 96 },
     { name: 'Negociação', slug: 'negociacao', position: 4, probability_pct: 80, color: '#ec4899', expected_duration_hours: 120 },
-    { name: 'Fechamento', slug: 'fechamento', position: 5, probability_pct: 100, color: '#10b981', expected_duration_hours: 168 },
-    { name: 'Perdido / Arquivado', slug: 'perdido-arquivado', position: 6, probability_pct: 0, color: '#ef4444' }
+    { name: 'Fechamento', slug: 'fechamento', position: 5, probability_pct: 100, color: '#10b981', expected_duration_hours: 168,
+      terminal_outcome: 'won' },
+    { name: 'Perdido / Arquivado', slug: 'perdido-arquivado', position: 6, probability_pct: 0, color: '#ef4444',
+      terminal_outcome: 'lost' }
   ].freeze
 
   DEFAULT_LOSS_REASONS = [

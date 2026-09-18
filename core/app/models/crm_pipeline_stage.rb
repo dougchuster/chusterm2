@@ -1,6 +1,8 @@
 class CrmPipelineStage < ApplicationRecord
   include AccountAssociationScoped
 
+  TERMINAL_OUTCOMES = %w[won lost].freeze
+
   belongs_to :account
   belongs_to :crm_pipeline
   has_many :crm_deals, dependent: :restrict_with_error
@@ -11,10 +13,16 @@ class CrmPipelineStage < ApplicationRecord
   validates :account, :crm_pipeline, :name, :slug, presence: true
   validates_same_account_for :crm_pipeline
   validates :slug, uniqueness: { scope: :crm_pipeline_id }
+  validates :terminal_outcome, inclusion: { in: TERMINAL_OUTCOMES }, allow_nil: true
 
   scope :active, -> { where(archived_at: nil) }
   scope :archived, -> { where.not(archived_at: nil) }
   scope :ordered, -> { order(position: :asc) }
+  scope :terminal_for, ->(outcome) { active.where(terminal_outcome: outcome) }
+
+  def terminal?
+    terminal_outcome.present?
+  end
 
   def archive!
     update!(archived_at: Time.current)

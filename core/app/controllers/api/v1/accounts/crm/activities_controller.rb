@@ -187,7 +187,16 @@ class Api::V1::Accounts::Crm::ActivitiesController < Api::V1::Accounts::Crm::Bas
   private
 
   def activity
-    @activity = Current.account.crm_activities.find(params[:id])
+    @activity = visible_activities(Current.account.crm_activities).find(params[:id])
+  end
+
+  # 2.6: atividade de negócio de canal fora do papel do agente não aparece —
+  # mesmo critério do CrmDeal.visible_to aplicado por subquery.
+  def visible_activities(scope)
+    visible_deal_ids = Current.account.crm_deals
+                              .visible_to(Current.user, Current.account)
+                              .select(:id)
+    scope.where(crm_deal_id: nil).or(scope.where(crm_deal_id: visible_deal_ids))
   end
 
   def activity_params
@@ -234,7 +243,7 @@ class Api::V1::Accounts::Crm::ActivitiesController < Api::V1::Accounts::Crm::Bas
   end
 
   def filtered_activities
-    activities = Current.account.crm_activities
+    activities = visible_activities(Current.account.crm_activities)
     activities = activities.includes(:contact, :conversation, :owner, :assignee,
                                      crm_deal: [:contact, :crm_pipeline_stage, :conversation])
     activities = activities.where(crm_deal_id: params[:deal_id]) if params[:deal_id].present?

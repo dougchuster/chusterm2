@@ -115,7 +115,8 @@ class Api::V1::Accounts::Crm::PipelineStagesController < Api::V1::Accounts::Crm:
   end
 
   def stage_params
-    params.require(:stage).permit(:wip_limit, :name, :slug, :position, :probability_pct, :expected_duration_hours, :color, required_fields: {})
+    params.require(:stage).permit(:wip_limit, :name, :slug, :position, :probability_pct, :expected_duration_hours, :color, :terminal_outcome,
+                                  required_fields: {})
   end
 
   def stage_create_params
@@ -137,6 +138,7 @@ class Api::V1::Accounts::Crm::PipelineStagesController < Api::V1::Accounts::Crm:
       position: stage.position,
       probability_pct: stage.probability_pct,
       expected_duration_hours: stage.expected_duration_hours,
+      terminal_outcome: stage.terminal_outcome,
       wip_limit: stage.wip_limit,
       color: stage.color,
       required_fields: stage.required_fields,

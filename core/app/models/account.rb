@@ -157,6 +157,7 @@ class Account < ApplicationRecord
   has_many :crm_board_views, dependent: :destroy_async
   has_many :crm_pipeline_stages, dependent: :destroy
   has_many :crm_deals, dependent: :destroy
+  has_many :crm_deal_conversations, dependent: :destroy
   has_many :crm_activities, dependent: :destroy
   has_many :crm_loss_reasons, dependent: :destroy
   has_many :crm_audit_events, dependent: :destroy

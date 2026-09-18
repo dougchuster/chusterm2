@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_09_17_000001) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_18_000002) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -1096,6 +1096,19 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_17_000001) do
     t.index ["account_id", "legal_area"], name: "idx_crm_checklist_templates_account_legal_area"
   end
 
+  create_table "crm_deal_conversations", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "crm_deal_id", null: false
+    t.bigint "conversation_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "conversation_id"], name: "idx_crm_deal_conversations_account"
+    t.index ["account_id"], name: "index_crm_deal_conversations_on_account_id"
+    t.index ["conversation_id"], name: "index_crm_deal_conversations_on_conversation_id"
+    t.index ["crm_deal_id", "conversation_id"], name: "idx_crm_deal_conversations_unique", unique: true
+    t.index ["crm_deal_id"], name: "index_crm_deal_conversations_on_crm_deal_id"
+  end
+
   create_table "crm_deals", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.bigint "contact_id"
@@ -1262,8 +1275,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_17_000001) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "wip_limit"
+    t.string "terminal_outcome"
     t.index ["account_id"], name: "index_crm_pipeline_stages_on_account_id"
     t.index ["crm_pipeline_id", "slug"], name: "index_crm_pipeline_stages_on_crm_pipeline_id_and_slug", unique: true
+    t.index ["crm_pipeline_id", "terminal_outcome"], name: "idx_crm_stages_terminal_outcome"
     t.index ["crm_pipeline_id"], name: "index_crm_pipeline_stages_on_crm_pipeline_id"
   end
 
@@ -2077,6 +2092,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_17_000001) do
   add_foreign_key "crm_cadence_steps", "crm_cadences"
   add_foreign_key "crm_cadences", "accounts"
   add_foreign_key "crm_checklist_templates", "accounts"
+  add_foreign_key "crm_deal_conversations", "accounts"
+  add_foreign_key "crm_deal_conversations", "conversations"
+  add_foreign_key "crm_deal_conversations", "crm_deals"
   add_foreign_key "crm_external_connections", "accounts"
   add_foreign_key "crm_external_connections", "users"
   add_foreign_key "crm_field_definitions", "accounts"

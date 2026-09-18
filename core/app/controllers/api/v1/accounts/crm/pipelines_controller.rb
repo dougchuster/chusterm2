@@ -141,6 +141,7 @@ class Api::V1::Accounts::Crm::PipelinesController < Api::V1::Accounts::Crm::Base
       position: stage.position,
       probability_pct: stage.probability_pct,
       expected_duration_hours: stage.expected_duration_hours,
+      terminal_outcome: stage.terminal_outcome,
       color: stage.color
     }
   end

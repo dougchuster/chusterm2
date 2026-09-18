@@ -17,6 +17,10 @@ class CrmDeal < ApplicationRecord
   has_many :crm_audit_events, as: :target, dependent: :destroy
   has_many :crm_cadence_enrollments, dependent: :destroy
   has_many :crm_automation_runs, dependent: :destroy
+  # 2.5: um negócio junta todas as conversas do contato (WhatsApp + Instagram =
+  # um deal só). `conversation_id` segue como a conversa principal.
+  has_many :crm_deal_conversations, dependent: :destroy
+  has_many :conversations, through: :crm_deal_conversations
 
   validates :account, :crm_pipeline, :crm_pipeline_stage, :title, presence: true
   validates_same_account_for :crm_pipeline, :crm_pipeline_stage, :contact, :conversation, :inbox, :crm_loss_reason
@@ -36,6 +40,28 @@ class CrmDeal < ApplicationRecord
             if: :open_status?
 
   scope :open_deals, -> { where(status: 'open') }
+  # 2.6: o agente só vê negócios dos canais em que atende — o mesmo contrato
+  # do ConversationPolicy (inbox/team). Deals sem canal (manuais) e deals em
+  # que ele é responsável seguem visíveis; administrador vê tudo.
+  scope :visible_to, lambda { |user, account|
+    account_user = account.account_users.find_by(user_id: user.id)
+    if account_user&.administrator? || user.is_a?(AgentBot)
+      all
+    else
+      inbox_ids = user.inboxes.where(account_id: account.id).select(:id)
+      team_ids = user.teams.where(account_id: account.id).select(:id)
+      # 2.5/2.6: conversas extras anexadas ao deal também concedem acesso —
+      # a conversa do WhatsApp pode estar num inbox do agente mesmo quando a
+      # conversa principal do deal veio de outro canal.
+      linked = CrmDealConversation.select(:crm_deal_id)
+                                  .where(conversation_id: Conversation.where(account_id: account.id, inbox_id: inbox_ids).select(:id))
+      where(inbox_id: inbox_ids)
+        .or(where(team_id: team_ids))
+        .or(where(inbox_id: nil))
+        .or(where(owner_id: user.id))
+        .or(where(id: linked))
+    end
+  }
   scope :active_pipeline, -> { where(status: 'open', operational_status: ['active', 'returning_client']) }
   scope :base_clients, -> { where(operational_status: 'base_client') }
   scope :discarded, -> { where(operational_status: %w[invalid spam duplicated no_lead archived]) }
@@ -50,6 +76,8 @@ class CrmDeal < ApplicationRecord
   after_commit :track_campaign_conversion, if: :campaign_conversion_event?
   before_validation :sync_universal_category
   before_validation :normalize_legal_area
+  before_validation :sync_single_owner
+  after_save :propagate_owner_to_contact, if: :saved_change_to_owner_id?
 
   # PERF-02: eventos crm_deal.* → ActionCableListener → board em realtime.
   # Callbacks no modelo (e não nos services) para cobrir todos os caminhos de
@@ -87,13 +115,51 @@ class CrmDeal < ApplicationRecord
     }
   end
 
+  # Anexa uma conversa extra ao negócio (o contato chegou por outro canal).
+  # A conversa principal (`conversation_id`) não muda — o join é aditivo.
+  def attach_conversation!(conversation, actor: nil)
+    link = crm_deal_conversations.find_or_create_by!(conversation: conversation) do |row|
+      row.account = account
+    end
+    if link.previously_new_record?
+      Crm::AuditLogger.log(
+        account: account,
+        actor: actor,
+        action: 'deal_conversation_attached',
+        target: self,
+        payload: { conversation_id: conversation.id }
+      )
+    end
+    link
+  end
+
+  # D2/C6: título padrão da triagem ("Atendimento #53") não ajuda a reconhecer
+  # o negócio no kanban — virou contato + categoria quando houver os dois.
+  def default_title?
+    title.blank? || title.match?(/\AAtendimento #\d+\z/)
+  end
+
+  def retitle!(actor: nil)
+    return unless default_title?
+    return if contact.blank?
+
+    label = Crm::PackOptions.category_label_for(account, category.presence || legal_area)
+    new_title = [contact.name.presence || "Contato ##{contact_id}", label].compact.join(' — ')
+    update!(title: new_title)
+    Crm::AuditLogger.log(
+      account: account, actor: actor, action: 'deal_renamed', target: self, payload: { title: new_title }
+    )
+  end
+
   def mark_won!(actor: nil)
     update!(status: 'won', closed_at: Time.current, crm_loss_reason_id: nil, lost_reason_note: nil)
+    move_to_terminal_stage!('won', actor: actor)
     Crm::AuditLogger.log(account: account, actor: actor, action: 'deal_marked_won', target: self)
   end
 
   def mark_lost!(loss_reason_id:, note: nil, actor: nil)
     update!(status: 'lost', closed_at: Time.current, crm_loss_reason_id: loss_reason_id, lost_reason_note: note)
+    move_to_terminal_stage!('lost', actor: actor)
     Crm::AuditLogger.log(account: account, actor: actor, action: 'deal_marked_lost', target: self)
   end
 
@@ -101,6 +167,12 @@ class CrmDeal < ApplicationRecord
     update!(status: 'open', closed_at: nil, operational_status: 'active', archived_at: nil,
             disposed_at: nil, disposition_reason: nil, disposition_note: nil,
             crm_loss_reason_id: nil, lost_reason_note: nil)
+    # D2: card parado na coluna terminal ("Ganho"/"Perdido") volta para o
+    # início do funil ao reabrir.
+    if crm_pipeline_stage&.terminal?
+      first_open = crm_pipeline.crm_pipeline_stages.active.where(terminal_outcome: nil).order(:position).first
+      Crm::DealMover.new(deal: self, stage_id: first_open.id, actor: actor).perform if first_open
+    end
     Crm::AuditLogger.log(account: account, actor: actor, action: 'deal_reopened', target: self)
   end
 
@@ -144,6 +216,33 @@ class CrmDeal < ApplicationRecord
   end
 
   private
+
+  # D2: ganho/perdido saem da etapa operacional para a coluna terminal do
+  # funil ("Ganho"/"Perdido"), quando ela existe — pipelines antigas sem
+  # etapa terminal mantêm o card onde está (comportamento anterior).
+  def move_to_terminal_stage!(outcome, actor: nil)
+    terminal = crm_pipeline.crm_pipeline_stages.terminal_for(outcome).first
+    return unless terminal
+    return if crm_pipeline_stage_id == terminal.id
+
+    Crm::DealMover.new(deal: self, stage_id: terminal.id, actor: actor).perform
+  end
+
+  # D3: `assignee_id` fica deprecado — `owner_id` é o dono único do negócio.
+  # Escritas antigas em `assignee_id` continuam funcionando (espelham no
+  # dono), e o join em `contacts.crm_owner_id` mantém o dono do relacionamento
+  # alinhado ao dono do negócio.
+  def sync_single_owner
+    self.owner_id = assignee_id if owner_id.blank? && assignee_id.present?
+    self.assignee_id = owner_id if assignee_id != owner_id
+  end
+
+  def propagate_owner_to_contact
+    return if contact.blank? || owner_id.blank?
+    return if contact.crm_owner_id == owner_id
+
+    contact.update!(crm_owner_id: owner_id)
+  end
 
   def stage_belongs_to_pipeline
     return if crm_pipeline_stage.nil? || crm_pipeline.nil?

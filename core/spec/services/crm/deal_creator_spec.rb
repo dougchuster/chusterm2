@@ -73,6 +73,27 @@ RSpec.describe Crm::DealCreator do
     expect(old_state.reload.crm_deal_id).to be_nil
   end
 
+  # 2.5 — N:N: a conversa principal entra no join e a conversa nova do mesmo
+  # contato anexa ao deal aberto em vez de criar um segundo card.
+  it 'links the primary conversation through crm_deal_conversations' do
+    deal = described_class.new(account: account, params: base_params, actor: nil).perform
+
+    expect(deal.conversations).to contain_exactly(conversation)
+  end
+
+  it 'attaches the next conversation to the reused deal' do
+    described_class.new(account: account, params: base_params, actor: nil).perform
+
+    reused = described_class.new(
+      account: account,
+      params: base_params.merge(conversation_id: next_conversation.id),
+      actor: nil
+    ).perform
+
+    expect(reused.conversations).to contain_exactly(conversation, next_conversation)
+    expect(reused.conversation_id).to eq(next_conversation.id)
+  end
+
   private
 
   def base_params

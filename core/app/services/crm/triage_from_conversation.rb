@@ -11,6 +11,7 @@ class Crm::TriageFromConversation
 
     ActiveRecord::Base.transaction do
       apply_triage(deal, triage)
+      deal.retitle!(actor: @actor)
       persist_intake_answers(deal, triage[:intake_answers])
       Crm::LeadScoreCalculator.new(deal.reload, actor: @actor).perform
       Crm::ContactOwnerRouter.new(deal: deal.reload, conversation: @conversation, triage: triage, actor: @actor).perform
@@ -41,6 +42,36 @@ class Crm::TriageFromConversation
     existing = @account.crm_deals.open_deals.find_by(conversation_id: @conversation.id)
     return align_deal_to_channel_pipeline(existing) if existing
 
+    linked = open_deal_linked_to_conversation
+    return linked if linked
+
+    # 2.5: o contato já tem um negócio aberto — a conversa nova (outro canal,
+    # retorno depois de resolvida etc.) anexa a ele em vez de criar outro card.
+    by_contact = open_deal_for_contact
+    if by_contact
+      by_contact.attach_conversation!(@conversation, actor: @actor)
+      return by_contact
+    end
+
+    create_deal_for_conversation
+  end
+
+  def open_deal_linked_to_conversation
+    @account.crm_deals.open_deals
+            .joins(:crm_deal_conversations)
+            .find_by(crm_deal_conversations: { conversation_id: @conversation.id })
+  end
+
+  def open_deal_for_contact
+    return nil if @conversation.contact_id.blank?
+
+    @account.crm_deals.open_deals
+            .where(contact_id: @conversation.contact_id)
+            .order(updated_at: :desc)
+            .first
+  end
+
+  def create_deal_for_conversation
     pipeline = pipeline_for_conversation
     raise 'No active pipeline found' unless pipeline
 

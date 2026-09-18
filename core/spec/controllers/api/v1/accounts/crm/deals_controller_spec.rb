@@ -352,6 +352,96 @@ RSpec.describe 'CRM Deals API', type: :request do
     end
   end
 
+  # 2.6 — visão por papel: o agente só enxerga negócios dos canais em que ele
+  # atende (mesmo contrato do ConversationPolicy: inbox/team).
+  describe 'visibilidade por papel (visible_to)' do
+    let(:agent) { create(:user, account: account, role: :agent) }
+    let(:agent_headers) { agent.create_new_auth_token }
+    let(:inbox) { create(:inbox, account: account) }
+    let(:other_inbox) { create(:inbox, account: account) }
+
+    before { create(:inbox_member, user: agent, inbox: inbox) }
+
+    it 'hides deals of inboxes the agent does not serve' do
+      visible = create_deal!(title: 'Do meu inbox', inbox: inbox)
+      hidden = create_deal!(title: 'De outro canal', inbox: other_inbox)
+
+      get "/api/v1/accounts/#{account.id}/crm/deals", headers: agent_headers, as: :json
+
+      ids = response.parsed_body['data'].map { |d| d['id'] }
+      expect(ids).to include(visible.id)
+      expect(ids).not_to include(hidden.id)
+    end
+
+    it 'returns 404 on show for a deal of an inbox the agent does not serve' do
+      hidden = create_deal!(title: 'De outro canal', inbox: other_inbox)
+
+      get "/api/v1/accounts/#{account.id}/crm/deals/#{hidden.id}",
+          headers: agent_headers,
+          as: :json
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it 'keeps manual deals (no inbox) visible to every agent' do
+      manual = create_deal!(title: 'Deal manual')
+
+      get "/api/v1/accounts/#{account.id}/crm/deals/#{manual.id}",
+          headers: agent_headers,
+          as: :json
+
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'lets the owner see the deal regardless of inbox membership' do
+      owned = create_deal!(title: 'Do responsável', inbox: other_inbox, owner_id: agent.id)
+
+      get "/api/v1/accounts/#{account.id}/crm/deals/#{owned.id}",
+          headers: agent_headers,
+          as: :json
+
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'keeps the admin unrestricted' do
+      hidden = create_deal!(title: 'De outro canal', inbox: other_inbox)
+
+      get "/api/v1/accounts/#{account.id}/crm/deals/#{hidden.id}",
+          headers: headers,
+          as: :json
+
+      expect(response).to have_http_status(:success)
+    end
+
+    # 2.5+2.6: a conversa anexada ao deal veio do inbox que o agente atende,
+    # mesmo quando a conversa principal é de outro canal.
+    it 'shows the deal when a linked conversation belongs to the agent inbox' do
+      contact = create(:contact, account: account)
+      conversation = create(:conversation, account: account, inbox: inbox, contact: contact)
+      deal = create_deal!(title: 'Multi-canal', inbox: other_inbox, contact: contact)
+      deal.attach_conversation!(conversation)
+
+      get "/api/v1/accounts/#{account.id}/crm/deals/#{deal.id}",
+          headers: agent_headers,
+          as: :json
+
+      expect(response).to have_http_status(:success)
+    end
+
+    it 'hides the deal when the linked conversation is in another inbox' do
+      contact = create(:contact, account: account)
+      conversation = create(:conversation, account: account, inbox: other_inbox, contact: contact)
+      deal = create_deal!(title: 'Multi-canal', inbox: other_inbox, contact: contact)
+      deal.attach_conversation!(conversation)
+
+      get "/api/v1/accounts/#{account.id}/crm/deals/#{deal.id}",
+          headers: agent_headers,
+          as: :json
+
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+
   describe 'deal outcome actions' do
     let(:deal) { create_deal!(title: 'Negócio em negociação') }
     let(:loss_reason) do

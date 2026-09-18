@@ -4,8 +4,8 @@ class Crm::ChannelPipelineProvisioner
     { name: 'Qualificação', slug: 'qualificacao', position: 1, probability_pct: 30, color: '#6366f1' },
     { name: 'Apresentação / Proposta', slug: 'apresentacao-proposta', position: 2, probability_pct: 60, color: '#a855f7' },
     { name: 'Negociação', slug: 'negociacao', position: 3, probability_pct: 80, color: '#ec4899' },
-    { name: 'Fechamento', slug: 'fechamento', position: 4, probability_pct: 100, color: '#10b981' },
-    { name: 'Perdido / Arquivado', slug: 'perdido-arquivado', position: 5, probability_pct: 0, color: '#ef4444' }
+    { name: 'Fechamento', slug: 'fechamento', position: 4, probability_pct: 100, color: '#10b981', terminal_outcome: 'won' },
+    { name: 'Perdido / Arquivado', slug: 'perdido-arquivado', position: 5, probability_pct: 0, color: '#ef4444', terminal_outcome: 'lost' }
   ].freeze
 
   def self.perform_for_account(account, actor: nil, move_existing_deals: false)
@@ -81,6 +81,7 @@ class Crm::ChannelPipelineProvisioner
         position: stage.position,
         probability_pct: stage.probability_pct,
         expected_duration_hours: stage.expected_duration_hours,
+        terminal_outcome: stage.terminal_outcome,
         color: stage.color
       }
     end

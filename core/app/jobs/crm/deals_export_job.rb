@@ -7,7 +7,7 @@ class Crm::DealsExportJob < ApplicationJob
     @account = Account.find(account_id)
     @user = @account.users.find(user_id)
 
-    deals = Crm::DealFilterService.new(scope: @account.crm_deals, filters: filters).perform
+    deals = Crm::DealFilterService.new(scope: @account.crm_deals.visible_to(@user, @account), filters: filters).perform
                                   .order(created_at: :desc)
                                   .includes(:crm_pipeline_stage, :crm_loss_reason, :contact)
 
