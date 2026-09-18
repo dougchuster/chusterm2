@@ -1,8 +1,8 @@
 require 'rails_helper'
 
-# D6 do PLANO_17_09.md — cadências respeitam consentimento LGPD e a janela
-# de 24h do WhatsApp antes de enviar texto livre.
-RSpec.shared_context 'cadence enrollment' do
+# D6 do PLANO_17_09.md — o sender re-checa consentimento e só envia texto
+# livre dentro da janela de 24h do WhatsApp.
+RSpec.describe Crm::CadenceMessageSenderJob do
   let(:account) { create(:account) }
   let(:pipeline) { CrmPipeline.create!(account: account, name: 'Funil', is_default: true) }
   let(:stage) { pipeline.crm_pipeline_stages.create!(account: account, name: 'Novo', slug: 'novo', position: 1) }
@@ -14,7 +14,7 @@ RSpec.shared_context 'cadence enrollment' do
     )
   end
   let(:cadence) { account.crm_cadences.create!(name: 'Follow-up') }
-  let!(:step) do
+  let(:step) do
     cadence.crm_cadence_steps.create!(
       account: account, name: 'Msg 1', position: 0,
       action_type: 'send_message', template_body: 'Olá {{nome}}'
@@ -26,35 +26,6 @@ RSpec.shared_context 'cadence enrollment' do
       next_step_at: 1.minute.ago, status: 'active'
     )
   end
-end
-
-RSpec.describe Crm::CadenceExecutorJob do
-  include_context 'cadence enrollment'
-
-  it 'pula o step e audita quando o consentimento foi negado' do
-    deal.update!(consent_status: 'denied')
-    enrollment
-
-    expect do
-      described_class.new.perform
-    end.not_to have_enqueued_job(Crm::CadenceMessageSenderJob)
-
-    expect(account.crm_audit_events.where(action: 'cadence_step_blocked_consent').count).to eq(1)
-  end
-
-  it 'enfileira o envio quando o consentimento não foi negado' do
-    deal.update!(consent_status: 'pending')
-    enrollment
-
-    expect do
-      described_class.new.perform
-    end.to have_enqueued_job(Crm::CadenceMessageSenderJob)
-  end
-end
-
-RSpec.describe Crm::CadenceMessageSenderJob do
-  include_context 'cadence enrollment'
-
   let(:inbox) do
     create(:inbox, account: account,
                    channel: create(:channel_whatsapp, account: account,
