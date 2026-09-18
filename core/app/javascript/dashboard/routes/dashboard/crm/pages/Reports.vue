@@ -20,6 +20,9 @@ import {
   fetchCrmOptions,
 } from 'dashboard/helper/crmOptions';
 
+// 6.1: quando embutida no hub de relatórios, esconde o DsPageHeader
+// (o hub já provê header + tabs).
+defineProps({ embedded: { type: Boolean, default: false } });
 const route = useRoute();
 const router = useRouter();
 const { t } = useI18n();
@@ -161,7 +164,11 @@ const cleanFilters = () =>
   );
 
 const persistFilters = () => {
-  router.replace({ query: cleanFilters() });
+  // Preserva ?tab= quando embutida no hub de relatórios
+  const { tab } = route.query;
+  router.replace({
+    query: { ...cleanFilters(), ...(tab ? { tab } : {}) },
+  });
 };
 
 const openDeals = computed(() => stats.value?.open_deals || 0);
@@ -478,6 +485,7 @@ onMounted(() => {
     :aria-busy="loading || undefined"
   >
     <DsPageHeader
+      v-if="!embedded"
       :title="$t('CRM.REPORTS.TITLE')"
       :breadcrumbs="[
         { label: $t('CRM.REPORTS.EYEBROW') },

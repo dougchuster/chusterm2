@@ -9,15 +9,13 @@ const AllLeads = () => import('./pages/AllLeads.vue');
 const PipelineSettings = () => import('./pages/PipelineSettings.vue');
 const Activities = () => import('./pages/Activities.vue');
 const Agenda = () => import('./pages/Agenda.vue');
-const Reports = () => import('./pages/Reports.vue');
 const LossReasons = () => import('./pages/LossReasons.vue');
 const ChecklistTemplates = () => import('./pages/ChecklistTemplates.vue');
 const AutomationRules = () => import('./pages/AutomationRules.vue');
 const ScoringConfig = () => import('./pages/ScoringConfig.vue');
 const Cadences = () => import('./pages/Cadences.vue');
 const DealDetails = () => import('./pages/DealDetails.vue');
-const CrmMetrics = () => import('./pages/CrmMetrics.vue');
-const AnalyticsCenter = () => import('./pages/AnalyticsCenter.vue');
+const ReportsHub = () => import('./pages/ReportsHub.vue');
 const AiCenter = () => import('./pages/AiCenter.vue');
 const PageTemplatesGallery = () => import('./pages/PageTemplatesGallery.vue');
 const SegmentSettings = () => import('./pages/SegmentSettings.vue');
@@ -59,10 +57,13 @@ export const routes = [
     meta: commonMeta,
   },
   {
+    // 6.1: hub único de relatórios — as três telas antigas viraram abas.
+    // commonMeta: a aba Metrics/Analytics já era acessível a agentes e o
+    // backend autoriza dashboard/export como CrmDeal#index?.
     path: frontendURL('accounts/:accountId/crm/reports'),
     name: 'crm_reports',
-    component: Reports,
-    meta: { ...commonMeta, permissions: ['administrator'] },
+    component: ReportsHub,
+    meta: commonMeta,
   },
   {
     path: frontendURL('accounts/:accountId/crm/settings/loss-reasons'),
@@ -103,13 +104,21 @@ export const routes = [
   {
     path: frontendURL('accounts/:accountId/crm/analytics'),
     name: 'crm_analytics',
-    component: AnalyticsCenter,
+    redirect: to => ({
+      name: 'crm_reports',
+      params: to.params,
+      query: { ...to.query, tab: 'analytics' },
+    }),
     meta: commonMeta,
   },
   {
     path: frontendURL('accounts/:accountId/crm/metrics'),
     name: 'crm_metrics',
-    component: CrmMetrics,
+    redirect: to => ({
+      name: 'crm_reports',
+      params: to.params,
+      query: { ...to.query, tab: 'metrics' },
+    }),
     meta: commonMeta,
   },
   {

@@ -30,9 +30,13 @@ import {
 } from 'dashboard/design-system/components';
 import { DsPageHeader } from 'dashboard/design-system/templates';
 
+// 6.1: quando embutida no hub de relatórios, esconde o DsPageHeader
+// (o hub já provê header + tabs).
+defineProps({ embedded: { type: Boolean, default: false } });
 const route = useRoute();
 const router = useRouter();
 const { t } = useI18n();
+
 const { uiSettings, updateUISettings } = useUISettings();
 
 // --- Estados Globais ---
@@ -42,8 +46,12 @@ const exportLoading = ref(false);
 const exportMessage = ref('');
 const exportError = ref('');
 
-// Tab ativa (executive | funnel | support)
-const activeTab = ref(route.query.tab || 'executive');
+// Tab ativa (executive | funnel | support) — usa sub_tab para não
+// colidir com o ?tab= do hub de relatórios quando embutida
+const VALID_TABS = ['executive', 'funnel', 'support'];
+const activeTab = ref(
+  VALID_TABS.includes(route.query.sub_tab) ? route.query.sub_tab : 'executive'
+);
 
 // Período selecionado
 const selectedPeriod = ref(
@@ -535,7 +543,7 @@ function onPeriodChange() {
     query: {
       ...route.query,
       period: selectedPeriod.value,
-      tab: activeTab.value,
+      sub_tab: activeTab.value,
       ...(selectedPeriod.value === 'custom'
         ? { from: customStartDate.value, to: customEndDate.value }
         : { from: undefined, to: undefined }),
@@ -556,7 +564,7 @@ function onTabChange(newTab) {
   router.replace({
     query: {
       ...route.query,
-      tab: newTab,
+      sub_tab: newTab,
     },
   });
 }
@@ -631,6 +639,7 @@ onMounted(fetchAll);
   >
     <!-- Header com Breadcrumbs, Título e Filtro Global de Período -->
     <DsPageHeader
+      v-if="!embedded"
       :title="$t('CRM.ANALYTICS.TITLE')"
       :breadcrumbs="[
         { label: $t('CRM.ANALYTICS.BREADCRUMB') },

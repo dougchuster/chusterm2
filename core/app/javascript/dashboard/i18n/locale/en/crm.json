@@ -1066,6 +1066,170 @@
         "ACTIVE_CUSTOMER": "Active Customer",
         "RECURRING": "Recurring"
       }
+    },
+    "REPORTS": {
+      "TITLE": "Reports",
+      "EYEBROW": "Intelligence & Reports",
+      "SUBTITLE": "Funnel performance, lead quality and sanitation of the base.",
+      "LOADING": "Loading report...",
+      "ERROR_LOAD": "Could not load the report.",
+      "EXPORT": {
+        "LABEL": "Export",
+        "EXPORTING": "Exporting...",
+        "ERROR_GENERIC": "Could not export.",
+        "ERROR_FORBIDDEN": "You don't have permission to export.",
+        "SUCCESS_FALLBACK": "Export started."
+      },
+      "FILTERS": {
+        "STATUS": "Status",
+        "OPERATIONAL_STATUS": "Operational status",
+        "SOURCE": "Source",
+        "LEGAL_AREA": "Category",
+        "URGENCY": "Urgency",
+        "FROM": "From",
+        "TO": "To",
+        "APPLY": "Apply filters",
+        "RESET": "Reset"
+      },
+      "OPTIONS": {
+        "STATUS": {
+          "ALL": "All",
+          "OPEN": "Open",
+          "WON": "Won",
+          "LOST": "Lost",
+          "ARCHIVED": "Archived"
+        },
+        "OPERATIONAL": {
+          "ALL": "All",
+          "ACTIVE": "Active",
+          "ARCHIVED": "Archived",
+          "BASE_CLIENT": "Base client",
+          "CONVERTED_CLIENT": "Converted client",
+          "DUPLICATED": "Duplicated",
+          "INVALID": "Invalid",
+          "NO_LEAD": "Not a lead",
+          "RETURNING_CLIENT": "Returning client",
+          "SPAM": "Spam"
+        },
+        "SOURCE": {
+          "ALL": "All",
+          "WHATSAPP": "WhatsApp",
+          "SITE": "Website",
+          "INSTAGRAM": "Instagram",
+          "FACEBOOK": "Facebook",
+          "GOOGLE_ADS": "Google Ads",
+          "INDICACAO": "Referral",
+          "JUSBRASIL": "Jusbrasil",
+          "LISTA_IMPORTADA": "Imported list",
+          "CLIENTE_BASE": "Client base",
+          "OUTROS": "Others"
+        },
+        "LEGAL_AREA_ALL": "All categories",
+        "URGENCY_ALL": "All urgencies"
+      },
+      "KPI": {
+        "ARIA_LABEL": "Report indicators",
+        "OPEN_LEADS": {
+          "LABEL": "Open leads",
+          "HINT": "Deals in progress"
+        },
+        "WON": {
+          "LABEL": "Won",
+          "HINT": "Closed with success"
+        },
+        "CONVERSION": {
+          "LABEL": "Conversion",
+          "HINT": "Won over closed"
+        },
+        "QUALIFICATION": {
+          "LABEL": "Qualified",
+          "HINT": "With qualification data"
+        },
+        "AVG_SCORE": {
+          "LABEL": "Avg. score",
+          "HINT": "Average lead score"
+        },
+        "HIGH_PRIORITY": {
+          "LABEL": "High priority",
+          "HINT": "Critical or high urgency"
+        },
+        "OVERDUE": {
+          "LABEL": "Overdue",
+          "HINT": "Past next action date"
+        },
+        "DISCARDED": {
+          "LABEL": "Discarded",
+          "HINT": "Marked invalid or spam"
+        },
+        "BASE_CLIENTS": {
+          "LABEL": "Base clients",
+          "HINT": "Already converted"
+        }
+      },
+      "FUNNEL": {
+        "TITLE": "Conversion funnel",
+        "SUBTITLE": "Distribution by stage in the selected period",
+        "CONV_RATE_TITLE": "Stage conversion",
+        "ENTRY": "Entries",
+        "TOTAL": "Total",
+        "EMPTY": "No funnel data for the period."
+      },
+      "AREA": {
+        "TITLE": "By category",
+        "EMPTY": "No categorized deals."
+      },
+      "PRIORITY_PANEL": {
+        "TITLE": "By priority",
+        "EMPTY": "No prioritized deals."
+      },
+      "URGENCY_PANEL": {
+        "TITLE": "By urgency",
+        "EMPTY": "No urgency data."
+      },
+      "SOURCE_PANEL": {
+        "TITLE": "By source",
+        "EMPTY": "No source data."
+      },
+      "SANITATION": {
+        "TITLE": "Base sanitation",
+        "EMPTY": "No items to sanitize."
+      },
+      "PRIORITY": {
+        "CRITICA": "Critical",
+        "ALTA": "High",
+        "NORMAL": "Normal",
+        "BAIXA": "Low"
+      },
+      "EMPTY_LABELS": {
+        "AREA": "Uncategorized",
+        "OPERATIONAL": "No status",
+        "PRIORITY": "No priority",
+        "SOURCE": "No source",
+        "URGENCY": "No urgency"
+      },
+      "INSIGHTS": {
+        "HOT_LEADS": {
+          "TITLE": "Hot leads",
+          "BODY": "{count} leads with high score need attention."
+        },
+        "OVERDUE": {
+          "TITLE": "Overdue actions",
+          "BODY": "{count} deals past their next action date."
+        },
+        "WEAK_QUALIFICATION": {
+          "TITLE": "Weak qualification",
+          "BODY": "{count} deals missing qualification data."
+        },
+        "NO_ALERTS": {
+          "TITLE": "All clear",
+          "BODY": "No pending alerts for this period."
+        }
+      }
+    },
+    "REPORTS_HUB": {
+      "TITLE": "Reports",
+      "BREADCRUMB": "CRM",
+      "TABS_LABEL": "Report sections"
     }
   }
 }

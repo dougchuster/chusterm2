@@ -17,6 +17,9 @@ import {
 } from 'dashboard/design-system/components';
 import { DsPageHeader } from 'dashboard/design-system/templates';
 
+// 6.1: quando embutida no hub de relatórios, esconde o DsPageHeader
+// (o hub já provê header + tabs).
+defineProps({ embedded: { type: Boolean, default: false } });
 const route = useRoute();
 const router = useRouter();
 const { t } = useI18n();
@@ -367,6 +370,7 @@ onMounted(() => {
     :aria-busy="loading || undefined"
   >
     <DsPageHeader
+      v-if="!embedded"
       :title="$t('CRM.METRICS.TITLE')"
       :breadcrumbs="[
         { label: $t('CRM.METRICS.BREADCRUMB') },

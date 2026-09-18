@@ -1066,6 +1066,170 @@
         "ACTIVE_CUSTOMER": "Cliente ativo",
         "RECURRING": "Recorrente"
       }
+    },
+    "REPORTS": {
+      "TITLE": "Relatórios",
+      "EYEBROW": "Inteligência e relatórios",
+      "SUBTITLE": "Desempenho do funil, qualidade dos leads e saneamento da base.",
+      "LOADING": "Carregando relatório...",
+      "ERROR_LOAD": "Não foi possível carregar o relatório.",
+      "EXPORT": {
+        "LABEL": "Exportar",
+        "EXPORTING": "Exportando...",
+        "ERROR_GENERIC": "Não foi possível exportar.",
+        "ERROR_FORBIDDEN": "Você não tem permissão para exportar.",
+        "SUCCESS_FALLBACK": "Exportação iniciada."
+      },
+      "FILTERS": {
+        "STATUS": "Status",
+        "OPERATIONAL_STATUS": "Status operacional",
+        "SOURCE": "Origem",
+        "LEGAL_AREA": "Categoria",
+        "URGENCY": "Urgência",
+        "FROM": "De",
+        "TO": "Até",
+        "APPLY": "Aplicar filtros",
+        "RESET": "Limpar"
+      },
+      "OPTIONS": {
+        "STATUS": {
+          "ALL": "Todos",
+          "OPEN": "Abertos",
+          "WON": "Ganhos",
+          "LOST": "Perdidos",
+          "ARCHIVED": "Arquivados"
+        },
+        "OPERATIONAL": {
+          "ALL": "Todos",
+          "ACTIVE": "Ativos",
+          "ARCHIVED": "Arquivados",
+          "BASE_CLIENT": "Cliente da base",
+          "CONVERTED_CLIENT": "Cliente convertido",
+          "DUPLICATED": "Duplicado",
+          "INVALID": "Inválido",
+          "NO_LEAD": "Não é lead",
+          "RETURNING_CLIENT": "Cliente recorrente",
+          "SPAM": "Spam"
+        },
+        "SOURCE": {
+          "ALL": "Todas",
+          "WHATSAPP": "WhatsApp",
+          "SITE": "Site",
+          "INSTAGRAM": "Instagram",
+          "FACEBOOK": "Facebook",
+          "GOOGLE_ADS": "Google Ads",
+          "INDICACAO": "Indicação",
+          "JUSBRASIL": "Jusbrasil",
+          "LISTA_IMPORTADA": "Lista importada",
+          "CLIENTE_BASE": "Base de clientes",
+          "OUTROS": "Outros"
+        },
+        "LEGAL_AREA_ALL": "Todas as categorias",
+        "URGENCY_ALL": "Todas as urgências"
+      },
+      "KPI": {
+        "ARIA_LABEL": "Indicadores do relatório",
+        "OPEN_LEADS": {
+          "LABEL": "Leads abertos",
+          "HINT": "Negócios em andamento"
+        },
+        "WON": {
+          "LABEL": "Ganhos",
+          "HINT": "Fechados com sucesso"
+        },
+        "CONVERSION": {
+          "LABEL": "Conversão",
+          "HINT": "Ganhos sobre fechados"
+        },
+        "QUALIFICATION": {
+          "LABEL": "Qualificados",
+          "HINT": "Com dados de qualificação"
+        },
+        "AVG_SCORE": {
+          "LABEL": "Score médio",
+          "HINT": "Pontuação média dos leads"
+        },
+        "HIGH_PRIORITY": {
+          "LABEL": "Alta prioridade",
+          "HINT": "Urgência crítica ou alta"
+        },
+        "OVERDUE": {
+          "LABEL": "Em atraso",
+          "HINT": "Passaram da data da próxima ação"
+        },
+        "DISCARDED": {
+          "LABEL": "Descartados",
+          "HINT": "Marcados inválidos ou spam"
+        },
+        "BASE_CLIENTS": {
+          "LABEL": "Clientes da base",
+          "HINT": "Já convertidos"
+        }
+      },
+      "FUNNEL": {
+        "TITLE": "Funil de conversão",
+        "SUBTITLE": "Distribuição por etapa no período selecionado",
+        "CONV_RATE_TITLE": "Conversão por etapa",
+        "ENTRY": "Entradas",
+        "TOTAL": "Total",
+        "EMPTY": "Sem dados de funil no período."
+      },
+      "AREA": {
+        "TITLE": "Por categoria",
+        "EMPTY": "Sem negócios categorizados."
+      },
+      "PRIORITY_PANEL": {
+        "TITLE": "Por prioridade",
+        "EMPTY": "Sem negócios priorizados."
+      },
+      "URGENCY_PANEL": {
+        "TITLE": "Por urgência",
+        "EMPTY": "Sem dados de urgência."
+      },
+      "SOURCE_PANEL": {
+        "TITLE": "Por origem",
+        "EMPTY": "Sem dados de origem."
+      },
+      "SANITATION": {
+        "TITLE": "Saneamento da base",
+        "EMPTY": "Sem itens para sanear."
+      },
+      "PRIORITY": {
+        "CRITICA": "Crítica",
+        "ALTA": "Alta",
+        "NORMAL": "Normal",
+        "BAIXA": "Baixa"
+      },
+      "EMPTY_LABELS": {
+        "AREA": "Sem categoria",
+        "OPERATIONAL": "Sem status",
+        "PRIORITY": "Sem prioridade",
+        "SOURCE": "Sem origem",
+        "URGENCY": "Sem urgência"
+      },
+      "INSIGHTS": {
+        "HOT_LEADS": {
+          "TITLE": "Leads quentes",
+          "BODY": "{count} leads com score alto precisam de atenção."
+        },
+        "OVERDUE": {
+          "TITLE": "Ações em atraso",
+          "BODY": "{count} negócios passaram da próxima ação."
+        },
+        "WEAK_QUALIFICATION": {
+          "TITLE": "Qualificação fraca",
+          "BODY": "{count} negócios sem dados de qualificação."
+        },
+        "NO_ALERTS": {
+          "TITLE": "Tudo em dia",
+          "BODY": "Sem alertas pendentes neste período."
+        }
+      }
+    },
+    "REPORTS_HUB": {
+      "TITLE": "Relatórios",
+      "BREADCRUMB": "CRM",
+      "TABS_LABEL": "Seções de relatórios"
     }
   }
 }
