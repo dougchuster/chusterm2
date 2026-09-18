@@ -1,0 +1,99 @@
+# Pack de educação — escolas, cursos e treinamentos.
+slug: education
+version: 1
+name: Educação
+
+categories:
+  - value: curso
+    label: Curso
+    keywords: [curso, aula, aprender]
+  - value: turma
+    label: Turma / Semestre
+    keywords: [turma, semestre, periodo]
+  - value: matricula
+    label: Matrícula
+    keywords: [matricula, inscricao, inscrever]
+  - value: parceria
+    label: Parceria / Corporativo
+    keywords: [empresa, parceria, corporativo]
+  - value: outro
+    label: Outro
+
+subcategories:
+  curso:
+    - value: graduacao
+      label: Graduação
+    - value: tecnico
+      label: Técnico
+    - value: livre
+      label: Livre / Extensão
+  matricula:
+    - value: rematricula
+      label: Rematrícula
+    - value: transferencia
+      label: Transferência
+
+activity_types:
+  - key: ligacao
+    label: Ligação
+    icon: phone
+    position: 1
+  - key: whatsapp
+    label: Mensagem WhatsApp
+    icon: message-circle
+    position: 2
+  - key: aula_experimental
+    label: Aula experimental / Visita
+    icon: presentation
+    position: 3
+  - key: envio_proposta
+    label: Envio de proposta / plano
+    icon: file-text
+    position: 4
+  - key: follow_up
+    label: Follow-up
+    icon: repeat
+    position: 5
+  - key: retorno_cliente
+    label: Retorno do cliente
+    icon: reply
+    position: 6
+  - key: arquivamento
+    label: Arquivamento
+    icon: archive
+    position: 7
+
+field_definitions:
+  - key: curso_interesse
+    label: Curso de interesse
+    field_type: text
+    position: 10
+  - key: turno
+    label: Turno preferido
+    field_type: text
+    position: 20
+  - key: forma_pagamento
+    label: Forma de pagamento
+    field_type: text
+    position: 30
+  - key: indicado_por
+    label: Indicado por
+    field_type: text
+    position: 40
+
+analyst_prompts:
+  - Quantas aulas experimentais estão agendadas?
+  - Quais interessados estão parados há mais de 3 dias?
+  - Qual curso gera mais matrículas?
+  - Quantas rematrículas estão pendentes?
+  - Qual responsável converte mais?
+
+pipeline_template:
+  kind: education
+  stages:
+    - { name: Novo, slug: novo, position: 1, probability_pct: 10, expected_duration_hours: 48, color: '#3b82f6' }
+    - { name: Contato, slug: contato, position: 2, probability_pct: 30, expected_duration_hours: 72, color: '#6366f1' }
+    - { name: Aula experimental, slug: aula-experimental, position: 3, probability_pct: 55, expected_duration_hours: 96, color: '#a855f7' }
+    - { name: Matrícula, slug: matricula, position: 4, probability_pct: 80, expected_duration_hours: 72, color: '#ec4899' }
+    - { name: Concluído, slug: concluido, position: 5, probability_pct: 100, terminal_outcome: won, color: '#10b981' }
+    - { name: Perdido, slug: perdido, position: 6, probability_pct: 0, terminal_outcome: lost, color: '#ef4444' }

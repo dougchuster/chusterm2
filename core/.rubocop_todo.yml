@@ -223,6 +223,7 @@ Metrics/BlockLength:
     - 'enterprise/app/services/captain/flow_runtime.rb'
     - 'lib/tasks/captain_dr_paula_matos.rake'
     - 'lib/tasks/crm_contacts.rake'
+    - 'lib/tasks/crm_qa.rake'
     - 'lib/tasks/crm_smoke.rake'
 
 # Offense count: 28

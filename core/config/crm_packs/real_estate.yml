@@ -1,0 +1,119 @@
+# Pack imobiliário — compra, venda e locação.
+slug: real_estate
+version: 1
+name: Imobiliária
+
+categories:
+  - value: compra
+    label: Compra
+    keywords: [comprar, compra, aquisicao]
+  - value: venda
+    label: Venda
+    keywords: [vender, venda, anunciar]
+  - value: locacao
+    label: Locação
+    keywords: [alugar, aluguel, locacao, locar]
+  - value: investimento
+    label: Investimento
+    keywords: [investir, investimento]
+  - value: outro
+    label: Outro
+
+subcategories:
+  compra:
+    - value: residencial
+      label: Residencial
+    - value: comercial
+      label: Comercial
+    - value: terreno
+      label: Terreno
+  locacao:
+    - value: residencial
+      label: Residencial
+    - value: comercial
+      label: Comercial
+    - value: temporada
+      label: Temporada
+  venda:
+    - value: avaliacao
+      label: Avaliação de imóvel
+    - value: captacao
+      label: Captação
+
+activity_types:
+  - key: ligacao
+    label: Ligação
+    icon: phone
+    position: 1
+  - key: whatsapp
+    label: Mensagem WhatsApp
+    icon: message-circle
+    position: 2
+  - key: visita_imovel
+    label: Visita ao imóvel
+    icon: home
+    position: 3
+  - key: avaliacao_imovel
+    label: Avaliação de imóvel
+    icon: ruler
+    position: 4
+  - key: envio_proposta
+    label: Envio de proposta
+    icon: file-text
+    position: 5
+  - key: analise_credito
+    label: Análise de crédito / financiamento
+    icon: banknote
+    position: 6
+  - key: follow_up
+    label: Follow-up
+    icon: repeat
+    position: 7
+  - key: retorno_cliente
+    label: Retorno do cliente
+    icon: reply
+    position: 8
+  - key: arquivamento
+    label: Arquivamento
+    icon: archive
+    position: 9
+
+field_definitions:
+  - key: tipo_imovel
+    label: Tipo de imóvel
+    field_type: text
+    position: 10
+  - key: bairro_regiao
+    label: Bairro / Região de interesse
+    field_type: text
+    position: 20
+  - key: faixa_preco
+    label: Faixa de preço
+    field_type: text
+    position: 30
+  - key: finalidade
+    label: Finalidade (morar, investir, comercial)
+    field_type: text
+    position: 40
+  - key: financiamento
+    label: Vai financiar?
+    field_type: boolean
+    position: 50
+
+analyst_prompts:
+  - Quantas visitas estão agendadas esta semana?
+  - Quais compradores estão esperando retorno há mais de 3 dias?
+  - Qual região gera mais propostas?
+  - Quantos clientes dependem de financiamento?
+  - Qual corretor fecha mais negócios?
+
+pipeline_template:
+  kind: real_estate
+  stages:
+    - { name: Novo, slug: novo, position: 1, probability_pct: 10, expected_duration_hours: 48, color: '#3b82f6' }
+    - { name: Qualificado, slug: qualificado, position: 2, probability_pct: 30, expected_duration_hours: 72, color: '#6366f1' }
+    - { name: Visita, slug: visita, position: 3, probability_pct: 50, expected_duration_hours: 96, color: '#a855f7' }
+    - { name: Proposta, slug: proposta, position: 4, probability_pct: 70, expected_duration_hours: 96, color: '#ec4899' }
+    - { name: Documentação, slug: documentacao, position: 5, probability_pct: 85, expected_duration_hours: 120, color: '#f59e0b' }
+    - { name: Fechado, slug: fechado, position: 6, probability_pct: 100, terminal_outcome: won, color: '#10b981' }
+    - { name: Perdido, slug: perdido, position: 7, probability_pct: 0, terminal_outcome: lost, color: '#ef4444' }

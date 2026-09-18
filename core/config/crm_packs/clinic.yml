@@ -1,0 +1,122 @@
+# Pack de clínicas e saúde — taxonomia de agendamento/atendimento.
+# Nenhum termo jurídico: uma conta com este pack não pode ver "área jurídica",
+# "conflicto de interesses" ou "revisão jurídica" em lugar nenhum.
+slug: clinic
+version: 1
+name: Clínicas e Saúde
+
+categories:
+  - value: consulta
+    label: Consulta
+    keywords: [consulta, medico, doutor, doutora]
+  - value: exame
+    label: Exame
+    keywords: [exame, ultrassom, raio-x, sangue, laboratorio]
+  - value: procedimento
+    label: Procedimento
+    keywords: [procedimento, cirurgia, sessao, tratamento]
+  - value: retorno
+    label: Retorno / Reavaliação
+    keywords: [retorno, reavaliacao, revisao]
+  - value: pacote
+    label: Pacote / Plano de tratamento
+  - value: outro
+    label: Outro
+
+subcategories:
+  consulta:
+    - value: primeira_consulta
+      label: Primeira consulta
+    - value: especialidade
+      label: Especialidade
+  exame:
+    - value: laboratorial
+      label: Laboratorial
+    - value: imagem
+      label: Imagem
+  procedimento:
+    - value: estetico
+      label: Estético
+    - value: clinico
+      label: Clínico
+  pacote:
+    - value: avaliacao_inicial
+      label: Avaliação inicial
+
+activity_types:
+  - key: ligacao
+    label: Ligação
+    icon: phone
+    position: 1
+  - key: whatsapp
+    label: Mensagem WhatsApp
+    icon: message-circle
+    position: 2
+  - key: confirmacao_agendamento
+    label: Confirmação de agendamento
+    icon: calendar-check
+    position: 3
+  - key: lembrete_consulta
+    label: Lembrete de consulta
+    icon: bell
+    position: 4
+  - key: avaliacao_presencial
+    label: Avaliação presencial
+    icon: stethoscope
+    position: 5
+  - key: follow_up
+    label: Follow-up
+    icon: repeat
+    position: 6
+  - key: envio_orcamento
+    label: Envio de orçamento
+    icon: file-text
+    position: 7
+  - key: retorno_cliente
+    label: Retorno do cliente
+    icon: reply
+    position: 8
+  - key: arquivamento
+    label: Arquivamento
+    icon: archive
+    position: 9
+
+field_definitions:
+  - key: convenio
+    label: Convênio / Plano de saúde
+    field_type: text
+    position: 10
+  - key: especialidade
+    label: Especialidade desejada
+    field_type: text
+    position: 20
+  - key: data_preferida
+    label: Data preferida
+    field_type: date
+    position: 30
+  - key: sintoma_ou_objetivo
+    label: Sintoma / Objetivo
+    field_type: text
+    position: 40
+  - key: primeira_vez
+    label: Primeira vez na clínica?
+    field_type: boolean
+    position: 50
+
+analyst_prompts:
+  - Quantos agendamentos estão pendentes de confirmação?
+  - Quais pacientes não compareceram na última semana?
+  - Qual convênio traz mais contatos novos?
+  - Quantos orçamentos estão aguardando retorno?
+  - Qual responsável agenda mais?
+
+pipeline_template:
+  kind: clinic_intake
+  stages:
+    - { name: Novo, slug: novo, position: 1, probability_pct: 10, expected_duration_hours: 24, color: '#3b82f6' }
+    - { name: Triagem, slug: triagem, position: 2, probability_pct: 25, expected_duration_hours: 24, color: '#6366f1' }
+    - { name: Agendado, slug: agendado, position: 3, probability_pct: 50, expected_duration_hours: 72, color: '#a855f7' }
+    - { name: Compareceu, slug: compareceu, position: 4, probability_pct: 70, expected_duration_hours: 48, color: '#ec4899' }
+    - { name: Orçamento, slug: orcamento, position: 5, probability_pct: 85, expected_duration_hours: 96, color: '#f59e0b' }
+    - { name: Fechado, slug: fechado, position: 6, probability_pct: 100, terminal_outcome: won, color: '#10b981' }
+    - { name: Perdido, slug: perdido, position: 7, probability_pct: 0, terminal_outcome: lost, color: '#ef4444' }
