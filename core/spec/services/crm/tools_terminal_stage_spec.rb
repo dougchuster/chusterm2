@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 # Complementa tools_spec.rb: a IA nunca fecha um negócio por conta própria.
-RSpec.describe Crm::Tools, '#move_stage em etapas terminais' do
+RSpec.describe Crm::Tools do # move_stage em etapas terminais
   let(:account) { create(:account) }
   let(:pipeline) { account.crm_pipelines.create!(name: 'Funil', slug: 'funil', kind: 'sales') }
   let!(:stage) { pipeline.crm_pipeline_stages.create!(account: account, name: 'Novo', slug: 'novo', position: 1) }
