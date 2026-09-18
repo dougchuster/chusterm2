@@ -12,6 +12,7 @@ import CRMDealCard from 'dashboard/components/crm/CRMDealCard.vue';
 import CRMDealDrawer from 'dashboard/components/crm/CRMDealDrawer.vue';
 import CRMConversationPanel from 'dashboard/components/crm/CRMConversationPanel.vue';
 import Icon from 'dashboard/components-next/icon/Icon.vue';
+import { useAlert } from 'dashboard/composables';
 import { useMapGetter, useStore } from 'dashboard/composables/store';
 import {
   describeFilters,
@@ -771,6 +772,9 @@ const createDeal = async () => {
       operational_status: 'active',
     });
     showCreateDrawer.value = false;
+    // Em coluna longa o card novo fica fora da janela carregada: sem o aviso
+    // o atendente não tem nenhum sinal de que o negócio foi criado.
+    useAlert(t('CRM.CREATE_DEAL.SUCCESS'));
     await loadCrm({ silent: true });
   } catch (exception) {
     error.value =

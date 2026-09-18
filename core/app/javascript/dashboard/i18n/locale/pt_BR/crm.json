@@ -94,7 +94,8 @@
       "PHONE": "Telefone",
       "INITIAL_STAGE": "Etapa inicial",
       "CANCEL": "Cancelar",
-      "SUBMIT": "Criar negócio"
+      "SUBMIT": "Criar negócio",
+      "SUCCESS": "Negócio criado."
     },
     "DISPOSITION": {
       "INVALID": "Inválido",

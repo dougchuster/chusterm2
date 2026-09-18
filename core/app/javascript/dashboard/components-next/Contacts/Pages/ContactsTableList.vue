@@ -30,6 +30,8 @@ const tableText = {
   phone: 'Telefone',
   email: 'E-mail',
   empty: '-',
+  selectAll: 'Selecionar todos os contatos da página',
+  selectOne: 'Selecionar',
 };
 
 const relationshipLabels = {
@@ -192,6 +194,7 @@ const onToggleAll = event => {
               <Checkbox
                 :model-value="allVisibleSelected"
                 :indeterminate="hasPartialSelection"
+                :aria-label="tableText.selectAll"
                 @change="onToggleAll"
               />
             </th>
@@ -247,6 +250,7 @@ const onToggleAll = event => {
             <td class="border-r border-ui-border-subtle px-4 py-2">
               <Checkbox
                 :model-value="selectedIdsSet.has(contact.id)"
+                :aria-label="`${tableText.selectOne} ${contact.name || contact.email || contact.id}`"
                 @change="event => onToggleContact(contact, event)"
               />
             </td>

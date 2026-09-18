@@ -1,4 +1,6 @@
 <script setup>
+import { computed, useAttrs } from 'vue';
+
 defineProps({
   indeterminate: {
     type: Boolean,
@@ -9,8 +11,15 @@ defineProps({
     default: false,
   },
 });
-
 const emit = defineEmits(['change']);
+// Atributos como aria-label/id/name precisam chegar ao <input>, não ao div
+// externo — senão o checkbox fica sem nome acessível (axe: label).
+defineOptions({ inheritAttrs: false });
+const attrs = useAttrs();
+const inputAttrs = computed(() => {
+  const { class: _class, style: _style, ...rest } = attrs;
+  return rest;
+});
 
 const modelValue = defineModel('modelValue', {
   type: Boolean,
@@ -24,8 +33,9 @@ const handleChange = event => {
 </script>
 
 <template>
-  <div class="relative w-4 h-4">
+  <div class="relative w-4 h-4" :class="attrs.class" :style="attrs.style">
     <input
+      v-bind="inputAttrs"
       :checked="modelValue"
       :indeterminate="indeterminate"
       type="checkbox"

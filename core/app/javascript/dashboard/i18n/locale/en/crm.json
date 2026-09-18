@@ -114,7 +114,8 @@
       "PHONE": "Phone",
       "INITIAL_STAGE": "Initial stage",
       "CANCEL": "Cancel",
-      "SUBMIT": "Create deal"
+      "SUBMIT": "Create deal",
+      "SUCCESS": "Deal created."
     },
     "DISPOSITION": {
       "INVALID": "Invalid",
