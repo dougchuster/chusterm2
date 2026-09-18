@@ -6,6 +6,7 @@ import { picoSearch } from '@scmmishra/pico-search';
 import { useStore, useMapGetter } from 'dashboard/composables/store';
 import { useAlert } from 'dashboard/composables';
 import { useUISettings } from 'dashboard/composables/useUISettings';
+import { useAdmin } from 'dashboard/composables/useAdmin';
 import { useMessageFormatter } from 'shared/composables/useMessageFormatter';
 import Button from 'dashboard/components-next/button/Button.vue';
 import Input from 'dashboard/components-next/input/Input.vue';
@@ -181,11 +182,15 @@ const addAllExampleScenarios = async () => {
   }
 };
 
+const { isAdmin } = useAdmin();
+
 onMounted(() => {
   store.dispatch('captainScenarios/get', {
     assistantId: assistantId.value,
   });
-  store.dispatch('captainTools/getTools');
+  // Captain::AssistantPolicy#tools? é só para administrador; para agente a
+  // chamada devolvia 401 e estourava como erro não tratado no console.
+  if (isAdmin.value) store.dispatch('captainTools/getTools');
 });
 </script>
 

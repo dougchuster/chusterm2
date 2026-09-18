@@ -83,13 +83,15 @@ const assistantRoutes = [
     path: frontendURL('accounts/:accountId/captain/:assistantId/score'),
     component: ScoreSettingsIndex,
     name: 'captain_score_settings_index',
-    meta,
+    // Backend (ensure_admin!) só aceita administrador; agente via página vazia + 401.
+    meta: { ...meta, permissions: ['administrator'] },
   },
   {
     path: frontendURL('accounts/:accountId/captain/:assistantId/config'),
     component: AgentConfigIndex,
     name: 'captain_agent_configs_index',
-    meta,
+    // Backend (ensure_admin!) só aceita administrador; agente via página vazia + 401.
+    meta: { ...meta, permissions: ['administrator'] },
   },
   {
     path: frontendURL('accounts/:accountId/captain/:assistantId/faqs/pending'),
