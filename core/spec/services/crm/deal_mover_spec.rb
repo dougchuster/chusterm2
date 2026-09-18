@@ -183,4 +183,49 @@ RSpec.describe Crm::DealMover do
         .to raise_error(ArgumentError, /obrigatorios/i)
     end
   end
+
+  # Check-up 2026-09-18: arrastar para "Ganho"/"Perdido" deixava o negocio open.
+  describe 'moving into and out of terminal stages (D2)' do
+    let(:ganho) do
+      pipeline.crm_pipeline_stages.create!(account: account, name: 'Ganho', slug: 'ganho', position: 8, terminal_outcome: 'won')
+    end
+    let(:perdido) do
+      pipeline.crm_pipeline_stages.create!(account: account, name: 'Perdido', slug: 'perdido', position: 9, terminal_outcome: 'lost')
+    end
+
+    it 'closes the deal as won when dropped on the won column' do
+      deal = build_deal('A', stage: origem)
+
+      described_class.new(deal: deal, stage_id: ganho.id).perform
+
+      expect(deal.reload).to have_attributes(status: 'won', crm_pipeline_stage_id: ganho.id)
+      expect(deal.closed_at).to be_present
+    end
+
+    it 'closes the deal as lost (reason can be filled later) when dropped on the lost column' do
+      deal = build_deal('B', stage: origem)
+
+      described_class.new(deal: deal, stage_id: perdido.id).perform
+
+      expect(deal.reload.status).to eq('lost')
+    end
+
+    it 'reopens the deal when dragged back to a regular column' do
+      ganho
+      deal = build_deal('C', stage: origem)
+      deal.mark_won!
+
+      described_class.new(deal: deal, stage_id: destino.id).perform
+
+      expect(deal.reload).to have_attributes(status: 'open', closed_at: nil, crm_pipeline_stage_id: destino.id)
+    end
+
+    it 'does not double-write when mark_won! already set the status' do
+      ganho
+      deal = build_deal('D', stage: origem)
+
+      expect { deal.mark_won! }.to change { CrmAuditEvent.where(action: 'deal_marked_won').count }.by(1)
+      expect(deal.reload.crm_pipeline_stage_id).to eq(ganho.id)
+    end
+  end
 end

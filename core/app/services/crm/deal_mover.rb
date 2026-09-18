@@ -35,6 +35,7 @@ class Crm::DealMover
     return @deal unless changed
 
     log_stage_change(from_stage_id)
+    sync_terminal_status!
     Crm::StageAutomation.new(deal: @deal.reload, actor: @actor, automation_depth: @automation_depth).perform
     @deal
   end
@@ -67,6 +68,27 @@ class Crm::DealMover
       target: @deal,
       payload: { from_stage_id: from_stage_id, to_stage_id: target_stage.id }
     )
+  end
+
+  # D2 (PLANO_17_09 2.7): a coluna "Ganho"/"Perdido" e a verdade do status.
+  # `mark_won!`/`mark_lost!` ja gravam o status e depois chamam o mover; o
+  # caminho inverso — arrastar o card para a coluna terminal — deixava o
+  # negocio `open` dentro de "Ganho" e fora de toda metrica de fechamento.
+  # Sair de uma coluna terminal por arrasto reabre. Motivo de perda nao e
+  # exigido aqui: pode ser preenchido depois pela ficha (o endpoint mark_lost
+  # continua exigindo).
+  def sync_terminal_status!
+    outcome = target_stage.terminal_outcome
+    if outcome.present?
+      return if @deal.status == outcome
+
+      @deal.update!(status: outcome, closed_at: Time.current,
+                    **(outcome == 'won' ? { crm_loss_reason_id: nil, lost_reason_note: nil } : {}))
+      Crm::AuditLogger.log(account: @deal.account, actor: @actor, action: "deal_marked_#{outcome}", target: @deal)
+    elsif %w[won lost].include?(@deal.status)
+      @deal.update!(status: 'open', closed_at: nil, crm_loss_reason_id: nil, lost_reason_note: nil)
+      Crm::AuditLogger.log(account: @deal.account, actor: @actor, action: 'deal_reopened', target: @deal)
+    end
   end
 
   # `stage_entered_at` so e tocado quando a etapa muda de verdade. Reordenar
