@@ -24,14 +24,22 @@ const sourceLabels = {
   rule_based: 'Regra padrão',
 };
 
+const classificationLabels = {
+  prioridade_alta: 'Prioridade alta',
+  qualificado: 'Qualificado',
+  medio_potencial: 'Potencial médio',
+  baixo_potencial: 'Potencial baixo',
+};
+
 const factors = computed(() => props.score?.factors || {});
 const components = computed(() => factors.value.components || {});
 const totalScore = computed(
   () => props.score?.total_score ?? factors.value.total_score ?? 0
 );
-const classification = computed(
-  () => props.score?.classification || factors.value.classification || ''
-);
+const classification = computed(() => {
+  const raw = props.score?.classification || factors.value.classification || '';
+  return classificationLabels[raw] || raw;
+});
 const calculatedBy = computed(
   () => props.score?.calculated_by || factors.value.calculated_by || ''
 );

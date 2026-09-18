@@ -104,22 +104,6 @@ const temperatureClasses = {
     'bg-ui-sunken text-ui-text-muted ring-ui-border-subtle',
 };
 
-const lifecycleLabels = {
-  visitor: 'Visitante',
-  lead: 'Lead',
-  qualified_lead: 'Lead qualificado',
-  lead_qualified: 'Lead qualificado',
-  triage: 'Em triagem',
-  in_triage: 'Em triagem',
-  consultation_scheduled: 'Consulta agendada',
-  customer: 'Cliente',
-  active_customer: 'Cliente ativo',
-  recurring_customer: 'Recorrente',
-  recurring: 'Recorrente',
-  ex_customer: 'Ex-cliente',
-  lost: 'Perdido',
-};
-
 async function loadPendingActivities() {
   if (!deal.value?.id) return;
   activitiesLoading.value = true;
@@ -334,19 +318,6 @@ const crmDealUrl = computed(() => {
   return `/app/accounts/${accountId.value}/crm/deals/${deal.value.id}`;
 });
 
-const lifecycleLabel = computed(() => {
-  const stage = props.contact?.lifecycle_stage || 'lead';
-  return lifecycleLabels[stage] || stage;
-});
-
-const ownerName = computed(
-  () => props.contact?.crm_owner?.name || 'Sem responsável'
-);
-
-const currentAssigneeName = computed(
-  () => currentChat.value?.meta?.assignee?.name || 'Sem atendente'
-);
-
 const crmContact = computed(() => ({
   relationshipStatus: props.contact?.relationship_status,
   lifecycleStage: props.contact?.lifecycle_stage,
@@ -355,7 +326,7 @@ const crmContact = computed(() => ({
 }));
 
 const sourceLabel = computed(() => {
-  if (!deal.value?.source) return 'Origem não informada';
+  if (!deal.value?.source) return '';
   return sourceLabels[deal.value.source] || deal.value.source;
 });
 
@@ -434,39 +405,22 @@ onMounted(() => {
         editable
         @update="handleCrmSummaryUpdate"
       />
-      <div class="mt-3 grid grid-cols-1 gap-2">
-        <div>
-          <div
-            class="text-[10px] font-semibold uppercase tracking-[0.14em] text-ui-text-subtle"
+      <div
+        class="mt-3 space-y-2 border-t border-ui-border-subtle/60 pt-3"
+      >
+        <label class="flex items-center gap-2">
+          <span
+            class="w-20 shrink-0 text-[10px] font-semibold uppercase tracking-[0.14em] text-ui-text-subtle"
           >
-            Etapa
-          </div>
-          <div class="font-semibold text-ui-text">
-            {{ lifecycleLabel }}
-          </div>
-        </div>
-        <div>
-          <div
-            class="text-[10px] font-semibold uppercase tracking-[0.14em] text-ui-text-subtle"
-          >
-            Responsável pelo contato
-          </div>
-          <div
-            class="font-semibold"
-            :class="
-              contact?.crm_owner
-                ? 'text-ui-text'
-                : 'text-ui-danger'
-            "
-          >
-            {{ ownerName }}
-          </div>
-          <div class="mt-1 flex gap-1">
+            Responsável
+          </span>
+          <span class="relative min-w-0 flex-1">
             <select
               v-model="selectedOwnerId"
               aria-label="Responsável pelo contato"
-              class="h-8 min-w-0 flex-1 rounded-lg border-0 bg-ui-surface px-2 text-xs text-ui-text ring-1 ring-inset ring-ui-border focus:outline-none focus:ring-2 focus:ring-ui-border-focus"
+              class="h-8 w-full min-w-0 appearance-none rounded-lg border-0 bg-ui-surface pl-2 pr-7 text-xs text-ui-text ring-1 ring-inset ring-ui-border focus:outline-none focus:ring-2 focus:ring-ui-border-focus disabled:opacity-60"
               :disabled="ownerUpdating"
+              @change="updateOwner"
             >
               <option value="">Sem responsável</option>
               <option
@@ -477,38 +431,24 @@ onMounted(() => {
                 {{ agent.name || agent.email }}
               </option>
             </select>
-            <button
-              type="button"
-              class="h-8 rounded-lg bg-ui-brand-soft px-2 text-xs font-semibold text-ui-brand transition-colors hover:bg-ui-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus disabled:cursor-not-allowed disabled:opacity-50"
-              :disabled="ownerUpdating"
-              @click="updateOwner"
-            >
-              Salvar
-            </button>
-          </div>
-        </div>
-        <div>
-          <div
-            class="text-[10px] font-semibold uppercase tracking-[0.14em] text-ui-text-subtle"
+            <span
+              class="i-lucide-chevrons-up-down pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-ui-text-subtle"
+            />
+          </span>
+        </label>
+        <label class="flex items-center gap-2">
+          <span
+            class="w-20 shrink-0 text-[10px] font-semibold uppercase tracking-[0.14em] text-ui-text-subtle"
           >
-            Responder por
-          </div>
-          <div
-            class="font-semibold"
-            :class="
-              currentChat?.meta?.assignee
-                ? 'text-ui-text'
-                : 'text-ui-warning'
-            "
-          >
-            {{ currentAssigneeName }}
-          </div>
-          <div class="mt-1 flex gap-1">
+            Atendente
+          </span>
+          <span class="relative min-w-0 flex-1">
             <select
               v-model="selectedAssigneeId"
               aria-label="Atendente da conversa"
-              class="h-8 min-w-0 flex-1 rounded-lg border-0 bg-ui-surface px-2 text-xs text-ui-text ring-1 ring-inset ring-ui-border focus:outline-none focus:ring-2 focus:ring-ui-border-focus"
+              class="h-8 w-full min-w-0 appearance-none rounded-lg border-0 bg-ui-surface pl-2 pr-7 text-xs text-ui-text ring-1 ring-inset ring-ui-border focus:outline-none focus:ring-2 focus:ring-ui-border-focus disabled:opacity-60"
               :disabled="assigneeUpdating"
+              @change="updateConversationAssignee"
             >
               <option value="">Sem atendente</option>
               <option
@@ -519,16 +459,11 @@ onMounted(() => {
                 {{ agent.name || agent.email }}
               </option>
             </select>
-            <button
-              type="button"
-              class="h-8 rounded-lg bg-ui-brand-soft px-2 text-xs font-semibold text-ui-brand transition-colors hover:bg-ui-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus disabled:cursor-not-allowed disabled:opacity-50"
-              :disabled="assigneeUpdating"
-              @click="updateConversationAssignee"
-            >
-              Salvar
-            </button>
-          </div>
-        </div>
+            <span
+              class="i-lucide-chevrons-up-down pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-ui-text-subtle"
+            />
+          </span>
+        </label>
       </div>
     </div>
 
@@ -571,85 +506,105 @@ onMounted(() => {
     </div>
 
     <div v-else class="space-y-3">
-      <div class="flex items-center justify-between gap-2">
-        <span
-          class="max-w-[160px] truncate text-xs font-semibold text-ui-text"
-          :title="deal.title"
-        >
-          {{ deal.title }}
-        </span>
-        <span
-          v-if="leadTemperature"
-          class="inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1"
-          :class="leadTemperature.className"
-          :title="`Score ${deal.score_total || 0}pts`"
-        >
-          <span class="i-lucide-flame size-3" />
-          {{ leadTemperature.label }}
-        </span>
-      </div>
-
-      <div class="flex items-center gap-2 text-xs text-ui-text-muted">
-        <span class="font-bold" :class="[scoreColor]">
-          {{ deal.score_total || 0 }}pts
-        </span>
-        <span v-if="deal.score_reason" class="truncate">
-          {{ deal.score_reason }}
-        </span>
-      </div>
-
-      <div class="flex flex-wrap items-center gap-1.5">
-        <CRMCategoryBadge
-          v-if="deal.category || deal.legal_area"
-          :category="deal.category || deal.legal_area"
-          :label="deal.category_label || deal.legal_area_label"
-          compact
-        />
-        <span
-          v-if="deal.urgency_level"
-          class="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium capitalize"
-          :class="
-            urgencyColors[deal.urgency_level] ||
-            'bg-ui-sunken text-ui-text-muted'
-          "
-        >
-          {{ urgencyLabels[deal.urgency_level] || deal.urgency_level }}
-        </span>
-      </div>
-
-      <div v-if="deal.stage" class="text-xs text-ui-text-muted">
-        Etapa: <span class="font-medium">{{ deal.stage?.name }}</span>
-      </div>
-
-      <div class="grid grid-cols-1 gap-1 text-xs text-ui-text-muted">
-        <div>
-          Status CRM:
-          <span class="font-medium text-ui-text">
-            {{ operationalStatusLabel }}
+      <div
+        class="rounded-xl bg-ui-sunken p-3 ring-1 ring-inset ring-ui-border-subtle"
+      >
+        <div class="flex items-start justify-between gap-2">
+          <span
+            class="min-w-0 truncate text-xs font-semibold text-ui-text"
+            :title="deal.title"
+          >
+            {{ deal.title }}
+          </span>
+          <span
+            v-if="leadTemperature"
+            class="inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1"
+            :class="leadTemperature.className"
+            :title="`Score ${deal.score_total || 0}pts`"
+          >
+            <span class="i-lucide-flame size-3" />
+            {{ leadTemperature.label }}
           </span>
         </div>
-        <div>
-          Origem:
-          <span class="font-medium text-ui-text">
-            {{ sourceLabel }}
+
+        <div class="mt-2 flex flex-wrap items-center gap-1.5">
+          <span
+            class="inline-flex items-center gap-1 rounded-full bg-ui-surface px-2 py-0.5 text-[10px] font-semibold ring-1 ring-ui-border-subtle"
+            :class="scoreColor"
+          >
+            <span class="i-lucide-gauge size-3" />
+            {{ deal.score_total || 0 }} pts
           </span>
-          <span v-if="deal.source_detail"> - {{ deal.source_detail }}</span>
+          <CRMCategoryBadge
+            v-if="deal.category || deal.legal_area"
+            :category="deal.category || deal.legal_area"
+            :label="deal.category_label || deal.legal_area_label"
+            compact
+          />
+          <span
+            v-if="deal.urgency_level"
+            class="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium"
+            :class="
+              urgencyColors[deal.urgency_level] ||
+              'bg-ui-sunken text-ui-text-muted'
+            "
+          >
+            {{ urgencyLabels[deal.urgency_level] || deal.urgency_level }}
+          </span>
         </div>
+
+        <dl
+          class="m-0 mt-2.5 space-y-1.5 border-t border-ui-border-subtle/60 pt-2.5 text-xs"
+        >
+          <div v-if="deal.stage" class="flex items-baseline justify-between gap-2">
+            <dt class="shrink-0 text-ui-text-subtle">Etapa do funil</dt>
+            <dd class="m-0 truncate font-medium text-ui-text">
+              {{ deal.stage?.name }}
+            </dd>
+          </div>
+          <div class="flex items-baseline justify-between gap-2">
+            <dt class="shrink-0 text-ui-text-subtle">Status</dt>
+            <dd class="m-0 font-medium text-ui-text">
+              {{ operationalStatusLabel }}
+            </dd>
+          </div>
+          <div
+            v-if="sourceLabel"
+            class="flex items-baseline justify-between gap-2"
+          >
+            <dt class="shrink-0 text-ui-text-subtle">Origem</dt>
+            <dd class="m-0 truncate font-medium text-ui-text">
+              {{ sourceLabel
+              }}<span v-if="deal.source_detail"> · {{ deal.source_detail }}</span>
+            </dd>
+          </div>
+        </dl>
       </div>
 
       <div
         v-if="deal.next_best_action"
-        class="rounded-lg bg-ui-info-soft p-2 text-xs text-ui-info"
+        class="flex items-start gap-2 rounded-xl bg-ui-info-soft px-3 py-2.5 text-xs text-ui-info ring-1 ring-inset ring-ui-info/20"
       >
-        <span class="i-lucide-lightbulb mr-1 inline size-3" />
-        <span>{{ deal.next_best_action }}</span>
+        <span class="i-lucide-lightbulb mt-0.5 size-3.5 shrink-0" />
+        <span class="leading-5">{{ deal.next_best_action }}</span>
       </div>
 
-      <CRMScoreAudit
+      <details
         v-if="deal.latest_score"
-        :score="deal.latest_score"
-        compact
-      />
+        class="group rounded-xl bg-ui-sunken ring-1 ring-inset ring-ui-border-subtle open:pb-2"
+      >
+        <summary
+          class="flex cursor-pointer select-none items-center justify-between px-3 py-2.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-ui-text-subtle transition-colors hover:text-ui-text list-none [&::-webkit-details-marker]:hidden"
+        >
+          Detalhes do score
+          <span
+            class="i-lucide-chevron-down size-3.5 transition-transform duration-200 group-open:rotate-180"
+          />
+        </summary>
+        <div class="px-1.5">
+          <CRMScoreAudit :score="deal.latest_score" compact />
+        </div>
+      </details>
 
       <div
         v-if="pendingActivities.length > 0"
@@ -709,8 +664,8 @@ onMounted(() => {
             aria-label="Tipo da próxima ação"
             class="h-8 min-w-0 rounded-lg border-0 bg-ui-surface px-2 text-xs text-ui-text ring-1 ring-inset ring-ui-border focus:outline-none focus:ring-2 focus:ring-ui-border-focus"
           >
-            <option value="follow_up">Follow-up</option>
-            <option value="ligação">Ligação</option>
+            <option value="follow_up">Acompanhamento</option>
+            <option value="ligacao">Ligação</option>
             <option value="reuniao">Reunião</option>
             <option value="solicitacao_documentos">Pedir documentos</option>
             <option value="analise_documental">Analisar documentos</option>
@@ -746,23 +701,29 @@ onMounted(() => {
         <a
           v-if="crmDealUrl"
           :href="crmDealUrl"
-          class="inline-flex min-h-8 items-center rounded-lg bg-ui-sunken px-2.5 text-xs font-medium text-ui-text no-underline transition-colors hover:bg-ui-hover hover:text-ui-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus"
+          class="inline-flex min-h-8 items-center gap-1.5 rounded-lg bg-ui-sunken px-2.5 text-xs font-medium text-ui-text no-underline transition-colors hover:bg-ui-hover hover:text-ui-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus"
         >
+          <span class="i-lucide-square-arrow-out-up-right size-3.5" />
           Abrir no CRM
         </a>
         <button
           type="button"
-          class="min-h-8 rounded-lg bg-ui-sunken px-2.5 text-xs font-medium text-ui-text transition-colors hover:bg-ui-hover hover:text-ui-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus"
+          class="inline-flex min-h-8 items-center gap-1.5 rounded-lg bg-ui-sunken px-2.5 text-xs font-medium text-ui-text transition-colors hover:bg-ui-hover hover:text-ui-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus"
           @click="drawerOpen = true"
         >
+          <span class="i-lucide-pencil size-3.5" />
           Editar
         </button>
         <button
           type="button"
-          class="min-h-8 rounded-lg bg-ui-sunken px-2.5 text-xs font-medium text-ui-text transition-colors hover:bg-ui-hover hover:text-ui-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus disabled:cursor-not-allowed disabled:opacity-50"
+          class="inline-flex min-h-8 items-center gap-1.5 rounded-lg bg-ui-sunken px-2.5 text-xs font-medium text-ui-text transition-colors hover:bg-ui-hover hover:text-ui-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus disabled:cursor-not-allowed disabled:opacity-50"
           :disabled="scoreLoading"
           @click="recalcScore"
         >
+          <span
+            class="i-lucide-refresh-cw size-3.5"
+            :class="{ 'animate-spin': scoreLoading }"
+          />
           {{ scoreLoading ? 'Recalculando...' : 'Recalcular score' }}
         </button>
       </div>

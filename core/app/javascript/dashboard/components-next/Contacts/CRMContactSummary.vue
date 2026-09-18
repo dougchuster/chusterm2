@@ -66,8 +66,8 @@ const relationship = computed(() => {
     label: isCustomer ? 'Cliente' : 'Lead',
     icon: isCustomer ? 'i-lucide-handshake' : 'i-lucide-user-round',
     className: isCustomer
-      ? 'bg-n-teal-3 text-n-teal-11 ring-n-teal-6'
-      : 'bg-n-blue-3 text-n-blue-11 ring-n-blue-6 dark:bg-ds-bg-elevated dark:text-ds-fg-muted dark:ring-ds-border-subtle',
+      ? 'bg-ui-success-soft text-ui-success-foreground ring-ui-success'
+      : 'bg-ui-info-soft text-ui-info-foreground ring-ui-info',
   };
 });
 
@@ -88,8 +88,8 @@ const ownerLabel = computed(() => {
 
 const ownerClass = computed(() =>
   crmOwnerId.value
-    ? 'bg-n-alpha-2 text-n-slate-11 ring-ui-border-subtle'
-    : 'bg-n-ruby-3 text-n-ruby-11 ring-n-ruby-6'
+    ? 'bg-ui-sunken text-ui-text-muted ring-ui-border-subtle'
+    : 'bg-ui-danger-soft text-ui-danger-foreground ring-ui-danger'
 );
 
 const switchRelationship = status => {
@@ -110,7 +110,7 @@ const switchRelationship = status => {
   >
     <div
       v-if="editable"
-      class="inline-grid h-8 grid-cols-2 overflow-hidden rounded border border-ui-border-subtle bg-n-alpha-2 p-0.5"
+      class="inline-grid h-8 grid-cols-2 overflow-hidden rounded border border-ui-border-subtle bg-ui-sunken p-0.5"
       :class="{ 'h-7': compact }"
     >
       <button
@@ -118,8 +118,8 @@ const switchRelationship = status => {
         class="inline-flex min-w-16 items-center justify-center gap-1 rounded px-2 font-medium transition"
         :class="
           relationshipStatus === 'lead'
-            ? 'bg-n-surface-1 text-n-blue-11 shadow-sm'
-            : 'text-n-slate-11 hover:text-n-slate-12'
+            ? 'bg-ui-surface text-ui-info-foreground shadow-sm'
+            : 'text-ui-text-muted hover:text-ui-text'
         "
         :disabled="isUpdating"
         @click="switchRelationship('lead')"
@@ -132,8 +132,8 @@ const switchRelationship = status => {
         class="inline-flex min-w-20 items-center justify-center gap-1 rounded px-2 font-medium transition"
         :class="
           relationshipStatus === 'customer'
-            ? 'bg-n-surface-1 text-n-teal-11 shadow-sm'
-            : 'text-n-slate-11 hover:text-n-slate-12'
+            ? 'bg-ui-surface text-ui-success-foreground shadow-sm'
+            : 'text-ui-text-muted hover:text-ui-text'
         "
         :disabled="isUpdating"
         @click="switchRelationship('customer')"
@@ -151,7 +151,7 @@ const switchRelationship = status => {
       <span class="truncate">{{ relationship.label }}</span>
     </span>
     <span
-      class="inline-flex h-6 max-w-full items-center gap-1 rounded bg-n-alpha-2 px-2 font-medium text-n-slate-11 ring-1 ring-ui-border-subtle"
+      class="inline-flex h-6 max-w-full items-center gap-1 rounded bg-ui-sunken px-2 font-medium text-ui-text-muted ring-1 ring-ui-border-subtle"
     >
       <span :class="lifecycle.icon" class="size-3.5 shrink-0" />
       <span class="truncate">{{ lifecycle.label }}</span>

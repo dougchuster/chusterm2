@@ -30,6 +30,24 @@ class Crm::LeadScoreCalculator
     conflict_score: 'conflict'
   }.freeze
 
+  COMPONENT_LABELS = {
+    'fit' => 'Fit jurídico',
+    'urgency' => 'Urgência',
+    'economic' => 'Potencial econômico',
+    'documents' => 'Documentos',
+    'clarity' => 'Clareza',
+    'engagement' => 'Engajamento',
+    'payment_capacity' => 'Capacidade de pagamento',
+    'conflict' => 'Conflito'
+  }.freeze
+
+  CLASSIFICATION_LABELS = {
+    'prioridade_alta' => 'prioridade alta',
+    'qualificado' => 'qualificado',
+    'medio_potencial' => 'potencial médio',
+    'baixo_potencial' => 'potencial baixo'
+  }.freeze
+
   def initialize(deal, actor: nil, move_deal: true, sync_conversation_state: true)
     @deal = deal
     @actor = actor
@@ -224,10 +242,11 @@ class Crm::LeadScoreCalculator
     top_components = factors[:components]
                      .sort_by { |_key, data| -data[:score].to_i }
                      .first(3)
-                     .map { |key, data| "#{key}=#{data[:score]}/#{data[:max_score]}" }
+                     .map { |key, data| "#{COMPONENT_LABELS[key.to_s] || key} #{data[:score]}/#{data[:max_score]}" }
                      .join(', ')
 
-    "Score #{factors[:total_score]} (#{factors[:classification]}). Principais fatores: #{top_components}."
+    classification = CLASSIFICATION_LABELS[factors[:classification].to_s] || factors[:classification]
+    "Score #{factors[:total_score]} — #{classification}. Principais fatores: #{top_components}."
   end
 
   def move_deal_for_score(classification)
