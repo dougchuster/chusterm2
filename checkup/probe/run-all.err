@@ -1,0 +1,2 @@
++ QA_BASE_URL=http://127.0.0.1:3010
++ node sweep.mjs --persona admin --width 1440 --shots --axe

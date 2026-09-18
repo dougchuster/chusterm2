@@ -1,0 +1,1838 @@
+[
+ {
+  "path": "/app/accounts/:accountId/settings/assignment-policy/assignment/edit/:id",
+  "name": "agent_assignment_policy_edit",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/assignmentPolicy/pages/AgentAssignmentEditPage.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "assignment_v2",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/assignment-policy/capacity/edit/:id",
+  "name": "agent_capacity_policy_edit",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/assignmentPolicy/pages/AgentCapacityEditPage.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "advanced_assignment",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/assignment-policy/assignment/create",
+  "name": "agent_assignment_policy_create",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/assignmentPolicy/pages/AgentAssignmentCreatePage.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "assignment_v2",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/assignment-policy/capacity/create",
+  "name": "agent_capacity_policy_create",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/assignmentPolicy/pages/AgentCapacityCreatePage.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "advanced_assignment",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/inboxes/new/:inbox_id/finish",
+  "name": "settings_inbox_finish",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/inbox/FinishSetup.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "inbox_management",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/inboxes/new/:inbox_id/agents",
+  "name": "settings_inboxes_add_agents",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/inbox/AddAgents.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "inbox_management",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/teams/new/:teamId/finish",
+  "name": "settings_teams_finish",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/teams/FinishSetup.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "team_management",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/teams/new/:teamId/agents",
+  "name": "settings_teams_add_agents",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/teams/Create/AddAgents.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "team_management",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/inboxes/new/:sub_page",
+  "name": "settings_inboxes_page_channel",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/inbox/ChannelFactory.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "inbox_management",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/agents/list",
+  "name": "agent_list",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/agents/Index.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "agent_management",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/assignment-policy/index",
+  "name": "assignment_policy_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/assignmentPolicy/Index.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "assignment_v2",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/assignment-policy/assignment",
+  "name": "agent_assignment_policy_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/assignmentPolicy/pages/AgentAssignmentIndexPage.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "assignment_v2",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/assignment-policy/capacity",
+  "name": "agent_capacity_policy_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/assignmentPolicy/pages/AgentCapacityIndexPage.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "advanced_assignment",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/custom-attributes/list",
+  "name": "attributes_list",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/attributes/Index.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "custom_attributes",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/automation/list",
+  "name": "automation_list",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/automation/Index.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "automations",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/audit-logs/list",
+  "name": "auditlogs_list",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/auditlogs/Index.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "audit_logs",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/canned-response/list",
+  "name": "canned_list",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/canned/Index.vue",
+  "redirect": "",
+  "permissions": "agent|administrator|conversation_manage|conversation_unassigned_manage|conversation_participating_manage",
+  "featureFlag": "canned_responses",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/inboxes/list",
+  "name": "settings_inbox_list",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/inbox/Index.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "inbox_management",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/inboxes/new",
+  "name": "settings_inbox_new",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/inbox/ChannelList.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "inbox_management",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/inboxes/new",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/inbox/InboxChannels.vue",
+  "redirect": "",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 4
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/integrations/dashboard_apps",
+  "name": "settings_integrations_dashboard_apps",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/integrations/DashboardApps/Index.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "integrations",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/integrations/webhook",
+  "name": "settings_integrations_webhook",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/integrations/Webhooks/Index.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "integrations",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/integrations/slack",
+  "name": "settings_integrations_slack",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/integrations/Slack.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "integrations",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/integrations/linear",
+  "name": "settings_integrations_linear",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/integrations/Linear.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/integrations/notion",
+  "name": "settings_integrations_notion",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/integrations/Notion.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/integrations/shopify",
+  "name": "settings_integrations_shopify",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/integrations/Shopify.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "integrations",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/labels/list",
+  "name": "labels_list",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/labels/Index.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "labels",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/macros/new",
+  "name": "macros_new",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/macros/MacroEditor.vue",
+  "redirect": "",
+  "permissions": "agent|administrator|conversation_manage|conversation_unassigned_manage|conversation_participating_manage",
+  "featureFlag": "macros",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/sla/list",
+  "name": "sla_list",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/sla/Index.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "sla",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/teams/list",
+  "name": "settings_teams_list",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/teams/Index.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "team_management",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/teams/new",
+  "name": "settings_teams_new",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/teams/Create/CreateTeam.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "team_management",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/teams/new",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/teams/Create/Index.vue",
+  "redirect": "",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 3
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/custom-roles/list",
+  "name": "custom_roles_list",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/customRoles/Index.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "custom_roles",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/crm/settings/pipelines",
+  "name": "crm_pipeline_settings",
+  "component": "/app/javascript/dashboard/routes/dashboard/crm/pages/PipelineSettings.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "crm",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/crm/settings/loss-reasons",
+  "name": "crm_loss_reasons",
+  "component": "/app/javascript/dashboard/routes/dashboard/crm/pages/LossReasons.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "crm",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/crm/settings/checklist-templates",
+  "name": "crm_checklist_templates",
+  "component": "/app/javascript/dashboard/routes/dashboard/crm/pages/ChecklistTemplates.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "crm",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/crm/settings/automation-rules",
+  "name": "crm_automation_rules",
+  "component": "/app/javascript/dashboard/routes/dashboard/crm/pages/AutomationRules.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "crm",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/crm/settings/cadences",
+  "name": "crm_cadences",
+  "component": "/app/javascript/dashboard/routes/dashboard/crm/pages/Cadences.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "crm",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/crm/settings/scoring",
+  "name": "crm_scoring_config",
+  "component": "/app/javascript/dashboard/routes/dashboard/crm/pages/ScoringConfig.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "crm",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/crm/settings/segment",
+  "name": "crm_segment_settings",
+  "component": "/app/javascript/dashboard/routes/dashboard/crm/pages/SegmentSettings.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "crm_universal",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/crm/design-system/templates",
+  "name": "crm_page_templates",
+  "component": "/app/javascript/dashboard/routes/dashboard/crm/pages/PageTemplatesGallery.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "crm_v2",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/teams/:teamId/edit/agents",
+  "name": "settings_teams_edit_members",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/teams/Edit/EditAgents.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "team_management",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/teams/:teamId/edit/finish",
+  "name": "settings_teams_edit_finish",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/teams/FinishSetup.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "team_management",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/captain/flows/:flowId/editor",
+  "name": "captain_flow_editor",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/captain/flows/Editor.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|custom_role",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/macros/:macroId/edit",
+  "name": "macros_edit",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/macros/MacroEditor.vue",
+  "redirect": "",
+  "permissions": "agent|administrator|conversation_manage|conversation_unassigned_manage|conversation_participating_manage",
+  "featureFlag": "macros",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/teams/:teamId/edit",
+  "name": "settings_teams_edit",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/teams/Edit/EditTeam.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "team_management",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/teams/:teamId/edit",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/teams/Edit/Index.vue",
+  "redirect": "",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 3
+ },
+ {
+  "path": "/app/accounts/:accountId/contacts/categories/:kind/:categoryId",
+  "name": "contacts_dashboard_category_detail",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/contacts/pages/ContactCategoriesPage.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|contact_manage",
+  "featureFlag": "crm",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/inboxes/:inboxId/:tab?",
+  "name": "settings_inbox_show",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/inbox/Settings.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "inbox_management",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/mentions/conversations/:conversationId",
+  "name": "conversation_through_mentions",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/conversation/ConversationView.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|conversation_manage|conversation_unassigned_manage|conversation_participating_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/unattended/conversations/:conversationId",
+  "name": "conversation_through_unattended",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/conversation/ConversationView.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|conversation_manage|conversation_unassigned_manage|conversation_participating_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/participating/conversations/:conversationId",
+  "name": "conversation_through_participating",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/conversation/ConversationView.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|conversation_manage|conversation_unassigned_manage|conversation_participating_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/integrations/:integration_id",
+  "name": "settings_applications_integration",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/integrations/IntegrationHooks.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "integrations",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/reports/agents/:id",
+  "name": "agent_reports_show",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/reports/AgentReportsShow.vue",
+  "redirect": "",
+  "permissions": "administrator|report_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/reports/inboxes/:id",
+  "name": "inbox_reports_show",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/reports/InboxReportsShow.vue",
+  "redirect": "",
+  "permissions": "administrator|report_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/reports/teams/:id",
+  "name": "team_reports_show",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/reports/TeamReportsShow.vue",
+  "redirect": "",
+  "permissions": "administrator|report_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/reports/labels/:id",
+  "name": "label_reports_show",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/reports/LabelReportsShow.vue",
+  "redirect": "",
+  "permissions": "administrator|report_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/crm/deals/:dealId",
+  "name": "crm_deal_details",
+  "component": "/app/javascript/dashboard/routes/dashboard/crm/pages/DealDetails.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|contact_manage",
+  "featureFlag": "crm",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/contacts/segments/:segmentId",
+  "name": "contacts_dashboard_segments_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/contacts/pages/ContactsIndex.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|contact_manage",
+  "featureFlag": "crm",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/contacts/labels/:label",
+  "name": "contacts_dashboard_labels_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/contacts/pages/ContactsIndex.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|contact_manage",
+  "featureFlag": "crm",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/contacts/categories/:kind",
+  "name": "contacts_dashboard_category_kind",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/contacts/pages/ContactCategoriesPage.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|contact_manage",
+  "featureFlag": "crm",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/captain/flows",
+  "name": "captain_flow_list",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/captain/flows/Index.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|custom_role",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/captain/assistants",
+  "name": "captain_assistants_create_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/captain/assistants/Index.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|custom_role",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/mentions/conversations",
+  "name": "conversation_mentions",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/conversation/ConversationView.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|conversation_manage|conversation_unassigned_manage|conversation_participating_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/unattended/conversations",
+  "name": "conversation_unattended",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/conversation/ConversationView.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|conversation_manage|conversation_unassigned_manage|conversation_participating_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/participating/conversations",
+  "name": "conversation_participating",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/conversation/ConversationView.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|conversation_manage|conversation_unassigned_manage|conversation_participating_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/general",
+  "name": "general_settings_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/account/Index.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/general",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/SettingsWrapper.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "",
+  "children": 1
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/agents",
+  "name": "",
+  "component": "",
+  "redirect": "fn",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/agents",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/SettingsWrapper.vue",
+  "redirect": "",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 2
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/assignment-policy",
+  "name": "",
+  "component": "",
+  "redirect": "fn",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/assignment-policy",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/SettingsWrapper.vue",
+  "redirect": "",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 8
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/agent-bots",
+  "name": "agent_bots",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/agentBots/Index.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "agent_bots",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/agent-bots",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/SettingsWrapper.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "",
+  "children": 1
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/custom-attributes",
+  "name": "",
+  "component": "",
+  "redirect": "fn",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/custom-attributes",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/SettingsWrapper.vue",
+  "redirect": "",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 2
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/automation",
+  "name": "",
+  "component": "",
+  "redirect": "fn",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/automation",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/SettingsWrapper.vue",
+  "redirect": "",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 2
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/audit-logs",
+  "name": "",
+  "component": "",
+  "redirect": "fn",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/audit-logs",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/SettingsWrapper.vue",
+  "redirect": "",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 2
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/billing",
+  "name": "billing_settings_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/billing/Index.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/billing",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/SettingsWrapper.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "",
+  "children": 1
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/canned-response",
+  "name": "",
+  "component": "",
+  "redirect": "fn",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/canned-response",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/SettingsWrapper.vue",
+  "redirect": "",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 2
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/inboxes",
+  "name": "",
+  "component": "",
+  "redirect": "fn",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/inboxes",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/SettingsWrapper.vue",
+  "redirect": "",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 2
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/inboxes",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/Wrapper.vue",
+  "redirect": "",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 2
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/integrations",
+  "name": "settings_applications",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/integrations/Index.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "integrations",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/integrations",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/SettingsWrapper.vue",
+  "redirect": "",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 3
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/integrations",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/SettingsWrapper.vue",
+  "redirect": "",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 5
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/labels",
+  "name": "labels_wrapper",
+  "component": "",
+  "redirect": "fn",
+  "permissions": "administrator",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/labels",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/SettingsWrapper.vue",
+  "redirect": "",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 2
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/macros",
+  "name": "macros_wrapper",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/macros/Index.vue",
+  "redirect": "",
+  "permissions": "agent|administrator|conversation_manage|conversation_unassigned_manage|conversation_participating_manage",
+  "featureFlag": "macros",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/macros",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/SettingsWrapper.vue",
+  "redirect": "",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 1
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/macros",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/Wrapper.vue",
+  "redirect": "",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 2
+ },
+ {
+  "path": "/app/accounts/:accountId/reports/overview",
+  "name": "account_overview_reports",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/reports/LiveReports.vue",
+  "redirect": "",
+  "permissions": "administrator|report_manage",
+  "featureFlag": "reports",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/reports/conversation",
+  "name": "conversation_reports",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/reports/Index.vue",
+  "redirect": "",
+  "permissions": "administrator|report_manage",
+  "featureFlag": "reports",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/reports/agent",
+  "name": "agent_reports",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/reports/AgentReports.vue",
+  "redirect": "",
+  "permissions": "administrator|report_manage",
+  "featureFlag": "reports",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/reports/inboxes",
+  "name": "inbox_reports",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/reports/InboxReports.vue",
+  "redirect": "",
+  "permissions": "administrator|report_manage",
+  "featureFlag": "reports",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/reports/label",
+  "name": "label_reports",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/reports/LabelReports.vue",
+  "redirect": "",
+  "permissions": "administrator|report_manage",
+  "featureFlag": "reports",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/reports/teams",
+  "name": "team_reports",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/reports/TeamReports.vue",
+  "redirect": "",
+  "permissions": "administrator|report_manage",
+  "featureFlag": "reports",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/reports/agents_overview",
+  "name": "agent_reports_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/reports/AgentReportsIndex.vue",
+  "redirect": "",
+  "permissions": "administrator|report_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/reports/inboxes_overview",
+  "name": "inbox_reports_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/reports/InboxReportsIndex.vue",
+  "redirect": "",
+  "permissions": "administrator|report_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/reports/teams_overview",
+  "name": "team_reports_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/reports/TeamReportsIndex.vue",
+  "redirect": "",
+  "permissions": "administrator|report_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/reports/labels_overview",
+  "name": "label_reports_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/reports/LabelReportsIndex.vue",
+  "redirect": "",
+  "permissions": "administrator|report_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/reports/sla",
+  "name": "sla_reports",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/reports/SLAReports.vue",
+  "redirect": "",
+  "permissions": "administrator|report_manage",
+  "featureFlag": "reports",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/reports/csat",
+  "name": "csat_reports",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/reports/CsatResponses.vue",
+  "redirect": "",
+  "permissions": "administrator|report_manage",
+  "featureFlag": "reports",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/reports/bot",
+  "name": "bot_reports",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/reports/BotReports.vue",
+  "redirect": "",
+  "permissions": "administrator|report_manage",
+  "featureFlag": "reports",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/sla",
+  "name": "sla_wrapper",
+  "component": "",
+  "redirect": "fn",
+  "permissions": "administrator",
+  "featureFlag": "sla",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/sla",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/SettingsWrapper.vue",
+  "redirect": "",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 2
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/teams",
+  "name": "",
+  "component": "",
+  "redirect": "fn",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/teams",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/SettingsWrapper.vue",
+  "redirect": "",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 2
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/teams",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/Wrapper.vue",
+  "redirect": "",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 2
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/custom-roles",
+  "name": "",
+  "component": "",
+  "redirect": "\"list\"",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/custom-roles",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/SettingsWrapper.vue",
+  "redirect": "",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 2
+ },
+ {
+  "path": "/app/accounts/:accountId/profile/settings",
+  "name": "profile_settings_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/profile/Index.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|custom_role",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/profile/mfa",
+  "name": "profile_settings_mfa",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/profile/MfaSettings.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|custom_role",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/security",
+  "name": "security_settings_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/security/Index.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "saml",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/security",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/SettingsWrapper.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "",
+  "children": 1
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/conversation-workflow",
+  "name": "conversation_workflow_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/conversationWorkflow/index.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/conversation-workflow",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/SettingsWrapper.vue",
+  "redirect": "",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 1
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/evolution",
+  "name": "settings_evolution_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/evolution/Index.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings/evolution",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/SettingsWrapper.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "",
+  "children": 1
+ },
+ {
+  "path": "/app/accounts/:accountId/crm/leads",
+  "name": "crm_all_leads",
+  "component": "/app/javascript/dashboard/routes/dashboard/crm/pages/AllLeads.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|contact_manage",
+  "featureFlag": "crm",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/crm/activities",
+  "name": "crm_activities",
+  "component": "/app/javascript/dashboard/routes/dashboard/crm/pages/Activities.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|contact_manage",
+  "featureFlag": "crm",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/crm/agenda",
+  "name": "crm_agenda",
+  "component": "/app/javascript/dashboard/routes/dashboard/crm/pages/Agenda.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|contact_manage",
+  "featureFlag": "crm",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/crm/reports",
+  "name": "crm_reports",
+  "component": "/app/javascript/dashboard/routes/dashboard/crm/pages/ReportsHub.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|contact_manage",
+  "featureFlag": "crm",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/crm/analytics",
+  "name": "crm_analytics",
+  "component": "",
+  "redirect": "fn",
+  "permissions": "administrator|agent|contact_manage",
+  "featureFlag": "crm",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/crm/metrics",
+  "name": "crm_metrics",
+  "component": "",
+  "redirect": "fn",
+  "permissions": "administrator|agent|contact_manage",
+  "featureFlag": "crm",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/crm/ai-center",
+  "name": "crm_ai_center",
+  "component": "/app/javascript/dashboard/routes/dashboard/crm/pages/AiCenter.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|contact_manage",
+  "featureFlag": "crm",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/marketing/connections",
+  "name": "marketing_connections",
+  "component": "/app/javascript/dashboard/routes/dashboard/marketing/pages/MarketingConnections.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "marketing",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/marketing/campaigns",
+  "name": "marketing_campaigns",
+  "component": "/app/javascript/dashboard/routes/dashboard/marketing/pages/MarketingCampaigns.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|contact_manage",
+  "featureFlag": "marketing",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/marketing/leads",
+  "name": "marketing_leads",
+  "component": "/app/javascript/dashboard/routes/dashboard/marketing/pages/MarketingLeads.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|contact_manage",
+  "featureFlag": "marketing",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/marketing/insights",
+  "name": "marketing_insights",
+  "component": "/app/javascript/dashboard/routes/dashboard/marketing/pages/MarketingInsights.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|contact_manage",
+  "featureFlag": "marketing",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/marketing/events",
+  "name": "marketing_events",
+  "component": "/app/javascript/dashboard/routes/dashboard/marketing/pages/MarketingEvents.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "marketing",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/contacts/categories",
+  "name": "contacts_dashboard_categories",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/contacts/pages/ContactCategoriesPage.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|contact_manage",
+  "featureFlag": "crm",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/contacts/list",
+  "name": "contacts_dashboard_list",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/contacts/pages/ContactsIndex.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|contact_manage",
+  "featureFlag": "crm",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/contacts/active",
+  "name": "contacts_dashboard_active",
+  "component": "",
+  "redirect": "fn",
+  "permissions": "administrator|agent|contact_manage",
+  "featureFlag": "crm",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/portals/new",
+  "name": "portals_new",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/helpcenter/pages/PortalsNewPage.vue",
+  "redirect": "",
+  "permissions": "administrator|knowledge_base_manage",
+  "featureFlag": "help_center",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/campaigns/ongoing",
+  "name": "campaigns_ongoing_index",
+  "component": "",
+  "redirect": "fn",
+  "permissions": "administrator",
+  "featureFlag": "campaigns",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/campaigns/one_off",
+  "name": "campaigns_one_off_index",
+  "component": "",
+  "redirect": "fn",
+  "permissions": "administrator",
+  "featureFlag": "campaigns",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/campaigns/live_chat",
+  "name": "campaigns_livechat_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/campaigns/pages/LiveChatCampaignsPage.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "campaigns",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/campaigns/sms",
+  "name": "campaigns_sms_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/campaigns/pages/SMSCampaignsPage.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "campaigns",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/campaigns/email",
+  "name": "campaigns_email_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/campaigns/pages/EmailCampaignsPage.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "campaigns",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/campaigns/whatsapp",
+  "name": "campaigns_whatsapp_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/campaigns/pages/WhatsAppCampaignsPage.vue",
+  "redirect": "",
+  "permissions": "administrator",
+  "featureFlag": "whatsapp_campaign",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/captain/:assistantId/faqs/pending",
+  "name": "captain_assistants_responses_pending",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/captain/responses/Pending.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|custom_role",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/captain/:assistantId/settings/guardrails",
+  "name": "captain_assistants_guardrails_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/captain/assistants/guardrails/Index.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|custom_role",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/captain/:assistantId/settings/guidelines",
+  "name": "captain_assistants_guidelines_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/captain/assistants/guidelines/Index.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|custom_role",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/inbox/:inbox_id/conversations/:conversation_id",
+  "name": "conversation_through_inbox",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/conversation/ConversationView.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|conversation_manage|conversation_unassigned_manage|conversation_participating_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/label/:label/conversations/:conversation_id",
+  "name": "conversations_through_label",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/conversation/ConversationView.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|conversation_manage|conversation_unassigned_manage|conversation_participating_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/team/:teamId/conversations/:conversationId",
+  "name": "conversations_through_team",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/conversation/ConversationView.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|conversation_manage|conversation_unassigned_manage|conversation_participating_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/custom_view/:id/conversations/:conversation_id",
+  "name": "conversations_through_folders",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/conversation/ConversationView.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|conversation_manage|conversation_unassigned_manage|conversation_participating_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/contacts/:contactId/segments/:segmentId",
+  "name": "contacts_edit_segment",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/contacts/pages/ContactManageView.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|contact_manage",
+  "featureFlag": "crm",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/contacts/:contactId/labels/:label",
+  "name": "contacts_edit_label",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/contacts/pages/ContactManageView.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|contact_manage",
+  "featureFlag": "crm",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/captain/:assistantId/faqs",
+  "name": "captain_assistants_responses_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/captain/responses/Index.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|custom_role",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/captain/:assistantId/documents",
+  "name": "captain_assistants_documents_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/captain/documents/Index.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|custom_role",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/captain/:assistantId/tools",
+  "name": "captain_tools_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/captain/tools/Index.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|custom_role",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/captain/:assistantId/scenarios",
+  "name": "captain_assistants_scenarios_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/captain/assistants/scenarios/Index.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|custom_role",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/captain/:assistantId/playground",
+  "name": "captain_assistants_playground_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/captain/assistants/playground/Index.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|custom_role",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/captain/:assistantId/inboxes",
+  "name": "captain_assistants_inboxes_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/captain/assistants/inboxes/Index.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|custom_role",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/captain/:assistantId/score",
+  "name": "captain_score_settings_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/captain/score/Index.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|custom_role",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/captain/:assistantId/config",
+  "name": "captain_agent_configs_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/captain/config/Index.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|custom_role",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/captain/:assistantId/settings",
+  "name": "captain_assistants_settings_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/captain/assistants/settings/Settings.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|custom_role",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/portals/:portalSlug/locales",
+  "name": "portals_locales_index",
+  "component": "/app/javascript/dashboard/routes/dashboard/helpcenter/pages/PortalsLocalesIndexPage.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|knowledge_base_manage",
+  "featureFlag": "help_center",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/portals/:portalSlug/settings",
+  "name": "portals_settings_index",
+  "component": "/app/javascript/dashboard/routes/dashboard/helpcenter/pages/PortalsSettingsIndexPage.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|knowledge_base_manage",
+  "featureFlag": "help_center",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/portals/:portalSlug/:locale/categories/:categorySlug/articles/:articleSlug",
+  "name": "portals_categories_articles_edit",
+  "component": "/app/javascript/dashboard/routes/dashboard/helpcenter/pages/PortalsArticlesEditPage.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|knowledge_base_manage",
+  "featureFlag": "help_center",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/portals/:portalSlug/:locale/categories/:categorySlug/articles",
+  "name": "portals_categories_articles_index",
+  "component": "/app/javascript/dashboard/routes/dashboard/helpcenter/pages/PortalsArticlesIndexPage.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|knowledge_base_manage",
+  "featureFlag": "help_center",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/portals/:portalSlug/:locale/categories",
+  "name": "portals_categories_index",
+  "component": "/app/javascript/dashboard/routes/dashboard/helpcenter/pages/PortalsCategoriesIndexPage.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|knowledge_base_manage",
+  "featureFlag": "help_center",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/portals/:portalSlug/:locale/:categorySlug?/articles/new",
+  "name": "portals_articles_new",
+  "component": "/app/javascript/dashboard/routes/dashboard/helpcenter/pages/PortalsArticlesNewPage.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|knowledge_base_manage",
+  "featureFlag": "help_center",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/portals/:portalSlug/:locale/:categorySlug?/articles/:tab?/edit/:articleSlug",
+  "name": "portals_articles_edit",
+  "component": "/app/javascript/dashboard/routes/dashboard/helpcenter/pages/PortalsArticlesEditPage.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|knowledge_base_manage",
+  "featureFlag": "help_center",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/portals/:portalSlug/:locale/:categorySlug?/articles/:tab?",
+  "name": "portals_articles_index",
+  "component": "/app/javascript/dashboard/routes/dashboard/helpcenter/pages/PortalsArticlesIndexPage.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|knowledge_base_manage",
+  "featureFlag": "help_center",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/inbox-view/:type/:id",
+  "name": "inbox_view_conversation",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/inbox/InboxView.vue",
+  "redirect": "",
+  "permissions": "agent|administrator|conversation_manage|conversation_unassigned_manage|conversation_participating_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/captain/:navigationPath",
+  "name": "captain_assistants_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/captain/pages/AssistantsIndexPage.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|custom_role",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/conversations/:conversation_id",
+  "name": "inbox_conversation",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/conversation/ConversationView.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|conversation_manage|conversation_unassigned_manage|conversation_participating_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/inbox/:inbox_id",
+  "name": "inbox_dashboard",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/conversation/ConversationView.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|conversation_manage|conversation_unassigned_manage|conversation_participating_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/label/:label",
+  "name": "label_conversations",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/conversation/ConversationView.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|conversation_manage|conversation_unassigned_manage|conversation_participating_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/team/:teamId",
+  "name": "team_conversations",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/conversation/ConversationView.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|conversation_manage|conversation_unassigned_manage|conversation_participating_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/custom_view/:id",
+  "name": "folder_conversations",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/conversation/ConversationView.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|conversation_manage|conversation_unassigned_manage|conversation_participating_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/contacts/:contactId",
+  "name": "contacts_edit",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/contacts/pages/ContactManageView.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|contact_manage",
+  "featureFlag": "crm",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/contacts/:contactId",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/contacts/pages/ContactManageView.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|contact_manage",
+  "featureFlag": "crm",
+  "children": 3
+ },
+ {
+  "path": "/app/accounts/:accountId/portals/:navigationPath",
+  "name": "portals_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/helpcenter/pages/PortalsIndexPage.vue",
+  "redirect": "",
+  "permissions": "administrator|knowledge_base_manage",
+  "featureFlag": "help_center",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/search/:tab?",
+  "name": "search",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/modules/search/components/SearchView.vue",
+  "redirect": "",
+  "permissions": "agent|administrator|conversation_manage|conversation_unassigned_manage|conversation_participating_manage|contact_manage|knowledge_base_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/captain",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/captain/pages/CaptainPageRouteView.vue",
+  "redirect": "fn",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 16
+ },
+ {
+  "path": "/app/accounts/:accountId/inbox-view",
+  "name": "inbox_view",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/inbox/InboxEmptyState.vue",
+  "redirect": "",
+  "permissions": "agent|administrator|conversation_manage|conversation_unassigned_manage|conversation_participating_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/inbox-view",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/inbox/InboxList.vue",
+  "redirect": "",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 2
+ },
+ {
+  "path": "/app/accounts/:accountId/dashboard",
+  "name": "home",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/conversation/ConversationView.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|conversation_manage|conversation_unassigned_manage|conversation_participating_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/settings",
+  "name": "settings_home",
+  "component": "",
+  "redirect": "fn",
+  "permissions": "agent|administrator|conversation_manage|conversation_unassigned_manage|conversation_participating_manage",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/reports",
+  "name": "",
+  "component": "",
+  "redirect": "fn",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/reports",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/reports/components/ReportsWrapper.vue",
+  "redirect": "",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 18
+ },
+ {
+  "path": "/app/accounts/:accountId/profile",
+  "name": "profile_settings",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/SettingsWrapper.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|custom_role",
+  "featureFlag": "",
+  "children": 2
+ },
+ {
+  "path": "/app/accounts/:accountId/crm",
+  "name": "crm_dashboard",
+  "component": "/app/javascript/dashboard/routes/dashboard/crm/pages/CrmIndex.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|contact_manage",
+  "featureFlag": "crm",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/marketing",
+  "name": "marketing_overview",
+  "component": "/app/javascript/dashboard/routes/dashboard/marketing/pages/MarketingOverview.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|contact_manage",
+  "featureFlag": "marketing",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/contacts",
+  "name": "contacts_dashboard_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/contacts/pages/ContactsIndex.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|contact_manage",
+  "featureFlag": "crm",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/contacts",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/contacts/pages/ContactsDashboardLayout.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|contact_manage",
+  "featureFlag": "crm",
+  "children": 8
+ },
+ {
+  "path": "/app/accounts/:accountId/companies",
+  "name": "companies_dashboard_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/companies/pages/CompaniesIndex.vue",
+  "redirect": "",
+  "permissions": "administrator|agent",
+  "featureFlag": "companies",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/companies",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/companies/pages/CompaniesIndex.vue",
+  "redirect": "",
+  "permissions": "administrator|agent",
+  "featureFlag": "companies",
+  "children": 1
+ },
+ {
+  "path": "/app/accounts/:accountId/notifications",
+  "name": "notifications_index",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/notifications/components/NotificationsView.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|custom_role",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/notifications",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/settings/SettingsWrapper.vue",
+  "redirect": "",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 1
+ },
+ {
+  "path": "/app/accounts/:accountId/portals",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/helpcenter/pages/HelpCenterPageRouteView.vue",
+  "redirect": "fn",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 10
+ },
+ {
+  "path": "/app/accounts/:accountId/campaigns",
+  "name": "",
+  "component": "",
+  "redirect": "fn",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId/campaigns",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/campaigns/pages/CampaignsPageRouteView.vue",
+  "redirect": "",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 7
+ },
+ {
+  "path": "/app/accounts/:accountId/suspended",
+  "name": "account_suspended",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/suspended/Index.vue",
+  "redirect": "",
+  "permissions": "administrator|agent|custom_role",
+  "featureFlag": "",
+  "children": 0
+ },
+ {
+  "path": "/app/accounts/:accountId",
+  "name": "",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/Dashboard.vue",
+  "redirect": "",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 74
+ },
+ {
+  "path": "/app/no-accounts",
+  "name": "no_accounts",
+  "component": "C:/Users/dougc/Documents/Projetos/ChusteRM/core/app/javascript/dashboard/routes/dashboard/noAccounts/Index.vue",
+  "redirect": "",
+  "permissions": "",
+  "featureFlag": "",
+  "children": 0
+ }
+]
