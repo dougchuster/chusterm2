@@ -10,7 +10,7 @@ import AnalyticsCenter from './AnalyticsCenter.vue';
 
 const mockRoute = ref({
   params: { accountId: '123' },
-  query: { period: '30', tab: 'executive' },
+  query: { period: '30', sub_tab: 'executive' },
 });
 
 const mockRouterReplace = vi.fn();
@@ -232,7 +232,7 @@ describe('AnalyticsCenter.vue', () => {
     vi.clearAllMocks();
     mockRoute.value = {
       params: { accountId: '123' },
-      query: { period: '30', tab: 'executive' },
+      query: { period: '30', sub_tab: 'executive' },
     };
     setupApiMocks();
   });
@@ -267,7 +267,7 @@ describe('AnalyticsCenter.vue', () => {
 
     expect(mockRouterReplace).toHaveBeenCalledWith(
       expect.objectContaining({
-        query: expect.objectContaining({ tab: 'funnel' }),
+        query: expect.objectContaining({ sub_tab: 'funnel' }),
       })
     );
     expect(
@@ -280,7 +280,7 @@ describe('AnalyticsCenter.vue', () => {
 
     expect(mockRouterReplace).toHaveBeenCalledWith(
       expect.objectContaining({
-        query: expect.objectContaining({ tab: 'support' }),
+        query: expect.objectContaining({ sub_tab: 'support' }),
       })
     );
     expect(
@@ -334,7 +334,7 @@ describe('AnalyticsCenter.vue', () => {
   });
 
   it('interacts with the AI analyst assistant', async () => {
-    mockRoute.value.query.tab = 'funnel';
+    mockRoute.value.query.sub_tab = 'funnel';
     const wrapper = await mountComponent();
 
     const input = wrapper.find('input[type="text"]');

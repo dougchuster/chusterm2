@@ -35,7 +35,7 @@ module Crm
       return {} if source.blank?
       return source.to_h.symbolize_keys unless source.respond_to?(:permit)
 
-      source.permit(*SCALAR_KEYS, *LIST_KEYS, *LIST_KEYS.map { |key| { key => [] } }).to_h
+      source.permit(*SCALAR_KEYS, *LIST_KEYS, *LIST_KEYS.map { |key| { key => [] } }, custom_fields: {}).to_h
     end
 
     def initialize(scope:, filters:, account: nil)
@@ -57,6 +57,7 @@ module Crm
       scope = filter_by_activity(scope)
       scope = filter_by_ai_mode(scope)
       scope = filter_by_labels(scope)
+      scope = filter_by_custom_fields(scope)
       filter_by_search(scope)
     end
 
@@ -188,6 +189,29 @@ module Crm
         conversations: conversations_scope.tagged_with(labels, any: true).reselect(:id),
         contacts: contacts_scope.tagged_with(labels, any: true).reselect(:id)
       )
+    end
+
+    # 2.4: filtra por campos do pack. Só chaves declaradas em
+    # crm_field_definitions da conta entram na query — um cliente não pode
+    # consultar chave arbitrária do jsonb de outro inquilino.
+    def filter_by_custom_fields(scope)
+      fields = @filters[:custom_fields]
+      return scope unless fields.is_a?(Hash) && fields.present? && @account
+
+      allowed = allowed_custom_field_keys
+      fields.each do |key, value|
+        next unless allowed.include?(key.to_s)
+
+        values = Array.wrap(value).compact_blank.map(&:to_s)
+        next if values.empty?
+
+        scope = scope.where('crm_deals.custom_fields ->> :key IN (:values)', key: key.to_s, values: values)
+      end
+      scope
+    end
+
+    def allowed_custom_field_keys
+      @allowed_custom_field_keys ||= @account.crm_field_definitions.active.for_deals.pluck(:key).map(&:to_s)
     end
 
     def filter_by_search(scope)

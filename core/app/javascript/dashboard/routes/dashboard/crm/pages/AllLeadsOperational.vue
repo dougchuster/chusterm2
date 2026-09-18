@@ -4,6 +4,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import CrmAPI from 'dashboard/api/crm';
+import { fetchCrmOptions } from 'dashboard/helper/crmOptions';
 import CRMDealDrawer from 'dashboard/components/crm/CRMDealDrawer.vue';
 import CRMScoreBadge from 'dashboard/components/crm/CRMScoreBadge.vue';
 import Icon from 'dashboard/components-next/icon/Icon.vue';
@@ -58,6 +59,9 @@ const status = ref(route.query.status || 'open');
 const score = ref(route.query.score || '');
 const search = ref(route.query.search || '');
 const bulkStageId = ref('');
+// 2.4: campos do pack — filtros por campo select e coluna de detalhes
+const fieldDefinitions = ref([]);
+const customFieldFilters = ref({});
 const drawerDealId = ref(null);
 const showDealDrawer = ref(false);
 const showCreateDrawer = ref(false);
@@ -144,13 +148,32 @@ const hasActiveFilters = computed(
     Boolean(search.value) ||
     Boolean(stageId.value) ||
     status.value !== 'open' ||
-    Boolean(score.value)
+    Boolean(score.value) ||
+    Object.values(customFieldFilters.value).some(Boolean)
 );
+
+// Campos do pack filtráveis na toolbar (só `select` vira filtro — campos
+// livres continuam editáveis no drawer do deal).
+const filterableFieldDefinitions = computed(() =>
+  fieldDefinitions.value.filter(
+    field => field.field_type === 'select' && Array.isArray(field.options)
+  )
+);
+const fieldDefinitionLabel = key =>
+  fieldDefinitions.value.find(field => field.key === key)?.label || key;
 
 const scoreParams = () => {
   const selected = SCORE_OPTIONS.find(item => item.value === score.value);
   return selected
     ? { score_min: selected.min, score_max: selected.max }
+    : {};
+};
+const customFieldParams = () => {
+  const entries = Object.entries(customFieldFilters.value).filter(
+    ([, value]) => Boolean(value)
+  );
+  return entries.length
+    ? { custom_fields: Object.fromEntries(entries) }
     : {};
 };
 const dealParams = () => ({
@@ -161,6 +184,7 @@ const dealParams = () => ({
   status: status.value || undefined,
   search: search.value.trim() || undefined,
   ...scoreParams(),
+  ...customFieldParams(),
 });
 const syncQuery = () =>
   router.replace({
@@ -238,6 +262,7 @@ const clearFilters = async () => {
   stageId.value = '';
   status.value = 'open';
   score.value = '';
+  customFieldFilters.value = {};
   await applyFilters();
 };
 const changePipeline = async () => {
@@ -441,6 +466,11 @@ const statusLabel = value => STATUS_LABELS[value] || 'Sem status';
 
 onMounted(async () => {
   store.dispatch('agents/get');
+  fetchCrmOptions().then(options => {
+    fieldDefinitions.value = Array.isArray(options?.field_definitions)
+      ? options.field_definitions
+      : [];
+  });
   await loadAll();
 });
 </script>
@@ -514,6 +544,20 @@ onMounted(async () => {
         hide-label
         :options="SCORE_OPTIONS"
         class="min-w-44"
+        @change="applyFilters"
+      />
+      <DsSelect
+        v-for="field in filterableFieldDefinitions"
+        :key="field.key"
+        :model-value="customFieldFilters[field.key] || ''"
+        :label="field.label"
+        hide-label
+        :options="[
+          { value: '', label: `${field.label}: todas` },
+          ...field.options.map(opt => ({ value: String(opt.value ?? opt), label: String(opt.label ?? opt) })),
+        ]"
+        class="min-w-44"
+        @update:model-value="customFieldFilters[field.key] = $event"
         @change="applyFilters"
       />
       <DsButton
@@ -590,6 +634,12 @@ onMounted(async () => {
           <th class="hidden px-3 py-2 font-medium lg:table-cell">
             Responsável
           </th>
+          <th
+            v-if="fieldDefinitions.length"
+            class="hidden px-3 py-2 font-medium 2xl:table-cell"
+          >
+            Detalhes
+          </th>
           <th class="hidden px-3 py-2 font-medium xl:table-cell">
             Próxima ação
           </th>
@@ -649,6 +699,21 @@ onMounted(async () => {
             class="hidden max-w-48 truncate px-3 py-2 text-ui-body-sm text-ui-text-muted lg:table-cell"
           >
             {{ ownerById[String(deal.owner_id)] || 'Sem responsável' }}
+          </td>
+          <td
+            v-if="fieldDefinitions.length"
+            class="hidden max-w-56 px-3 py-2 2xl:table-cell"
+          >
+            <div class="flex flex-wrap gap-1">
+              <DsBadge
+                v-for="field in fieldDefinitions.filter(
+                  f => deal.custom_fields?.[f.key] != null && deal.custom_fields[f.key] !== ''
+                )"
+                :key="field.key"
+                :label="`${fieldDefinitionLabel(field.key)}: ${Array.isArray(deal.custom_fields[field.key]) ? deal.custom_fields[field.key].join(', ') : deal.custom_fields[field.key]}`"
+                variant="neutral"
+              />
+            </div>
           </td>
           <td class="hidden px-3 py-2 xl:table-cell">
             <div class="text-ui-body-sm text-ui-text">

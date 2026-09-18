@@ -383,4 +383,42 @@ RSpec.describe Crm::DealFilterService do
       expect(titles(has_pending_activity: false)).to eq(['Sem proxima acao'])
     end
   end
+
+  # 2.4: filtro por campos do pack — só chaves declaradas em
+  # crm_field_definitions da conta entram na query.
+  describe 'custom_fields filter' do
+    def titles_with_account(filters)
+      described_class.new(scope: account.crm_deals, filters: filters, account: account).perform.pluck(:title).sort
+    end
+
+    before do
+      account.crm_field_definitions.create!(
+        key: 'cor_preferida', label: 'Cor preferida', field_type: 'select',
+        options: [{ 'value' => 'azul' }, { 'value' => 'verde' }], applies_to: 'deal'
+      )
+    end
+
+    it 'filters deals by a declared pack field' do
+      build_deal('Azul', custom_fields: { 'cor_preferida' => 'azul' })
+      build_deal('Verde', custom_fields: { 'cor_preferida' => 'verde' })
+      build_deal('Sem cor')
+
+      expect(titles_with_account(custom_fields: { cor_preferida: 'azul' })).to eq(['Azul'])
+    end
+
+    it 'accepts a list of values for the same key' do
+      build_deal('Azul', custom_fields: { 'cor_preferida' => 'azul' })
+      build_deal('Verde', custom_fields: { 'cor_preferida' => 'verde' })
+      build_deal('Sem cor')
+
+      expect(titles_with_account(custom_fields: { cor_preferida: %w[azul verde] }))
+        .to eq(%w[Azul Verde])
+    end
+
+    it 'ignores keys not declared in the account field definitions' do
+      build_deal('Azul', custom_fields: { 'cor_preferida' => 'azul', 'chave_livre' => 'x' })
+
+      expect(titles_with_account(custom_fields: { chave_livre: 'x' })).to eq(['Azul'])
+    end
+  end
 end
