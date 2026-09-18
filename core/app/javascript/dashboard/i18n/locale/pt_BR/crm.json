@@ -1111,6 +1111,11 @@
         "APPLY": "Aplicar filtros",
         "RESET": "Limpar"
       },
+      "SAVED": {
+        "LABEL": "Relatórios salvos",
+        "PLACEHOLDER": "Aplicar um relatório salvo...",
+        "SAVE": "Salvar relatório"
+      },
       "OPTIONS": {
         "STATUS": {
           "ALL": "Todos",

@@ -14,8 +14,16 @@ import CrmAPI from 'dashboard/api/crm';
  * @param {Function} readFilters devolve os filtros do quadro, prontos para a API
  * @param {Function} onApply    recebe os filtros da visão escolhida
  * @param {Function} onError    recebe a mensagem quando o servidor recusa
+ * @param {string}   context    'board' (default) ou 'report' (6.3 — filtros
+ *                              salvos de relatórios na mesma tabela)
  */
-export function useBoardViews({ t, readFilters, onApply, onError }) {
+export function useBoardViews({
+  t,
+  readFilters,
+  onApply,
+  onError,
+  context = 'board',
+}) {
   const boardViews = ref([]);
   const activeViewId = ref(null);
 
@@ -28,7 +36,7 @@ export function useBoardViews({ t, readFilters, onApply, onError }) {
 
   const loadBoardViews = async () => {
     try {
-      const response = await CrmAPI.getBoardViews();
+      const response = await CrmAPI.getBoardViews({ context });
       boardViews.value = response?.data || [];
     } catch {
       // Visão salva é conveniência: falhar em carregar não pode derrubar o
@@ -51,6 +59,7 @@ export function useBoardViews({ t, readFilters, onApply, onError }) {
         name: trimmed,
         filters: readFilters(),
         group_by: 'stage',
+        context,
       });
       boardViews.value = [...boardViews.value, response.data];
       activeViewId.value = response.data.id;

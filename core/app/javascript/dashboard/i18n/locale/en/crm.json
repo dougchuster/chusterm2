@@ -1111,6 +1111,11 @@
         "APPLY": "Apply filters",
         "RESET": "Reset"
       },
+      "SAVED": {
+        "LABEL": "Saved reports",
+        "PLACEHOLDER": "Apply a saved report...",
+        "SAVE": "Save report"
+      },
       "OPTIONS": {
         "STATUS": {
           "ALL": "All",

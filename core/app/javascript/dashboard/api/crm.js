@@ -180,8 +180,8 @@ class CrmAPI {
   // F2.7: visoes salvas. `board_views` devolve as minhas mais as que a equipe
   // compartilhou; editar e apagar so valem para as minhas (o servidor responde
   // 404 para o resto).
-  getBoardViews() {
-    return axios.get(crmUrl('board_views'));
+  getBoardViews(params = {}) {
+    return axios.get(crmUrl('board_views'), { params });
   }
 
   createBoardView(boardView) {

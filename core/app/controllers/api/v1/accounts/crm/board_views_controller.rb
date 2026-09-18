@@ -9,6 +9,7 @@ class Api::V1::Accounts::Crm::BoardViewsController < Api::V1::Accounts::Crm::Bas
   def index
     views = CrmBoardView.visible_to(Current.user)
                         .where(account_id: Current.account.id)
+                        .for_context(params[:context])
                         .ordered
 
     render json: views.map { |view| serialize_view(view) }
@@ -52,7 +53,7 @@ class Api::V1::Accounts::Crm::BoardViewsController < Api::V1::Accounts::Crm::Bas
 
   def board_view_params
     params.require(:board_view).permit(
-      :name, :group_by, :sort, :is_shared, :position, filters: {}
+      :name, :group_by, :sort, :is_shared, :position, :context, filters: {}
     )
   end
 
@@ -61,6 +62,7 @@ class Api::V1::Accounts::Crm::BoardViewsController < Api::V1::Accounts::Crm::Bas
       id: view.id,
       name: view.name,
       filters: view.filters,
+      context: view.context,
       group_by: view.group_by,
       sort: view.sort,
       is_shared: view.is_shared,

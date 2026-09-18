@@ -19,6 +19,7 @@ import {
   CRM_OPTIONS_FALLBACK,
   fetchCrmOptions,
 } from 'dashboard/helper/crmOptions';
+import { useBoardViews } from 'dashboard/composables/useBoardViews';
 
 // 6.1: quando embutida no hub de relatórios, esconde o DsPageHeader
 // (o hub já provê header + tabs).
@@ -44,6 +45,48 @@ const error = ref('');
 const exporting = ref(false);
 const exportError = ref('');
 const exportSuccess = ref('');
+
+// 6.3 — relatórios salvos: mesma tabela de visões do board, context 'report'.
+const applySavedFilters = saved => {
+  filters.status = saved.status || 'open';
+  filters.operational_status = saved.operational_status || '';
+  filters.source = saved.source || '';
+  filters.legal_area = saved.legal_area || '';
+  filters.urgency_level = saved.urgency_level || '';
+  filters.from = saved.from || '';
+  filters.to = saved.to || '';
+};
+
+const {
+  boardViews: savedReports,
+  loadBoardViews: loadSavedReports,
+  applyView,
+  promptForViewName,
+} = useBoardViews({
+  t,
+  context: 'report',
+  readFilters: () => cleanFilters(),
+  onApply: saved => {
+    applySavedFilters(saved);
+    loadStats();
+  },
+  onError: message => {
+    error.value = message;
+  },
+});
+
+const savedReportOptions = computed(() => [
+  { value: '', label: t('CRM.REPORTS.SAVED.PLACEHOLDER') },
+  ...savedReports.value.map(view => ({
+    value: String(view.id),
+    label: view.is_mine ? view.name : `${view.name} (${view.owner_name})`,
+  })),
+]);
+
+function applySavedReport(viewId) {
+  const view = savedReports.value.find(item => String(item.id) === String(viewId));
+  if (view) applyView(view);
+}
 
 // Larguras quantizadas em passos de 5%: as classes precisam existir de forma
 // estatica para o Tailwind, entao barras nao usam style inline.
@@ -475,6 +518,7 @@ onMounted(() => {
   fetchCrmOptions().then(options => {
     crmOptions.value = options;
   });
+  loadSavedReports();
   loadStats();
 });
 </script>
@@ -563,6 +607,23 @@ onMounted(() => {
               @click="resetFilters"
             />
           </div>
+        </div>
+        <div class="mt-3 flex flex-wrap items-center gap-2">
+          <DsSelect
+            model-value=""
+            :label="$t('CRM.REPORTS.SAVED.LABEL')"
+            hide-label
+            :options="savedReportOptions"
+            class="min-w-52"
+            :disabled="!savedReports.length"
+            @update:model-value="applySavedReport"
+          />
+          <DsButton
+            variant="secondary"
+            icon="i-lucide-save"
+            :label="$t('CRM.REPORTS.SAVED.SAVE')"
+            @click="promptForViewName"
+          />
         </div>
       </DsCard>
 

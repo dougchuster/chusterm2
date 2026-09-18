@@ -61,6 +61,22 @@ RSpec.describe 'CRM Board Views API', type: :request do
 
       expect(response.parsed_body).to be_empty
     end
+
+    # 6.3 — relatórios salvos vivem na mesma tabela, separados por context.
+    it 'filters by context: board views do not mix with saved reports' do
+      do_board = create_view!(user: ana, name: 'No quadro')
+      do_report = create_view!(user: ana, name: 'Semana atual', context: 'report')
+
+      get "/api/v1/accounts/#{account.id}/crm/board_views",
+          params: { context: 'report' }, headers: headers, as: :json
+
+      expect(response.parsed_body.pluck('id')).to eq([do_report.id])
+      expect(response.parsed_body.first['context']).to eq('report')
+
+      get "/api/v1/accounts/#{account.id}/crm/board_views", headers: headers, as: :json
+
+      expect(response.parsed_body.pluck('id')).to eq([do_board.id])
+    end
   end
 
   describe 'POST /api/v1/accounts/:account_id/crm/board_views' do
@@ -108,6 +124,31 @@ RSpec.describe 'CRM Board Views API', type: :request do
            headers: headers, as: :json
 
       expect(account.crm_board_views.last.user).to eq(ana)
+    end
+
+    # 6.3 — group_by é conceito de board; relatório salvo não carrega isso.
+    it 'accepts a report view even when group_by would be invalid for boards' do
+      post "/api/v1/accounts/#{account.id}/crm/board_views",
+           params: {
+             board_view: {
+               name: 'Funil do mês',
+               context: 'report',
+               group_by: 'bogus',
+               filters: { 'from' => '2026-09-01' }
+             }
+           },
+           headers: headers, as: :json
+
+      expect(response).to have_http_status(:created)
+      expect(account.crm_board_views.last.context).to eq('report')
+    end
+
+    it 'still validates group_by for board views' do
+      post "/api/v1/accounts/#{account.id}/crm/board_views",
+           params: { board_view: { name: 'Zoada', group_by: 'bogus', filters: {} } },
+           headers: headers, as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
     end
   end
 

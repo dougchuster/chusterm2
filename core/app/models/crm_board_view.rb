@@ -7,6 +7,7 @@ class CrmBoardView < ApplicationRecord
   include AccountAssociationScoped
 
   GROUP_BY_OPTIONS = %w[stage owner score_band legal_area source operational_status].freeze
+  CONTEXT_OPTIONS = %w[board report].freeze
 
   belongs_to :account
   belongs_to :user
@@ -14,15 +15,19 @@ class CrmBoardView < ApplicationRecord
   validates :name, presence: true, length: { maximum: 120 }
   validates :name,
             uniqueness: {
-              scope: [:account_id, :user_id]
+              scope: %i[account_id user_id context]
               # `:taken` e a chave padrao do Rails, ja traduzida.
             }
-  validates :group_by, inclusion: { in: GROUP_BY_OPTIONS }
+  validates :context, inclusion: { in: CONTEXT_OPTIONS }
+  # group_by só faz sentido para visão de board — relatório salvo guarda só
+  # o conjunto de filtros.
+  validates :group_by, inclusion: { in: GROUP_BY_OPTIONS }, if: :board?
 
   before_validation :place_at_the_end, on: :create
 
   scope :ordered, -> { order(:position, :id) }
   scope :shared, -> { where(is_shared: true) }
+  scope :for_context, ->(context) { where(context: context.presence || 'board') }
 
   # Minhas visoes mais o que a equipe compartilhou — nunca a visao privada de
   # outra pessoa, e nunca nada de outra conta.
@@ -35,6 +40,10 @@ class CrmBoardView < ApplicationRecord
     user_id == candidate&.id
   end
 
+  def board?
+    context == 'board'
+  end
+
   private
 
   # Visao nova entra no fim do menu. Cair no meio da lista de alguem seria
@@ -42,6 +51,6 @@ class CrmBoardView < ApplicationRecord
   def place_at_the_end
     return if position.to_i.positive?
 
-    self.position = (account&.crm_board_views&.maximum(:position) || 0) + 1
+    self.position = (account&.crm_board_views&.for_context(context)&.maximum(:position) || 0) + 1
   end
 end
