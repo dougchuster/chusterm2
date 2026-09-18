@@ -54,9 +54,6 @@ const deals = ref([]);
 const columns = ref([]);
 const lossReasons = ref([]);
 const pipelineId = ref(String(route.query.pipeline_id || ''));
-const search = ref(String(route.query.search || ''));
-const ownerId = ref(String(route.query.owner_id || ''));
-const priority = ref(String(route.query.priority || ''));
 const loading = ref(true);
 const refreshing = ref(false);
 const saving = ref(false);
@@ -213,10 +210,54 @@ const ownerName = id =>
   'Sem responsável';
 // F2.2: os criterios viram parametros do endpoint de colunas (F1.4/F1.5). O
 // board nao peneira mais nada no navegador — era a lacuna K-01.
-// F2.6: os 12 criterios da F1.4 num estado so. `search`, `ownerId` e
-// `priority` continuam existindo porque a query string antiga usa esses nomes
-// — eles alimentam o mesmo objeto.
-const filters = ref(emptyFilters());
+// F2.6/F7: os 12 criterios da F1.4 num estado so. Os tres campos do toolbar
+// (`search`, `ownerId`, `priority`) viraram proxies computados sobre `filters`
+// — sem refs paralelos nem sincronizacao manual. A query string antiga alimenta
+// `filters` aqui e continua sendo escrita em `syncQuery`.
+const filters = ref({
+  ...emptyFilters(),
+  q: String(route.query.search || ''),
+  owner_id: route.query.owner_id ? [String(route.query.owner_id)] : [],
+  score_min:
+    priorityOptions.find(item => item.value === String(route.query.priority || ''))
+      ?.min ?? null,
+  score_max:
+    priorityOptions.find(item => item.value === String(route.query.priority || ''))
+      ?.max ?? null,
+});
+
+// Proxies toolbar <-> filters: o estado de verdade e `filters`.
+const search = computed({
+  get: () => filters.value.q || '',
+  set: value => {
+    filters.value = { ...filters.value, q: value };
+  },
+});
+const ownerId = computed({
+  get: () => String(filters.value.owner_id[0] || ''),
+  set: value => {
+    filters.value = {
+      ...filters.value,
+      owner_id: value ? [String(value)] : [],
+    };
+  },
+});
+const priority = computed({
+  get: () =>
+    priorityOptions.find(
+      item =>
+        (item.min ?? null) === filters.value.score_min &&
+        (item.max ?? null) === filters.value.score_max
+    )?.value || '',
+  set: value => {
+    const band = priorityOptions.find(item => item.value === value);
+    filters.value = {
+      ...filters.value,
+      score_min: band?.min ?? null,
+      score_max: band?.max ?? null,
+    };
+  },
+});
 
 // F2.7: visoes salvas (lacuna K-05). Aplicar uma visao e trocar o estado de
 // filtro inteiro — nao mesclar com o que estava, senao o atendente carrega
@@ -276,7 +317,6 @@ const {
   // pagina, nao o composable.
   onApply: async saved => {
     filters.value = { ...emptyFilters(), ...saved };
-    syncLegacyFilterRefs();
     await loadCrm({ silent: true });
   },
   onError: message => {
@@ -302,39 +342,12 @@ const filteredTotal = computed(() =>
 
 const dropFilter = async key => {
   filters.value = removeFilter(filters.value, key);
-  syncLegacyFilterRefs();
   await loadCrm({ silent: true });
 };
 
 const clearAllFilters = async () => {
   filters.value = emptyFilters();
-  syncLegacyFilterRefs();
   await loadCrm({ silent: true });
-};
-
-// A barra de busca e os dois selects do toolbar escrevem em `search`,
-// `ownerId` e `priority`; o estado de verdade e `filters`.
-const pullLegacyFilterRefs = () => {
-  const band = priorityOptions.find(item => item.value === priority.value);
-
-  filters.value = {
-    ...filters.value,
-    q: search.value.trim(),
-    owner_id: ownerId.value ? [ownerId.value] : [],
-    score_min: band?.min ?? null,
-    score_max: band?.max ?? null,
-  };
-};
-
-const syncLegacyFilterRefs = () => {
-  search.value = filters.value.q || '';
-  ownerId.value = filters.value.owner_id[0] || '';
-  priority.value =
-    priorityOptions.find(
-      item =>
-        (item.min ?? null) === filters.value.score_min &&
-        (item.max ?? null) === filters.value.score_max
-    )?.value || '';
 };
 // As colunas chegam prontas do servidor, com contagem, soma e tempo medio da
 // coluna inteira — nao do punhado que coube na primeira pagina.
@@ -617,14 +630,12 @@ watch(
     ownerId.value = nextOwner;
     priority.value = nextPriority;
     selectedIds.value = [];
-    pullLegacyFilterRefs();
     loadCrm({ silent: true });
   }
 );
 // Filtrar agora significa perguntar de novo ao servidor. E mais barato do que
 // parece: o board devolve 25 cards por coluna, nao o pipeline.
 const applyFilters = async () => {
-  pullLegacyFilterRefs();
   // Mexeu no filtro a mao: o que esta na tela nao e mais a visao salva.
   activeViewId.value = null;
   await loadCrm({ silent: true });
@@ -769,9 +780,6 @@ onMounted(async () => {
   readStoredDensity();
   loadBoardViews();
   store.dispatch('agents/get');
-  // Query string e a fonte de verdade dos filtros legados: sem o pull, um
-  // link como `/crm?search=X` pintava a caixa mas nao filtrava o quadro.
-  pullLegacyFilterRefs();
   await loadCrm();
 
   // Deep-link vindo do atendimento (`/crm?deal_id=`): abre a ficha do
