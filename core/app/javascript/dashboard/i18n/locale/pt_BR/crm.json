@@ -29,7 +29,12 @@
       "RECOMPUTE_SCORE": "Recalcular score",
       "MARK_BASE_CLIENT": "Marcar como cliente da base",
       "DISCARD": "Descartar negócio",
-      "SCHEDULE_NEXT_ACTION": "Agendar próxima ação para {name}"
+      "SCHEDULE_NEXT_ACTION": "Agendar próxima ação para {name}",
+      "WAITING_NOW": "Aguardando agora",
+      "WAITING_HOURS": "Esperando há {hours}h",
+      "WAITING_DAYS": "Esperando há {days}d",
+      "YOU": "Você",
+      "CUSTOMER": "Cliente"
     },
     "COLUMN": {
       "AVERAGE_AGE": "Tempo médio nesta etapa",
@@ -1001,6 +1006,11 @@
       "FIELDS_COUNT": "{count} tipos e campos inclusos",
       "ERROR_LOAD": "Não foi possível carregar os packs.",
       "ERROR_INSTALL": "Não foi possível instalar o pack."
+    },
+    "SORT": {
+      "LABEL": "Ordenar cards",
+      "DEFAULT": "Ordem manual",
+      "WAITING": "Cliente esperando"
     }
   }
 }

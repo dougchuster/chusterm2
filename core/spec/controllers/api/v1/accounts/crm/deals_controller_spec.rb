@@ -281,6 +281,75 @@ RSpec.describe 'CRM Deals API', type: :request do
         'contact_avatar_url' => 'https://cdn.test/ricardo.jpg'
       )
     end
+
+    it 'returns the card v5 conversation signals without extra queries per card' do
+      conversation = create(:conversation, account: account, agent_last_seen_at: 2.days.ago)
+      create(:message, conversation: conversation, account: account, message_type: :outgoing, created_at: 5.hours.ago)
+      incoming = create(:message, conversation: conversation, account: account, message_type: :incoming,
+                                  content: 'Oi, ainda preciso do retorno', created_at: 3.hours.ago)
+      create_deal!(title: 'Cliente aguardando', conversation: conversation)
+
+      get "/api/v1/accounts/#{account.id}/crm/deals",
+          headers: headers,
+          as: :json
+
+      expect(response).to have_http_status(:success)
+      deal = response.parsed_body['data'].find { |d| d['conversation_id'] == conversation.id }
+      expect(deal).to include(
+        'unread_count' => 1,
+        'last_message_preview' => 'Oi, ainda preciso do retorno',
+        'last_message_direction' => 'in',
+        'last_incoming_at' => incoming.created_at.iso8601,
+        'customer_waiting_since' => incoming.created_at.iso8601,
+        'channel_type' => conversation.inbox.channel_type
+      )
+    end
+
+    it 'does not report the customer as waiting when the last message is outgoing' do
+      conversation = create(:conversation, account: account)
+      create(:message, conversation: conversation, account: account, message_type: :incoming, created_at: 3.hours.ago)
+      create(:message, conversation: conversation, account: account, message_type: :outgoing,
+                       content: 'Retorno enviado', created_at: 1.hour.ago)
+      create_deal!(title: 'Cliente respondido', conversation: conversation)
+
+      get "/api/v1/accounts/#{account.id}/crm/deals",
+          headers: headers,
+          as: :json
+
+      expect(response).to have_http_status(:success)
+      deal = response.parsed_body['data'].find { |d| d['conversation_id'] == conversation.id }
+      expect(deal['customer_waiting_since']).to be_nil
+      expect(deal['last_message_preview']).to eq('Retorno enviado')
+      expect(deal['last_message_direction']).to eq('out')
+    end
+  end
+
+  describe 'GET /api/v1/accounts/:account_id/crm/deals/:id' do
+    it 'surfaces the latest handoff note so the panel can pin it at the top' do
+      conversation = create(:conversation, account: account)
+      create(:message, conversation: conversation, account: account,
+                       message_type: :outgoing, private: true,
+                       content: "#{Captain::CrmHandoffSummaryBuilder::TITLE}\nMotivo: cliente pediu humano")
+      deal = create_deal!(title: 'Com handoff', conversation: conversation)
+
+      get "/api/v1/accounts/#{account.id}/crm/deals/#{deal.id}",
+          headers: headers,
+          as: :json
+
+      expect(response).to have_http_status(:success)
+      expect(response.parsed_body['conversation']['handoff_summary']).to include('cliente pediu humano')
+    end
+
+    it 'returns no handoff summary when the conversation never had one' do
+      conversation = create(:conversation, account: account)
+      deal = create_deal!(title: 'Sem handoff', conversation: conversation)
+
+      get "/api/v1/accounts/#{account.id}/crm/deals/#{deal.id}",
+          headers: headers,
+          as: :json
+
+      expect(response.parsed_body['conversation']['handoff_summary']).to be_nil
+    end
   end
 
   describe 'deal outcome actions' do

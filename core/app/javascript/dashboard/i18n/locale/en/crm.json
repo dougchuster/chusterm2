@@ -29,7 +29,12 @@
       "RECOMPUTE_SCORE": "Recompute score",
       "MARK_BASE_CLIENT": "Mark as existing client",
       "DISCARD": "Discard deal",
-      "SCHEDULE_NEXT_ACTION": "Schedule next action for {name}"
+      "SCHEDULE_NEXT_ACTION": "Schedule next action for {name}",
+      "WAITING_NOW": "Waiting now",
+      "WAITING_HOURS": "Waiting {hours}h",
+      "WAITING_DAYS": "Waiting {days}d",
+      "YOU": "You",
+      "CUSTOMER": "Customer"
     },
     "COLUMN": {
       "AVERAGE_AGE": "Average time in this stage",
@@ -1001,6 +1006,11 @@
       "FIELDS_COUNT": "{count} types and fields included",
       "ERROR_LOAD": "Could not load packs.",
       "ERROR_INSTALL": "Could not install the pack."
+    },
+    "SORT": {
+      "LABEL": "Sort cards",
+      "DEFAULT": "Manual order",
+      "WAITING": "Customer waiting"
     }
   }
 }

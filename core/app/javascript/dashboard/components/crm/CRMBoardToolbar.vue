@@ -27,6 +27,8 @@ defineProps({
   filteredTotal: { type: Number, default: null },
   groupBy: { type: String, default: 'stage' },
   groupByOptions: { type: Array, default: () => [] },
+  sortBy: { type: String, default: 'default' },
+  sortByOptions: { type: Array, default: () => [] },
   density: { type: String, default: 'normal' },
   densityOptions: { type: Array, default: () => [] },
   search: { type: String, default: '' },
@@ -46,6 +48,7 @@ const emit = defineEmits([
   'update:ownerId',
   'update:priority',
   'update:groupBy',
+  'update:sortBy',
   'update:density',
   'apply-filters',
   'change-pipeline',
@@ -104,6 +107,14 @@ const advancedFiltersOpen = ref(false);
       class="col-start-1 row-start-4 min-w-0 sm:col-start-3 sm:row-start-1 xl:col-auto xl:row-auto xl:w-40 xl:shrink-0"
       @update:model-value="emit('update:groupBy', $event)"
     />
+    <DsSelect
+      :model-value="sortBy"
+      :label="$t('CRM.SORT.LABEL')"
+      hide-label
+      :options="sortByOptions"
+      class="col-start-2 row-start-4 min-w-0 sm:col-start-3 sm:row-start-2 xl:col-auto xl:row-auto xl:w-44 xl:shrink-0"
+      @update:model-value="emit('update:sortBy', $event)"
+    />
     <DsInput
       id="crm-board-search"
       :model-value="search"
@@ -127,13 +138,13 @@ const advancedFiltersOpen = ref(false);
       :label="$t('FILTER.GROUPS.STANDARD_FILTERS')"
       icon="i-lucide-sliders-horizontal"
       :variant="advancedFiltersOpen || hasFilters ? 'secondary' : 'ghost'"
-      class="col-start-2 row-start-4 justify-self-start sm:col-start-3 sm:row-start-2 xl:col-auto xl:row-auto"
+      class="col-start-2 row-start-5 justify-self-start sm:col-start-3 sm:row-start-2 xl:col-auto xl:row-auto"
       :aria-expanded="advancedFiltersOpen"
       aria-controls="crm-toolbar-advanced-filters"
       @click="advancedFiltersOpen = !advancedFiltersOpen"
     />
     <span
-      class="col-span-2 col-start-1 row-start-5 self-center justify-self-end whitespace-nowrap rounded-full bg-ui-sunken px-2.5 py-1 text-ui-caption font-medium tabular-nums text-ui-text-muted sm:col-span-3 sm:row-start-3 xl:col-auto xl:row-auto xl:ml-auto"
+      class="col-span-2 col-start-1 row-start-6 self-center justify-self-end whitespace-nowrap rounded-full bg-ui-sunken px-2.5 py-1 text-ui-caption font-medium tabular-nums text-ui-text-muted sm:col-span-3 sm:row-start-3 xl:col-auto xl:row-auto xl:ml-auto"
     >
       {{ $t('CRM.TOOLBAR.TOTAL', { count: filteredTotal ?? totalVisible }) }}
     </span>

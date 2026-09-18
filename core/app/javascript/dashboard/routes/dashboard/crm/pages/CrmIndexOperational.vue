@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/no-bare-strings-in-template, @intlify/vue-i18n/no-raw-text -->
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -23,6 +23,7 @@ import { useAccount } from 'dashboard/composables/useAccount';
 import { useUISettings } from 'dashboard/composables/useUISettings';
 import { messageFrom } from 'dashboard/helper/crmErrors';
 import { useBoardRealtime } from 'dashboard/composables/useBoardRealtime';
+import { bindFocusSearchHotkey } from 'dashboard/composables/commands/useCrmCommandHotKeys';
 import { useBoardCards } from 'dashboard/composables/useBoardCards';
 import { useBoardDealActions } from 'dashboard/composables/useBoardDealActions';
 import { useBoardDensity } from 'dashboard/composables/useBoardDensity';
@@ -244,6 +245,19 @@ const groupByOptions = computed(() => [
 
 const changeGrouping = async value => {
   groupBy.value = value;
+  await loadCrm({ silent: true });
+};
+
+// 1.3: "quem espera ha mais tempo" sobe primeiro dentro de cada coluna. A
+// ordenacao e de exibicao — o arrasto continua persistindo `position`.
+const sortBy = ref('default');
+const sortByOptions = computed(() => [
+  { value: 'default', label: t('CRM.SORT.DEFAULT') },
+  { value: 'waiting', label: t('CRM.SORT.WAITING') },
+]);
+
+const changeSort = async value => {
+  sortBy.value = value;
   await loadCrm({ silent: true });
 };
 
@@ -542,6 +556,7 @@ const loadCrm = async ({ silent = false } = {}) => {
       CrmAPI.getBoard(pipelineId.value, {
         ...boardFilters(),
         group_by: groupBy.value,
+        sort: sortBy.value,
       }),
       CrmAPI.getLossReasons(),
     ]);
@@ -746,22 +761,11 @@ const createDeal = async () => {
 const dealUrl = deal =>
   `/app/accounts/${route.params.accountId}/crm/deals/${deal.id}`;
 
-const SEARCH_INPUT_ID = 'crm-board-search';
-const onWindowKeydown = event => {
-  if (event.key !== '/' || event.defaultPrevented) return;
-  const target = event.target;
-  if (
-    target instanceof HTMLElement &&
-    target.closest('input, textarea, select, [contenteditable="true"]')
-  ) {
-    return;
-  }
-  event.preventDefault();
-  document.getElementById(SEARCH_INPUT_ID)?.focus();
-};
+// B15: o `/` vive no composable unificado — com as guardas contra quem esta
+// digitando e contra dialogo/drawer aberto.
+bindFocusSearchHotkey('crm-board-search');
 
 onMounted(async () => {
-  window.addEventListener('keydown', onWindowKeydown);
   readStoredDensity();
   loadBoardViews();
   store.dispatch('agents/get');
@@ -777,10 +781,6 @@ onMounted(async () => {
     selectedDealId.value = deepLinkedDeal;
     showDealDrawer.value = true;
   }
-});
-
-onBeforeUnmount(() => {
-  window.removeEventListener('keydown', onWindowKeydown);
 });
 </script>
 
@@ -846,6 +846,8 @@ onBeforeUnmount(() => {
         :filtered-total="filteredTotal"
         :group-by="groupBy"
         :group-by-options="groupByOptions"
+        :sort-by="sortBy"
+        :sort-by-options="sortByOptions"
         :density="cardDensity"
         :density-options="densityOptions"
         :pipeline-options="pipelineOptions"
@@ -854,6 +856,7 @@ onBeforeUnmount(() => {
         :has-filters="hasFilters"
         :total-visible="totalVisible"
         @update:group-by="changeGrouping"
+        @update:sort-by="changeSort"
         @update:density="setDensity"
         @apply-filters="applyFilters"
         @change-pipeline="changePipeline"

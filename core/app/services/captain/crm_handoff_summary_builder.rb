@@ -1,4 +1,7 @@
 class Captain::CrmHandoffSummaryBuilder
+  # O painel do CRM reconhece a nota de handoff por este título.
+  TITLE = 'Handoff para atendimento humano'.freeze
+
   def initialize(conversation, reason: nil)
     @conversation = conversation
     @reason = reason.presence
@@ -7,7 +10,7 @@ class Captain::CrmHandoffSummaryBuilder
 
   def perform
     sections = [
-      'Handoff para atendimento humano',
+      TITLE,
       reason_line,
       contact_line,
       conversation_line,

@@ -106,14 +106,24 @@ class Crm::BoardGrouping
   end
 
   # Os valores vem dos dados da conta, e nao de uma constante: o escritorio e
-  # full service e a lista de areas muda com o que ele atende.
+  # full service e a lista de areas muda com o que ele atende. A categoria
+  # (`legal_area`) resolve o label pelo pack — conta universal nao mostra slug
+  # cru nem terminologia de outro segmento.
   def value_buckets(column)
     values = @pipeline.crm_deals.distinct.pluck(column).map(&:presence)
 
-    present = values.compact.sort.map { |value| { id: value, name: value } }
+    present = values.compact.sort.map do |value|
+      { id: value, name: bucket_label(column, value) }
+    end
     return present unless values.include?(nil)
 
     present + [{ id: NONE, name: 'Não informado' }]
+  end
+
+  def bucket_label(column, value)
+    return value unless column == :legal_area
+
+    Crm::PackOptions.category_label_for(@account, value).presence || value
   end
 
   # Lista fechada no modelo: mostrar todas mantem a coluna vazia visivel, que e

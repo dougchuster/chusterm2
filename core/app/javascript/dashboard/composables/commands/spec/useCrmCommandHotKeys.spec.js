@@ -1,3 +1,4 @@
+import { mount } from '@vue/test-utils';
 import {
   useCrmCommandHotKeys,
   normalizeText,
@@ -5,6 +6,7 @@ import {
   formatCurrency,
   buildContactAction,
   buildDealAction,
+  bindFocusSearchHotkey,
 } from '../useCrmCommandHotKeys';
 import { useStore, useMapGetter } from 'dashboard/composables/store';
 import { useI18n } from 'vue-i18n';
@@ -178,6 +180,80 @@ describe('useCrmCommandHotKeys', () => {
       expect(action.keywords).toContain('#negocio');
       expect(action.keywords).toContain('negociacao');
       expect(action.keywords).toContain('venda de software');
+    });
+  });
+
+  // B15: o `/` vive aqui agora — um atalho só, com guardas, em vez de um
+  // listener por tela competindo com a command bar e com o browser.
+  describe('bindFocusSearchHotkey', () => {
+    const pressSlashOn = target => {
+      const event = new KeyboardEvent('keydown', {
+        key: '/',
+        bubbles: true,
+        cancelable: true,
+      });
+      target.dispatchEvent(event);
+      return event;
+    };
+
+    const mountWithHotkey = () =>
+      mount({
+        template: '<div />',
+        setup: () => bindFocusSearchHotkey('board-search'),
+      });
+
+    let wrapper;
+    beforeEach(() => {
+      document.body.innerHTML = '<input id="board-search" />';
+    });
+    afterEach(() => {
+      wrapper?.unmount();
+      wrapper = undefined;
+    });
+
+    it('moves focus to the search input on /', () => {
+      wrapper = mountWithHotkey();
+
+      pressSlashOn(document.body);
+
+      expect(document.activeElement.id).toBe('board-search');
+    });
+
+    it('leaves the key for whoever is typing', () => {
+      wrapper = mountWithHotkey();
+      const input = document.getElementById('board-search');
+      input.focus();
+
+      const event = pressSlashOn(input);
+
+      expect(event.defaultPrevented).toBe(false);
+      expect(document.activeElement).toBe(input);
+    });
+
+    it('does not steal the key while a dialog is open', () => {
+      wrapper = mountWithHotkey();
+      document.body.insertAdjacentHTML(
+        'beforeend',
+        '<div role="dialog"></div>'
+      );
+
+      pressSlashOn(document.body);
+
+      expect(document.activeElement).not.toBe(
+        document.getElementById('board-search')
+      );
+    });
+
+    it('stops listening once the component goes away', () => {
+      wrapper = mountWithHotkey();
+      wrapper.unmount();
+      wrapper = undefined;
+
+      pressSlashOn(document.body);
+
+      expect(document.activeElement).not.toBe(
+        document.getElementById('board-search')
+      );
     });
   });
 });

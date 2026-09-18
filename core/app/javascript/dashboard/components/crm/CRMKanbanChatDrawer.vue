@@ -275,6 +275,15 @@ const summaryIsLong = computed(() => {
   return text.length > 170;
 });
 
+// 1.5: a nota privada que o Captain deixa no handoff vira faixa fixa no topo —
+// o atendente que assume nao precisa rolar a conversa para achar o contexto.
+const handoffSummary = computed(
+  () =>
+    localDeal.value?.conversation?.handoff_summary ||
+    props.deal?.conversation?.handoff_summary ||
+    ''
+);
+
 const normalizedSearchQuery = computed(() =>
   searchQuery.value.trim().toLocaleLowerCase('pt-BR')
 );
@@ -1286,6 +1295,18 @@ onBeforeUnmount(() => {
             <span class="i-lucide-loader-2 size-3.5 animate-spin" />
             Sincronizando mensagens...
           </div>
+
+          <article
+            v-if="handoffSummary"
+            data-testid="crm-drawer-handoff-summary"
+            class="crm-attendance-summary"
+          >
+            <span class="i-lucide-user-check size-4 text-n-amber-9" />
+            <div class="min-w-0">
+              <p>Handoff da IA</p>
+              <strong class="whitespace-pre-wrap">{{ handoffSummary }}</strong>
+            </div>
+          </article>
 
           <article
             v-if="shouldShowSummary"

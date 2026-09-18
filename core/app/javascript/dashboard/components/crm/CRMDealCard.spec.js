@@ -2,6 +2,12 @@ import { mount } from '@vue/test-utils';
 
 import CRMDealCard from './CRMDealCard.vue';
 
+vi.mock('vue-i18n', () => ({
+  useI18n: () => ({
+    t: (key, params) => (params ? `${key}:${JSON.stringify(params)}` : key),
+  }),
+}));
+
 // F2.4 do PLANO-KANBAN-CRM-2026.md — card redesenhado segundo a §7.
 //
 // As quatro regras de hierarquia que este arquivo protege:
@@ -255,6 +261,96 @@ describe('CRMDealCard — badges', () => {
     expect(
       wrapper.find('[data-testid="crm-card-badge-overflow"]').exists()
     ).toBe(false);
+  });
+});
+
+describe('CRMDealCard — sinais de conversa (card v5)', () => {
+  it('shows the unread count over the attend button', () => {
+    const wrapper = mountCard({
+      deal: deal({ unread_count: 3 }),
+    });
+
+    expect(wrapper.find('[data-testid="crm-card-unread"]').text()).toBe('3');
+  });
+
+  it('caps the unread badge at 99+', () => {
+    const wrapper = mountCard({
+      deal: deal({ unread_count: 140 }),
+    });
+
+    expect(wrapper.find('[data-testid="crm-card-unread"]').text()).toBe('99+');
+  });
+
+  it('does not render an unread badge for a quiet conversation', () => {
+    const wrapper = mountCard();
+
+    expect(wrapper.find('[data-testid="crm-card-unread"]').exists()).toBe(
+      false
+    );
+  });
+
+  it('marks the channel on the contact avatar', () => {
+    const wrapper = mountCard({
+      deal: deal({ channel_type: 'Channel::Whatsapp' }),
+    });
+
+    expect(wrapper.find('[data-testid="crm-card-channel"]').exists()).toBe(
+      true
+    );
+  });
+
+  it('shows how long the customer has been waiting', () => {
+    const wrapper = mountCard({
+      deal: deal({
+        customer_waiting_since: '2026-08-28T09:00:00Z',
+        // Dentro do prazo da etapa — o slot de alarme está livre.
+        stage_entered_at: '2026-08-28T12:00:00Z',
+      }),
+    });
+
+    expect(wrapper.find('[data-testid="crm-card-waiting"]').text()).toContain(
+      'CRM.CARD.WAITING_HOURS'
+    );
+    expect(wrapper.find('[data-testid="crm-card-waiting"]').text()).toContain(
+      '"hours":6'
+    );
+  });
+
+  it('does not compete with the stale badge for the same slot', () => {
+    const wrapper = mountCard({
+      deal: deal({ customer_waiting_since: '2026-08-28T09:00:00Z' }),
+    });
+
+    // O deal do fixture já está "Parado" — stale ganha o slot, waiting não
+    // aparece. Um chip de alarme por card basta.
+    expect(wrapper.find('[data-testid="crm-card-waiting"]').exists()).toBe(
+      false
+    );
+  });
+
+  it('previews the last message with who sent it', () => {
+    const wrapper = mountCard({
+      deal: deal({
+        title: 'Maria Souza',
+        last_message_preview: 'Bom dia!',
+        last_message_direction: 'out',
+      }),
+    });
+
+    expect(wrapper.find('[data-testid="crm-card-last-message"]').text()).toBe(
+      'CRM.CARD.YOU: Bom dia!'
+    );
+  });
+
+  it('keeps the preview out of the compact density', () => {
+    const wrapper = mountCard({
+      density: 'compact',
+      deal: deal({ last_message_preview: 'Bom dia!' }),
+    });
+
+    expect(wrapper.find('[data-testid="crm-card-last-message"]').exists()).toBe(
+      false
+    );
   });
 });
 

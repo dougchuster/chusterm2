@@ -419,4 +419,36 @@ RSpec.describe 'CRM Board API', type: :request do
       expect(body['meta']['group_by']).to eq('stage')
     end
   end
+
+  # 1.3 do PLANO_17_09 — "quem espera ha mais tempo" sobe primeiro sem mexer
+  # na `position` que o arrasto persiste.
+  describe 'sort=waiting' do
+    def deal_with_waiting(title, waiting_at)
+      conversation = create(:conversation, account: account)
+      create(:message, conversation: conversation, account: account,
+                       message_type: :outgoing, created_at: 2.days.ago)
+      create(:message, conversation: conversation, account: account,
+                       message_type: :incoming, created_at: waiting_at)
+      create_deal!(title: title, conversation: conversation)
+    end
+
+    it 'floats the longest-waiting customers to the top of their column' do
+      deal_with_waiting('Esperando 3h', 3.hours.ago)
+      create_deal!(title: 'Sem conversa')
+      deal_with_waiting('Esperando 30h', 30.hours.ago)
+
+      titles = column_for(board!({ sort: 'waiting' }), novo)['deals'].pluck('title')
+
+      expect(titles).to eq(['Esperando 30h', 'Esperando 3h', 'Sem conversa'])
+    end
+
+    it 'keeps the board order when the sort is not asked for' do
+      deal_with_waiting('Esperando', 30.hours.ago)
+      create_deal!(title: 'Sem conversa', position: 1)
+
+      titles = column_for(board!, novo)['deals'].pluck('title')
+
+      expect(titles.first).to eq('Sem conversa')
+    end
+  end
 end

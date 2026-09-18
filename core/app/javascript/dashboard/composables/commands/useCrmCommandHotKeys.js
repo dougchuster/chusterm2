@@ -1,4 +1,4 @@
-import { computed } from 'vue';
+import { computed, onMounted, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useMapGetter } from 'dashboard/composables/store';
 import { useRouter } from 'vue-router';
@@ -168,6 +168,27 @@ export const buildDealAction = ({
       router.push(frontendURL(`accounts/${accountId}/crm/deals/${deal.id}`));
     },
   };
+};
+
+export const isEditableTarget = target =>
+  target instanceof HTMLElement &&
+  Boolean(target.closest('input, textarea, select, [contenteditable="true"]'));
+
+// B15: o `/` do quadro competia com a command bar e com inputs em foco. O
+// atalho agora é um só, com as guardas aqui: quem está digitando mantém o
+// foco, e um drawer/diálogo aberto não perde a tecla para o quadro.
+export const bindFocusSearchHotkey = inputId => {
+  const onKeydown = event => {
+    if (event.key !== '/' || event.defaultPrevented) return;
+    if (isEditableTarget(event.target)) return;
+    if (document.querySelector('[role="dialog"], [aria-modal="true"]')) return;
+
+    event.preventDefault();
+    document.getElementById(inputId)?.focus();
+  };
+
+  onMounted(() => window.addEventListener('keydown', onKeydown));
+  onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 };
 
 export function useCrmCommandHotKeys() {

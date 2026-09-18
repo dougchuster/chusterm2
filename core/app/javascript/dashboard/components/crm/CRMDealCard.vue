@@ -19,9 +19,11 @@
  * intenções. Quem busca dono, chama API e move card é o board.
  */
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import Icon from 'dashboard/components-next/icon/Icon.vue';
 import { DsButton, DsDropdown } from 'dashboard/design-system/components';
+import { getInboxIconByType } from 'dashboard/helper/inbox';
 import {
   nextActionSignal,
   rottingSignal,
@@ -58,6 +60,8 @@ const emit = defineEmits([
   'nativeDragStart',
   'nativeDragEnd',
 ]);
+
+const { t } = useI18n();
 
 const contactName = computed(
   () => props.deal.contact_name || props.deal.contact_phone_number || ''
@@ -128,6 +132,39 @@ const selectionVisible = computed(
   () => props.selected || props.selectionActive
 );
 
+// Card v5 (1.3): sinais de conversa — canal, não lidas, cliente esperando
+// e prévia da última mensagem. Todos opcionais: deal sem conversa mostra
+// o card idêntico a antes.
+const channelIcon = computed(() =>
+  props.deal.channel_type ? getInboxIconByType(props.deal.channel_type) : null
+);
+
+const unreadCount = computed(() => Number(props.deal.unread_count || 0));
+
+const waitingLabel = computed(() => {
+  const since = props.deal.customer_waiting_since;
+  if (!since) return '';
+
+  const hours = Math.max(
+    0,
+    Math.floor((new Date(props.now) - new Date(since)) / 3_600_000)
+  );
+  if (hours < 1) return t('CRM.CARD.WAITING_NOW');
+  if (hours < 48) return t('CRM.CARD.WAITING_HOURS', { hours });
+  return t('CRM.CARD.WAITING_DAYS', { days: Math.floor(hours / 24) });
+});
+
+const lastMessagePreview = computed(() => {
+  const text = (props.deal.last_message_preview || '').trim();
+  if (!text) return '';
+
+  const who =
+    props.deal.last_message_direction === 'out'
+      ? t('CRM.CARD.YOU')
+      : t('CRM.CARD.CUSTOMER');
+  return `${who}: ${text}`;
+});
+
 const displayName = computed(() => contactName.value);
 const label = computed(
   () => props.deal.title || contactName.value || String(props.deal.id)
@@ -165,19 +202,26 @@ const availableStageOptions = computed(() =>
     </div>
     <div class="flex items-start gap-2.5">
       <span
-        class="mt-0.5 flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-ui-brand-soft text-ui-caption font-bold text-ui-brand ring-1 ring-ui-border-subtle"
+        class="relative mt-0.5 flex size-8 shrink-0 items-center justify-center overflow-visible rounded-full bg-ui-brand-soft text-ui-caption font-bold text-ui-brand ring-1 ring-ui-border-subtle"
         aria-hidden="true"
       >
         <img
           v-if="avatarUrl && !avatarError"
           :src="avatarUrl"
           :alt="contactName"
-          class="size-full object-cover"
+          class="size-full rounded-full object-cover"
           loading="lazy"
           @error="avatarError = true"
         />
         <template v-else-if="contactInitial">{{ contactInitial }}</template>
         <Icon v-else icon="i-lucide-user-round" class="size-4" />
+        <span
+          v-if="channelIcon"
+          data-testid="crm-card-channel"
+          class="absolute -bottom-0.5 -right-0.5 grid size-3.5 place-items-center rounded-full bg-ui-surface text-ui-text-muted ring-1 ring-ui-border-subtle"
+        >
+          <Icon :icon="channelIcon" class="size-2.5" />
+        </span>
       </span>
       <button
         data-testid="crm-card-open"
@@ -198,18 +242,34 @@ const availableStageOptions = computed(() =>
         >
           {{ reference }}
         </span>
+        <span
+          v-else-if="!isCompact && lastMessagePreview"
+          data-testid="crm-card-last-message"
+          class="mt-0.5 block truncate text-ui-caption text-ui-text-muted"
+        >
+          {{ lastMessagePreview }}
+        </span>
       </button>
       <div class="flex shrink-0 flex-col items-end">
         <div class="-mr-1.5 -mt-1 flex items-center">
-          <DsButton
-            data-testid="crm-card-attend"
-            icon="i-lucide-message-circle"
-            variant="ghost"
-            size="sm"
-            class="text-ui-text-muted transition-colors duration-ui-fast hover:bg-ui-hover hover:text-ui-brand"
-            :aria-label="$t('CRM.CARD.ATTEND', { name: label })"
-            @click.stop="emit('attend')"
-          />
+          <span class="relative">
+            <DsButton
+              data-testid="crm-card-attend"
+              icon="i-lucide-message-circle"
+              variant="ghost"
+              size="sm"
+              class="text-ui-text-muted transition-colors duration-ui-fast hover:bg-ui-hover hover:text-ui-brand"
+              :aria-label="$t('CRM.CARD.ATTEND', { name: label })"
+              @click.stop="emit('attend')"
+            />
+            <span
+              v-if="unreadCount"
+              data-testid="crm-card-unread"
+              class="pointer-events-none absolute -right-0.5 -top-0.5 grid min-w-4 place-items-center rounded-full bg-ui-brand px-1 py-px text-[0.625rem] font-bold leading-3 text-ui-text-inverse"
+            >
+              {{ unreadCount > 99 ? '99+' : unreadCount }}
+            </span>
+          </span>
           <DsDropdown
             :aria-label="$t('CRM.CARD.MORE_ACTIONS', { name: label })"
             class="text-ui-text-subtle transition-colors hover:text-ui-text"
@@ -402,6 +462,13 @@ const availableStageOptions = computed(() =>
         class="shrink-0 rounded-full bg-ui-danger-soft px-2 py-0.5 font-semibold text-ui-danger-foreground"
       >
         {{ $t('CRM.CARD.STALE', { days: rotting.daysInStage }) }}
+      </span>
+      <span
+        v-else-if="waitingLabel"
+        data-testid="crm-card-waiting"
+        class="shrink-0 truncate rounded-full bg-ui-warning-soft px-2 py-0.5 font-medium text-ui-warning-foreground"
+      >
+        {{ waitingLabel }}
       </span>
       <a
         :href="href"

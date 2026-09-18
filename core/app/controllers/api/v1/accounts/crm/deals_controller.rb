@@ -294,6 +294,7 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
     ai_states = Current.account.captain_conversation_states
                               .where(conversation_id: deals.filter_map(&:conversation_id))
                               .index_by(&:conversation_id)
+    conversation_metas = conversation_metas_for(deals)
 
     deals.map do |deal|
       serialize_deal(
@@ -301,9 +302,79 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
         pending_activities_count: pending_counts.fetch(deal.id, 0),
         is_stale: stale_ids.include?(deal.id),
         next_activity_due_at: next_due[deal.id],
-        ai_state: ai_states[deal.conversation_id]
+        ai_state: ai_states[deal.conversation_id],
+        conversation_meta: conversation_metas[deal.conversation_id] || {}
       )
     end
+  end
+
+  # 1.3 (card v5): sinais de conversa do card — não lidas, última mensagem
+  # recebida e desde quando o cliente espera. Três queries no total, qualquer
+  # que seja o numero de cards: última incoming, última outgoing e a contagem
+  # de não lidas agrupada por conversa.
+  def conversation_metas_for(deals)
+    conv_ids = deals.filter_map(&:conversation_id)
+    return {} if conv_ids.empty?
+
+    last_incoming = last_message_by_type(conv_ids, [:incoming])
+    last_outgoing = last_message_by_type(conv_ids, %i[outgoing template])
+    # O card mostra a última mensagem de verdade — recebida ou enviada — com a
+    # direção ("Cliente:"/"Você:"); a espera usa só a incoming.
+    last_any = last_message_by_type(conv_ids, %i[incoming outgoing template])
+    # Mesmo criterio de `Conversation#unread_incoming_messages` (incoming apos o
+    # agent_last_seen_at, teto de 10) — mas em uma query so, sem N+1 por card.
+    unread_counts = Message.joins(:conversation)
+                           .where(conversation_id: conv_ids)
+                           .incoming
+                           .where('messages.created_at > COALESCE(conversations.agent_last_seen_at, ?)', Time.zone.at(0))
+                           .group(:conversation_id)
+                           .unscope(:order)
+                           .count
+
+    conv_ids.index_with do |conversation_id|
+      incoming = last_incoming[conversation_id]
+      outgoing = last_outgoing[conversation_id]
+      waiting = incoming && (outgoing.nil? || incoming.created_at > outgoing.created_at)
+      message = last_any[conversation_id]
+      {
+        unread_count: (unread_counts[conversation_id] || 0).clamp(0, 10),
+        last_incoming_at: incoming&.created_at,
+        last_message_preview: message&.content.to_s.truncate(140),
+        last_message_direction: message_direction(message),
+        customer_waiting_since: (waiting ? incoming.created_at : nil)
+      }
+    end
+  end
+
+  def last_message_by_type(conversation_ids, types)
+    Message.where(conversation_id: conversation_ids, message_type: types)
+           .select('DISTINCT ON (conversation_id) conversation_id, content, message_type, created_at')
+           .reorder('conversation_id, created_at DESC')
+           .index_by(&:conversation_id)
+  end
+
+  # Variante de um deal só (show/update/create) — duas queries leves.
+  def conversation_meta_for(deal)
+    conversation = deal.conversation
+    return {} unless conversation
+
+    incoming = conversation.messages.where(message_type: :incoming).order(created_at: :desc).first
+    last_outgoing = conversation.messages.where(message_type: %i[outgoing template]).order(created_at: :desc).first
+    message = conversation.messages.where.not(message_type: :activity).order(created_at: :desc).first
+    waiting = incoming && (last_outgoing.nil? || incoming.created_at > last_outgoing.created_at)
+    {
+      unread_count: conversation.unread_incoming_messages.count,
+      last_incoming_at: incoming&.created_at,
+      last_message_preview: message&.content.to_s.truncate(140),
+      last_message_direction: message_direction(message),
+      customer_waiting_since: (waiting ? incoming.created_at : nil)
+    }
+  end
+
+  def message_direction(message)
+    return if message.nil?
+
+    message.incoming? ? 'in' : 'out'
   end
 
   # Uma query para todas as colunas, qualquer que seja o agrupamento (F2.8).
@@ -360,7 +431,17 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
     serialized = serialize_board_deals(flat).index_by { |card| card[:id] }
 
     cards_by_bucket.transform_values do |deals|
-      deals.filter_map { |deal| serialized[deal.id] }
+      cards = deals.filter_map { |deal| serialized[deal.id] }
+      params[:sort] == 'waiting' ? sort_by_waiting(cards) : cards
+    end
+  end
+
+  # 1.3: ordenacao por espera do cliente. Quem espera ha mais tempo sobe; os
+  # demais ficam na ordem do quadro (estavel — `position` nao e reescrita).
+  def sort_by_waiting(cards)
+    cards.sort_by.with_index do |card, index|
+      since = card[:customer_waiting_since]
+      since ? [0, since, index] : [1, '', index]
     end
   end
 
@@ -432,8 +513,9 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
     attributes
   end
 
-  def serialize_deal(deal, detailed: false, pending_activities_count: nil, is_stale: nil, next_activity_due_at: :not_loaded, ai_state: :not_loaded)
+  def serialize_deal(deal, detailed: false, pending_activities_count: nil, is_stale: nil, next_activity_due_at: :not_loaded, ai_state: :not_loaded, conversation_meta: :not_loaded)
     ai_state = deal.conversation&.captain_conversation_state if ai_state == :not_loaded
+    conversation_meta = conversation_meta_for(deal) if conversation_meta == :not_loaded
     avatar_url = contact_avatar_url(deal.contact)
 
     base = {
@@ -506,6 +588,14 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
       next_activity_due_at: next_activity_due_at == :not_loaded ? deal.crm_activities.pending.where.not(due_at: nil).minimum(:due_at) : next_activity_due_at,
       captain_ai_mode: ai_state&.ai_mode,
       captain_handoff_reason_code: ai_state&.handoff_reason_code,
+      # 1.3 (card v5): sinais de conversa — não lidas, cliente esperando desde,
+      # prévia da última mensagem e canal.
+      unread_count: conversation_meta[:unread_count] || 0,
+      last_incoming_at: conversation_meta[:last_incoming_at]&.iso8601,
+      customer_waiting_since: conversation_meta[:customer_waiting_since]&.iso8601,
+      last_message_preview: conversation_meta[:last_message_preview],
+      last_message_direction: conversation_meta[:last_message_direction],
+      channel_type: serialize_deal_inbox(deal)&.dig(:channel_type),
       latest_score: serialize_lead_score(latest_lead_score_for(deal))
     }
     if detailed
@@ -594,8 +684,19 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
       inbox: conversation.inbox ? { id: conversation.inbox_id, name: conversation.inbox.name, channel_type: conversation.inbox.channel_type } : nil,
       campaign: serialize_campaign(conversation.campaign),
       created_at: conversation.created_at,
-      last_activity_at: conversation.last_activity_at
+      last_activity_at: conversation.last_activity_at,
+      # 1.5: a nota privada que o `Captain::CrmHandoffSummaryBuilder` deixa no
+      # handoff vira o resumo fixo no topo do painel.
+      handoff_summary: latest_handoff_summary(conversation)
     }
+  end
+
+  def latest_handoff_summary(conversation)
+    conversation.messages
+                .where(private: true)
+                .where('content LIKE ?', "#{Captain::CrmHandoffSummaryBuilder::TITLE}%")
+                .order(created_at: :desc)
+                .pick(:content)
   end
 
   def serialize_deal_inbox(deal)

@@ -246,7 +246,7 @@ class Captain::Conversation::ResponseBuilderJob < ApplicationJob
     @conversation.messages
                  .where(private: true, sender: @assistant)
                  .where('created_at > ?', 5.minutes.ago)
-                 .where('content LIKE ?', 'Handoff para atendimento humano%')
+                 .where('content LIKE ?', "#{Captain::CrmHandoffSummaryBuilder::TITLE}%")
                  .exists?
   end
 
