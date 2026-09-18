@@ -48,3 +48,54 @@
 Comparação v4.12.1 → v4.17.1: 756 commits, 4.365 arquivos
 (`docs/audit/`). Próxima revisão deve repetir essa medição e atualizar o
 mapa de risco de merge por arquivo.
+
+## Análise de sobreposição real (5.1, medido por conteúdo)
+
+**As histórias são disjuntas.** Nosso primeiro commit
+(`7594e37d59`, "primeiro commit — ChusteRM CRM omnicanal") é um snapshot
+do 4.12.1 — não há merge-base com `upstream/master` e `git merge` não
+funciona (`--allow-unrelated-histories` marcaria cada arquivo como
+adicionado dos dois lados). O sync é portanto uma operação **por árvore**,
+com `v4.12.1` como base semântica virtual.
+
+Medição de 2026 (blob-hash `v4.12.1:<path>` vs `HEAD:core/<path>`):
+
+| Lado | Arquivos |
+|---|---|
+| Nós modificamos vs 4.12.1 | 2.154 |
+| Nós adicionamos (CRM/Marketing/Evolution/Captain) | 709 |
+| Upstream tocou 4.12.1 → 4.17.1 | 4.365 |
+| **Sobreposição (conflito provável)** | **1.187** |
+| Upstream apagou e nós tocamos | 18 |
+| Clean take (só upstream tocou) | ~3.160 |
+
+Hotspots de conflito: `config/locales` (~60 yml), `app/javascript`
+(~700), `enterprise/app` (Captain), `app/models` (account, contact,
+conversation, inbox, message, user), `app/services/whatsapp`,
+`app/controllers`, `app/views` (jbuilders). Clean take concentra-se em
+`app/javascript` de features novas, `db/migrate` upstream, e specs.
+
+## Estratégia recomendada (corrige o passo 5)
+
+Como não há merge-base, o sync v4.12.1 → v4.17.x se faz em duas classes:
+
+1. **Clean take (~3.160 arquivos)** — aplicar o diff upstream por atacado:
+   ```bash
+   git diff v4.12.1 v4.17.1 -- <paths> | git apply --directory=core
+   ```
+   Inclui migrations upstream inteiras — os stubs `legacy_upstream_stub*`
+   que criamos em `db/migrate/` devem ser substituídos pelas migrations
+   reais na mesma versão-timestamp.
+2. **Sobreposição (1.187 arquivos)** — merge manual por arquivo com
+   three-way real: `git merge-file ours core/base(v4.12.1) theirs(v4.17.1)`.
+   Priorizar nesta ordem: `config/routes.rb`, `app/models/{account,contact,
+   conversation,inbox,message}.rb`, `config/locales/*` (mecânico),
+   `enterprise/app` Captain, WhatsApp services.
+3. **Features upstream nomeadas no plano** (Templates Hub, wizard
+   WhatsApp guiado + health, macros `#`, relatórios clicáveis, SLA
+   comercial, automações com delay upstream, Rails 7.2.3) — avaliar por
+   cherry-pick de release inteira depois do sync estrutural, não antes.
+
+Execução estimada em sprint dedicado — fora do escopo de uma sessão de
+implementação contínua. Não executar merge cego: quebraria
+`crm.coimbraeruas.com.br`.
