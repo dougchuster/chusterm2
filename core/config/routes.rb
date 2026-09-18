@@ -159,6 +159,11 @@ Rails.application.routes.draw do
             end
             resource :health, only: [:show], controller: :health
 
+            # 3.1b: tools de CRM executadas pela IA (orchestrator/AgentBot).
+            resources :agent_tools, only: [:index] do
+              collection { post :execute }
+            end
+
             # F2.7: visoes salvas do board (lacuna K-05).
             resources :board_views, only: [:index, :create, :update, :destroy]
 

@@ -6,6 +6,7 @@ import type {
   PrevidenciarioScoreOutput,
   PrevidenciarioTriageSnapshot,
 } from '../drPaulaMatos.js'
+import type { CrmToolCall } from '../../crm/tools.js'
 
 // Contrato de um perfil de agente atendido pelo orchestrator. Cada perfil
 // encapsula identidade pública, modelo de LLM, triagem/score do nicho e os
@@ -67,4 +68,12 @@ export interface AgentProfile {
     },
   ): string
   responseIncludesNewLeadClosing(value: string): boolean
+  // 3.1b: após a triagem, o perfil pode devolver chamadas de tool de CRM
+  // (set_category, set_urgency, mark_qualified…) executadas via endpoint
+  // /crm/agent_tools/execute com o token do AgentBot. Opcional — perfil sem
+  // o hook não escreve no CRM.
+  crmToolCalls?(input: {
+    triage: PrevidenciarioTriageSnapshot
+    score: PrevidenciarioScoreOutput
+  }): CrmToolCall[]
 }

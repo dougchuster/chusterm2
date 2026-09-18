@@ -18,6 +18,7 @@ import {
   getAgentConversationMemory,
   upsertAgentConversationMemory,
 } from '../agents/memory.js'
+import { callCrmTool, CrmToolUnavailableError } from '../crm/tools.js'
 import { redis } from '../redis/client.js'
 import {
   AgentBotPayloadSchema,
@@ -522,6 +523,31 @@ const agentRoute: FastifyPluginAsync<AgentRouteOptions> = async (fastify, option
         messageCount: nextMessageCount,
         status,
       })
+
+      // 3.1b: sincroniza a triagem com o deal do CRM. Best-effort — falha
+      // de tool nunca derruba o atendimento; o core audita cada chamada.
+      const crmCalls = profile.crmToolCalls?.({ triage, score }) ?? []
+      for (const call of crmCalls) {
+        try {
+          const result = await callCrmTool(accountId, {
+            ...call,
+            conversationId,
+          })
+          if (!result.ok) {
+            request.log.warn(
+              { tool: call.tool, error: result.error, conversationId },
+              '[AGENT] CRM tool rejeitada pelo core',
+            )
+          }
+        } catch (error: unknown) {
+          if (!(error instanceof CrmToolUnavailableError)) {
+            request.log.warn(
+              { err: error, tool: call.tool, conversationId },
+              '[AGENT] CRM tool falhou; atendimento continua',
+            )
+          }
+        }
+      }
 
       let responseText: string | undefined
       const unreadableAttachmentResponse =

@@ -57,4 +57,29 @@ export const drPaulaMatosProfile: AgentProfile = {
   normalizeResponse: normalizeDrPaulaResponse,
   ensureNewLeadClosing: ensureDrLeticiaNewLeadClosing,
   responseIncludesNewLeadClosing: drLeticiaResponseIncludesNewLeadClosing,
+
+  // 3.1b: a triagem previdenciária alimenta o deal — categoria do pack
+  // legal, urgência quando há flag e qualificação quando o score fecha.
+  crmToolCalls({ triage, score }) {
+    const calls: import('../../crm/tools.js').CrmToolCall[] = []
+    if (triage.objective && triage.objective !== 'nao_identificado') {
+      calls.push({
+        tool: 'set_category',
+        args: { value: 'previdenciario', reason: `triagem IA: ${triage.objective}` },
+      })
+    }
+    if (triage.urgencyFlags.length > 0) {
+      calls.push({
+        tool: 'set_urgency',
+        args: { level: 'alta', reason: `flags: ${triage.urgencyFlags.join(', ')}` },
+      })
+    }
+    if (score.classification === 'prioridade_maxima' || score.classification === 'qualificado') {
+      calls.push({
+        tool: 'mark_qualified',
+        args: { reason: `score ${score.total} (${score.classification})` },
+      })
+    }
+    return calls
+  },
 }

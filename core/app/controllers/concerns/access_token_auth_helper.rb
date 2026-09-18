@@ -2,7 +2,9 @@ module AccessTokenAuthHelper
   BOT_ACCESSIBLE_ENDPOINTS = {
     'api/v1/accounts/conversations' => %w[toggle_status toggle_typing_status toggle_priority create update custom_attributes],
     'api/v1/accounts/conversations/messages' => ['create'],
-    'api/v1/accounts/conversations/assignments' => ['create']
+    'api/v1/accounts/conversations/assignments' => ['create'],
+    # 3.1b: o orchestrator executa tools de CRM com o token do AgentBot.
+    'api/v1/accounts/crm/agent_tools' => %w[index execute]
   }.freeze
 
   def ensure_access_token
