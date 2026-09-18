@@ -199,6 +199,17 @@ const selectedPipeline = computed(() =>
   pipelines.value.find(item => String(item.id) === pipelineId.value)
 );
 const selectedCount = computed(() => selectedIds.value.length);
+// F11/4.5: avisa o shell (CopilotLauncher) quando a barra de ações em massa
+// está no rodapé para o widget flutuante sair da frente.
+watch(
+  selectedCount,
+  count => {
+    window.dispatchEvent(
+      new CustomEvent('crm:bulk-bar:visible', { detail: count > 0 })
+    );
+  },
+  { immediate: true }
+);
 const hasFilters = computed(() =>
   Boolean(search.value || ownerId.value || priority.value)
 );

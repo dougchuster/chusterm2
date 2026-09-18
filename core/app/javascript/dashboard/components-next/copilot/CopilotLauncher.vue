@@ -1,14 +1,23 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import Button from 'dashboard/components-next/button/Button.vue';
 import ButtonGroup from 'dashboard/components-next/buttonGroup/ButtonGroup.vue';
 import { useUISettings } from 'dashboard/composables/useUISettings';
 import { useMapGetter } from 'dashboard/composables/store';
 import { FEATURE_FLAGS } from 'dashboard/featureFlags';
+import { useEventListener } from '@vueuse/core';
+
 const route = useRoute();
 
 const { uiSettings, updateUISettings } = useUISettings();
+
+// 4.5/F11: quando a barra de ações em massa do board está visível no rodapé,
+// o launcher sobe para não sobrepor os botões da barra.
+const bulkBarVisible = ref(false);
+useEventListener(window, 'crm:bulk-bar:visible', event => {
+  bulkBarVisible.value = Boolean(event.detail);
+});
 
 const isConversationRoute = computed(() => {
   const CONVERSATION_ROUTES = [
@@ -52,7 +61,8 @@ const toggleSidebar = () => {
 <template>
   <div
     v-if="showCopilotLauncher"
-    class="fixed bottom-4 ltr:right-4 rtl:left-4 z-50"
+    class="fixed ltr:right-4 rtl:left-4 z-50 transition-[bottom] duration-200"
+    :class="bulkBarVisible ? 'bottom-24' : 'bottom-4'"
   >
     <ButtonGroup
       class="rounded-full bg-ds-bg-elevated/90 p-1 shadow-lg ring-1 ring-ds-border-subtle backdrop-blur-lg transition-shadow hover:shadow-xl"

@@ -45,11 +45,15 @@ const closeNotification = () => {
   clearTimeout(reconnectTimeout);
 };
 
+// 4.5: o estado "reconectando" vale também para as telas do CRM — o board
+// depende do realtime (card movido por outra sessão) e ficar mudo durante a
+// queda do socket deixava o atendente arrastando card contra dado velho.
 const isInAnyOfTheRoutes = routeName => {
   return (
     isAConversationRoute(routeName, true) ||
     isAInboxViewRoute(routeName, true) ||
-    isNotificationRoute(routeName, true)
+    isNotificationRoute(routeName, true) ||
+    routeName?.startsWith('crm_')
   );
 };
 
