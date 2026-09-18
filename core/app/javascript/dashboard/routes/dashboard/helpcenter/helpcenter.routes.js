@@ -26,6 +26,12 @@ const meta = {
   featureFlag: FEATURE_FLAGS.HELP_CENTER,
   permissions: ['administrator', 'agent', 'knowledge_base_manage'],
 };
+// ArticlePolicy#show?/create?/update? não aceitam agente: a página de edição
+// abria para o agente e a API devolvia 401. Só quem pode escrever entra.
+const editorMeta = {
+  ...meta,
+  permissions: ['administrator', 'knowledge_base_manage'],
+};
 const portalRoutes = [
   {
     path: getPortalRoute(':portalSlug/:locale/:categorySlug?/articles/:tab?'),
@@ -36,7 +42,7 @@ const portalRoutes = [
   {
     path: getPortalRoute(':portalSlug/:locale/:categorySlug?/articles/new'),
     name: 'portals_articles_new',
-    meta,
+    meta: editorMeta,
     component: PortalsArticlesNewPage,
   },
   {
@@ -44,7 +50,7 @@ const portalRoutes = [
       ':portalSlug/:locale/:categorySlug?/articles/:tab?/edit/:articleSlug'
     ),
     name: 'portals_articles_edit',
-    meta,
+    meta: editorMeta,
     component: PortalsArticlesEditPage,
   },
 
@@ -67,7 +73,7 @@ const portalRoutes = [
       ':portalSlug/:locale/categories/:categorySlug/articles/:articleSlug'
     ),
     name: 'portals_categories_articles_edit',
-    meta,
+    meta: editorMeta,
     component: PortalsArticlesEditPage,
   },
   {
