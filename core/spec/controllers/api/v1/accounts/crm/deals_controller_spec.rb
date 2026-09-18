@@ -533,7 +533,7 @@ RSpec.describe 'CRM Deals API', type: :request do
       expect(account.crm_deals.exists?(kept_deal.id)).to be(true)
     end
 
-    it 'deletes every lead matching the submitted filters' do
+    it 'enqueues a background job for select_all with the submitted filters' do
       matching_deal = create_deal!(title: 'Lead previdenciário', legal_area: 'previdenciario', urgency_level: 'alta')
       other_area_deal = create_deal!(title: 'Lead trabalhista', legal_area: 'trabalhista', urgency_level: 'alta')
       other_stage_deal = create_deal!(
@@ -557,8 +557,12 @@ RSpec.describe 'CRM Deals API', type: :request do
            headers: headers,
            as: :json
 
-      expect(response).to have_http_status(:success)
-      expect(response.parsed_body).to include('requested' => 1, 'processed' => 1)
+      expect(response).to have_http_status(:accepted)
+      expect(response.parsed_body).to include('requested' => 1, 'enqueued' => true)
+      expect(account.crm_deals.exists?(matching_deal.id)).to be(true)
+
+      perform_enqueued_jobs
+
       expect(account.crm_deals.exists?(matching_deal.id)).to be(false)
       expect(account.crm_deals.exists?(other_area_deal.id)).to be(true)
       expect(account.crm_deals.exists?(other_stage_deal.id)).to be(true)

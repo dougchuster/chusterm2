@@ -16,16 +16,38 @@ class Crm::StaleDetectorJob < ApplicationJob
   private
 
   def detect_stale_deals(account, override_days)
-    # Apenas deals abertos
-    open_deals = account.crm_deals.where(status: 'open')
+    # B10: 3 queries batcheadas em vez de N+1 por deal (último audit event,
+    # última atividade da conversa e atividade de stale pendente).
+    open_deals = account.crm_deals
+                        .where(status: 'open')
+                        .includes(:crm_pipeline_stage, :conversation)
+                        .to_a
+    return if open_deals.empty?
 
-    open_deals.find_each do |deal|
-      threshold = stale_threshold_for(deal, override_days)
-      next unless stale?(deal, threshold)
-      next if pending_stale_activity?(deal)
+    deal_ids = open_deals.map(&:id)
+    last_audit_at = CrmAuditEvent.where(account: account, target_type: 'CrmDeal', target_id: deal_ids)
+                                 .group(:target_id).maximum(:created_at)
+    last_conversation_at = last_conversation_activity(open_deals)
+    pending_stale_ids = pending_stale_deal_ids(account, deal_ids)
+
+    universal = account.feature_enabled?('crm_universal')
+    open_deals.each do |deal|
+      threshold = stale_threshold_for(deal, override_days, universal)
+      next unless stale?(deal, threshold, last_audit_at[deal.id], last_conversation_at[deal.id])
+      next if pending_stale_ids.include?(deal.id)
 
       create_stale_activity(deal, threshold)
     end
+  end
+
+  def pending_stale_deal_ids(account, deal_ids)
+    account.crm_activities
+           .pending
+           .where(crm_deal_id: deal_ids, kind: STALE_ACTIVITY_KIND, created_by_type: 'system')
+           .where('title LIKE ?', 'Retomar deal parado em "%')
+           .distinct
+           .pluck(:crm_deal_id)
+           .to_set
   end
 
   # Limiar de inatividade por etapa (em dias)
@@ -42,12 +64,12 @@ class Crm::StaleDetectorJob < ApplicationJob
 
   DEFAULT_STALE_DAYS = 5
 
-  def stale_threshold_for(deal, override_days)
+  def stale_threshold_for(deal, override_days, universal)
     return override_days.to_i if override_days.present?
 
     # Fase 2: conta universal usa o SLA declarado na própria etapa
     # (expected_duration_hours); conta legada mantém o mapa por slug.
-    if deal.account&.feature_enabled?('crm_universal')
+    if universal
       hours = deal.crm_pipeline_stage&.expected_duration_hours
       return (hours / 24.0).ceil if hours.to_i.positive?
 
@@ -58,18 +80,29 @@ class Crm::StaleDetectorJob < ApplicationJob
     STAGE_THRESHOLDS.fetch(slug, DEFAULT_STALE_DAYS)
   end
 
-  def stale?(deal, threshold_days)
-    last_event = deal.crm_audit_events.order(created_at: :desc).first
-    last_activity_at = last_event&.created_at || deal.created_at
-    last_activity_at < threshold_days.days.ago
+  # B10: "parado" considera também a última atividade das conversas do deal
+  # (principal + N:N) — uma mensagem nova do cliente reabre o relógio mesmo
+  # sem audit event.
+  def last_conversation_activity(deals)
+    deal_ids = deals.map(&:id)
+    linked = CrmDealConversation.where(crm_deal_id: deal_ids)
+                                .joins(:conversation)
+                                .group(:crm_deal_id)
+                                .maximum('conversations.last_activity_at')
+
+    deals.each_with_object({}) do |deal, map|
+      map[deal.id] = [deal.conversation&.last_activity_at, linked[deal.id]].compact.max
+    end
   end
 
-  def pending_stale_activity?(deal)
-    deal.crm_activities
-        .pending
-        .where(kind: STALE_ACTIVITY_KIND, created_by_type: 'system')
-        .where('title LIKE ?', 'Retomar deal parado em "%')
-        .exists?
+  def stale?(deal, threshold_days, last_audit_at, last_conversation_at)
+    last_activity_at = [
+      last_audit_at,
+      last_conversation_at,
+      deal.created_at
+    ].compact.max
+
+    last_activity_at < threshold_days.days.ago
   end
 
   def create_stale_activity(deal, threshold_days)

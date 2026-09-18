@@ -86,9 +86,11 @@ class CrmDeal < ApplicationRecord
   after_destroy_commit :dispatch_deleted_event
 
   # Lead Ads → CAPI: eventos de estágio sobem para a Meta em tempo real.
+  # B13: sem conexão Meta ativa na conta o job era enfileirado em todo save
+  # para descartar sozinho — o guard cacheado evita o enfileiramento inútil.
   after_commit on: %i[create update],
                if: -> { previously_new_record? ? contact_id.present? : saved_change_to_crm_pipeline_stage_id? || saved_change_to_status? } do
-    Marketing::CapiDispatchJob.perform_later(id)
+    Marketing::CapiDispatchJob.perform_later(id) if capi_dispatchable?
   end
 
   # Payload leve para o board (o front refaz o fetch para dados completos)
@@ -215,6 +217,20 @@ class CrmDeal < ApplicationRecord
   end
 
   private
+
+  # B13: só enfileira o dispatch CAPI quando a conta tem uma conexão Meta Ads
+  # ativa com dataset configurado. Cache curto para não consultar a tabela a
+  # cada save de deal; a invalidação por tempo basta porque conectar/desconectar
+  # uma integração não precisa refletir no mesmo segundo.
+  def capi_dispatchable?
+    account_id = self.account_id
+    Rails.cache.fetch("crm_capi_dispatchable/#{account_id}", expires_in: 5.minutes) do
+      CrmExternalConnection.where(account_id: account_id, provider: 'meta_ads', status: 'active')
+                           .where.not("metadata ->> 'capi_dataset_id' IS NULL")
+                           .where.not("metadata ->> 'capi_dataset_id' = ''")
+                           .exists?
+    end
+  end
 
   # D2: ganho/perdido saem da etapa operacional para a coluna terminal do
   # funil ("Ganho"/"Perdido"), quando ela existe — pipelines antigas sem

@@ -105,4 +105,48 @@ RSpec.describe CrmDeal do
       expect(stage).not_to be_valid
     end
   end
+
+  describe 'dispatch CAPI (B13)' do
+    before { Rails.cache.clear }
+
+    it 'enfileira CapiDispatchJob quando há conexão Meta ativa com dataset' do
+      account.crm_external_connections.create!(
+        provider: 'meta_ads', status: 'active', access_token: 't',
+        metadata: { 'capi_dataset_id' => 'ds1' }
+      )
+
+      expect { create_deal }.to have_enqueued_job(Marketing::CapiDispatchJob)
+    end
+
+    it 'não enfileira quando não há conexão Meta configurada' do
+      expect { create_deal }.not_to have_enqueued_job(Marketing::CapiDispatchJob)
+    end
+
+    it 'não enfileira quando a conexão Meta está inativa' do
+      account.crm_external_connections.create!(
+        provider: 'meta_ads', status: 'disconnected', access_token: 't',
+        metadata: { 'capi_dataset_id' => 'ds1' }
+      )
+
+      expect { create_deal }.not_to have_enqueued_job(Marketing::CapiDispatchJob)
+    end
+
+    it 'não enfileira quando a conexão não tem capi_dataset_id' do
+      account.crm_external_connections.create!(
+        provider: 'meta_ads', status: 'active', access_token: 't', metadata: {}
+      )
+
+      expect { create_deal }.not_to have_enqueued_job(Marketing::CapiDispatchJob)
+    end
+
+    it 'não enfileira por conexão Meta de outra conta' do
+      other = create(:account)
+      other.crm_external_connections.create!(
+        provider: 'meta_ads', status: 'active', access_token: 't',
+        metadata: { 'capi_dataset_id' => 'ds1' }
+      )
+
+      expect { create_deal }.not_to have_enqueued_job(Marketing::CapiDispatchJob)
+    end
+  end
 end

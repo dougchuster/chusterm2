@@ -189,20 +189,37 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
 
     return render json: { error: 'Ação em lote inválida.' }, status: :unprocessable_entity if requested_bulk_action.blank?
 
-    deals = bulk_deals_scope
-    requested_count = select_all_requested? ? deals.count : Array(params[:deal_ids]).compact_blank.size
-    return render json: { error: 'Nenhum lead selecionado.' }, status: :unprocessable_entity if requested_count.zero?
+    if select_all_requested?
+      deals = bulk_deals_scope
+      requested_count = deals.count
+      return render json: { error: 'Nenhum lead selecionado.' }, status: :unprocessable_entity if requested_count.zero?
 
-    result = { requested: requested_count, processed: 0, failed: [] }
-
-    deals.find_each do |deal|
-      process_bulk_deal!(deal)
-      result[:processed] += 1
-    rescue StandardError => e
-      result[:failed] << { id: deal.id, error: e.message }
+      # B14: o filtro pode abranger milhares de deals — processa em background.
+      Crm::DealsBulkActionJob.perform_later(
+        account_id: Current.account.id,
+        user_id: Current.user.id,
+        action: requested_bulk_action,
+        filters: Crm::DealFilterService.permitted_filters(params[:filters]),
+        params: bulk_action_params
+      )
+      return render json: { requested: requested_count, enqueued: true }, status: :accepted
     end
 
-    render json: result
+    deal_ids = Array(params[:deal_ids]).compact_blank
+    return render json: { error: 'Nenhum lead selecionado.' }, status: :unprocessable_entity if deal_ids.empty?
+
+    if deal_ids.size > SYNC_BULK_LIMIT
+      Crm::DealsBulkActionJob.perform_later(
+        account_id: Current.account.id,
+        user_id: Current.user.id,
+        action: requested_bulk_action,
+        filters: {},
+        params: bulk_action_params.merge(deal_ids: deal_ids)
+      )
+      return render json: { requested: deal_ids.size, enqueued: true }, status: :accepted
+    end
+
+    render json: bulk_action_service.perform(bulk_deals_scope)
   end
 
   def purge_orphans
@@ -851,72 +868,24 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
     deal.crm_lead_scores.max_by { |score| score.calculated_at || score.created_at || Time.zone.at(0) }
   end
 
-  def normalized_disposition_reason(value)
-    reason = value.to_s.presence || 'invalid'
-    allowed = %w[invalid spam duplicated no_lead archived]
-    allowed.include?(reason) ? reason : 'invalid'
+  # B14: lotes acima deste tamanho vão para background mesmo com deal_ids
+  # explícitos — o request não pode segurar centenas de writes.
+  SYNC_BULK_LIMIT = 50
+
+  def bulk_action_service
+    Crm::DealsBulkAction.new(
+      account: Current.account,
+      user: Current.user,
+      action: requested_bulk_action,
+      params: bulk_action_params
+    )
   end
 
-  def process_bulk_deal!(deal)
-    case requested_bulk_action
-    when 'move'
-      stage = Current.account.crm_pipeline_stages.find(params[:stage_id])
-      Crm::DealMover.new(deal: deal, stage_id: stage.id, actor: Current.user).perform
-    when 'archive'
-      deal.archive!(
-        reason: params[:reason].presence || 'arquivado',
-        note: params[:note],
-        operational_status: params[:operational_status].presence || 'archived',
-        actor: Current.user
-      )
-    when 'discard'
-      deal.discard!(
-        reason: normalized_disposition_reason(params[:reason] || params[:disposition_reason]),
-        note: params[:note],
-        actor: Current.user
-      )
-    when 'mark_base_client'
-      deal.mark_base_client!(note: params[:note], actor: Current.user)
-    when 'update_source'
-      deal.update!(source: params[:source], source_detail: params[:source_detail])
-      Crm::AuditLogger.log(
-        account: Current.account,
-        actor: Current.user,
-        action: 'deal_source_updated',
-        target: deal,
-        payload: { source: params[:source], source_detail: params[:source_detail] }
-      )
-    when 'assign_owner'
-      owner = params[:owner_id].present? ? Current.account.users.find(params[:owner_id]) : nil
-      Crm::DealOwnerAssigner.new(
-        deal: deal,
-        owner: owner,
-        actor: Current.user,
-        sync_assignee: :always,
-        sync_contact: true,
-        contact_source: 'manual'
-      ).perform
-      Crm::AuditLogger.log(
-        account: Current.account,
-        actor: Current.user,
-        action: 'deal_owner_assigned',
-        target: deal,
-        payload: { owner_id: owner&.id }
-      )
-    when 'apply_label'
-      apply_label_to_deal!(deal, params[:label_title])
-    when 'destroy', 'delete', 'purge'
-      Crm::AuditLogger.log(
-        account: Current.account,
-        actor: Current.user,
-        action: 'deal_destroyed',
-        target: deal,
-        payload: { bulk: true }
-      )
-      deal.destroy!
-    else
-      raise ArgumentError, 'Ação em lote inválida.'
-    end
+  def bulk_action_params
+    params.permit(
+      :stage_id, :reason, :disposition_reason, :note, :operational_status,
+      :source, :source_detail, :owner_id, :label_title
+    ).to_h
   end
 
   # PERF-04: lógica de filtro extraída para reuso pelo Crm::DealsExportJob.
@@ -949,44 +918,18 @@ class Api::V1::Accounts::Crm::DealsController < Api::V1::Accounts::Crm::BaseCont
 
   # BUG-04: sem fallback para params[:action] (que no Rails é o nome da action
   # da rota, 'bulk_action') — só aceita ação explícita e dentro da whitelist.
-  ALLOWED_BULK_ACTIONS = %w[move archive discard mark_base_client update_source
-                            assign_owner apply_label destroy delete purge].freeze
-
   def requested_bulk_action
     requested = request.request_parameters['bulk_action'].presence || params[:bulk_action].presence
     requested = requested.to_s
-    ALLOWED_BULK_ACTIONS.include?(requested) ? requested : nil
+    Crm::DealsBulkAction::ALLOWED_ACTIONS.include?(requested) ? requested : nil
   end
 
   def bulk_destroy_requested?
-    %w[destroy delete purge].include?(requested_bulk_action)
+    Crm::DealsBulkAction.destroy_action?(requested_bulk_action)
   end
 
   def select_all_requested?
     ActiveModel::Type::Boolean.new.cast(params[:select_all])
-  end
-
-  def apply_label_to_deal!(deal, label_title)
-    title = label_title.to_s.strip
-    raise ArgumentError, 'Etiqueta inválida.' if title.blank?
-
-    label = Current.account.labels.find_by(title: title) || Current.account.labels.find_by(slug: title)
-    title = label.title if label
-
-    [deal.contact, deal.conversation].compact.each do |record|
-      current_titles = record.label_list.to_a
-      next if current_titles.include?(title)
-
-      record.update!(label_list: current_titles + [title])
-    end
-
-    Crm::AuditLogger.log(
-      account: Current.account,
-      actor: Current.user,
-      action: 'deal_label_applied',
-      target: deal,
-      payload: { label_title: title }
-    )
   end
 
   def audited_changes(record, keys)
