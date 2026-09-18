@@ -753,6 +753,15 @@ onMounted(() => {
                 :placeholder="$t('CRM.AUTOMATION_RULES.BUILDER.ACTION_USER_PLACEHOLDER')"
               />
             </template>
+
+            <!-- 5.3: delay opcional — a ação é agendada em vez de executar no gatilho -->
+            <DsInput
+              v-model="selectedNode.data.delay_minutes"
+              type="number"
+              min="0"
+              :label="$t('CRM.AUTOMATION_RULES.BUILDER.ACTION_DELAY_LABEL')"
+              :description="$t('CRM.AUTOMATION_RULES.BUILDER.ACTION_DELAY_HINT')"
+            />
           </template>
         </div>
       </aside>

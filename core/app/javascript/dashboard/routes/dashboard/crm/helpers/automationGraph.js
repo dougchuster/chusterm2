@@ -162,6 +162,7 @@ export function rulesToGraph(rule = {}) {
       stage_slug: actionConfig.stage_slug || '',
       user_id: actionConfig.user_id || '',
       reason: actionConfig.reason || '',
+      delay_minutes: actionConfig.delay_minutes || 0,
     },
   });
 
@@ -248,6 +249,11 @@ export function graphToRules({ nodes = [], edges = [] } = {}) {
       conditions,
     };
   }
+
+  // 5.3: delay_minutes > 0 agenda a ação (Crm::AutomationActionJob) em vez
+  // de executar no gatilho. Vale para qualquer tipo de ação.
+  const delayMinutes = Number(actionData.delay_minutes || 0);
+  if (delayMinutes > 0) actionConfig.delay_minutes = delayMinutes;
 
   return {
     name,

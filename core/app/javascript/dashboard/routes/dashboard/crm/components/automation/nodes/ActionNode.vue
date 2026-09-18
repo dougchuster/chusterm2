@@ -197,6 +197,17 @@ const handleDelete = event => {
         <Icon icon="i-lucide-user" class="size-3 text-ui-brand" />
         <span>{{ data?.user_id ? `User #${data.user_id}` : '-' }}</span>
       </div>
+
+      <!-- 5.3: ação agendada com delay — badge visível em qualquer tipo -->
+      <DsBadge
+        v-if="Number(data?.delay_minutes) > 0"
+        variant="warning"
+        :label="
+          $t('CRM.AUTOMATION_RULES.CARD.DELAY', {
+            minutes: data.delay_minutes,
+          })
+        "
+      />
     </div>
   </div>
 </template>
