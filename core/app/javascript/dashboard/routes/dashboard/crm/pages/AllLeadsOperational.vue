@@ -117,14 +117,12 @@ const stageOptions = computed(() => [
 const createStageOptions = computed(() =>
   stages.value.map(item => option(String(item.id), item.name))
 );
-const ownerById = computed(() =>
-  Object.fromEntries(
-    agents.value.map(agent => [
-      String(agent.id),
-      agent.name || agent.email || 'Responsável',
-    ])
-  )
-);
+const ownerByIdOptions = computed(() => [
+  option('', 'Sem responsável'),
+  ...agents.value.map(agent =>
+    option(String(agent.id), agent.name || agent.email || 'Responsável')
+  ),
+]);
 const activityByDeal = computed(() => {
   const result = {};
   activities.value.forEach(activity => {
@@ -366,6 +364,30 @@ const applyBulkMove = async () => {
     saving.value = false;
   }
 };
+// 4.6: troca de dono inline com a mesma regra de otimismo do mover de etapa.
+const assignOwner = async (deal, nextOwnerId) => {
+  const owner = nextOwnerId ? Number(nextOwnerId) : null;
+  if ((deal.owner_id || null) === owner) return;
+
+  const previousOwnerId = deal.owner_id;
+  patchRow(deal, { owner_id: owner });
+  error.value = '';
+  try {
+    await CrmAPI.bulkActionDeals({
+      deal_ids: [deal.id],
+      bulk_action: 'assign_owner',
+      owner_id: nextOwnerId || '',
+    });
+    // O endpoint em lote nao devolve o deal — peço de novo para o patch ficar
+    // com o registro completo (assignee espelhado, contato, etc.).
+    const refreshed = await CrmAPI.getDeal(deal.id);
+    patchRow(deal, refreshed?.data || {});
+  } catch (exception) {
+    patchRow(deal, { owner_id: previousOwnerId });
+    error.value = messageFrom(exception, 'Não foi possível atribuir o responsável.');
+  }
+};
+
 // Otimismo com rollback (principio 2 do plano): a linha muda na hora, e o erro
 // devolve a etapa anterior em vez de deixar a tela mentindo.
 const moveToStage = async (deal, nextStageId) => {
@@ -765,10 +787,14 @@ onMounted(async () => {
               show-label
             />
           </td>
-          <td
-            class="hidden max-w-48 truncate px-3 py-2 text-ui-body-sm text-ui-text-muted lg:table-cell"
-          >
-            {{ ownerById[String(deal.owner_id)] || 'Sem responsável' }}
+          <td class="hidden max-w-48 px-3 py-2 lg:table-cell">
+            <DsSelect
+              :model-value="String(deal.owner_id || '')"
+              :options="ownerByIdOptions"
+              :aria-label="`Responsável por ${deal.title || `lead ${deal.id}`}`"
+              size="sm"
+              @update:model-value="assignOwner(deal, $event)"
+            />
           </td>
           <td
             v-if="fieldDefinitions.length"
