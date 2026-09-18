@@ -1,0 +1,94 @@
+# Traduções do framework (ActiveModel/ActiveRecord) para pt_BR.
+#
+# O app tem default_locale = pt_BR mas não carrega o rails-i18n, então toda
+# mensagem de validação que chega ao usuário via `record.errors.full_messages`
+# (ex.: "Validation failed: Name can't be blank" nos 422 do CRM) saía em inglês.
+# Conteúdo equivalente ao pt-BR do rails-i18n (MIT), restrito a erros e nomes de
+# atributos — formatos de data/número ficam como estão para não mudar telas.
+#
+# `attributes:` (raiz) é o fallback global de `human_attribute_name`, usado
+# quando o modelo não tem tradução própria em activerecord.attributes.<model>.
+pt_BR:
+  errors:
+    format: "%{attribute} %{message}"
+    messages:
+      accepted: deve ser aceito
+      blank: não pode ficar em branco
+      confirmation: não é igual a %{attribute}
+      empty: não pode ficar vazio
+      equal_to: deve ser igual a %{count}
+      even: deve ser par
+      exclusion: não está disponível
+      greater_than: deve ser maior que %{count}
+      greater_than_or_equal_to: deve ser maior ou igual a %{count}
+      in: deve estar em %{count}
+      inclusion: não está incluído na lista
+      invalid: não é válido
+      less_than: deve ser menor que %{count}
+      less_than_or_equal_to: deve ser menor ou igual a %{count}
+      model_invalid: "A validação falhou: %{errors}"
+      not_a_number: não é um número
+      not_an_integer: não é um número inteiro
+      odd: deve ser ímpar
+      other_than: deve ser diferente de %{count}
+      present: deve ficar em branco
+      required: é obrigatório(a)
+      taken: já está em uso
+      too_long:
+        one: "é muito longo (máximo: 1 caractere)"
+        other: "é muito longo (máximo: %{count} caracteres)"
+      too_short:
+        one: "é muito curto (mínimo: 1 caractere)"
+        other: "é muito curto (mínimo: %{count} caracteres)"
+      wrong_length:
+        one: não possui o tamanho esperado (1 caractere)
+        other: não possui o tamanho esperado (%{count} caracteres)
+    template:
+      body: "Por favor, verifique o(s) seguinte(s) campo(s):"
+      header:
+        one: "Não foi possível gravar %{model}: 1 erro"
+        other: "Não foi possível gravar %{model}: %{count} erros"
+  activemodel:
+    errors:
+      messages:
+        model_invalid: "A validação falhou: %{errors}"
+  activerecord:
+    errors:
+      messages:
+        record_invalid: "A validação falhou: %{errors}"
+        restrict_dependent_destroy:
+          has_one: Não é possível excluir o registro pois existe um %{record} dependente
+          has_many: Não é possível excluir o registro pois existem %{record} dependentes
+  attributes:
+    account: Conta
+    account_id: Conta
+    assignee: Responsável
+    channel: Canal
+    color: Cor
+    contact: Contato
+    contact_id: Contato
+    content: Conteúdo
+    conversation: Conversa
+    crm_pipeline: Funil
+    crm_pipeline_stage: Etapa
+    description: Descrição
+    domain: Domínio
+    due_at: Prazo
+    email: E-mail
+    inbox: Caixa de entrada
+    kind: Tipo
+    locale: Idioma
+    name: Nome
+    password: Senha
+    password_confirmation: Confirmação de senha
+    phone_number: Telefone
+    position: Posição
+    slug: Identificador
+    status: Status
+    title: Título
+    trigger_event: Gatilho
+    action_type: Ação
+    user: Usuário
+    value_estimate_cents: Valor estimado
+    probability_pct: Probabilidade
+    website_url: Site
