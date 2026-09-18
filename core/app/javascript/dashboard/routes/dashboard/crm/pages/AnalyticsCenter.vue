@@ -16,6 +16,7 @@ import ReportsAPI from 'dashboard/api/reports';
 import CSATReportsAPI from 'dashboard/api/csatReports';
 import SLAReportsAPI from 'dashboard/api/slaReports';
 import { useUISettings } from 'dashboard/composables/useUISettings';
+import { useAdmin } from 'dashboard/composables/useAdmin';
 
 import Icon from 'dashboard/components-next/icon/Icon.vue';
 import {
@@ -48,9 +49,17 @@ const exportError = ref('');
 
 // Tab ativa (executive | funnel | support) — usa sub_tab para não
 // colidir com o ?tab= do hub de relatórios quando embutida
-const VALID_TABS = ['executive', 'funnel', 'support'];
+// A aba "Atendimento & SLA" só consome relatórios do Chatwoot (ReportPolicy#view?
+// = administrador): para agente as 4 chamadas voltavam 401 e os cards ficavam
+// zerados. Agente não vê a aba nem dispara as chamadas.
+const { isAdmin } = useAdmin();
+const VALID_TABS = computed(() =>
+  isAdmin.value ? ['executive', 'funnel', 'support'] : ['executive', 'funnel']
+);
 const activeTab = ref(
-  VALID_TABS.includes(route.query.sub_tab) ? route.query.sub_tab : 'executive'
+  VALID_TABS.value.includes(route.query.sub_tab)
+    ? route.query.sub_tab
+    : 'executive'
 );
 
 // Período selecionado
@@ -119,23 +128,25 @@ const URGENCY_DOT_CLASSES = {
 };
 
 // --- Opções de Abas e Períodos ---
-const tabList = computed(() => [
-  {
-    value: 'executive',
-    label: t('CRM.ANALYTICS.TABS.EXECUTIVE'),
-    icon: 'i-lucide-layout-dashboard',
-  },
-  {
-    value: 'funnel',
-    label: t('CRM.ANALYTICS.TABS.FUNNEL'),
-    icon: 'i-lucide-filter',
-  },
-  {
-    value: 'support',
-    label: t('CRM.ANALYTICS.TABS.SUPPORT'),
-    icon: 'i-lucide-headphones',
-  },
-]);
+const tabList = computed(() =>
+  [
+    {
+      value: 'executive',
+      label: t('CRM.ANALYTICS.TABS.EXECUTIVE'),
+      icon: 'i-lucide-layout-dashboard',
+    },
+    {
+      value: 'funnel',
+      label: t('CRM.ANALYTICS.TABS.FUNNEL'),
+      icon: 'i-lucide-filter',
+    },
+    {
+      value: 'support',
+      label: t('CRM.ANALYTICS.TABS.SUPPORT'),
+      icon: 'i-lucide-headphones',
+    },
+  ].filter(tab => VALID_TABS.value.includes(tab.value))
+);
 
 const periodOptions = computed(() => [
   { value: 'today', label: t('CRM.ANALYTICS.PERIOD.TODAY') },
@@ -511,10 +522,14 @@ async function fetchAll() {
       from: format(dateRange.value.start, 'yyyy-MM-dd'),
       to: format(dateRange.value.end, 'yyyy-MM-dd'),
     }),
-    ReportsAPI.getSummary(since, until, 'account'),
-    CSATReportsAPI.getMetrics({ from: since, to: until }),
-    SLAReportsAPI.getMetrics({ from: since, to: until }),
-    ReportsAPI.getInboxReports({ from: since, to: until }),
+    ...(isAdmin.value
+      ? [
+          ReportsAPI.getSummary(since, until, 'account'),
+          CSATReportsAPI.getMetrics({ from: since, to: until }),
+          SLAReportsAPI.getMetrics({ from: since, to: until }),
+          ReportsAPI.getInboxReports({ from: since, to: until }),
+        ]
+      : Array.from({ length: 4 }, () => Promise.resolve({ data: null }))),
   ]);
 
   if (results[0].status === 'fulfilled') overview.value = results[0].value.data || {};

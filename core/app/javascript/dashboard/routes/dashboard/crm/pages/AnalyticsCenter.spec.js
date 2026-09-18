@@ -25,6 +25,11 @@ vi.mock('vue-router', () => ({
   }),
 }));
 
+// useAdmin lê o papel do usuário; por padrão a spec roda como administrador
+vi.mock('dashboard/composables/useAdmin', () => ({
+  useAdmin: () => ({ isAdmin: ref(true) }),
+}));
+
 vi.mock('dashboard/composables/useUISettings', () => ({
   useUISettings: () => ({
     uiSettings: ref({ analytics_period: '30' }),
