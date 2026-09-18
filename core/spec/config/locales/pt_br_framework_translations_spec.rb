@@ -2,7 +2,7 @@ require 'rails_helper'
 
 # Check-up 2026-09-18: sem tradução do framework, os 422 do CRM devolviam
 # "Validation failed: Name can't be blank" mesmo com default_locale = pt_BR.
-RSpec.describe 'config/locales/rails.pt_BR.yml' do
+RSpec.describe 'config/locales/rails.pt_BR.yml', type: :locale do # rubocop:disable RSpec/DescribeClass
   it 'traduz mensagens de validação e nomes de atributos comuns' do
     I18n.with_locale(:pt_BR) do
       pipeline = CrmPipeline.new
