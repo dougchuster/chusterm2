@@ -9,6 +9,7 @@ import CRMScoreBadge from 'dashboard/components/crm/CRMScoreBadge.vue';
 import CRMDealAiInsightsCard from 'dashboard/components/crm/CRMDealAiInsightsCard.vue';
 import Icon from 'dashboard/components-next/icon/Icon.vue';
 import { useMapGetter, useStore } from 'dashboard/composables/store';
+import { useAdmin } from 'dashboard/composables/useAdmin';
 import {
   DsBadge,
   DsButton,
@@ -66,7 +67,8 @@ const newActivity = ref({
   due_at: '',
 });
 
-const tabs = computed(() => [
+const { isAdmin } = useAdmin();
+const allTabs = computed(() => [
   {
     value: 'activities',
     label: 'Atividades',
@@ -98,6 +100,9 @@ const tabs = computed(() => [
     count: auditEvents.value.length,
   },
 ]);
+const tabs = computed(() =>
+  allTabs.value.filter(tab => tab.value !== 'history' || isAdmin.value)
+);
 const activityKinds = [
   { value: 'follow_up', label: 'Follow-up' },
   { value: 'ligacao', label: 'Ligação' },
@@ -298,7 +303,11 @@ const loadDeal = async () => {
   deal.value = response.data;
   await loadStages();
 };
+// CrmAuditEventPolicy#index? é só para administrador: agente recebia 401 e a
+// aba "Histórico" mostrava "Nenhuma alteração registrada" (mentira). Não pede
+// e não mostra a aba (ver `tabs`).
 const loadAudit = async () => {
+  if (!isAdmin.value) return;
   try {
     const response = await CrmAPI.getAuditEvents({
       target_type: 'CrmDeal',

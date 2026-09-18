@@ -24,6 +24,8 @@ vi.mock('vue-router', () => ({
 vi.mock('dashboard/composables/store', () => ({
   useStore: () => ({ dispatch: vi.fn() }),
   useMapGetter: () => ({ value: [] }),
+  // useAdmin lê getCurrentRole; a página só pede audit-events para administrador
+  useStoreGetters: () => ({ getCurrentRole: { value: 'administrator' } }),
 }));
 
 vi.mock('dashboard/api/crm', () => ({
