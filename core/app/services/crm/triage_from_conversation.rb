@@ -7,7 +7,9 @@ class Crm::TriageFromConversation
 
   def perform
     deal = find_or_create_deal
-    triage = Crm::LegalTriageAnalyzer.new(conversation: @conversation).perform
+    # 3.2: Crm::Classifier tenta o LLM com a taxonomia do pack e cai nas
+    # regras do LegalTriageAnalyzer quando a IA não está habilitada.
+    triage = Crm::Classifier.new(conversation: @conversation, account: @account).perform
 
     ActiveRecord::Base.transaction do
       apply_triage(deal, triage)
@@ -144,6 +146,7 @@ class Crm::TriageFromConversation
       summary: triage[:summary],
       next_best_action: triage[:next_best_action],
       score_reason: triage[:score_reason],
+      triage: captain_triage.merge('classified_by' => triage[:classified_by]),
       custom_fields: (deal.custom_fields || {}).merge('captain_triage' => captain_triage),
       attribution: (deal.attribution || {}).merge('last_triage_source' => 'captain_rule_based')
     )

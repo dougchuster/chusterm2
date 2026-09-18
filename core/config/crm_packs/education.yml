@@ -81,12 +81,30 @@ field_definitions:
     field_type: text
     position: 40
 
+intake_questions:
+  curso:
+    - { key: curso_interesse, question: Qual curso procura? }
+    - { key: turno, question: Qual turno prefere? }
+    - { key: forma_pagamento, question: Como pretende pagar? }
+  matricula:
+    - { key: curso_interesse, question: Em qual curso quer se matricular? }
+    - { key: documentacao, question: Já separou a documentação? }
+
 analyst_prompts:
   - Quantas aulas experimentais estão agendadas?
   - Quais interessados estão parados há mais de 3 dias?
   - Qual curso gera mais matrículas?
   - Quantas rematrículas estão pendentes?
   - Qual responsável converte mais?
+
+ai:
+  identity: assistant_of
+  persona: Consultor educacional
+  prompt_base: |
+    Você é o consultor educacional. Descubra o curso de interesse, o turno
+    preferido e a forma de pagamento. Responda em pt-BR, encorajador e claro.
+    Ofereça aula experimental ou conversa com um consultor quando o contato
+    estiver indeciso.
 
 pipeline_template:
   kind: education

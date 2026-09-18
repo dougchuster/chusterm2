@@ -103,6 +103,20 @@ field_definitions:
     field_type: boolean
     position: 50
 
+intake_questions:
+  consulta:
+    - { key: sintoma_ou_objetivo, question: Qual o motivo da consulta? }
+    - { key: convenio, question: Atende pelo convênio ou particular? }
+    - { key: especialidade, question: Qual especialidade procura? }
+    - { key: horario_preferido, question: Tem preferência de dia/horário? }
+  exame:
+    - { key: tipo_exame, question: Qual exame foi solicitado? }
+    - { key: convenio, question: Atende pelo convênio ou particular? }
+    - { key: pedido_medico, question: Tem o pedido médico em mãos? }
+  procedimento:
+    - { key: procedimento_desejado, question: Qual procedimento tem interesse? }
+    - { key: avaliacao_previa, question: Já passou por avaliação? }
+
 analyst_prompts:
   - Quantos agendamentos estão pendentes de confirmação?
   - Quais pacientes não compareceram na última semana?
@@ -110,12 +124,22 @@ analyst_prompts:
   - Quantos orçamentos estão aguardando retorno?
   - Qual responsável agenda mais?
 
+ai:
+  identity: assistant_of
+  persona: Recepcionista da clínica
+  prompt_base: |
+    Você é a recepcionista virtual da clínica. Entenda o motivo do contato,
+    a especialidade desejada, o convênio e a preferência de horário.
+    Responda em pt-BR com acolhimento. Nunca dê diagnóstico, dosagem ou
+    orientação médica — encaminhe dúvidas clínicas à equipe. Para urgência
+    médica, oriente a buscar atendimento imediato.
+
 pipeline_template:
   kind: clinic_intake
   stages:
     - { name: Novo, slug: novo, position: 1, probability_pct: 10, expected_duration_hours: 24, color: '#3b82f6' }
     - { name: Triagem, slug: triagem, position: 2, probability_pct: 25, expected_duration_hours: 24, color: '#6366f1' }
-    - { name: Agendado, slug: agendado, position: 3, probability_pct: 50, expected_duration_hours: 72, color: '#a855f7' }
+    - { name: Agendado, slug: agendado, position: 3, probability_pct: 50, expected_duration_hours: 72, required_fields: [data_preferida], color: '#a855f7' }
     - { name: Compareceu, slug: compareceu, position: 4, probability_pct: 70, expected_duration_hours: 48, color: '#ec4899' }
     - { name: Orçamento, slug: orcamento, position: 5, probability_pct: 85, expected_duration_hours: 96, color: '#f59e0b' }
     - { name: Fechado, slug: fechado, position: 6, probability_pct: 100, terminal_outcome: won, color: '#10b981' }

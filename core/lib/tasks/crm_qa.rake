@@ -49,7 +49,8 @@ namespace :crm do
 
     def stage_attributes(account, attrs)
       attrs.slice(:name, :position, :probability_pct, :expected_duration_hours, :color)
-           .merge(account: account, terminal_outcome: attrs[:terminal_outcome]&.to_s)
+           .merge(account: account, terminal_outcome: attrs[:terminal_outcome]&.to_s,
+                  required_fields: { 'fields' => Array(attrs[:required_fields]).map(&:to_s) })
     end
 
     def seed_deals(account, pipeline, pack, owner)

@@ -122,6 +122,18 @@ field_definitions:
     field_type: text
     position: 30
 
+# Perguntas de intake por categoria — a IA cobre estes pontos ao triar.
+intake_questions:
+  comercial:
+    - { key: necessidade, question: O que você precisa resolver? }
+    - { key: prazo, question: Para quando precisa? }
+    - { key: orcamento, question: Tem orçamento previsto? }
+    - { key: decisor, question: Quem decide a compra? }
+  servicos:
+    - { key: escopo, question: Qual o escopo do serviço? }
+    - { key: prazo, question: Para quando precisa? }
+    - { key: orcamento, question: Tem orçamento previsto? }
+
 # Perguntas do Analista CRM — sem exemplos jurídicos.
 analyst_prompts:
   - Quantos negócios quentes estão sem responsável?
@@ -129,6 +141,17 @@ analyst_prompts:
   - Qual lista importada tem mais contatos?
   - Qual responsável converte mais?
   - Como foram as campanhas recentes?
+
+# Identidade e prompt base da IA para este segmento (3.5 — perfis do
+# orchestrator = packs). Overrides por conta continuam no Captain.
+ai:
+  identity: assistant_of
+  persona: Atendente comercial
+  prompt_base: |
+    Você é o assistente de vendas da empresa. Qualifique o contato de forma
+    consultiva: entenda necessidade, prazo, orçamento e decisor. Responda em
+    pt-BR, tom profissional e cordial, sem jargão técnico. Nunca prometa
+    descontos ou prazos sem confirmar. Quando faltar informação, pergunte.
 
 # Estágios sugeridos para pipelines criadas do zero por este pack.
 pipeline_template:

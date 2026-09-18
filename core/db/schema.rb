@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_09_18_000002) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_18_000003) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -1156,6 +1156,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_18_000002) do
     t.datetime "stage_entered_at"
     t.string "category"
     t.string "subcategory"
+    t.jsonb "triage", default: {}
     t.index ["account_id", "category"], name: "index_crm_deals_on_account_and_category"
     t.index ["account_id", "crm_pipeline_id", "contact_id"], name: "idx_crm_deals_open_contact_pipeline_unique", unique: true, where: "(((status)::text = 'open'::text) AND (contact_id IS NOT NULL))"
     t.index ["account_id"], name: "index_crm_deals_on_account_id"

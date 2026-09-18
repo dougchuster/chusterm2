@@ -77,7 +77,6 @@ class CrmDeal < ApplicationRecord
   before_validation :sync_universal_category
   before_validation :normalize_legal_area
   before_validation :sync_single_owner
-  after_save :propagate_owner_to_contact, if: :saved_change_to_owner_id?
 
   # PERF-02: eventos crm_deal.* → ActionCableListener → board em realtime.
   # Callbacks no modelo (e não nos services) para cobrir todos os caminhos de
@@ -229,19 +228,13 @@ class CrmDeal < ApplicationRecord
   end
 
   # D3: `assignee_id` fica deprecado — `owner_id` é o dono único do negócio.
-  # Escritas antigas em `assignee_id` continuam funcionando (espelham no
-  # dono), e o join em `contacts.crm_owner_id` mantém o dono do relacionamento
-  # alinhado ao dono do negócio.
+  # O espelho só preenche campo em branco: nunca sobrescreve um assignee
+  # escolhido a dedo (DealOwnerAssigner: sync_assignee :if_unmanaged/:never).
+  # O dono do relacionamento (`contacts.crm_owner_id`) é responsabilidade do
+  # DealOwnerAssigner/ContactOwnerRouter — não do model.
   def sync_single_owner
     self.owner_id = assignee_id if owner_id.blank? && assignee_id.present?
-    self.assignee_id = owner_id if assignee_id != owner_id
-  end
-
-  def propagate_owner_to_contact
-    return if contact.blank? || owner_id.blank?
-    return if contact.crm_owner_id == owner_id
-
-    contact.update!(crm_owner_id: owner_id)
+    self.assignee_id = owner_id if assignee_id.blank? && owner_id.present?
   end
 
   def stage_belongs_to_pipeline

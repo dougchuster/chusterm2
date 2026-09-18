@@ -155,6 +155,31 @@ field_definitions:
     field_type: boolean
     position: 40
 
+intake_questions:
+  previdenciario:
+    - { key: beneficio, question: Qual benefício foi negado/é pretendido? }
+    - { key: data_indeferimento, question: Quando o INSS indeferiu? }
+    - { key: documentos_medicos, question: Tem laudos/exames em mãos? }
+    - { key: tem_advogado, question: Já tem advogado no caso? }
+  trabalhista:
+    - { key: empresa, question: Qual empresa/empregador? }
+    - { key: periodo, question: Período trabalhado? }
+    - { key: verbas, question: Quais verbas estão pendentes? }
+  familia:
+    - { key: situacao, question: Qual a situação (divórcio, pensão, guarda)? }
+    - { key: filhos, question: Há filhos menores? }
+    - { key: tem_advogado, question: Já tem advogado no caso? }
+
+ai:
+  identity: assistant_of
+  persona: Recepcionista do escritório
+  prompt_base: |
+    Você é a recepcionista virtual do escritório de advocacia. Identifique a
+    área do caso, a urgência (prazos!), os documentos que o cliente já tem e
+    se ele já tem advogado. Responda em pt-BR, acolhedor e profissional.
+    Nunca dê parecer jurídico ou garanta resultado — colete informações e
+    encaminhe ao atendimento humano.
+
 analyst_prompts:
   - Quantos leads INSS entraram essa semana?
   - Quais leads quentes estão sem responsável?

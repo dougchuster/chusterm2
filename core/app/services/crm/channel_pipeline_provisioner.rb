@@ -82,6 +82,7 @@ class Crm::ChannelPipelineProvisioner
         probability_pct: stage.probability_pct,
         expected_duration_hours: stage.expected_duration_hours,
         terminal_outcome: stage.terminal_outcome,
+        required_fields: stage.required_fields,
         color: stage.color
       }
     end

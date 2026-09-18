@@ -78,6 +78,18 @@ class Crm::Pack
     (definition['pipeline_template'] || {}).with_indifferent_access
   end
 
+  # 3.3: perguntas de intake por categoria — o classificador cobre estes
+  # pontos e a IA dispara `request_info` para o que ficou em aberto.
+  def intake_questions
+    (definition['intake_questions'] || {}).with_indifferent_access
+  end
+
+  # 3.5: perfis do orchestrator = packs — identidade e prompt base da IA
+  # vêm do pack instalado em vez de um serviço paralelo.
+  def ai
+    (definition['ai'] || {}).with_indifferent_access
+  end
+
   private
 
   def load_definition!

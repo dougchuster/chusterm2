@@ -66,16 +66,18 @@ RSpec.describe CrmDeal do
       expect(deal.assignee_id).to eq(owner.id)
     end
 
-    it 'propaga o dono para o crm_owner_id do contato' do
-      deal = create_deal
+    it 'não sobrescreve um assignee escolhido a dedo (DealOwnerAssigner :never)' do
+      paralegal = create(:user, account: account)
+      deal = create_deal(assignee_id: paralegal.id)
       deal.update!(owner_id: owner.id)
-      expect(contact.reload.crm_owner_id).to eq(owner.id)
+      expect(deal.reload.assignee_id).to eq(paralegal.id)
+      expect(deal.owner_id).to eq(owner.id)
     end
 
-    it 'não pisa num dono de contato quando o deal fica sem dono' do
-      contact.update!(crm_owner_id: owner.id)
-      create_deal
-      expect(contact.reload.crm_owner_id).to eq(owner.id)
+    it 'não toca o crm_owner_id do contato (responsabilidade do assigner/router)' do
+      deal = create_deal
+      deal.update!(owner_id: owner.id)
+      expect(contact.reload.crm_owner_id).to be_nil
     end
   end
 

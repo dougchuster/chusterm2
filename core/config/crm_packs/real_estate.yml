@@ -100,12 +100,32 @@ field_definitions:
     field_type: boolean
     position: 50
 
+intake_questions:
+  compra:
+    - { key: finalidade, question: O imóvel é para morar ou investir? }
+    - { key: bairro_regiao, question: Qual bairro/região procura? }
+    - { key: faixa_preco, question: Qual a faixa de preço? }
+    - { key: financiamento, question: Pretende financiar? }
+  locacao:
+    - { key: bairro_regiao, question: Qual bairro/região procura? }
+    - { key: faixa_preco, question: Qual valor de aluguel pretende pagar? }
+    - { key: data_mudanca, question: Para quando precisa do imóvel? }
+
 analyst_prompts:
   - Quantas visitas estão agendadas esta semana?
   - Quais compradores estão esperando retorno há mais de 3 dias?
   - Qual região gera mais propostas?
   - Quantos clientes dependem de financiamento?
   - Qual corretor fecha mais negócios?
+
+ai:
+  identity: assistant_of
+  persona: Atendente imobiliário
+  prompt_base: |
+    Você é o atendente da imobiliária. Descubra finalidade (morar/investir),
+    região, faixa de preço e necessidade de financiamento. Responda em pt-BR,
+    prestativo e objetivo. Não prometa disponibilidade ou preço sem confirmar
+    — ofereça agendar visita ou falar com um corretor.
 
 pipeline_template:
   kind: real_estate

@@ -69,6 +69,7 @@ module Crm::PackOptions
       activity_types: activity_type_options(account),
       field_definitions: field_definition_options(account),
       analyst_prompts: packs.flat_map(&:analyst_prompts).uniq,
+      intake_questions: packs.each_with_object({}) { |pack, acc| acc.merge!(pack.intake_questions) },
       packs: packs.map(&:slug),
       lead_sources: Crm::DomainOptions::LEAD_SOURCES,
       urgency_levels: Crm::DomainOptions::URGENCY_LEVELS,
