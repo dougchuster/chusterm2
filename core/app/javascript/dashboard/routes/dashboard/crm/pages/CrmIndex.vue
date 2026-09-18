@@ -3,7 +3,7 @@
  * F2.1 (d) do PLANO-KANBAN-CRM-2026.md — o ultimo par legacy/operational caiu.
  *
  * `CrmIndexLegacy.vue` foi apagado depois de a F2.1-a levar o
- * `CRMKanbanChatDrawer` para o board Operational: sem isso, apagar o Legacy
+ * `CRMConversationPanel` para o board Operational: sem isso, apagar o Legacy
  * tiraria do produto a unica tela onde o atendente responde no WhatsApp sem sair
  * do Kanban — item n. 2 do goal.
  *

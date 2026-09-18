@@ -8,11 +8,10 @@ import CrmIndex from './CrmIndexOperational.vue';
 // F2.1-a do PLANO-KANBAN-CRM-2026.md — item nº 2 do goal: responder no WhatsApp
 // sem sair do Kanban.
 //
-// O `CRMKanbanChatDrawer` (2.183 linhas) existe e é bom, mas era importado
-// **só** pelo `CrmIndexLegacy.vue` — o board desligado. Na prática o atendente
-// não tinha como responder a partir do quadro. Este arquivo protege o contrário:
-// o board que está no ar abre o chat, e o que acontece lá dentro volta para o
-// card sem refetch do quadro.
+// O painel de atendimento é o `CRMConversationPanel` (1.1 do PLANO_17_09):
+// compõe MessagesView+ReplyBox upstream. Este arquivo protege o contrato com o
+// board: a página monta o painel com o contexto certo e reflete no card o que
+// acontece lá dentro, sem refetch do quadro.
 
 vi.mock('vue-router', () => ({
   useRoute: () => ({ params: { accountId: '55' }, query: {} }),
@@ -28,11 +27,11 @@ vi.mock('dashboard/composables/useAccount', () => ({
   useAccount: () => ({ accountId: ref(55) }),
 }));
 
-// O drawer de verdade tem 2.183 linhas e faz suas próprias chamadas; aqui só
+// O painel de verdade compõe MessagesView/ReplyBox e fala com a store; aqui só
 // interessa que o board o monte com o contrato certo e reaja ao que ele emite.
-vi.mock('dashboard/components/crm/CRMKanbanChatDrawer.vue', () => ({
+vi.mock('dashboard/components/crm/CRMConversationPanel.vue', () => ({
   default: {
-    name: 'CRMKanbanChatDrawer',
+    name: 'CRMConversationPanel',
     props: ['deal', 'stages', 'agents', 'lossReasons', 'accountId', 'show'],
     emits: ['dealUpdated', 'openDealDrawer', 'update:show'],
     template: '<div data-testid="chat-drawer" />',
@@ -97,7 +96,7 @@ const mountBoard = async () => {
 };
 
 const chatDrawer = wrapper =>
-  wrapper.findComponent({ name: 'CRMKanbanChatDrawer' });
+  wrapper.findComponent({ name: 'CRMConversationPanel' });
 
 describe('CrmIndexOperational — atender sem sair do quadro', () => {
   beforeEach(() => {

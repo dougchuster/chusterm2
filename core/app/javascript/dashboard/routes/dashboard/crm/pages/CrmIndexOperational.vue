@@ -10,7 +10,7 @@ import CRMBoardToolbar from 'dashboard/components/crm/CRMBoardToolbar.vue';
 import CRMCreateDealDrawer from 'dashboard/components/crm/CRMCreateDealDrawer.vue';
 import CRMDealCard from 'dashboard/components/crm/CRMDealCard.vue';
 import CRMDealDrawer from 'dashboard/components/crm/CRMDealDrawer.vue';
-import CRMKanbanChatDrawer from 'dashboard/components/crm/CRMKanbanChatDrawer.vue';
+import CRMConversationPanel from 'dashboard/components/crm/CRMConversationPanel.vue';
 import Icon from 'dashboard/components-next/icon/Icon.vue';
 import { useMapGetter, useStore } from 'dashboard/composables/store';
 import {
@@ -1006,7 +1006,7 @@ onMounted(async () => {
     />
   </DsModal>
 
-  <CRMKanbanChatDrawer
+  <CRMConversationPanel
     v-model:show="showChatDrawer"
     :deal="attendanceDeal"
     :stages="stages"

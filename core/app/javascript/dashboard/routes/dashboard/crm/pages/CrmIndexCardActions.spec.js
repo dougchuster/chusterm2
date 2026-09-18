@@ -10,7 +10,7 @@ import CrmIndex from './CrmIndexOperational.vue';
 //
 // **Recontagem pelo método corrigido na (b).** O inventário listou 10 lacunas.
 // Contando o que o board alcança pelos componentes que renderiza (`CRMDealDrawer`
-// e, desde a F2.1-a, o `CRMKanbanChatDrawer`), e descartando o que o próprio
+// e, desde a F2.1-a, o `CRMConversationPanel`), e descartando o que o próprio
 // inventário já classificava como não-lacuna (`createPipeline`,
 // `createPipelineStage`, `getHealth`, `purgeOrphanDeals` — utilitários que
 // pertencem a outras telas), sobram **três**.
@@ -34,8 +34,8 @@ vi.mock('dashboard/composables/useAccount', () => ({
   useAccount: () => ({ accountId: ref(55) }),
 }));
 
-vi.mock('dashboard/components/crm/CRMKanbanChatDrawer.vue', () => ({
-  default: { name: 'CRMKanbanChatDrawer', template: '<div />' },
+vi.mock('dashboard/components/crm/CRMConversationPanel.vue', () => ({
+  default: { name: 'CRMConversationPanel', template: '<div />' },
 }));
 
 vi.mock('dashboard/api/crm', () => ({

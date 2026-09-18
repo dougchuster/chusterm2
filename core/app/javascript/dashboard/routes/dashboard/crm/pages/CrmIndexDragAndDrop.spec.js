@@ -29,8 +29,8 @@ vi.mock('dashboard/composables/useAccount', () => ({
   useAccount: () => ({ accountId: ref(55) }),
 }));
 
-vi.mock('dashboard/components/crm/CRMKanbanChatDrawer.vue', () => ({
-  default: { name: 'CRMKanbanChatDrawer', template: '<div />' },
+vi.mock('dashboard/components/crm/CRMConversationPanel.vue', () => ({
+  default: { name: 'CRMConversationPanel', template: '<div />' },
 }));
 
 vi.mock('dashboard/api/crm', () => ({
