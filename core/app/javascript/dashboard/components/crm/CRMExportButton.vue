@@ -60,7 +60,7 @@ const triggerExport = async () => {
     <p
       v-if="error"
       role="alert"
-      class="m-0 flex max-w-[22rem] items-center gap-1.5 text-xs text-n-ruby-11"
+      class="m-0 flex max-w-[22rem] items-center gap-1.5 text-xs text-ui-danger-foreground"
     >
       <Icon
         icon="i-lucide-triangle-alert"
@@ -72,7 +72,7 @@ const triggerExport = async () => {
 
     <p
       v-if="successMessage"
-      class="m-0 flex max-w-[22rem] items-center gap-1.5 text-xs text-n-teal-11"
+      class="m-0 flex max-w-[22rem] items-center gap-1.5 text-xs text-ui-success-foreground"
     >
       <Icon
         icon="i-lucide-mail-check"

@@ -105,7 +105,7 @@ const openConversation = () => {
     <div class="flex items-start justify-between gap-3">
       <div class="flex items-center gap-2">
         <span
-          class="flex size-8 shrink-0 items-center justify-center rounded-xl bg-ds-accent-soft text-ds-accent"
+          class="flex size-8 shrink-0 items-center justify-center rounded-xl bg-ui-brand-soft text-ui-brand"
         >
           <Icon icon="i-lucide-sparkles" class="size-4" />
         </span>
@@ -138,7 +138,7 @@ const openConversation = () => {
       <!-- Next Best Action -->
       <div class="space-y-1.5">
         <div class="flex items-center gap-1.5">
-          <Icon icon="i-lucide-zap" class="size-3.5 text-ds-accent" />
+          <Icon icon="i-lucide-zap" class="size-3.5 text-ui-brand" />
           <span class="text-ui-caption font-semibold uppercase tracking-wider text-ui-text-muted">
             {{ $t('CRM.DEAL_INSIGHTS.NEXT_ACTION_TITLE') }}
           </span>

@@ -378,21 +378,21 @@ watch(
     :on-close="closeDrawer"
   >
     <div
-      class="relative flex h-full min-h-screen flex-col bg-n-background text-n-slate-12"
+      class="relative flex h-full min-h-screen flex-col bg-ui-surface text-ui-text"
       :style="panelStyle"
     >
       <div
         role="separator"
         aria-orientation="vertical"
         aria-label="Redimensionar painel"
-        class="absolute inset-y-0 left-0 z-10 w-1.5 cursor-ew-resize transition-colors hover:bg-n-brand/40"
-        :class="{ 'bg-n-brand/60': dragging }"
+        class="absolute inset-y-0 left-0 z-10 w-1.5 cursor-ew-resize transition-colors hover:bg-ui-brand/40"
+        :class="{ 'bg-ui-brand/60': dragging }"
         @pointerdown.prevent="startResize"
       />
       <header class="border-b border-ui-border-subtle/60 px-5 py-4">
         <div class="flex items-start justify-between gap-4">
           <div class="min-w-0">
-            <p class="m-0 text-xs font-semibold uppercase text-n-slate-10">
+            <p class="m-0 text-xs font-semibold uppercase text-ui-text-subtle">
               Oportunidade jurídica
             </p>
             <h3 class="m-0 mt-1 truncate text-lg font-semibold">
@@ -403,7 +403,7 @@ watch(
             <button
               v-if="deal"
               type="button"
-              class="inline-flex h-8 items-center gap-1.5 rounded-lg border border-ui-border-subtle px-3 text-xs font-medium text-n-slate-12 hover:bg-n-slate-2"
+              class="inline-flex h-8 items-center gap-1.5 rounded-lg border border-ui-border-subtle px-3 text-xs font-medium text-ui-text hover:bg-ui-sunken"
               @click="goToDetails"
             >
               <span
@@ -440,7 +440,7 @@ watch(
             :category="deal.category || deal.legal_area"
             :label="deal.category_label || deal.legal_area_label"
           />
-          <span class="rounded-full bg-n-slate-2 px-2 py-1 text-n-slate-11">
+          <span class="rounded-full bg-ui-sunken px-2 py-1 text-ui-text-muted">
             {{ deal?.stage?.name || 'Sem etapa' }}
           </span>
         </div>
@@ -472,8 +472,8 @@ watch(
           class="border-b-2 px-3 py-3 text-sm font-medium"
           :class="[
             activeTab === tab[0]
-              ? 'border-n-brand text-n-brand'
-              : 'border-transparent text-n-slate-11 hover:text-n-slate-12',
+              ? 'border-ui-brand text-ui-brand'
+              : 'border-transparent text-ui-text-muted hover:text-ui-text',
           ]"
           @click="activeTab = tab[0]"
         >
@@ -491,7 +491,7 @@ watch(
       </div>
 
       <main class="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-        <div v-if="loading" class="text-sm text-n-slate-11">Carregando...</div>
+        <div v-if="loading" class="text-sm text-ui-text-muted">Carregando...</div>
         <div
           v-else-if="error"
           class="mb-3 rounded-lg bg-red-50 p-3 text-sm text-red-600"
@@ -505,12 +505,12 @@ watch(
           @submit.prevent="saveDeal"
         >
           <label class="block">
-            <span class="mb-1 block text-xs font-medium text-n-slate-11"
+            <span class="mb-1 block text-xs font-medium text-ui-text-muted"
               >Título</span
             >
             <input
               v-model="form.title"
-              class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+              class="h-10 w-full rounded-lg border border-ui-border-subtle bg-ui-surface px-3 text-sm outline-none focus:border-ui-brand"
               type="text"
               required
             />
@@ -518,12 +518,12 @@ watch(
 
           <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label class="block">
-              <span class="mb-1 block text-xs font-medium text-n-slate-11"
+              <span class="mb-1 block text-xs font-medium text-ui-text-muted"
                 >Categoria</span
               >
               <select
                 v-model="form.legal_area"
-                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-ui-surface px-3 text-sm outline-none focus:border-ui-brand"
               >
                 <option value="">Não informado</option>
                 <option
@@ -537,12 +537,12 @@ watch(
             </label>
 
             <label class="block">
-              <span class="mb-1 block text-xs font-medium text-n-slate-11"
+              <span class="mb-1 block text-xs font-medium text-ui-text-muted"
                 >Urgencia</span
               >
               <select
                 v-model="form.urgency_level"
-                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-ui-surface px-3 text-sm outline-none focus:border-ui-brand"
               >
                 <option value="">Não informado</option>
                 <option
@@ -558,12 +558,12 @@ watch(
 
           <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <label class="block">
-              <span class="mb-1 block text-xs font-medium text-n-slate-11"
+              <span class="mb-1 block text-xs font-medium text-ui-text-muted"
                 >Status CRM</span
               >
               <select
                 v-model="form.operational_status"
-                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-ui-surface px-3 text-sm outline-none focus:border-ui-brand"
               >
                 <option
                   v-for="[value, label] in operationalStatusOptions"
@@ -576,12 +576,12 @@ watch(
             </label>
 
             <label class="block">
-              <span class="mb-1 block text-xs font-medium text-n-slate-11"
+              <span class="mb-1 block text-xs font-medium text-ui-text-muted"
                 >Origem do lead</span
               >
               <select
                 v-model="form.source"
-                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-ui-surface px-3 text-sm outline-none focus:border-ui-brand"
               >
                 <option
                   v-for="[value, label] in sourceOptions"
@@ -594,12 +594,12 @@ watch(
             </label>
 
             <label class="block">
-              <span class="mb-1 block text-xs font-medium text-n-slate-11"
+              <span class="mb-1 block text-xs font-medium text-ui-text-muted"
                 >Detalhe da origem</span
               >
               <input
                 v-model="form.source_detail"
-                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-ui-surface px-3 text-sm outline-none focus:border-ui-brand"
                 placeholder="Campanha, anúncio, planilha"
                 type="text"
               />
@@ -608,12 +608,12 @@ watch(
 
           <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <label class="block">
-              <span class="mb-1 block text-xs font-medium text-n-slate-11"
+              <span class="mb-1 block text-xs font-medium text-ui-text-muted"
                 >Canal do consentimento</span
               >
               <select
                 v-model="form.consent_channel"
-                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-ui-surface px-3 text-sm outline-none focus:border-ui-brand"
               >
                 <option value="">Não informado</option>
                 <option
@@ -627,36 +627,36 @@ watch(
             </label>
 
             <label class="block">
-              <span class="mb-1 block text-xs font-medium text-n-slate-11"
+              <span class="mb-1 block text-xs font-medium text-ui-text-muted"
                 >Consentimento em</span
               >
               <input
                 v-model="form.consent_collected_at"
-                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-ui-surface px-3 text-sm outline-none focus:border-ui-brand"
                 type="datetime-local"
               />
             </label>
 
             <label class="block">
-              <span class="mb-1 block text-xs font-medium text-n-slate-11"
+              <span class="mb-1 block text-xs font-medium text-ui-text-muted"
                 >Retenção até</span
               >
               <input
                 v-model="form.data_retention_until"
-                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-ui-surface px-3 text-sm outline-none focus:border-ui-brand"
                 type="date"
               />
             </label>
           </div>
 
           <label class="block">
-            <span class="mb-1 block text-xs font-medium text-n-slate-11"
+            <span class="mb-1 block text-xs font-medium text-ui-text-muted"
               >Subcategoria</span
             >
             <select
               v-if="subcategoryOptions.length"
               v-model="form.case_type"
-              class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+              class="h-10 w-full rounded-lg border border-ui-border-subtle bg-ui-surface px-3 text-sm outline-none focus:border-ui-brand"
             >
               <option value="">Não informado</option>
               <option
@@ -670,31 +670,31 @@ watch(
             <input
               v-else
               v-model="form.case_type"
-              class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+              class="h-10 w-full rounded-lg border border-ui-border-subtle bg-ui-surface px-3 text-sm outline-none focus:border-ui-brand"
               type="text"
             />
           </label>
 
           <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label class="block">
-              <span class="mb-1 block text-xs font-medium text-n-slate-11"
+              <span class="mb-1 block text-xs font-medium text-ui-text-muted"
                 >Valor estimado</span
               >
               <input
                 v-model="valueEstimate"
-                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-ui-surface px-3 text-sm outline-none focus:border-ui-brand"
                 inputmode="decimal"
                 type="text"
               />
             </label>
 
             <label class="block">
-              <span class="mb-1 block text-xs font-medium text-n-slate-11"
+              <span class="mb-1 block text-xs font-medium text-ui-text-muted"
                 >Probabilidade</span
               >
               <input
                 v-model="form.probability_pct"
-                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-ui-surface px-3 text-sm outline-none focus:border-ui-brand"
                 max="100"
                 min="0"
                 type="number"
@@ -704,12 +704,12 @@ watch(
 
           <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label class="block">
-              <span class="mb-1 block text-xs font-medium text-n-slate-11"
+              <span class="mb-1 block text-xs font-medium text-ui-text-muted"
                 >Documentos</span
               >
               <select
                 v-model="form.documents_status"
-                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-ui-surface px-3 text-sm outline-none focus:border-ui-brand"
               >
                 <option
                   v-for="[value, label] in documentOptions"
@@ -722,12 +722,12 @@ watch(
             </label>
 
             <label v-if="hasLegalPack" class="block">
-              <span class="mb-1 block text-xs font-medium text-n-slate-11"
+              <span class="mb-1 block text-xs font-medium text-ui-text-muted"
                 >Conflito</span
               >
               <select
                 v-model="form.conflict_check_status"
-                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-ui-surface px-3 text-sm outline-none focus:border-ui-brand"
               >
                 <option
                   v-for="[value, label] in conflictOptions"
@@ -742,12 +742,12 @@ watch(
 
           <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label class="block">
-              <span class="mb-1 block text-xs font-medium text-n-slate-11"
+              <span class="mb-1 block text-xs font-medium text-ui-text-muted"
                 >Base LGPD</span
               >
               <select
                 v-model="form.lgpd_basis"
-                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-ui-surface px-3 text-sm outline-none focus:border-ui-brand"
               >
                 <option value="">Não informado</option>
                 <option
@@ -761,12 +761,12 @@ watch(
             </label>
 
             <label class="block">
-              <span class="mb-1 block text-xs font-medium text-n-slate-11"
+              <span class="mb-1 block text-xs font-medium text-ui-text-muted"
                 >Consentimento</span
               >
               <select
                 v-model="form.consent_status"
-                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-ui-surface px-3 text-sm outline-none focus:border-ui-brand"
               >
                 <option
                   v-for="[value, label] in consentOptions"
@@ -789,13 +789,13 @@ watch(
               :key="field.key"
               class="block"
             >
-              <span class="mb-1 block text-xs font-medium text-n-slate-11">{{
+              <span class="mb-1 block text-xs font-medium text-ui-text-muted">{{
                 field.label
               }}</span>
               <select
                 v-if="field.field_type === 'boolean'"
                 v-model="form.custom_fields[field.key]"
-                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-ui-surface px-3 text-sm outline-none focus:border-ui-brand"
               >
                 <option :value="null">Não informado</option>
                 <option :value="true">Sim</option>
@@ -804,7 +804,7 @@ watch(
               <select
                 v-else-if="field.field_type === 'select'"
                 v-model="form.custom_fields[field.key]"
-                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-ui-surface px-3 text-sm outline-none focus:border-ui-brand"
               >
                 <option value="">Não informado</option>
                 <option
@@ -819,37 +819,37 @@ watch(
                 v-else
                 v-model="form.custom_fields[field.key]"
                 :type="fieldInputType(field)"
-                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 text-sm outline-none focus:border-n-brand"
+                class="h-10 w-full rounded-lg border border-ui-border-subtle bg-ui-surface px-3 text-sm outline-none focus:border-ui-brand"
               />
             </label>
           </div>
 
           <label class="block">
-            <span class="mb-1 block text-xs font-medium text-n-slate-11"
+            <span class="mb-1 block text-xs font-medium text-ui-text-muted"
               >Resumo</span
             >
             <textarea
               v-model="form.summary"
-              class="min-h-24 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 py-2 text-sm outline-none focus:border-n-brand"
+              class="min-h-24 w-full rounded-lg border border-ui-border-subtle bg-ui-surface px-3 py-2 text-sm outline-none focus:border-ui-brand"
             />
           </label>
 
           <label class="block">
-            <span class="mb-1 block text-xs font-medium text-n-slate-11"
+            <span class="mb-1 block text-xs font-medium text-ui-text-muted"
               >Próxima melhor ação</span
             >
             <textarea
               v-model="form.next_best_action"
-              class="min-h-20 w-full rounded-lg border border-ui-border-subtle bg-n-slate-1 px-3 py-2 text-sm outline-none focus:border-n-brand"
+              class="min-h-20 w-full rounded-lg border border-ui-border-subtle bg-ui-surface px-3 py-2 text-sm outline-none focus:border-ui-brand"
             />
           </label>
 
           <footer
-            class="sticky bottom-0 -mx-5 border-t border-ui-border-subtle/60 bg-n-background px-5 py-3"
+            class="sticky bottom-0 -mx-5 border-t border-ui-border-subtle/60 bg-ui-surface px-5 py-3"
           >
             <button
               type="submit"
-              class="inline-flex h-10 w-full items-center justify-center rounded-lg bg-n-brand px-4 text-sm font-semibold text-white hover:brightness-110 disabled:opacity-60"
+              class="inline-flex h-10 w-full items-center justify-center rounded-lg bg-ui-brand px-4 text-sm font-semibold text-white hover:brightness-110 disabled:opacity-60"
               :disabled="saving"
             >
               {{ saving ? 'Salvando...' : 'Salvar oportunidade' }}

@@ -396,7 +396,7 @@ onMounted(() => {
     :on-close="() => {}"
   >
     <div
-      class="relative ml-auto flex h-full min-h-screen flex-col bg-n-background text-n-slate-12"
+      class="relative ml-auto flex h-full min-h-screen flex-col bg-ui-surface text-ui-text"
       :style="panelStyle"
       data-testid="crm-conversation-panel"
     >
@@ -404,8 +404,8 @@ onMounted(() => {
         role="separator"
         aria-orientation="vertical"
         aria-label="Redimensionar painel"
-        class="absolute inset-y-0 left-0 z-20 w-1.5 cursor-ew-resize transition-colors hover:bg-n-brand/40"
-        :class="{ 'bg-n-brand/60': dragging }"
+        class="absolute inset-y-0 left-0 z-20 w-1.5 cursor-ew-resize transition-colors hover:bg-ui-brand/40"
+        :class="{ 'bg-ui-brand/60': dragging }"
         @pointerdown.prevent="startResize"
       />
 
@@ -414,7 +414,7 @@ onMounted(() => {
       >
         <div class="flex min-w-0 flex-1 items-center gap-3">
           <div
-            class="flex size-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-n-brand-3 text-sm font-semibold text-n-brand-11"
+            class="flex size-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-ui-brand-soft text-sm font-semibold text-ui-brand"
           >
             <img
               v-if="contactAvatarUrl"
@@ -425,10 +425,10 @@ onMounted(() => {
             <span v-else>{{ headerContactName.slice(0, 1).toUpperCase() }}</span>
           </div>
           <div class="min-w-0">
-            <h2 class="m-0 truncate text-sm font-semibold text-n-slate-12">
+            <h2 class="m-0 truncate text-sm font-semibold text-ui-text">
               {{ headerContactName }}
             </h2>
-            <p class="m-0 truncate text-xs text-n-slate-10">
+            <p class="m-0 truncate text-xs text-ui-text-subtle">
               {{ attendanceLabel }}
             </p>
           </div>
@@ -437,14 +437,14 @@ onMounted(() => {
           <a
             v-if="conversationUrl"
             :href="conversationUrl"
-            class="flex size-8 items-center justify-center rounded-md text-n-slate-11 transition-colors hover:bg-n-alpha-2 hover:text-n-slate-12"
+            class="flex size-8 items-center justify-center rounded-md text-ui-text-muted transition-colors hover:bg-ui-hover hover:text-ui-text"
             title="Abrir conversa completa"
           >
             <span class="i-lucide-message-square-more size-4" />
           </a>
           <button
             type="button"
-            class="flex size-8 items-center justify-center rounded-md text-n-slate-11 transition-colors hover:bg-n-alpha-2 hover:text-n-slate-12"
+            class="flex size-8 items-center justify-center rounded-md text-ui-text-muted transition-colors hover:bg-ui-hover hover:text-ui-text"
             title="Abrir ficha 360"
             @click="emit('openDealDrawer', localDeal || deal)"
           >
@@ -461,11 +461,11 @@ onMounted(() => {
 
       <div
         v-if="localDeal"
-        class="border-b border-ui-border-subtle/60 bg-n-slate-1 dark:bg-n-solid-2"
+        class="border-b border-ui-border-subtle/60 bg-ui-surface dark:bg-ui-surface"
       >
         <button
           type="button"
-          class="flex w-full items-center gap-2 px-4 py-2 text-left text-[0.6875rem] font-semibold uppercase tracking-wider text-n-slate-10 transition-colors hover:text-n-slate-12"
+          class="flex w-full items-center gap-2 px-4 py-2 text-left text-[0.6875rem] font-semibold uppercase tracking-wider text-ui-text-subtle transition-colors hover:text-ui-text"
           :aria-expanded="contextOpen"
           @click="contextOpen = !contextOpen"
         >
@@ -494,14 +494,14 @@ onMounted(() => {
           <div class="grid grid-cols-3 gap-2">
             <label class="flex flex-col gap-1">
               <span
-                class="text-[0.625rem] font-semibold uppercase tracking-wider text-n-slate-10"
+                class="text-[0.625rem] font-semibold uppercase tracking-wider text-ui-text-subtle"
               >
                 Etapa
               </span>
               <select
                 :value="currentStageId"
                 :disabled="updatingStage"
-                class="w-full truncate rounded-md border border-ui-border-subtle bg-n-background px-2 py-1.5 text-xs text-n-slate-12 outline-none focus:border-n-brand"
+                class="w-full truncate rounded-md border border-ui-border-subtle bg-ui-surface px-2 py-1.5 text-xs text-ui-text outline-none focus:border-ui-brand"
                 @change="updateStage($event.target.value)"
               >
                 <option v-for="stage in stages" :key="stage.id" :value="stage.id">
@@ -511,14 +511,14 @@ onMounted(() => {
             </label>
             <label class="flex flex-col gap-1">
               <span
-                class="text-[0.625rem] font-semibold uppercase tracking-wider text-n-slate-10"
+                class="text-[0.625rem] font-semibold uppercase tracking-wider text-ui-text-subtle"
               >
                 Situação
               </span>
               <select
                 :value="currentOperationalStatus"
                 :disabled="updatingStatus"
-                class="w-full truncate rounded-md border border-ui-border-subtle bg-n-background px-2 py-1.5 text-xs text-n-slate-12 outline-none focus:border-n-brand"
+                class="w-full truncate rounded-md border border-ui-border-subtle bg-ui-surface px-2 py-1.5 text-xs text-ui-text outline-none focus:border-ui-brand"
                 @change="updateOperationalStatus($event.target.value)"
               >
                 <option
@@ -532,14 +532,14 @@ onMounted(() => {
             </label>
             <label class="flex flex-col gap-1">
               <span
-                class="text-[0.625rem] font-semibold uppercase tracking-wider text-n-slate-10"
+                class="text-[0.625rem] font-semibold uppercase tracking-wider text-ui-text-subtle"
               >
                 Responsável
               </span>
               <select
                 :value="currentOwnerId"
                 :disabled="updatingOwner"
-                class="w-full truncate rounded-md border border-ui-border-subtle bg-n-background px-2 py-1.5 text-xs text-n-slate-12 outline-none focus:border-n-brand"
+                class="w-full truncate rounded-md border border-ui-border-subtle bg-ui-surface px-2 py-1.5 text-xs text-ui-text outline-none focus:border-ui-brand"
                 @change="updateOwner($event.target.value)"
               >
                 <option value="">Sem responsável</option>
@@ -584,14 +584,14 @@ onMounted(() => {
       <article
         v-if="handoffSummary"
         data-testid="crm-drawer-handoff-summary"
-        class="mx-4 mt-3 flex items-start gap-2 rounded-lg border border-n-amber-6/40 bg-n-amber-2 px-3 py-2"
+        class="mx-4 mt-3 flex items-start gap-2 rounded-lg border border-ui-warning/40 bg-ui-warning-soft px-3 py-2"
       >
-        <span class="i-lucide-user-check mt-0.5 size-4 flex-shrink-0 text-n-amber-9" />
+        <span class="i-lucide-user-check mt-0.5 size-4 flex-shrink-0 text-ui-warning-foreground" />
         <div class="min-w-0">
-          <p class="m-0 text-[0.625rem] font-semibold uppercase tracking-wider text-n-amber-10">
+          <p class="m-0 text-[0.625rem] font-semibold uppercase tracking-wider text-ui-warning-foreground">
             Handoff da IA
           </p>
-          <p class="m-0 whitespace-pre-wrap text-xs text-n-slate-12">
+          <p class="m-0 whitespace-pre-wrap text-xs text-ui-text">
             {{ handoffSummary }}
           </p>
         </div>
@@ -599,7 +599,7 @@ onMounted(() => {
 
       <p
         v-if="error"
-        class="mx-4 mt-2 rounded-md bg-n-ruby-3 px-3 py-2 text-xs text-n-ruby-11"
+        class="mx-4 mt-2 rounded-md bg-ui-danger-soft px-3 py-2 text-xs text-ui-danger-foreground"
         role="alert"
       >
         {{ error }}
@@ -610,7 +610,7 @@ onMounted(() => {
 
         <div
           v-else
-          class="flex flex-1 flex-col items-center justify-center gap-2 text-n-slate-10"
+          class="flex flex-1 flex-col items-center justify-center gap-2 text-ui-text-subtle"
           :aria-busy="loading"
         >
           <template v-if="loading">

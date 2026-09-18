@@ -165,14 +165,14 @@ function slugify(value) {
 function stageColorClass(color) {
   return (
     {
-      '#38bdf8': 'bg-n-blue-9',
-      '#3b82f6': 'bg-n-blue-10',
-      '#8b5cf6': 'bg-n-violet-9',
-      '#f59e0b': 'bg-n-amber-9',
-      '#22c55e': 'bg-n-teal-9',
-      '#14b8a6': 'bg-n-teal-10',
-      '#f43f5e': 'bg-n-ruby-9',
-      '#6366f1': 'bg-n-violet-10',
+      '#38bdf8': 'bg-ui-info',
+      '#3b82f6': 'bg-ui-info',
+      '#8b5cf6': 'bg-ui-brand',
+      '#f59e0b': 'bg-ui-warning',
+      '#22c55e': 'bg-ui-success',
+      '#14b8a6': 'bg-ui-success',
+      '#f43f5e': 'bg-ui-danger-solid',
+      '#6366f1': 'bg-ui-brand',
     }[color] || 'bg-ui-brand'
   );
 }

@@ -39,26 +39,26 @@ const statusMeta = computed(() => {
   const statuses = {
     open: {
       label: 'Em aberto',
-      classes: 'bg-n-brand/10 text-n-brand',
+      classes: 'bg-ui-brand/10 text-ui-brand',
     },
     won: {
       label: 'Ganho',
-      classes: 'bg-n-teal-3 text-n-teal-11',
+      classes: 'bg-ui-success-soft text-ui-success-foreground',
     },
     lost: {
       label: 'Perdido',
-      classes: 'bg-n-ruby-3 text-n-ruby-11',
+      classes: 'bg-ui-danger-soft text-ui-danger-foreground',
     },
     archived: {
       label: 'Arquivado',
-      classes: 'bg-n-slate-3 text-n-slate-11',
+      classes: 'bg-ui-sunken text-ui-text-muted',
     },
   };
 
   return (
     statuses[props.status] || {
       label: props.status,
-      classes: 'bg-n-slate-3 text-n-slate-11',
+      classes: 'bg-ui-sunken text-ui-text-muted',
     }
   );
 });
@@ -118,7 +118,7 @@ watch(
     <template v-if="status === 'open'">
       <button
         type="button"
-        class="inline-flex h-8 items-center gap-1 rounded-lg border border-n-teal-6 bg-n-teal-2 px-2.5 text-xs font-semibold text-n-teal-11 hover:bg-n-teal-3 disabled:opacity-50"
+        class="inline-flex h-8 items-center gap-1 rounded-lg border border-ui-success bg-ui-success-soft px-2.5 text-xs font-semibold text-ui-success-foreground hover:bg-ui-success-soft disabled:opacity-50"
         :disabled="busy"
         @click="emit('markWon')"
       >
@@ -127,7 +127,7 @@ watch(
       </button>
       <button
         type="button"
-        class="inline-flex h-8 items-center gap-1 rounded-lg border border-n-ruby-6 bg-n-ruby-2 px-2.5 text-xs font-semibold text-n-ruby-11 hover:bg-n-ruby-3 disabled:opacity-50"
+        class="inline-flex h-8 items-center gap-1 rounded-lg border border-ui-danger bg-ui-danger-soft px-2.5 text-xs font-semibold text-ui-danger-foreground hover:bg-ui-danger-soft disabled:opacity-50"
         :disabled="busy"
         @click="openLossForm"
       >
@@ -139,7 +139,7 @@ watch(
     <button
       v-else-if="status === 'won' || status === 'lost'"
       type="button"
-      class="inline-flex h-8 items-center gap-1 rounded-lg border border-ui-border-subtle bg-n-slate-1 px-2.5 text-xs font-semibold text-n-slate-11 hover:bg-n-slate-3 disabled:opacity-50"
+      class="inline-flex h-8 items-center gap-1 rounded-lg border border-ui-border-subtle bg-ui-surface px-2.5 text-xs font-semibold text-ui-text-muted hover:bg-ui-sunken disabled:opacity-50"
       :disabled="busy"
       @click="emit('reopen')"
     >
@@ -149,10 +149,10 @@ watch(
 
     <p
       v-if="status === 'lost' && (resolvedLossReasonName || lossNote)"
-      class="m-0 basis-full text-xs text-n-slate-10"
+      class="m-0 basis-full text-xs text-ui-text-subtle"
       data-testid="deal-loss-detail"
     >
-      <strong v-if="resolvedLossReasonName" class="text-n-slate-11">
+      <strong v-if="resolvedLossReasonName" class="text-ui-text-muted">
         {{ resolvedLossReasonName }}
       </strong>
       <span v-if="resolvedLossReasonName && lossNote"> · </span>
@@ -161,15 +161,15 @@ watch(
 
     <form
       v-if="status === 'open' && showLossForm"
-      class="grid basis-full gap-2 rounded-lg border border-n-ruby-6 bg-n-ruby-2 p-3 sm:grid-cols-2"
+      class="grid basis-full gap-2 rounded-lg border border-ui-danger bg-ui-danger-soft p-3 sm:grid-cols-2"
       data-testid="deal-loss-form"
       @submit.prevent="submitLoss"
     >
-      <label class="grid gap-1 text-xs font-semibold text-n-slate-11">
+      <label class="grid gap-1 text-xs font-semibold text-ui-text-muted">
         Motivo da perda
         <select
           v-model="selectedLossReasonId"
-          class="h-9 min-w-0 rounded-lg border border-ui-border-subtle bg-n-slate-1 px-2 text-sm text-n-slate-12 outline-none focus:border-n-brand"
+          class="h-9 min-w-0 rounded-lg border border-ui-border-subtle bg-ui-surface px-2 text-sm text-ui-text outline-none focus:border-ui-brand"
           required
         >
           <option value="" disabled>Selecione um motivo</option>
@@ -182,25 +182,25 @@ watch(
           </option>
         </select>
       </label>
-      <label class="grid gap-1 text-xs font-semibold text-n-slate-11">
+      <label class="grid gap-1 text-xs font-semibold text-ui-text-muted">
         Nota (opcional)
         <input
           v-model="lossNoteDraft"
-          class="h-9 min-w-0 rounded-lg border border-ui-border-subtle bg-n-slate-1 px-2 text-sm text-n-slate-12 outline-none focus:border-n-brand"
+          class="h-9 min-w-0 rounded-lg border border-ui-border-subtle bg-ui-surface px-2 text-sm text-ui-text outline-none focus:border-ui-brand"
           type="text"
           placeholder="Contexto do encerramento"
         />
       </label>
       <p
         v-if="!lossReasons.length"
-        class="m-0 text-xs text-n-ruby-11 sm:col-span-2"
+        class="m-0 text-xs text-ui-danger-foreground sm:col-span-2"
       >
         Cadastre ao menos um motivo de perda antes de encerrar o negócio.
       </p>
       <div class="flex justify-end gap-2 sm:col-span-2">
         <button
           type="button"
-          class="h-8 rounded-lg border border-ui-border-subtle px-3 text-xs font-semibold text-n-slate-11 hover:bg-n-slate-3"
+          class="h-8 rounded-lg border border-ui-border-subtle px-3 text-xs font-semibold text-ui-text-muted hover:bg-ui-sunken"
           :disabled="busy"
           @click="cancelLoss"
         >
@@ -208,7 +208,7 @@ watch(
         </button>
         <button
           type="submit"
-          class="h-8 rounded-lg bg-n-ruby-9 px-3 text-xs font-semibold text-white hover:bg-n-ruby-10 disabled:opacity-50"
+          class="h-8 rounded-lg bg-ui-danger-solid px-3 text-xs font-semibold text-white hover:bg-ui-danger-solid disabled:opacity-50"
           :disabled="!canSubmitLoss"
         >
           {{ busy ? 'Salvando...' : 'Confirmar perda' }}

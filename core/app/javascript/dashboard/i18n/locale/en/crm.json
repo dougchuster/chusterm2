@@ -1045,6 +1045,27 @@
       "LABEL": "Sort cards",
       "DEFAULT": "Manual order",
       "WAITING": "Customer waiting"
+    },
+    "LIFECYCLE": {
+      "CUSTOMER_SINCE": "Customer since {date}",
+      "LTV": "Lifetime value",
+      "TOTAL_DEALS": "Total deals",
+      "WON_DEALS": "Won deals",
+      "LAST_INTERACTION": "Last interaction",
+      "NEVER": "Never",
+      "TODAY": "Today",
+      "YESTERDAY": "Yesterday",
+      "DAYS_AGO": "{count} days ago",
+      "STAGES": {
+        "VISITOR": "Visitor",
+        "LEAD": "Lead",
+        "LEAD_QUALIFIED": "Qualified Lead",
+        "IN_TRIAGE": "In Triage",
+        "CONSULTATION_SCHEDULED": "Scheduled",
+        "CUSTOMER": "Customer",
+        "ACTIVE_CUSTOMER": "Active Customer",
+        "RECURRING": "Recurring"
+      }
     }
   }
 }

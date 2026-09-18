@@ -21,23 +21,23 @@ const AREA_ALIASES = {
 
 const AREA_COLORS = {
   trabalhista:
-    'border-n-blue-6 bg-n-blue-3 text-n-blue-11 dark:border-ui-border dark:bg-ui-elevated dark:text-ui-text-muted',
+    'border-ui-info bg-ui-info-soft text-ui-info-foreground dark:border-ui-border dark:bg-ui-elevated dark:text-ui-text-muted',
   previdenciario:
-    'border-n-teal-6 bg-n-teal-3 text-n-teal-11 dark:border-ui-border dark:bg-ui-elevated dark:text-ui-text-muted',
+    'border-ui-success bg-ui-success-soft text-ui-success-foreground dark:border-ui-border dark:bg-ui-elevated dark:text-ui-text-muted',
   civel:
-    'border-n-violet-6 bg-n-violet-3 text-n-violet-11 dark:border-ui-border dark:bg-ui-elevated dark:text-ui-text-muted',
+    'border-ui-brand bg-ui-brand-soft text-ui-brand dark:border-ui-border dark:bg-ui-elevated dark:text-ui-text-muted',
   familia:
-    'border-n-ruby-6 bg-n-ruby-3 text-n-ruby-11 dark:border-ui-border dark:bg-ui-elevated dark:text-ui-text-muted',
+    'border-ui-danger bg-ui-danger-soft text-ui-danger-foreground dark:border-ui-border dark:bg-ui-elevated dark:text-ui-text-muted',
   consumidor:
-    'border-n-amber-6 bg-n-amber-3 text-n-amber-11 dark:border-ui-border dark:bg-ui-elevated dark:text-ui-text-muted',
+    'border-ui-warning bg-ui-warning-soft text-ui-warning-foreground dark:border-ui-border dark:bg-ui-elevated dark:text-ui-text-muted',
   empresarial:
-    'border-n-slate-6 bg-n-slate-3 text-n-slate-11 dark:border-ui-border dark:bg-ui-elevated dark:text-ui-text-muted',
+    'border-ui-border-strong bg-ui-sunken text-ui-text-muted dark:border-ui-border dark:bg-ui-elevated dark:text-ui-text-muted',
   tributario:
-    'border-n-blue-6 bg-n-blue-3 text-n-blue-11 dark:border-ui-border dark:bg-ui-elevated dark:text-ui-text-muted',
+    'border-ui-info bg-ui-info-soft text-ui-info-foreground dark:border-ui-border dark:bg-ui-elevated dark:text-ui-text-muted',
   imobiliario:
-    'border-n-teal-6 bg-n-teal-3 text-n-teal-11 dark:border-ui-border dark:bg-ui-elevated dark:text-ui-text-muted',
+    'border-ui-success bg-ui-success-soft text-ui-success-foreground dark:border-ui-border dark:bg-ui-elevated dark:text-ui-text-muted',
   criminal:
-    'border-n-ruby-6 bg-n-ruby-3 text-n-ruby-11 dark:border-ui-border dark:bg-ui-elevated dark:text-ui-text-muted',
+    'border-ui-danger bg-ui-danger-soft text-ui-danger-foreground dark:border-ui-border dark:bg-ui-elevated dark:text-ui-text-muted',
 };
 
 const normalizedArea = computed(() => {
@@ -57,7 +57,7 @@ const label = computed(
 const colorClass = computed(
   () =>
     AREA_COLORS[normalizedArea.value] ||
-    'border-ui-border-subtle bg-n-slate-2 text-n-slate-11'
+    'border-ui-border-subtle bg-ui-sunken text-ui-text-muted'
 );
 </script>
 

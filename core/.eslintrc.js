@@ -43,6 +43,23 @@ module.exports = {
         'no-alert': 'off',
         'no-use-before-define': 'off',
         'no-restricted-globals': 'off',
+        // Fase 4.1: nos arquivos CRM só vale o contrato ui-* (tokens.js) —
+        // classes n-slate/n-alpha/n-brand/etc. e wrappers ds-* são legados.
+        'vue/no-restricted-syntax': [
+          'error',
+          {
+            selector:
+              'VAttribute[directive=false][key.name="class"] > VLiteral[value=/\\bn-(slate|alpha|iris|ruby|teal|amber|blue|violet|brand|solid|background|mint)-?[0-9]*\\b|\\bds-[a-z]/]',
+            message:
+              'Token legado proibido em componentes CRM: use classes ui-* do design system (app/javascript/dashboard/design-system/tokens.js).',
+          },
+          {
+            selector:
+              'VAttribute[directive=true][key.argument.name="class"] Literal[value=/\\bn-(slate|alpha|iris|ruby|teal|amber|blue|violet|brand|solid|background|mint)-?[0-9]*\\b|\\bds-[a-z]/]',
+            message:
+              'Token legado proibido em componentes CRM: use classes ui-* do design system (app/javascript/dashboard/design-system/tokens.js).',
+          },
+        ],
       },
     },
     {

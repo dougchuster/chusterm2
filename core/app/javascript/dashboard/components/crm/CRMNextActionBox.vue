@@ -70,22 +70,22 @@ const isUrgent = computed(() =>
 <template>
   <div
     v-if="action"
-    class="flex flex-col gap-2 rounded-xl border border-ui-border-subtle bg-n-slate-2 p-3"
+    class="flex flex-col gap-2 rounded-xl border border-ui-border-subtle bg-ui-sunken p-3"
     :class="{
-      'border-n-ruby-6 bg-n-ruby-2': isUrgent,
+      'border-ui-danger bg-ui-danger-soft': isUrgent,
     }"
   >
     <div class="flex items-center justify-between gap-2">
       <span
         class="inline-flex items-center gap-1 text-[0.6875rem] font-semibold uppercase tracking-wider"
-        :class="isUrgent ? 'text-n-ruby-10' : 'text-n-slate-10'"
+        :class="isUrgent ? 'text-ui-danger-foreground' : 'text-ui-text-subtle'"
       >
         <span class="i-lucide-lightbulb size-3" />
         Próxima ação
       </span>
       <span
         v-if="isUrgent"
-        class="rounded-full bg-n-ruby-9 px-1.5 py-0.5 text-[0.625rem] font-bold uppercase tracking-wider text-white"
+        class="rounded-full bg-ui-danger-solid px-1.5 py-0.5 text-[0.625rem] font-bold uppercase tracking-wider text-white"
       >
         Urgente
       </span>
@@ -94,15 +94,15 @@ const isUrgent = computed(() =>
     <div class="flex items-start gap-2" :class="compact ? 'flex-row' : ''">
       <span
         class="mt-0.5 size-4 shrink-0"
-        :class="[actionIcon, isUrgent ? 'text-n-ruby-9' : 'text-n-brand']"
+        :class="[actionIcon, isUrgent ? 'text-ui-danger-foreground' : 'text-ui-brand']"
       />
-      <p class="m-0 text-sm leading-snug text-n-slate-12">{{ action }}</p>
+      <p class="m-0 text-sm leading-snug text-ui-text">{{ action }}</p>
     </div>
 
     <button
       v-if="!compact"
       type="button"
-      class="mt-0.5 inline-flex items-center gap-1.5 self-start rounded-lg border border-n-slate-6 bg-n-slate-1 px-3 py-1 text-xs font-medium text-n-slate-11 transition-colors duration-150 hover:border-n-brand-8 hover:bg-n-slate-3 hover:text-n-brand-11"
+      class="mt-0.5 inline-flex items-center gap-1.5 self-start rounded-lg border border-ui-border-strong bg-ui-surface px-3 py-1 text-xs font-medium text-ui-text-muted transition-colors duration-150 hover:border-ui-brand hover:bg-ui-sunken hover:text-ui-brand"
       @click="emit('schedule')"
     >
       <span class="i-lucide-calendar-plus size-3" />
@@ -112,7 +112,7 @@ const isUrgent = computed(() =>
 
   <div
     v-else
-    class="flex flex-row items-center gap-2 rounded-xl border border-dashed border-ui-border-subtle bg-transparent p-3 text-sm text-n-slate-10"
+    class="flex flex-row items-center gap-2 rounded-xl border border-dashed border-ui-border-subtle bg-transparent p-3 text-sm text-ui-text-subtle"
   >
     <span class="i-lucide-info size-4 shrink-0" />
     <span>Nenhuma próxima ação definida ainda.</span>

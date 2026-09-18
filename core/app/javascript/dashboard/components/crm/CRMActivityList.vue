@@ -113,21 +113,21 @@ watch(() => props.dealId, loadActivities, { immediate: true });
   <!-- eslint-disable vue/no-bare-strings-in-template, @intlify/vue-i18n/no-raw-text -->
   <section class="space-y-3">
     <div class="flex items-center justify-between">
-      <h4 class="m-0 text-sm font-semibold text-n-slate-12">Atividades</h4>
+      <h4 class="m-0 text-sm font-semibold text-ui-text">Atividades</h4>
       <button
         type="button"
-        class="text-xs font-medium text-n-brand hover:underline"
+        class="text-xs font-medium text-ui-brand hover:underline"
         @click="loadActivities"
       >
         Atualizar
       </button>
     </div>
 
-    <div v-if="loading" class="text-sm text-n-slate-11">Carregando...</div>
+    <div v-if="loading" class="text-sm text-ui-text-muted">Carregando...</div>
     <div v-else-if="error" class="text-sm text-red-500">{{ error }}</div>
     <div
       v-else-if="!activities.length"
-      class="rounded-lg bg-n-slate-2 p-3 text-sm text-n-slate-11"
+      class="rounded-lg bg-ui-sunken p-3 text-sm text-ui-text-muted"
     >
       Nenhuma atividade vinculada a esta oportunidade.
     </div>
@@ -136,37 +136,37 @@ watch(() => props.dealId, loadActivities, { immediate: true });
       <article
         v-for="activity in pendingActivities"
         :key="activity.id"
-        class="rounded-lg border border-ui-border-subtle bg-n-slate-1 p-3"
+        class="rounded-lg border border-ui-border-subtle bg-ui-surface p-3"
       >
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
             <div class="flex flex-wrap items-center gap-2">
-              <span class="text-xs font-medium uppercase text-n-slate-10">
+              <span class="text-xs font-medium uppercase text-ui-text-subtle">
                 {{ kindLabel(activity.kind) }}
               </span>
               <span
-                class="rounded-full bg-n-slate-3 px-2 py-0.5 text-xs text-n-slate-11"
+                class="rounded-full bg-ui-sunken px-2 py-0.5 text-xs text-ui-text-muted"
               >
                 {{ priorityLabel(activity.priority) }}
               </span>
             </div>
-            <p class="m-0 mt-1 text-sm font-medium text-n-slate-12">
+            <p class="m-0 mt-1 text-sm font-medium text-ui-text">
               {{ activity.title }}
             </p>
             <p
               v-if="activity.description"
-              class="m-0 mt-1 text-xs text-n-slate-11"
+              class="m-0 mt-1 text-xs text-ui-text-muted"
             >
               {{ activity.description }}
             </p>
-            <p class="m-0 mt-2 text-xs text-n-slate-10">
+            <p class="m-0 mt-2 text-xs text-ui-text-subtle">
               Prazo: {{ formatDate(activity.due_at) }}
             </p>
           </div>
           <div class="flex shrink-0 items-center gap-1">
             <button
               type="button"
-              class="inline-flex h-8 items-center gap-1 rounded-lg border border-ui-border-subtle px-2 text-xs font-medium text-n-slate-12 hover:bg-n-slate-3 disabled:opacity-50"
+              class="inline-flex h-8 items-center gap-1 rounded-lg border border-ui-border-subtle px-2 text-xs font-medium text-ui-text hover:bg-ui-sunken disabled:opacity-50"
               :disabled="snoozingId === activity.id"
               @click="snoozeActivity(activity, 24)"
             >
@@ -175,7 +175,7 @@ watch(() => props.dealId, loadActivities, { immediate: true });
             </button>
             <button
               type="button"
-              class="inline-flex h-8 items-center gap-1 rounded-lg border border-ui-border-subtle px-2 text-xs font-medium text-n-slate-12 hover:bg-n-slate-3 disabled:opacity-50"
+              class="inline-flex h-8 items-center gap-1 rounded-lg border border-ui-border-subtle px-2 text-xs font-medium text-ui-text hover:bg-ui-sunken disabled:opacity-50"
               :disabled="completingId === activity.id"
               @click="completeActivity(activity)"
             >
@@ -187,18 +187,18 @@ watch(() => props.dealId, loadActivities, { immediate: true });
       </article>
 
       <div v-if="completedActivities.length" class="space-y-2 pt-2">
-        <p class="m-0 text-xs font-medium uppercase text-n-slate-10">
+        <p class="m-0 text-xs font-medium uppercase text-ui-text-subtle">
           Concluídas recentemente
         </p>
         <article
           v-for="activity in completedActivities"
           :key="activity.id"
-          class="rounded-lg border border-ui-border-subtle bg-n-slate-2 p-3 opacity-80"
+          class="rounded-lg border border-ui-border-subtle bg-ui-sunken p-3 opacity-80"
         >
-          <p class="m-0 text-sm font-medium text-n-slate-12">
+          <p class="m-0 text-sm font-medium text-ui-text">
             {{ activity.title }}
           </p>
-          <p class="m-0 mt-1 text-xs text-n-slate-10">
+          <p class="m-0 mt-1 text-xs text-ui-text-subtle">
             {{ kindLabel(activity.kind) }} -
             {{ formatDate(activity.completed_at) }}
           </p>

@@ -5,10 +5,10 @@ import CRMScoreBadge from './CRMScoreBadge.vue';
 
 describe('CRMScoreBadge', () => {
   it.each([
-    [95, 'bg-n-ruby-3', 'text-n-ruby-12'],
-    [73, 'bg-n-teal-3', 'text-n-teal-12'],
-    [49, 'bg-n-amber-3', 'text-n-amber-12'],
-    [20, 'bg-n-slate-3', 'text-n-slate-12'],
+    [95, 'bg-ui-danger-soft', 'text-ui-danger-foreground'],
+    [73, 'bg-ui-success-soft', 'text-ui-success-foreground'],
+    [49, 'bg-ui-warning-soft', 'text-ui-warning-foreground'],
+    [20, 'bg-ui-sunken', 'text-ui-text'],
   ])('uses a readable semantic tone for score %i', (score, bg, text) => {
     const wrapper = mount(CRMScoreBadge, { props: { score } });
 

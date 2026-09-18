@@ -1045,6 +1045,27 @@
       "LABEL": "Ordenar cards",
       "DEFAULT": "Ordem manual",
       "WAITING": "Cliente esperando"
+    },
+    "LIFECYCLE": {
+      "CUSTOMER_SINCE": "Cliente desde {date}",
+      "LTV": "Lifetime value",
+      "TOTAL_DEALS": "Total de negócios",
+      "WON_DEALS": "Negócios ganhos",
+      "LAST_INTERACTION": "Última interação",
+      "NEVER": "Nunca",
+      "TODAY": "Hoje",
+      "YESTERDAY": "Ontem",
+      "DAYS_AGO": "há {count} dias",
+      "STAGES": {
+        "VISITOR": "Visitante",
+        "LEAD": "Lead",
+        "LEAD_QUALIFIED": "Lead qualificado",
+        "IN_TRIAGE": "Em triagem",
+        "CONSULTATION_SCHEDULED": "Agendamento",
+        "CUSTOMER": "Cliente",
+        "ACTIVE_CUSTOMER": "Cliente ativo",
+        "RECURRING": "Recorrente"
+      }
     }
   }
 }

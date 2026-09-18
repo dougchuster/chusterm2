@@ -79,34 +79,34 @@ function formatValue(value) {
 
 <template>
   <section
-    class="rounded-lg border border-ui-border-subtle bg-n-slate-1"
+    class="rounded-lg border border-ui-border-subtle bg-ui-surface"
     :class="compact ? 'p-2' : 'p-4'"
   >
     <div class="mb-3 flex items-start justify-between gap-3">
       <div>
-        <p class="m-0 text-xs font-semibold uppercase text-n-slate-10">
+        <p class="m-0 text-xs font-semibold uppercase text-ui-text-subtle">
           Auditoria do score
         </p>
-        <h4 class="m-0 mt-1 text-sm font-semibold text-n-slate-12">
+        <h4 class="m-0 mt-1 text-sm font-semibold text-ui-text">
           {{ totalScore }}pts
-          <span v-if="classification" class="font-normal text-n-slate-10">
+          <span v-if="classification" class="font-normal text-ui-text-subtle">
             - {{ classification }}
           </span>
         </h4>
       </div>
       <span
-        class="shrink-0 rounded-full bg-n-slate-3 px-2 py-0.5 text-xs font-medium text-n-slate-11"
+        class="shrink-0 rounded-full bg-ui-sunken px-2 py-0.5 text-xs font-medium text-ui-text-muted"
       >
         {{ sourceLabel }}
       </span>
     </div>
 
-    <div v-if="!score" class="text-xs text-n-slate-10">
+    <div v-if="!score" class="text-xs text-ui-text-subtle">
       Sem auditoria de score ainda.
     </div>
 
     <div v-else class="space-y-3">
-      <p v-if="score.reason" class="m-0 text-xs leading-5 text-n-slate-11">
+      <p v-if="score.reason" class="m-0 text-xs leading-5 text-ui-text-muted">
         {{ score.reason }}
       </p>
 
@@ -114,29 +114,29 @@ function formatValue(value) {
         <div
           v-for="item in visibleComponents"
           :key="item.key"
-          class="rounded-lg bg-n-alpha-2 p-2"
+          class="rounded-lg bg-ui-sunken p-2"
         >
           <div class="mb-1 flex items-center justify-between gap-2 text-xs">
-            <span class="font-medium text-n-slate-12">{{ item.label }}</span>
-            <span class="text-n-slate-11">
+            <span class="font-medium text-ui-text">{{ item.label }}</span>
+            <span class="text-ui-text-muted">
               {{ item.score }}/{{ item.maxScore }}
             </span>
           </div>
-          <div class="h-1.5 overflow-hidden rounded-full bg-n-slate-4">
+          <div class="h-1.5 overflow-hidden rounded-full bg-ui-hover">
             <div
-              class="h-full rounded-full bg-n-brand"
+              class="h-full rounded-full bg-ui-brand"
               :style="{ width: `${percent(item)}%` }"
             />
           </div>
           <p
             v-if="!compact && item.evidence"
-            class="m-0 mt-1 text-xs leading-5 text-n-slate-10"
+            class="m-0 mt-1 text-xs leading-5 text-ui-text-subtle"
           >
             {{ item.evidence }}
           </p>
           <p
             v-if="!compact"
-            class="m-0 mt-1 truncate text-xs text-n-slate-9"
+            class="m-0 mt-1 truncate text-xs text-ui-text-subtle"
             :title="formatValue(item.signal)"
           >
             Sinal: {{ formatValue(item.signal) }}
@@ -144,18 +144,18 @@ function formatValue(value) {
         </div>
       </div>
 
-      <div v-else class="rounded-lg bg-n-alpha-2 p-2 text-xs text-n-slate-10">
+      <div v-else class="rounded-lg bg-ui-sunken p-2 text-xs text-ui-text-subtle">
         Detalhamento disponível no próximo recálculo do score.
       </div>
 
       <div
         v-if="!compact"
-        class="grid grid-cols-1 gap-2 text-xs text-n-slate-11 sm:grid-cols-2"
+        class="grid grid-cols-1 gap-2 text-xs text-ui-text-muted sm:grid-cols-2"
       >
-        <div class="rounded-lg bg-n-alpha-2 p-2">
+        <div class="rounded-lg bg-ui-sunken p-2">
           Origem: <span class="font-medium">{{ sourceLabel }}</span>
         </div>
-        <div class="rounded-lg bg-n-alpha-2 p-2">
+        <div class="rounded-lg bg-ui-sunken p-2">
           Movimento: <span class="font-medium">{{ autoMoveLabel }}</span>
         </div>
       </div>

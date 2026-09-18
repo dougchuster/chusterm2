@@ -86,21 +86,21 @@ watch(() => props.dealId, loadTimeline, { immediate: true });
   <!-- eslint-disable vue/no-bare-strings-in-template, @intlify/vue-i18n/no-raw-text -->
   <section class="space-y-3">
     <div class="flex items-center justify-between">
-      <h4 class="m-0 text-sm font-semibold text-n-slate-12">Histórico</h4>
+      <h4 class="m-0 text-sm font-semibold text-ui-text">Histórico</h4>
       <button
         type="button"
-        class="text-xs font-medium text-n-brand hover:underline"
+        class="text-xs font-medium text-ui-brand hover:underline"
         @click="loadTimeline"
       >
         Atualizar
       </button>
     </div>
 
-    <div v-if="loading" class="text-sm text-n-slate-11">Carregando...</div>
+    <div v-if="loading" class="text-sm text-ui-text-muted">Carregando...</div>
     <div v-else-if="error" class="text-sm text-red-500">{{ error }}</div>
     <div
       v-else-if="!events.length"
-      class="rounded-lg bg-n-slate-2 p-3 text-sm text-n-slate-11"
+      class="rounded-lg bg-ui-sunken p-3 text-sm text-ui-text-muted"
     >
       Nenhum evento registrado ainda.
     </div>
@@ -108,17 +108,17 @@ watch(() => props.dealId, loadTimeline, { immediate: true });
     <ol v-else class="relative space-y-3 border-l border-ui-border-subtle pl-4">
       <li v-for="event in events" :key="event.id" class="relative">
         <span
-          class="absolute -left-[1.3125rem] top-1 grid size-2.5 rounded-full bg-n-brand ring-4 ring-n-background"
+          class="absolute -left-[1.3125rem] top-1 grid size-2.5 rounded-full bg-ui-brand ring-4 ring-ui-surface"
         />
-        <p class="m-0 text-sm font-medium text-n-slate-12">
+        <p class="m-0 text-sm font-medium text-ui-text">
           {{ actionLabel(event.action) }}
         </p>
-        <p class="m-0 text-xs text-n-slate-10">
+        <p class="m-0 text-xs text-ui-text-subtle">
           {{ formatDate(event.created_at) }}
         </p>
         <p
           v-if="payloadSummary(event.payload)"
-          class="m-0 mt-1 text-xs text-n-slate-11"
+          class="m-0 mt-1 text-xs text-ui-text-muted"
         >
           {{ payloadSummary(event.payload) }}
         </p>

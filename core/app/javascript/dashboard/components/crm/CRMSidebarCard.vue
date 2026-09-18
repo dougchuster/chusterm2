@@ -46,10 +46,10 @@ const agentList = useMapGetter('agents/getVerifiedAgents');
 const currentChat = useMapGetter('getSelectedChat');
 
 const urgencyColors = {
-  critica: 'bg-ds-state-danger-soft text-ds-state-danger',
-  alta: 'bg-ds-state-warning-soft text-ds-state-warning',
-  media: 'bg-ds-state-warning-soft text-ds-state-warning',
-  baixa: 'bg-ds-state-success-soft text-ds-state-success',
+  critica: 'bg-ui-danger-soft text-ui-danger',
+  alta: 'bg-ui-warning-soft text-ui-warning',
+  media: 'bg-ui-warning-soft text-ui-warning',
+  baixa: 'bg-ui-success-soft text-ui-success',
 };
 
 const urgencyLabels = {
@@ -95,13 +95,13 @@ const temperatureLabels = {
 
 const temperatureClasses = {
   prioridade_alta:
-    'bg-ds-state-danger-soft text-ds-state-danger ring-ds-state-danger/25',
+    'bg-ui-danger-soft text-ui-danger ring-ui-danger/25',
   qualificado:
-    'bg-ds-state-warning-soft text-ds-state-warning ring-ds-state-warning/25',
+    'bg-ui-warning-soft text-ui-warning ring-ui-warning/25',
   medio_potencial:
-    'bg-ds-state-warning-soft text-ds-state-warning ring-ds-state-warning/25',
+    'bg-ui-warning-soft text-ui-warning ring-ui-warning/25',
   baixo_potencial:
-    'bg-ds-bg-sunken text-ds-fg-muted ring-ds-border-subtle',
+    'bg-ui-sunken text-ui-text-muted ring-ui-border-subtle',
 };
 
 const lifecycleLabels = {
@@ -323,10 +323,10 @@ async function createQuickActivity() {
 
 const scoreColor = computed(() => {
   const s = deal.value?.score_total || 0;
-  if (s >= 80) return 'text-ds-state-danger';
-  if (s >= 60) return 'text-ds-state-success';
-  if (s >= 40) return 'text-ds-state-warning';
-  return 'text-ds-fg-subtle';
+  if (s >= 80) return 'text-ui-danger';
+  if (s >= 60) return 'text-ui-success';
+  if (s >= 40) return 'text-ui-warning';
+  return 'text-ui-text-subtle';
 });
 
 const crmDealUrl = computed(() => {
@@ -372,7 +372,7 @@ const leadTemperature = computed(() => {
     label: temperatureLabels[classification] || classification,
     className:
       temperatureClasses[classification] ||
-      'bg-ds-bg-sunken text-ds-fg-muted ring-ds-border-subtle',
+      'bg-ui-sunken text-ui-text-muted ring-ui-border-subtle',
   };
 });
 
@@ -406,12 +406,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="crm-sidebar-card space-y-3 p-3 text-ds-fg-default">
+  <div class="crm-sidebar-card space-y-3 p-3 text-ui-text">
     <div v-if="!deal" class="flex items-center justify-end">
       <button
         type="button"
         :disabled="triageLoading"
-        class="inline-flex min-h-8 items-center gap-1.5 rounded-lg bg-ds-accent-soft px-2.5 text-xs font-semibold text-ds-accent transition-colors hover:bg-ds-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus disabled:cursor-not-allowed disabled:opacity-50"
+        class="inline-flex min-h-8 items-center gap-1.5 rounded-lg bg-ui-brand-soft px-2.5 text-xs font-semibold text-ui-brand transition-colors hover:bg-ui-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus disabled:cursor-not-allowed disabled:opacity-50"
         @click="runTriage"
       >
         <span class="i-lucide-search size-3" />
@@ -420,10 +420,10 @@ onMounted(() => {
     </div>
 
     <div
-      class="rounded-xl bg-ds-bg-sunken p-3 text-xs ring-1 ring-inset ring-ds-border-subtle"
+      class="rounded-xl bg-ui-sunken p-3 text-xs ring-1 ring-inset ring-ui-border-subtle"
     >
       <div
-        class="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-ds-fg-subtle"
+        class="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-ui-text-subtle"
       >
         Relacionamento
       </div>
@@ -437,17 +437,17 @@ onMounted(() => {
       <div class="mt-3 grid grid-cols-1 gap-2">
         <div>
           <div
-            class="text-[10px] font-semibold uppercase tracking-[0.14em] text-ds-fg-subtle"
+            class="text-[10px] font-semibold uppercase tracking-[0.14em] text-ui-text-subtle"
           >
             Etapa
           </div>
-          <div class="font-semibold text-ds-fg-default">
+          <div class="font-semibold text-ui-text">
             {{ lifecycleLabel }}
           </div>
         </div>
         <div>
           <div
-            class="text-[10px] font-semibold uppercase tracking-[0.14em] text-ds-fg-subtle"
+            class="text-[10px] font-semibold uppercase tracking-[0.14em] text-ui-text-subtle"
           >
             Responsável pelo contato
           </div>
@@ -455,8 +455,8 @@ onMounted(() => {
             class="font-semibold"
             :class="
               contact?.crm_owner
-                ? 'text-ds-fg-default'
-                : 'text-ds-state-danger'
+                ? 'text-ui-text'
+                : 'text-ui-danger'
             "
           >
             {{ ownerName }}
@@ -465,7 +465,7 @@ onMounted(() => {
             <select
               v-model="selectedOwnerId"
               aria-label="Responsável pelo contato"
-              class="h-8 min-w-0 flex-1 rounded-lg border-0 bg-ds-bg-surface px-2 text-xs text-ds-fg-default ring-1 ring-inset ring-ds-border-default focus:outline-none focus:ring-2 focus:ring-ds-border-focus"
+              class="h-8 min-w-0 flex-1 rounded-lg border-0 bg-ui-surface px-2 text-xs text-ui-text ring-1 ring-inset ring-ui-border focus:outline-none focus:ring-2 focus:ring-ui-border-focus"
               :disabled="ownerUpdating"
             >
               <option value="">Sem responsável</option>
@@ -479,7 +479,7 @@ onMounted(() => {
             </select>
             <button
               type="button"
-              class="h-8 rounded-lg bg-ds-accent-soft px-2 text-xs font-semibold text-ds-accent transition-colors hover:bg-ds-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus disabled:cursor-not-allowed disabled:opacity-50"
+              class="h-8 rounded-lg bg-ui-brand-soft px-2 text-xs font-semibold text-ui-brand transition-colors hover:bg-ui-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus disabled:cursor-not-allowed disabled:opacity-50"
               :disabled="ownerUpdating"
               @click="updateOwner"
             >
@@ -489,7 +489,7 @@ onMounted(() => {
         </div>
         <div>
           <div
-            class="text-[10px] font-semibold uppercase tracking-[0.14em] text-ds-fg-subtle"
+            class="text-[10px] font-semibold uppercase tracking-[0.14em] text-ui-text-subtle"
           >
             Responder por
           </div>
@@ -497,8 +497,8 @@ onMounted(() => {
             class="font-semibold"
             :class="
               currentChat?.meta?.assignee
-                ? 'text-ds-fg-default'
-                : 'text-ds-state-warning'
+                ? 'text-ui-text'
+                : 'text-ui-warning'
             "
           >
             {{ currentAssigneeName }}
@@ -507,7 +507,7 @@ onMounted(() => {
             <select
               v-model="selectedAssigneeId"
               aria-label="Atendente da conversa"
-              class="h-8 min-w-0 flex-1 rounded-lg border-0 bg-ds-bg-surface px-2 text-xs text-ds-fg-default ring-1 ring-inset ring-ds-border-default focus:outline-none focus:ring-2 focus:ring-ds-border-focus"
+              class="h-8 min-w-0 flex-1 rounded-lg border-0 bg-ui-surface px-2 text-xs text-ui-text ring-1 ring-inset ring-ui-border focus:outline-none focus:ring-2 focus:ring-ui-border-focus"
               :disabled="assigneeUpdating"
             >
               <option value="">Sem atendente</option>
@@ -521,7 +521,7 @@ onMounted(() => {
             </select>
             <button
               type="button"
-              class="h-8 rounded-lg bg-ds-accent-soft px-2 text-xs font-semibold text-ds-accent transition-colors hover:bg-ds-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus disabled:cursor-not-allowed disabled:opacity-50"
+              class="h-8 rounded-lg bg-ui-brand-soft px-2 text-xs font-semibold text-ui-brand transition-colors hover:bg-ui-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus disabled:cursor-not-allowed disabled:opacity-50"
               :disabled="assigneeUpdating"
               @click="updateConversationAssignee"
             >
@@ -534,34 +534,34 @@ onMounted(() => {
 
     <div
       v-if="contact?.id"
-      class="rounded-xl bg-ds-bg-sunken p-3 text-xs ring-1 ring-inset ring-ds-border-subtle"
+      class="rounded-xl bg-ui-sunken p-3 text-xs ring-1 ring-inset ring-ui-border-subtle"
     >
       <div
-        class="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-ds-fg-subtle"
+        class="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-ui-text-subtle"
       >
         Etiquetas do contato
       </div>
       <ContactLabels :contact-id="contact.id" />
     </div>
 
-    <div v-if="loading" class="text-xs text-ds-fg-subtle">Carregando...</div>
+    <div v-if="loading" class="text-xs text-ui-text-subtle">Carregando...</div>
     <div
       v-else-if="error"
-      class="rounded-lg bg-ds-state-danger-soft p-2 text-xs text-ds-state-danger"
+      class="rounded-lg bg-ui-danger-soft p-2 text-xs text-ui-danger"
       role="alert"
     >
       {{ error }}
     </div>
     <div
       v-else-if="!deal"
-      class="rounded-xl bg-ds-bg-sunken px-3 py-4 text-center text-xs text-ds-fg-subtle"
+      class="rounded-xl bg-ui-sunken px-3 py-4 text-center text-xs text-ui-text-subtle"
     >
       <span class="i-lucide-file-search mx-auto mb-1 block size-5 opacity-40" />
       Nenhuma oportunidade vinculada.
       <div class="mt-2 flex justify-center gap-1">
         <button
           type="button"
-          class="min-h-8 rounded-lg bg-ds-accent-soft px-3 py-1 text-xs font-semibold text-ds-accent transition-colors hover:bg-ds-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus disabled:cursor-not-allowed disabled:opacity-50"
+          class="min-h-8 rounded-lg bg-ui-brand-soft px-3 py-1 text-xs font-semibold text-ui-brand transition-colors hover:bg-ui-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus disabled:cursor-not-allowed disabled:opacity-50"
           :disabled="createDealLoading"
           @click="createDealFromConversation"
         >
@@ -573,7 +573,7 @@ onMounted(() => {
     <div v-else class="space-y-3">
       <div class="flex items-center justify-between gap-2">
         <span
-          class="max-w-[160px] truncate text-xs font-semibold text-ds-fg-default"
+          class="max-w-[160px] truncate text-xs font-semibold text-ui-text"
           :title="deal.title"
         >
           {{ deal.title }}
@@ -589,7 +589,7 @@ onMounted(() => {
         </span>
       </div>
 
-      <div class="flex items-center gap-2 text-xs text-ds-fg-muted">
+      <div class="flex items-center gap-2 text-xs text-ui-text-muted">
         <span class="font-bold" :class="[scoreColor]">
           {{ deal.score_total || 0 }}pts
         </span>
@@ -610,27 +610,27 @@ onMounted(() => {
           class="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium capitalize"
           :class="
             urgencyColors[deal.urgency_level] ||
-            'bg-ds-bg-sunken text-ds-fg-muted'
+            'bg-ui-sunken text-ui-text-muted'
           "
         >
           {{ urgencyLabels[deal.urgency_level] || deal.urgency_level }}
         </span>
       </div>
 
-      <div v-if="deal.stage" class="text-xs text-ds-fg-muted">
+      <div v-if="deal.stage" class="text-xs text-ui-text-muted">
         Etapa: <span class="font-medium">{{ deal.stage?.name }}</span>
       </div>
 
-      <div class="grid grid-cols-1 gap-1 text-xs text-ds-fg-muted">
+      <div class="grid grid-cols-1 gap-1 text-xs text-ui-text-muted">
         <div>
           Status CRM:
-          <span class="font-medium text-ds-fg-default">
+          <span class="font-medium text-ui-text">
             {{ operationalStatusLabel }}
           </span>
         </div>
         <div>
           Origem:
-          <span class="font-medium text-ds-fg-default">
+          <span class="font-medium text-ui-text">
             {{ sourceLabel }}
           </span>
           <span v-if="deal.source_detail"> - {{ deal.source_detail }}</span>
@@ -639,7 +639,7 @@ onMounted(() => {
 
       <div
         v-if="deal.next_best_action"
-        class="rounded-lg bg-ds-state-info-soft p-2 text-xs text-ds-state-info"
+        class="rounded-lg bg-ui-info-soft p-2 text-xs text-ui-info"
       >
         <span class="i-lucide-lightbulb mr-1 inline size-3" />
         <span>{{ deal.next_best_action }}</span>
@@ -653,32 +653,32 @@ onMounted(() => {
 
       <div
         v-if="pendingActivities.length > 0"
-        class="rounded-xl bg-ds-bg-sunken p-2.5 ring-1 ring-inset ring-ds-border-subtle"
+        class="rounded-xl bg-ui-sunken p-2.5 ring-1 ring-inset ring-ui-border-subtle"
       >
         <div
-          class="mb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ds-fg-subtle"
+          class="mb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ui-text-subtle"
         >
           Atividades pendentes
         </div>
         <div
           v-for="act in pendingActivities"
           :key="act.id"
-          class="flex items-center gap-1.5 py-0.5 text-xs text-ds-fg-muted"
+          class="flex items-center gap-1.5 py-0.5 text-xs text-ui-text-muted"
         >
           <span
             class="inline-block size-1.5 rounded-full"
             :class="
               act.kind === 'ligacao'
-                ? 'bg-ds-state-info'
+                ? 'bg-ui-info'
                 : act.kind === 'reuniao'
-                  ? 'bg-ds-accent-secondary'
-                  : 'bg-ds-fg-subtle'
+                  ? 'bg-ui-brand'
+                  : 'bg-ui-text-subtle'
             "
           />
           <span class="truncate">{{ act.title }}</span>
           <span
             v-if="act.due_at"
-            class="ml-auto shrink-0 text-[10px] text-ds-fg-subtle"
+            class="ml-auto shrink-0 text-[10px] text-ui-text-subtle"
           >
             {{
               new Date(act.due_at).toLocaleDateString('pt-BR', {
@@ -691,23 +691,23 @@ onMounted(() => {
       </div>
 
       <div
-        class="rounded-xl bg-ds-bg-sunken p-3 ring-1 ring-inset ring-ds-border-subtle"
+        class="rounded-xl bg-ui-sunken p-3 ring-1 ring-inset ring-ui-border-subtle"
       >
         <div
-          class="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-ds-fg-subtle"
+          class="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-ui-text-subtle"
         >
           Próxima ação
         </div>
         <input
           v-model="quickActivity.title"
-          class="mb-1 h-8 w-full rounded-lg border-0 bg-ds-bg-surface px-2 text-xs text-ds-fg-default ring-1 ring-inset ring-ds-border-default placeholder:text-ds-fg-disabled focus:outline-none focus:ring-2 focus:ring-ds-border-focus"
+          class="mb-1 h-8 w-full rounded-lg border-0 bg-ui-surface px-2 text-xs text-ui-text ring-1 ring-inset ring-ui-border placeholder:text-ui-text-disabled focus:outline-none focus:ring-2 focus:ring-ui-border-focus"
           placeholder="Ex: ligar para confirmar documentos"
         />
         <div class="grid grid-cols-2 gap-1">
           <select
             v-model="quickActivity.kind"
             aria-label="Tipo da próxima ação"
-            class="h-8 min-w-0 rounded-lg border-0 bg-ds-bg-surface px-2 text-xs text-ds-fg-default ring-1 ring-inset ring-ds-border-default focus:outline-none focus:ring-2 focus:ring-ds-border-focus"
+            class="h-8 min-w-0 rounded-lg border-0 bg-ui-surface px-2 text-xs text-ui-text ring-1 ring-inset ring-ui-border focus:outline-none focus:ring-2 focus:ring-ui-border-focus"
           >
             <option value="follow_up">Follow-up</option>
             <option value="ligação">Ligação</option>
@@ -718,7 +718,7 @@ onMounted(() => {
           <select
             v-model="quickActivity.priority"
             aria-label="Prioridade da próxima ação"
-            class="h-8 min-w-0 rounded-lg border-0 bg-ds-bg-surface px-2 text-xs text-ds-fg-default ring-1 ring-inset ring-ds-border-default focus:outline-none focus:ring-2 focus:ring-ds-border-focus"
+            class="h-8 min-w-0 rounded-lg border-0 bg-ui-surface px-2 text-xs text-ui-text ring-1 ring-inset ring-ui-border focus:outline-none focus:ring-2 focus:ring-ui-border-focus"
           >
             <option value="normal">Normal</option>
             <option value="alta">Alta</option>
@@ -730,11 +730,11 @@ onMounted(() => {
           v-model="quickActivity.due_at"
           type="datetime-local"
           aria-label="Data e hora da próxima ação"
-          class="mt-1 h-8 w-full rounded-lg border-0 bg-ds-bg-surface px-2 text-xs text-ds-fg-default ring-1 ring-inset ring-ds-border-default focus:outline-none focus:ring-2 focus:ring-ds-border-focus"
+          class="mt-1 h-8 w-full rounded-lg border-0 bg-ui-surface px-2 text-xs text-ui-text ring-1 ring-inset ring-ui-border focus:outline-none focus:ring-2 focus:ring-ui-border-focus"
         />
         <button
           type="button"
-          class="mt-2 h-8 w-full rounded-lg bg-ds-accent px-2 text-xs font-semibold text-ds-fg-on-accent transition-colors hover:bg-ds-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus disabled:cursor-not-allowed disabled:opacity-50"
+          class="mt-2 h-8 w-full rounded-lg bg-ui-brand px-2 text-xs font-semibold text-ui-text-inverse transition-colors hover:bg-ui-brand-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus disabled:cursor-not-allowed disabled:opacity-50"
           :disabled="activitySaving || !quickActivity.title.trim()"
           @click="createQuickActivity"
         >
@@ -746,20 +746,20 @@ onMounted(() => {
         <a
           v-if="crmDealUrl"
           :href="crmDealUrl"
-          class="inline-flex min-h-8 items-center rounded-lg bg-ds-bg-sunken px-2.5 text-xs font-medium text-ds-fg-default no-underline transition-colors hover:bg-ds-bg-hover hover:text-ds-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
+          class="inline-flex min-h-8 items-center rounded-lg bg-ui-sunken px-2.5 text-xs font-medium text-ui-text no-underline transition-colors hover:bg-ui-hover hover:text-ui-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus"
         >
           Abrir no CRM
         </a>
         <button
           type="button"
-          class="min-h-8 rounded-lg bg-ds-bg-sunken px-2.5 text-xs font-medium text-ds-fg-default transition-colors hover:bg-ds-bg-hover hover:text-ds-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus"
+          class="min-h-8 rounded-lg bg-ui-sunken px-2.5 text-xs font-medium text-ui-text transition-colors hover:bg-ui-hover hover:text-ui-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus"
           @click="drawerOpen = true"
         >
           Editar
         </button>
         <button
           type="button"
-          class="min-h-8 rounded-lg bg-ds-bg-sunken px-2.5 text-xs font-medium text-ds-fg-default transition-colors hover:bg-ds-bg-hover hover:text-ds-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-border-focus disabled:cursor-not-allowed disabled:opacity-50"
+          class="min-h-8 rounded-lg bg-ui-sunken px-2.5 text-xs font-medium text-ui-text transition-colors hover:bg-ui-hover hover:text-ui-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ui-border-focus disabled:cursor-not-allowed disabled:opacity-50"
           :disabled="scoreLoading"
           @click="recalcScore"
         >
