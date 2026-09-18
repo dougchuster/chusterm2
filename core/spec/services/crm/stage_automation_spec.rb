@@ -267,4 +267,47 @@ RSpec.describe Crm::StageAutomation do
       expect(run).not_to be_valid
     end
   end
+
+  describe 'delayed actions (5.3)' do
+    it 'agenda a ação quando delay_minutes > 0 e não executa na hora' do
+      rule = build_rule('create_activity', {
+                          'title' => 'Follow-up agendado',
+                          'kind' => 'follow_up',
+                          'delay_minutes' => 30
+                        })
+
+      expect do
+        described_class.new(deal: deal, actor: nil).perform
+      end.to have_enqueued_job(Crm::AutomationActionJob)
+
+      run = CrmAutomationRun.find_by(crm_automation_rule: rule, crm_deal: deal)
+      expect(run.status).to eq('scheduled')
+      expect(run.finished_at).to be_nil
+      expect(deal.crm_activities.where(title: 'Follow-up agendado')).not_to exist
+    end
+
+    it 'não agenda quando a condição já falha no gatilho' do
+      build_rule('create_activity', {
+                   'title' => 'Nunca',
+                   'delay_minutes' => 10,
+                   'conditions' => [{ 'field' => 'legal_area', 'operator' => 'eq', 'value' => 'trabalhista' }]
+                 })
+
+      expect do
+        described_class.new(deal: deal, actor: nil).perform
+      end.not_to have_enqueued_job(Crm::AutomationActionJob)
+
+      expect(CrmAutomationRun.last.status).to eq('skipped')
+    end
+
+    it 'executa na hora quando delay_minutes é zero' do
+      build_rule('create_activity', { 'title' => 'Imediata', 'kind' => 'follow_up', 'delay_minutes' => 0 })
+
+      expect do
+        described_class.new(deal: deal, actor: nil).perform
+      end.not_to have_enqueued_job(Crm::AutomationActionJob)
+
+      expect(deal.crm_activities.where(title: 'Imediata')).to exist
+    end
+  end
 end

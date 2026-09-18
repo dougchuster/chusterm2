@@ -5,7 +5,7 @@ class CrmAutomationRun < ApplicationRecord
   belongs_to :crm_automation_rule
   belongs_to :crm_deal
 
-  STATUSES = %w[executed skipped failed].freeze
+  STATUSES = %w[executed skipped failed scheduled].freeze
 
   validates :account, :crm_automation_rule, :crm_deal, :status, :started_at, presence: true
   validates :status, inclusion: { in: STATUSES }
