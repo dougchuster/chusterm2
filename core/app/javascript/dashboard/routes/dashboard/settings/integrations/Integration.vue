@@ -67,13 +67,20 @@ const confirmDeletion = () => {
     <div
       class="flex items-start lg:items-center justify-start flex-1 m-0 gap-6 flex-col lg:flex-row"
     >
-      <div class="flex h-16 w-16 items-center justify-center flex-shrink-0">
+      <!-- Antes do store carregar, o pai passa integration.id = undefined e o
+           <img> pedia /integrations/undefined.png (404 em toda abertura). -->
+      <div
+        v-if="integrationId"
+        class="flex h-16 w-16 items-center justify-center flex-shrink-0"
+      >
         <img
           :src="`/dashboard/images/integrations/${integrationId}.png`"
+          :alt="integrationName"
           class="max-w-full rounded-md border border-ui-border-subtle shadow-sm block dark:hidden bg-n-alpha-3 dark:bg-n-alpha-2"
         />
         <img
           :src="`/dashboard/images/integrations/${integrationId}-dark.png`"
+          :alt="integrationName"
           class="max-w-full rounded-md border border-ui-border-subtle shadow-sm hidden dark:block bg-n-alpha-3 dark:bg-n-alpha-2"
         />
       </div>
