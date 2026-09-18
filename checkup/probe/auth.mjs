@@ -63,7 +63,7 @@ for (const [id, url] of publicPages) {
   const page = await ctx.newPage();
   await page.goto(base + '/app/login', { waitUntil: 'networkidle' });
   const emailInput = page.getByTestId('email_input');
-  const submit = page.getByRole('button', { name: /entrar|sign in|login/i });
+  const submit = page.getByTestId('submit_button');
 
   await submit.click();
   await page.waitForTimeout(400);

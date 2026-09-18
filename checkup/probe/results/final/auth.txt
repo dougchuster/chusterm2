@@ -1,0 +1,72 @@
+OK   [A1] carrega @360 status=200 733ms final=/app/login errs=[] failed=[]
+OK   [A1] sem overflow @360 0px
+OK   [A1] textos em pt-BR @360 Chuste RM Acesse sua conta Entre para continuar de onde parou. E-mail Senha Esqueceu sua senha? Entrar Login via SSO
+OK   [A1] carrega @768 status=200 719ms final=/app/login errs=[] failed=[]
+OK   [A1] sem overflow @768 0px
+OK   [A1] textos em pt-BR @768 Chuste RM Acesse sua conta Entre para continuar de onde parou. E-mail Senha Esqueceu sua senha? Entrar Login via SSO
+OK   [A1] carrega @1440 status=200 723ms final=/app/login errs=[] failed=[]
+OK   [A1] sem overflow @1440 0px
+OK   [A1] textos em pt-BR @1440 Chuste RM Atendimento e CRM em um só lugar. Organize atendimentos, leads, clientes e reuniões em um CRM simples para sua equipe. Omnichannel CRM AI Agent Orches
+OK   [A1] axe sem serious/critical 
+OK   [A2] carrega @360 status=200 707ms final=/app/login/sso errs=[] failed=[]
+OK   [A2] sem overflow @360 0px
+OK   [A2] textos em pt-BR @360 Chuste RM GATEWAY SSO SEGURO Iniciar Single Sign-on (SSO) Digite seu e-mail de trabalho para acessar sua organização E-mail de trabalho Continuar com SSO Entrar
+OK   [A2] carrega @768 status=200 715ms final=/app/login/sso errs=[] failed=[]
+OK   [A2] sem overflow @768 0px
+OK   [A2] textos em pt-BR @768 Chuste RM GATEWAY SSO SEGURO Iniciar Single Sign-on (SSO) Digite seu e-mail de trabalho para acessar sua organização E-mail de trabalho Continuar com SSO Entrar
+OK   [A2] carrega @1440 status=200 719ms final=/app/login/sso errs=[] failed=[]
+OK   [A2] sem overflow @1440 0px
+OK   [A2] textos em pt-BR @1440 Chuste RM Uma camada de identidade para todo workspace. Conduza seu time por um corredor de autenticação controlado, com políticas organizacionais, clareza edit
+OK   [A2] axe sem serious/critical 
+OK   [A3] carrega @360 status=200 697ms final=/app/login errs=[] failed=[]
+OK   [A3] sem overflow @360 0px
+OK   [A3] textos em pt-BR @360 Chuste RM Acesse sua conta Entre para continuar de onde parou. E-mail Senha Esqueceu sua senha? Entrar Login via SSO
+OK   [A3] carrega @768 status=200 711ms final=/app/login errs=[] failed=[]
+OK   [A3] sem overflow @768 0px
+OK   [A3] textos em pt-BR @768 Chuste RM Acesse sua conta Entre para continuar de onde parou. E-mail Senha Esqueceu sua senha? Entrar Login via SSO
+OK   [A3] carrega @1440 status=200 722ms final=/app/login errs=[] failed=[]
+OK   [A3] sem overflow @1440 0px
+OK   [A3] textos em pt-BR @1440 Chuste RM Atendimento e CRM em um só lugar. Organize atendimentos, leads, clientes e reuniões em um CRM simples para sua equipe. Omnichannel CRM AI Agent Orches
+OK   [A3] axe sem serious/critical 
+FAIL [A4] carrega @360 status=200 1094ms final=/app/login errs=["Failed to load resource: the server responded with a status of 422 (Unprocessable Content)"] failed=["422 /auth/confirmation"]
+OK   [A4] sem overflow @360 0px
+OK   [A4] textos em pt-BR @360 Chuste RM Acesse sua conta Entre para continuar de onde parou. E-mail Senha Esqueceu sua senha? Entrar Login via SSO
+FAIL [A4] carrega @768 status=200 1021ms final=/app/login errs=["Failed to load resource: the server responded with a status of 422 (Unprocessable Content)"] failed=["422 /auth/confirmation"]
+OK   [A4] sem overflow @768 0px
+OK   [A4] textos em pt-BR @768 Chuste RM Acesse sua conta Entre para continuar de onde parou. E-mail Senha Esqueceu sua senha? Entrar Login via SSO
+FAIL [A4] carrega @1440 status=200 1028ms final=/app/login errs=["Failed to load resource: the server responded with a status of 422 (Unprocessable Content)"] failed=["422 /auth/confirmation"]
+OK   [A4] sem overflow @1440 0px
+OK   [A4] textos em pt-BR @1440 Chuste RM Atendimento e CRM em um só lugar. Organize atendimentos, leads, clientes e reuniões em um CRM simples para sua equipe. Omnichannel CRM AI Agent Orches
+OK   [A4] axe sem serious/critical 
+OK   [A5] carrega @360 status=200 692ms final=/app/auth/password/edit?reset_password_token=QA_invalid errs=[] failed=[]
+OK   [A5] sem overflow @360 0px
+OK   [A5] textos em pt-BR @360 Definir nova senha Senha Confirmar senha Enviar
+OK   [A5] carrega @768 status=200 688ms final=/app/auth/password/edit?reset_password_token=QA_invalid errs=[] failed=[]
+OK   [A5] sem overflow @768 0px
+OK   [A5] textos em pt-BR @768 Definir nova senha Senha Confirmar senha Enviar
+OK   [A5] carrega @1440 status=200 687ms final=/app/auth/password/edit?reset_password_token=QA_invalid errs=[] failed=[]
+OK   [A5] sem overflow @1440 0px
+OK   [A5] textos em pt-BR @1440 Definir nova senha Senha Confirmar senha Enviar
+OK   [A5] axe sem serious/critical 
+OK   [A6] carrega @360 status=200 698ms final=/app/auth/reset/password errs=[] failed=[]
+OK   [A6] sem overflow @360 0px
+OK   [A6] textos em pt-BR @360 Redefinir senha Digite o endereço de e-mail que você usa para acessar o ChusteRM para obter as instruções de redefinição da senha. E-mail Enviar Se você quiser 
+OK   [A6] carrega @768 status=200 699ms final=/app/auth/reset/password errs=[] failed=[]
+OK   [A6] sem overflow @768 0px
+OK   [A6] textos em pt-BR @768 Redefinir senha Digite o endereço de e-mail que você usa para acessar o ChusteRM para obter as instruções de redefinição da senha. E-mail Enviar Se você quiser 
+OK   [A6] carrega @1440 status=200 685ms final=/app/auth/reset/password errs=[] failed=[]
+OK   [A6] sem overflow @1440 0px
+OK   [A6] textos em pt-BR @1440 Redefinir senha Digite o endereço de e-mail que você usa para acessar o ChusteRM para obter as instruções de redefinição da senha. E-mail Enviar Se você quiser 
+FAIL [A6] axe sem serious/critical color-contrast(1)
+OK   [A1] submit vazio → mensagem de validação Por favor, insira um endereço de e-mail válido
+OK   [A1] e-mail inválido → validação client-side Por favor, insira um endereço de e-mail válido
+OK   [A1] credencial inválida → 401 + mensagem pt-BR status=401 msg="E-mail ou senha inválidos."
+OK   [A1] botão desabilitado durante submit (anti duplo-submit) disabled=true
+OK   [A1] resposta 401 não vaza detalhes {"success":false,"errors":["E-mail ou senha inválidos."]}
+OK   [A1] login válido redireciona para o dashboard /app/accounts/55/dashboard
+OK   [A1] usuário logado em /app/login é redirecionado /app/accounts/55/dashboard
+OK   [A1] rate limit por IP após 5 tentativas 6ª tentativa → 429
+OK   [A6] reset p/ e-mail inexistente não revela existência status=200 msg="Digite o endereço de e-mail que você usa para acessar o ChusteRM para obter as instruções de redefinição da senha."
+OK   [A3] estado do signup identificado signupEnabled=false api=200
+
+66/70 checks OK

@@ -1,0 +1,102 @@
+OK   [contacts] criar contato status=200 id=3197
+OK   [contacts] e-mail inválido → 4xx status=422 {"message":"E-mail E-mail inválido","attributes":["email"]}
+OK   [contacts] telefone fora do E.164 → 4xx status=422 {"message":"Telefone deve estar no formato e164","attributes":["phone_number"]}
+OK   [contacts] e-mail duplicado → 4xx (não cria segundo contato) status=422 {"message":"E-mail já está em uso","attributes":["email"]}
+OK   [contacts] contato sem nenhum dado status=200 (aceita contato vazio) {"payload":{"contact":{"additional_attributes":{},"availability_status":"offline
+OK   [contacts/:id] editar persiste (nome + custom attr) status=200 name=QA_Contato 1789747521972 editado
+OK   [contacts] busca encontra o contato n=1
+OK   [contacts] listagem paginada com meta.count count=208 n=15
+OK   [contacts] página além do fim → payload vazio sem erro status=200
+OK   [contacts] filtro avançado responde status=200 n=3
+OK   [contacts] filtro com chave maliciosa → 4xx (não 500) status=422 {"error":"Chave de atributo inválido - [name'; DROP TABLE contacts;--]. A chave deve ser uma das [na
+OK   [contacts/:id] aplicar label status=200
+OK   [contacts/:id] conversas do contato status=200
+OK   [contacts/:id] contactable_inboxes status=200
+OK   [contacts/:id] contato inexistente → 404 status=404
+OK   [contacts] export aceita status=200
+OK   [contacts] import sem arquivo → 4xx status=422
+OK   [contacts] merge remove o contato mesclado status=200 mergee=404
+OK   [contacts/segments] criar segmento status=200
+OK   [contacts/segments] segmento sem nome → 4xx status=422
+OK   [contacts/segments] editar persiste status=200
+OK   [contacts/segments] excluir status=204
+OK   [companies] criar empresa status=200 {"payload":{"id":150,"name":"QA_Empresa 1789747521972","contacts_count":0,"domain":"qa-1789747521972
+OK   [companies] sem nome → 4xx status=422 {"message":"Nome não pode ficar em branco","attributes":["name"]}
+OK   [companies] domínio duplicado status=422 (rejeita)
+OK   [companies/:id] editar persiste status=200 {"payload":{"id":150,"name":"QA_Empresa 1789747521972","contacts_count":0,"domain":"qa-1789747521972
+OK   [companies] busca/listagem status=200 {"meta":{"total_count":3,"page":1},"payload":[{"id":148,"name":"Example","contac
+OK   [companies/:id] inexistente → 404 status=404
+OK   [settings/labels] criar label status=200
+OK   [settings/labels] título com espaço/maiúscula → 4xx (regra do Chatwoot) status=422 {"message":"Título não é válido","attributes":["title"]}
+OK   [settings/labels] label duplicada → 4xx status=422
+OK   [settings/labels] editar persiste color=#0000ff
+OK   [settings/canned-response] criar resposta pronta status=200
+OK   [settings/canned-response] vazio → 4xx status=422 {"message":"Conteúdo não pode ficar em branco, Short code não pode ficar em branco","attributes":["c
+OK   [settings/canned-response] busca por atalho n=1
+OK   [settings/teams] criar time status=200
+OK   [settings/teams] time sem nome → 4xx status=422
+OK   [settings/teams/:id/edit/agents] adicionar membro persiste status=200 n=1
+OK   [settings/teams/:id/edit/agents] remover membro status=200
+OK   [settings/agents] convidar agente com e-mail inválido → 4xx status=422 {"message":"E-mail não é válido, E-mail não é um e-mail","attributes":["email"]}
+OK   [settings/agents] convidar e-mail já na conta → 4xx status=422 {"message":"User já está em uso","attributes":["user_id"]}
+OK   [settings/agents] role inválido → 4xx status=400 {"status":400,"error":"Bad Request"}
+OK   [settings/agents] listagem não expõe hash de senha/tokens keys=id,account_id,availability_status,auto_offline,confirmed,email,provider,available_name,custom_attributes,name,role,thumbnail,custom_role_id
+OK   [settings/macros/new] criar macro status=200
+OK   [settings/macros/new] macro sem nome/ações → 4xx status=422 {"error":{"name":["não pode ficar em branco"]}}
+FAIL [settings/custom-attributes] criar atributo status=422
+OK   [settings/custom-attributes] chave duplicada → 4xx status=422
+OK   [settings/automation] criar automação status=200 {"id":3,"account_id":55,"name":"QA_Auto 1789747521972","description":null,"event
+FAIL [settings/automation] evento inválido → 4xx status=200 {"id":4,"account_id":55,"name":"QA_bad","description":null,"event_name":"nope","conditions":[],"acti
+OK   [settings/inboxes/new] criar inbox API status=200 {"id":334,"avatar_url":"","channel_id":20,"name":"QA_Inbox 1789747521972","chann
+FAIL [settings/inboxes/new] webhook para IP interno (SSRF) → 4xx status=200 {"id":335,"avatar_url":"","channel_id":21,"name":"QA_Inbox 1789747521972","channel_type":"Channel::A
+OK   [settings/inboxes/:id] editar persiste status=200
+OK   [settings/inboxes/:id (colaboradores)] adicionar agente à inbox status=200
+OK   [settings/inboxes/:id (bots)] agent_bot da inbox responde status=200
+OK   [settings/integrations/webhook] URL http://localhost rejeitada status=422 {"message":"Url já está em uso","attributes":["url"]}
+OK   [settings/integrations/webhook] criar webhook https status=200 {"payload":{"webhook":{"id":3,"name":null,"url":"https://example.invalid/hook","
+OK   [settings/integrations/webhook] URL inválida → 4xx status=422
+OK   [settings/integrations] apps lista sem segredos n=7
+OK   [settings/audit-logs] audit logs responde status=200
+OK   [settings/sla] sla policies responde status=200
+OK   [settings/sla] sla sem nome → 4xx status=422
+OK   [settings/custom-roles] custom roles responde status=200
+OK   [settings/agent-bots] agent bots responde status=200
+OK   [settings/assignment-policy] assignment policies responde status=200
+OK   [settings/assignment-policy] capacity policies responde status=200
+OK   [portals/new] criar portal status=200 {"id":2,"color":"#1f93ff","custom_domain":null,"header_text":null,"homepage_link
+OK   [portals/new] slug duplicado → 4xx status=422
+FAIL [portals/categories] criar categoria status=200 {"payload":{"id":2,"name":"QA_Cat","slug":"qa-cat","locale":"pt_BR","description
+FAIL [portals/articles/new] criar artigo status=200 {"payload":{"id":2,"slug":"1789747524-qa_artigo","title":"QA_Artigo","content":"
+OK   [portals/articles/new] artigo sem título → 4xx status=422
+FAIL [portals/articles/edit] editar persiste status=404
+FAIL [portals/articles] excluir artigo status=404
+FAIL [portals/categories] excluir categoria status=404
+OK   [campaigns] lista campanhas status=200
+OK   [campaigns] campanha vazia → 4xx status=422 {"message":"Título não pode ficar em branco, Message não pode ficar em branco","attributes":["title"
+OK   [notifications] lista notificações status=200 meta={"unread_count":0,"count":0,"current_page":1}
+OK   [notifications] marcar todas como lidas status=200
+OK   [notifications] unread_count status=200
+OK   [profile/settings] perfil não expõe encrypted_password keys=access_token,account_id,available_name,avatar_url,confirmed,display_name,message_signature,email,id,inviter_id,name,provider
+OK   [profile/settings] senha fraca/curta → 4xx status=422 {"error":"Invalid current password"}
+OK   [profile/settings] nome vazio → 4xx status=422
+OK   [reports/*] v2/reports/summary status=200
+OK   [reports/*] v2/reports status=200
+OK   [reports/*] v2/reports/conversations status=200
+OK   [reports/*] v2/reports/agents status=200
+OK   [reports/*] v2/reports/inboxes status=200
+OK   [reports/*] v2/reports/labels status=200
+OK   [reports/*] v2/reports/teams status=200
+FAIL [reports/*] v2/reports/bot_summary status=422
+OK   [reports/*] v2/reports/bot_metrics status=200
+OK   [reports/*] datas inválidas não dão 500 status=422
+OK   [reports/csat] csat metrics status=200
+OK   [reports/sla] sla metrics status=200
+OK   [search] busca global status=200 keys=conversations,contacts,messages,articles
+OK   [search] busca com SQL não dá 500 status=200
+OK   [conversations] lista conversas status=200 n=4
+OK   [conversations/:id] mensagens da conversa status=200
+FAIL [conversations/:id] mensagem vazia → 4xx status=200 {"id":4817,"content":"","inbox_id":80,"conversation_id":1,"message_type":1,"cont
+OK   [conversations/:id] nota privada criada status=200
+OK   [conversations/:id] conversa inexistente → 404 status=404
+
+90/100 OK

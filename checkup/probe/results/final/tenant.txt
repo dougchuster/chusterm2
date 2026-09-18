@@ -1,0 +1,31 @@
+OK   SPA: nenhuma resposta 2xx da conta 55 para admin da conta 56 final=/app/accounts/56/dashboard
+OK   API cross-tenant …/crm/deals?per_page=5 status=401 
+OK   API cross-tenant …/crm/deals/70 status=401 
+OK   API cross-tenant …/crm/board_views?context=board status=401 
+OK   API cross-tenant …/contacts status=401 
+OK   API cross-tenant …/contacts/80 status=401 
+OK   API cross-tenant …/conversations status=401 
+OK   API cross-tenant …/conversations/1/messages status=401 
+OK   API cross-tenant …/inboxes status=401 
+OK   API cross-tenant …/agents status=401 
+OK   API cross-tenant …/labels status=401 
+OK   API cross-tenant …/crm/pipelines status=401 
+OK   API cross-tenant …/crm/packs status=401 
+OK   API cross-tenant …/crm/dashboard status=401 
+OK   API cross-tenant …/crm/metrics/summary status=404 
+OK   API cross-tenant /api/v2/accounts/55/reports/summary?since=1&until=9999999999&type=account status=401 
+OK   API cross-tenant …/portals status=401 
+OK   API cross-tenant …/captain/assistants status=401 
+OK   API cross-tenant …/marketing/leads status=401 
+OK   API cross-tenant …/companies status=401 
+OK   API cross-tenant …/custom_filters status=401 
+OK   POST cross-tenant crm/deals bloqueado status=401
+OK   DELETE cross-tenant crm/deals/:id bloqueado status=401
+OK   API anônimo …/crm/deals?per_page=5 status=401
+OK   API anônimo …/crm/deals/70 status=401
+OK   API anônimo …/crm/board_views?context=board status=401
+OK   API anônimo …/contacts status=401
+OK   API anônimo …/contacts/80 status=401
+OK   API anônimo …/conversations status=401
+
+29/29 OK

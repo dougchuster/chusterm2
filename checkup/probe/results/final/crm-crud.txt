@@ -1,0 +1,63 @@
+OK   [crm/settings/pipelines] criar funil status=201 {"id":1309,"name":"QA_Funil Checkup","slug":"qa_funil-checkup-3","kind":"sales","inbox_id":null,"inbox":null,"is_default
+OK   [crm/settings/pipelines] criar funil sem nome → 4xx com mensagem status=422 {"error":"A validação falhou: Nome não pode ficar em branco, Identificador não pode ficar em branco"}
+OK   [crm/settings/pipelines] funil aparece na listagem após reload total=5
+OK   [crm/settings/pipelines] editar funil persiste status=200 name=QA_Funil Checkup (editado)
+OK   [crm/settings/pipelines] criar etapa status=201
+OK   [crm/settings/pipelines] criar etapa terminal (won) status=201 {"id":5612,"pipeline_id":1309,"name":"QA_Ganho","slug":"qa_ganho","position":1,"probability_pct":0,"
+OK   [crm/settings/pipelines] criar etapa sem nome → 4xx status=422
+OK   [crm/settings/pipelines] etapas listadas após reload n=2
+OK   [crm/settings/pipelines] excluir (arquivar) etapa some da lista status=204
+OK   [crm/settings/pipelines] restaurar etapa status=200
+OK   [crm/leads] criar negócio status=201 {"id":3959,"title":"QA_Negócio Checkup","status":"open","legal_area":null,"legal_area_label":null,"c
+OK   [crm/leads] criar negócio sem título → 4xx com mensagem pt-BR status=422 {"error":"A validação falhou: Título não pode ficar em branco"}
+OK   [crm/leads] valor negativo → 4xx status=422 {"error":"A validação falhou: Valor estimado deve ser maior ou igual a 0"}
+OK   [crm/leads] segundo negócio aberto p/ mesmo contato no mesmo funil → devolve o existente (dedupe), não duplica status=201 id=3959 esperado=3959
+OK   [crm/deals/:id] GET após criar devolve título/valor persistidos {"t":"QA_Negócio Checkup","v":12345}
+OK   [crm/deals/:id] editar persiste status=200 title=QA_Negócio Checkup 2 urg=high
+OK   [crm (board)] mover para etapa terminal won fecha o negócio como ganho status=200 deal.status=won stage=5612
+OK   [crm (board)] reabrir volta para open status=200 deal.status=open
+OK   [crm (board)] mark_lost sem motivo → validação (4xx) ou aceita com motivo nulo? status=422 {"error":"Selecione um motivo de perda válido."}
+OK   [crm (board)] mover para etapa inexistente → 404/422 status=404
+OK   [crm/activities] criar atividade status=201 {"id":3410,"crm_deal_id":3959,"conversation_id":null,"conversation_display_id":null,"kind":"follow_u
+OK   [crm/activities] criar atividade sem título → 4xx status=422 {"error":"A validação falhou: Título não pode ficar em branco"}
+OK   [crm/activities] concluir atividade persiste status=200 act={"id":3410,"crm_deal_id":3959,"conversation_id":null,"conversation_display_id":null,"kind":"follow_up","title":"QA_Ativi
+OK   [crm/activities] excluir atividade status=204
+OK   [crm/agenda] agenda_events responde status=200 tipo=array
+OK   [crm (board)] board endpoint responde com colunas status=200 keys=pipeline,columns,meta
+OK   [crm/leads] paginação: página 5 de 50 devolve o 201º negócio (regressão) status=200 n=7 meta={"total":207,"page":5,"per_page":50,"total_pages":5}
+OK   [crm/leads] per_page é limitado (≤200) per_page=200
+OK   [crm/leads] busca por título encontra o negócio n=3
+OK   [crm/leads] busca com payload SQL não quebra (200/422) status=200
+OK   [crm/reports] export de negócios aceita (202/200) status=202 {"message":"Exportação em processamento. Você receberá um email com o link para download."}
+OK   [crm (board)] salvar visão do board status=201 {"id":42,"name":"QA_View","filters":{},"context":"board","group_by":"stage","sort":null,"is_shared":
+OK   [crm (board)] excluir visão status=204
+OK   [crm/leads] bulk move responde status=200 {"requested":1,"processed":1,"failed":[]}
+OK   [crm/settings/loss-reasons] criar motivo status=201
+OK   [crm/settings/loss-reasons] criar motivo vazio → 4xx status=422
+OK   [crm/settings/loss-reasons] editar motivo persiste status=200
+OK   [crm/settings/loss-reasons] não há DELETE para motivo (só :index,:create,:update) — arquivar existe? rotas: index/create/update; motivo 4543 fica na base (limpeza manual)
+OK   [crm/settings/checklist-templates] criar template status=201 {"id":8,"name":"QA_Checklist","case_type":null,"legal_area":null,"items":[{"key":"doc","title":"Docu
+OK   [crm/settings/checklist-templates] criar sem nome → 4xx status=422
+OK   [crm/settings/checklist-templates] editar persiste status=200
+OK   [crm/settings/checklist-templates] excluir some da lista status=204
+OK   [crm/settings/automation-rules] criar regra status=201 {"id":65,"name":"QA_Regra","trigger_event":"stage_entered","action_type":"create_activity","action_config":{"title":"Lig
+OK   [crm/settings/automation-rules] trigger/ação inválidos → 4xx status=422 {"error":"A validação falhou: Gatilho não está incluído na lista, Ação não está incluído na lista"}
+OK   [crm/settings/automation-rules] desativar persiste status=200 is_active=false
+OK   [crm/settings/automation-rules] excluir regra status=204
+OK   [crm/settings/automation-rules] automation-runs responde status=200
+OK   [crm/settings/cadences] criar cadência com passo status=201 {"id":5,"name":"QA_Cadência","status":"draft","channel":"whatsapp","starts_at":null,"position":0,"audience_filter":{},"enrollment_config":{}
+OK   [crm/settings/cadences] status/canal inválidos → 4xx status=422
+OK   [crm/settings/cadences] ativar persiste status=200 status=active
+OK   [crm/settings/cadences] inscrever negócio na cadência (D6: exige consentimento?) status=201 {"enrollment_id":3,"status":"active"}
+OK   [crm/settings/cadences] desinscrever status=200
+OK   [crm/settings/cadences] excluir cadência status=204
+OK   [crm/settings/scoring] options responde status=200 keys=legal_areas,categories,subcategories,activity_types,field_definitions,analyst_prompts,intake_questions,packs
+OK   [crm/settings/segment] packs lista status=200 {"packs":[{"slug":"clinic","name":"Clínicas e Saúde","version":"1","installed":false,"installed_at":null,"categories":[{"value":"consulta","label":"Consulta"},{
+OK   [crm/settings/segment] slug de traversal rejeitado status=404
+OK   [crm/settings/segment] pack inexistente → 404/422 status=404
+OK   [crm] dashboard responde status=200
+OK   [crm/reports] metrics/summary responde status=404
+OK   [crm/deals/:id] audit-events (admin) responde status=200
+OK   [crm/ai-center] agent_tools lista status=200 {"tools":[{"name":"get_deal_context","positional":[],"arguments":[]},{"name":"set_category","positio
+
+61/61 OK

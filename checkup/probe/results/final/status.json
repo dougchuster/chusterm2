@@ -1,0 +1,2080 @@
+[
+ {
+  "url": "/app/accounts/55",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/campaigns",
+  "name": "",
+  "redirect": true,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/campaigns",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/campaigns/email",
+  "name": "campaigns_email_index",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/campaigns/live_chat",
+  "name": "campaigns_livechat_index",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/campaigns/one_off",
+  "name": "campaigns_one_off_index",
+  "redirect": true,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/campaigns/ongoing",
+  "name": "campaigns_ongoing_index",
+  "redirect": true,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/campaigns/sms",
+  "name": "campaigns_sms_index",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/campaigns/whatsapp",
+  "name": "campaigns_whatsapp_index",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/captain",
+  "name": "",
+  "redirect": true,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/captain/6/config",
+  "name": "captain_agent_configs_index",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/captain/6/documents",
+  "name": "captain_assistants_documents_index",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/captain/6/faqs",
+  "name": "captain_assistants_responses_index",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/captain/6/faqs/pending",
+  "name": "captain_assistants_responses_pending",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/captain/6/inboxes",
+  "name": "captain_assistants_inboxes_index",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)",
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/captain/6/playground",
+  "name": "captain_assistants_playground_index",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(2)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/captain/6/scenarios",
+  "name": "captain_assistants_scenarios_index",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/captain/6/score",
+  "name": "captain_score_settings_index",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/captain/6/settings",
+  "name": "captain_assistants_settings_index",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)",
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(2),label(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/captain/6/settings/guardrails",
+  "name": "captain_assistants_guardrails_index",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(5)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/captain/6/settings/guidelines",
+  "name": "captain_assistants_guidelines_index",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(5)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/captain/6/tools",
+  "name": "captain_tools_index",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/captain/assistants",
+  "name": "captain_assistants_create_index",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/captain/assistants",
+  "name": "captain_assistants_index",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/captain/flows",
+  "name": "captain_flow_list",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/captain/flows/1/editor",
+  "name": "captain_flow_editor",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/companies",
+  "name": "companies_dashboard_index",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/companies",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/contacts",
+  "name": "contacts_dashboard_index",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: link-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/contacts",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: link-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/contacts/80",
+  "name": "contacts_edit",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/contacts/80",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/contacts/80/labels/qa-label",
+  "name": "contacts_edit_label",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/contacts/80/segments/5",
+  "name": "contacts_edit_segment",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/contacts/active",
+  "name": "contacts_dashboard_active",
+  "redirect": true,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: link-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/contacts/categories",
+  "name": "contacts_dashboard_categories",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: link-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/contacts/categories/custom",
+  "name": "contacts_dashboard_category_kind",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)",
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: link-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/contacts/categories/custom/64",
+  "name": "contacts_dashboard_category_detail",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: link-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/contacts/labels/qa-label",
+  "name": "contacts_dashboard_labels_index",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: link-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/contacts/list",
+  "name": "contacts_dashboard_list",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)",
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: link-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/contacts/segments/5",
+  "name": "contacts_dashboard_segments_index",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: link-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/conversations/1",
+  "name": "inbox_conversation",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/crm",
+  "name": "crm_dashboard",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/crm/activities",
+  "name": "crm_activities",
+  "redirect": false,
+  "container": false,
+  "status": "FALHOU",
+  "problems": [
+   "lento 3580ms"
+  ],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/crm/agenda",
+  "name": "crm_agenda",
+  "redirect": false,
+  "container": false,
+  "status": "FALHOU",
+  "problems": [
+   "lento 3300ms"
+  ],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/crm/ai-center",
+  "name": "crm_ai_center",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/crm/analytics",
+  "name": "crm_analytics",
+  "redirect": true,
+  "container": false,
+  "status": "FALHOU",
+  "problems": [
+   "agente: API negou /api/v2/accounts/55/reports/summary?sinc,/csat_survey_responses/metrics?since=178,/applied_slas/metrics?since=1787194800&u,/api/v2/accounts/55/reports/inboxes?sinc"
+  ],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/crm/deals/70",
+  "name": "crm_deal_details",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/crm/design-system/templates",
+  "name": "crm_page_templates",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/crm/leads",
+  "name": "crm_all_leads",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/crm/metrics",
+  "name": "crm_metrics",
+  "redirect": true,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/crm/reports",
+  "name": "crm_reports",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/crm/settings/automation-rules",
+  "name": "crm_automation_rules",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/crm/settings/cadences",
+  "name": "crm_cadences",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)",
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: definition-list(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/crm/settings/checklist-templates",
+  "name": "crm_checklist_templates",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/crm/settings/loss-reasons",
+  "name": "crm_loss_reasons",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/crm/settings/pipelines",
+  "name": "crm_pipeline_settings",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/crm/settings/scoring",
+  "name": "crm_scoring_config",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/crm/settings/segment",
+  "name": "crm_segment_settings",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/custom_view/4",
+  "name": "folder_conversations",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/custom_view/4/conversations/1",
+  "name": "conversations_through_folders",
+  "redirect": false,
+  "container": false,
+  "status": "FALHOU",
+  "problems": [
+   "lento 3177ms"
+  ],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/dashboard",
+  "name": "home",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/inbox-view",
+  "name": "inbox_view",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)",
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/inbox-view",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)",
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/inbox-view/inbox/1",
+  "name": "inbox_view_conversation",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)",
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/inbox/80",
+  "name": "inbox_dashboard",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/inbox/80/conversations/1",
+  "name": "conversation_through_inbox",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/label/qa-label",
+  "name": "label_conversations",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/label/qa-label/conversations/1",
+  "name": "conversations_through_label",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/marketing",
+  "name": "marketing_overview",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/marketing/campaigns",
+  "name": "marketing_campaigns",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/marketing/connections",
+  "name": "marketing_connections",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/marketing/events",
+  "name": "marketing_events",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/marketing/insights",
+  "name": "marketing_insights",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/marketing/leads",
+  "name": "marketing_leads",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/mentions/conversations",
+  "name": "conversation_mentions",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/mentions/conversations/1",
+  "name": "conversation_through_mentions",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/notifications",
+  "name": "notifications_index",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/notifications",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/participating/conversations",
+  "name": "conversation_participating",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/participating/conversations/1",
+  "name": "conversation_through_participating",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/portals",
+  "name": "",
+  "redirect": true,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)",
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(2)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/portals/assistants",
+  "name": "portals_index",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)",
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(2)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/portals/new",
+  "name": "portals_new",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/portals/qa-portal/locales",
+  "name": "portals_locales_index",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)",
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: aria-required-children(1),button-name(2)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/portals/qa-portal/pt_BR/categories",
+  "name": "portals_categories_index",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/portals/qa-portal/pt_BR/categories/qa-cat/articles",
+  "name": "portals_categories_articles_index",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)",
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(2)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/portals/qa-portal/pt_BR/categories/qa-cat/articles/1",
+  "name": "portals_categories_articles_edit",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/portals/qa-portal/pt_BR/qa-cat/articles/conversations",
+  "name": "portals_articles_index",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)",
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(2)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/portals/qa-portal/pt_BR/qa-cat/articles/conversations/edit/1",
+  "name": "portals_articles_edit",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/portals/qa-portal/pt_BR/qa-cat/articles/new",
+  "name": "portals_articles_new",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/portals/qa-portal/settings",
+  "name": "portals_settings_index",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/profile",
+  "name": "profile_settings",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/profile/mfa",
+  "name": "profile_settings_mfa",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/profile/settings",
+  "name": "profile_settings_index",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(2),label(19),nested-interactive(4),select-name(3)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/reports",
+  "name": "",
+  "redirect": true,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/reports",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/reports/agent",
+  "name": "agent_reports",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/reports/agents_overview",
+  "name": "agent_reports_index",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: link-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/reports/agents/9",
+  "name": "agent_reports_show",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: role-img-alt(6)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/reports/bot",
+  "name": "bot_reports",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: role-img-alt(2)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/reports/conversation",
+  "name": "conversation_reports",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: role-img-alt(7)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/reports/csat",
+  "name": "csat_reports",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/reports/inboxes",
+  "name": "inbox_reports",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/reports/inboxes_overview",
+  "name": "inbox_reports_index",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/reports/inboxes/80",
+  "name": "inbox_reports_show",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: role-img-alt(7)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/reports/label",
+  "name": "label_reports",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/reports/labels_overview",
+  "name": "label_reports_index",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/reports/labels/64",
+  "name": "label_reports_show",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: role-img-alt(7)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/reports/overview",
+  "name": "account_overview_reports",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/reports/sla",
+  "name": "sla_reports",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/reports/teams",
+  "name": "team_reports",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/reports/teams_overview",
+  "name": "team_reports_index",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/reports/teams/4",
+  "name": "team_reports_show",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: role-img-alt(7)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/search/conversations",
+  "name": "search",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings",
+  "name": "settings_home",
+  "redirect": true,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/agent-bots",
+  "name": "agent_bots",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/agent-bots",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/agents",
+  "name": "",
+  "redirect": true,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/agents",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/agents/list",
+  "name": "agent_list",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/assignment-policy",
+  "name": "",
+  "redirect": true,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/assignment-policy",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/assignment-policy/assignment",
+  "name": "agent_assignment_policy_index",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/assignment-policy/assignment/create",
+  "name": "agent_assignment_policy_create",
+  "redirect": false,
+  "container": false,
+  "status": "FALHOU",
+  "problems": [
+   "lento 4059ms"
+  ],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)",
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: label(4),select-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/assignment-policy/assignment/edit/1",
+  "name": "agent_assignment_policy_edit",
+  "redirect": false,
+  "container": false,
+  "status": "FALHOU",
+  "problems": [
+   "lento 4068ms"
+  ],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)",
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: label(4),select-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/assignment-policy/capacity",
+  "name": "agent_capacity_policy_index",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/assignment-policy/capacity/create",
+  "name": "agent_capacity_policy_create",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: select-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/assignment-policy/capacity/edit/1",
+  "name": "agent_capacity_policy_edit",
+  "redirect": false,
+  "container": false,
+  "status": "FALHOU",
+  "problems": [
+   "lento 4069ms"
+  ],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: select-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/assignment-policy/index",
+  "name": "assignment_policy_index",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/audit-logs",
+  "name": "",
+  "redirect": true,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/audit-logs",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/audit-logs/list",
+  "name": "auditlogs_list",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/automation",
+  "name": "",
+  "redirect": true,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(3)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/automation",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(3)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/automation/list",
+  "name": "automation_list",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(3)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/billing",
+  "name": "billing_settings_index",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/billing",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/canned-response",
+  "name": "",
+  "redirect": true,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/canned-response",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/canned-response/list",
+  "name": "canned_list",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/conversation-workflow",
+  "name": "conversation_workflow_index",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/conversation-workflow",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/custom-attributes",
+  "name": "",
+  "redirect": true,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/custom-attributes",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/custom-attributes/list",
+  "name": "attributes_list",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/custom-roles",
+  "name": "",
+  "redirect": true,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/custom-roles",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/custom-roles/list",
+  "name": "custom_roles_list",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(2)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/evolution",
+  "name": "settings_evolution_index",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/evolution",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/general",
+  "name": "general_settings_index",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)",
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: select-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/general",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)",
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: select-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/inboxes",
+  "name": "",
+  "redirect": true,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/inboxes",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/inboxes",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/inboxes/80/conversations",
+  "name": "settings_inbox_show",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: label(2),select-name(4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/inboxes/list",
+  "name": "settings_inbox_list",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/inboxes/new",
+  "name": "settings_inbox_new",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/inboxes/new",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/inboxes/new/80/agents",
+  "name": "settings_inboxes_add_agents",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/inboxes/new/80/finish",
+  "name": "settings_inbox_finish",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/inboxes/new/website",
+  "name": "settings_inboxes_page_channel",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/integrations",
+  "name": "settings_applications",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/integrations",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/integrations",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/integrations/dashboard_apps",
+  "name": "settings_integrations_dashboard_apps",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/integrations/dialogflow",
+  "name": "settings_applications_integration",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/integrations/linear",
+  "name": "settings_integrations_linear",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)",
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: link-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/integrations/notion",
+  "name": "settings_integrations_notion",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)",
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: link-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/integrations/shopify",
+  "name": "settings_integrations_shopify",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)",
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: link-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/integrations/slack",
+  "name": "settings_integrations_slack",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)",
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: link-name(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/integrations/webhook",
+  "name": "settings_integrations_webhook",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)",
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(2)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/labels",
+  "name": "labels_wrapper",
+  "redirect": true,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(2)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/labels",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(2)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/labels/list",
+  "name": "labels_list",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(2)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/macros",
+  "name": "macros_wrapper",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(4),link-name(2)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/macros",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(4),link-name(2)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/macros",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: button-name(4),link-name(2)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/macros/1/edit",
+  "name": "macros_edit",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)",
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: listitem(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/macros/new",
+  "name": "macros_new",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)",
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: listitem(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/security",
+  "name": "security_settings_index",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/security",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/sla",
+  "name": "sla_wrapper",
+  "redirect": true,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/sla",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/sla/list",
+  "name": "sla_list",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/teams",
+  "name": "",
+  "redirect": true,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/teams",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/teams",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/teams/4/edit",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: label(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/teams/4/edit",
+  "name": "settings_teams_edit",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: label(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/teams/4/edit/agents",
+  "name": "settings_teams_edit_members",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: label(5)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/teams/4/edit/finish",
+  "name": "settings_teams_edit_finish",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/teams/list",
+  "name": "settings_teams_list",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/settings/teams/new",
+  "name": "settings_teams_new",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: label(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/teams/new",
+  "name": "",
+  "redirect": false,
+  "container": true,
+  "status": "OK",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: label(1)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/teams/new/4/agents",
+  "name": "settings_teams_add_agents",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "a11y de componentes herdados do Chatwoot (button-name/label/select-name/role-img-alt) — corrigir no upstream ou na Fase 4: label(5)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/settings/teams/new/4/finish",
+  "name": "settings_teams_finish",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/suspended",
+  "name": "account_suspended",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/team/4",
+  "name": "team_conversations",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/team/4/conversations/1",
+  "name": "conversations_through_team",
+  "redirect": false,
+  "container": false,
+  "status": "FALHOU",
+  "problems": [
+   "lento 3332ms"
+  ],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/accounts/55/unattended/conversations",
+  "name": "conversation_unattended",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ },
+ {
+  "url": "/app/accounts/55/unattended/conversations/1",
+  "name": "conversation_through_unattended",
+  "redirect": false,
+  "container": false,
+  "status": "BLOQUEADO",
+  "problems": [],
+  "blocked": [
+   "contraste AA dos tokens n-slate-10/11 e n-brand em texto pequeno — decisão de design system (Fase 4)"
+  ]
+ },
+ {
+  "url": "/app/no-accounts",
+  "name": "no_accounts",
+  "redirect": false,
+  "container": false,
+  "status": "OK",
+  "problems": [],
+  "blocked": []
+ }
+]

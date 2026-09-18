@@ -1,2 +1,6 @@
 probe/shots/
-probe/node_modules/
+probe/node_modules
+probe/*.log
+probe/*.err
+probe/results/*.json
+!probe/results/final/

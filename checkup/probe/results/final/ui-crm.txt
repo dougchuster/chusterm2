@@ -1,0 +1,76 @@
+OK   [crm (board)] drawer "Novo negócio" abre 
+OK   [crm (board)] submit desabilitado sem título (validação client-side) 
+OK   [crm (board)] submit habilita com título 
+OK   [crm (board)] POST negócio pela UI status=201 {"id":3960,"title":"QA_UI Negócio 1789747553290","status":"open","legal_area":null,"legal_area_label":null,"case_type":null,"category":null,
+FAIL [crm (board)] feedback visível após criar (card ou mensagem de erro) (nada)
+OK   [crm (board)] busca filtra o board para o negócio criado dealId=3960
+OK   [crm (board)] busca sem resultado mostra estado vazio (não quebra) Arraste negócios para cá
+OK   [crm/deals/:id] ficha abre com o título 
+FAIL [crm/deals/:id] botão de excluir encontrado não achei botão/menu Excluir
+OK   [crm/settings/loss-reasons] criar motivo pela UI persiste status=201
+OK   [contacts (novo)] submit desabilitado com formulário vazio (validação client-side) 
+OK   [contacts (novo)] e-mail inválido → mensagem ou submit bloqueado disabled=true
+OK   [contacts (novo)] criar contato pela UI status=200 id=3200
+OK   [contacts (novo)] contato aparece após criar /app/accounts/55/contacts?page=1
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+apiRequestContext.delete: Timeout 30000ms exceeded.
+Call log:
+[2m  - → DELETE http://127.0.0.1:3010/api/v1/accounts/55/contacts/3200[22m
+[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.7827.55 Safari/537.36[22m
+[2m    - accept: */*[22m
+[2m    - accept-encoding: gzip,deflate,br[22m
+[2m    - X-Forwarded-For: 203.0.113.242[22m
+[2m    - access-token: -5HwQH6vyufFqm8rc9wLhA[22m
+[2m    - authorization: Bearer eyJhY2Nlc3MtdG9rZW4iOiItNUh3UUg2dnl1ZkZxbThyYzl3TGhBIiwidG9rZW4tdHlwZSI6IkJlYXJlciIsImNsaWVudCI6IlpqMmNzTG5ldnNpdXdHU1pqWWJtTVEiLCJleHBpcnkiOiIxNzk1MDExNTAzIiwidWlkIjoicWErZjAtYWRtaW5AY2h1c3Rlcm0uaW52YWxpZCJ9[22m
+[2m    - cache-control: max-age=0, private, must-revalidate[22m
+[2m    - client: Zj2csLnevsiuwGSZjYbmMQ[22m
+[2m    - content-length: 1186[22m
+[2m    - content-type: application/json; charset=utf-8[22m
+[2m    - etag: W/"9962e53dfc972f656b81f8ffe07851ef"[22m
+[2m    - expiry: 1795011503[22m
+[2m    - referrer-policy: strict-origin-when-cross-origin[22m
+[2m    - token-type: Bearer[22m
+[2m    - uid: qa+f0-admin@chusterm.invalid[22m
+[2m    - x-content-type-options: nosniff[22m
+[2m    - x-download-options: noopen[22m
+[2m    - x-frame-options: SAMEORIGIN[22m
+[2m    - x-permitted-cross-domain-policies: none[22m
+[2m    - x-request-id: 50eea75e-9246-477e-beed-5642e2ea87a8[22m
+[2m    - x-runtime: 0.524320[22m
+[2m    - x-xss-protection: 0[22m
+[2m    - cookie: user.id=eyJfcmFpbHMiOnsibWVzc2FnZSI6Ik9RPT0iLCJleHAiOm51bGwsInB1ciI6ImNvb2tpZS51c2VyLmlkIn19--8d83f891698024f91ba0a34488820afb509d4414; user.expires_at=eyJfcmFpbHMiOnsibWVzc2FnZSI6IklqSXdNall0TURrdE1UaFVNVFE2TkRnNk1qTXVOREkyV2lJPSIsImV4cCI6bnVsbCwicHVyIjoiY29va2llLnVzZXIuZXhwaXJlc19hdCJ9fQ%3D%3D--0b88bd5ed28b97c93a1a6b18fced41d87fb7ba02; cw_d_session_info={%22access-token%22:%22-5HwQH6vyufFqm8rc9wLhA%22%2C%22authorization%22:%22Bearer%20eyJhY2Nlc3MtdG9rZW4iOiItNUh3UUg2dnl1ZkZxbThyYzl3TGhBIiwidG9rZW4tdHlwZSI6IkJlYXJlciIsImNsaWVudCI6IlpqMmNzTG5ldnNpdXdHU1pqWWJtTVEiLCJleHBpcnkiOiIxNzk1MDExNTAzIiwidWlkIjoicWErZjAtYWRtaW5AY2h1c3Rlcm0uaW52YWxpZCJ9%22%2C%22cache-control%22:%22max-age=0%2C%20private%2C%20must-revalidate%22%2C%22client%22:%22Zj2csLnevsiuwGSZjYbmMQ%22%2C%22content-length%22:%221186%22%2C%22content-type%22:%22application/json%3B%20charset=utf-8%22%2C%22etag%22:%22W/%5C%229962e53dfc972f656b81f8ffe07851ef%5C%22%22%2C%22expiry%22:%221795011503%22%2C%22referrer-policy%22:%22strict-origin-when-cross-origin%22%2C%22token-type%22:%22Bearer%22%2C%22uid%22:%22qa+f0-admin@chusterm.invalid%22%2C%22x-content-type-options%22:%22nosniff%22%2C%22x-download-options%22:%22noopen%22%2C%22x-frame-options%22:%22SAMEORIGIN%22%2C%22x-permitted-cross-domain-policies%22:%22none%22%2C%22x-request-id%22:%2250eea75e-9246-477e-beed-5642e2ea87a8%22%2C%22x-runtime%22:%220.524320%22%2C%22x-xss-protection%22:%220%22}; _ChusteRM_session=bfLK81t%2BHKjPP0Ru79m5mh47h3uQwxWmWDTOqCoVEFRdWaJzWuzYbEZzeHcZFvNAkPJTTPVnL%2FvTa4JmXb3wMYNVVt2jYVLRncRRjg5CqBBwu1zEhCkC4MSWVkt%2BZMsTPGRe3S8fWhRjhe9lPNu3PLvLf5Uji0u1SBknOOOamz15%2FpFVxlwgp%2FEuaq1XOTJT8L%2FhN8uT7CFml1B1dNCpPDCI91V0tUN5ScBOxXz7C4%2BGDCR1pjjMysD%2BDIAUyPJplPrYr%2BGx%2F6UtHjILCy0bOqaZh63qqoQ%2Fal6ro7Mohkdvq20lVunm3gXtn9DghbhgzDYTpL0voa708fmpufKNkZolxNBp9ZENZYdnsPvSKnegKKIMPqR1DBLBc3wOTxa7tzHHuN4I3BUw--7T8EAihNHb4jWuv%2F--MqfVGBsLKRn2TLKP8v9fuA%3D%3D[22m
+
+    at C:\Users\dougc\Documents\Projetos\ChusteRM\checkup\probe\ui-crm.mjs:119:36 {
+  log: [
+    '  - → DELETE http://127.0.0.1:3010/api/v1/accounts/55/contacts/3200',
+    '    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.7827.55 Safari/537.36',
+    '    - accept: */*',
+    '    - accept-encoding: gzip,deflate,br',
+    '    - X-Forwarded-For: 203.0.113.242',
+    '    - access-token: -5HwQH6vyufFqm8rc9wLhA',
+    '    - authorization: Bearer eyJhY2Nlc3MtdG9rZW4iOiItNUh3UUg2dnl1ZkZxbThyYzl3TGhBIiwidG9rZW4tdHlwZSI6IkJlYXJlciIsImNsaWVudCI6IlpqMmNzTG5ldnNpdXdHU1pqWWJtTVEiLCJleHBpcnkiOiIxNzk1MDExNTAzIiwidWlkIjoicWErZjAtYWRtaW5AY2h1c3Rlcm0uaW52YWxpZCJ9',
+    '    - cache-control: max-age=0, private, must-revalidate',
+    '    - client: Zj2csLnevsiuwGSZjYbmMQ',
+    '    - content-length: 1186',
+    '    - content-type: application/json; charset=utf-8',
+    '    - etag: W/"9962e53dfc972f656b81f8ffe07851ef"',
+    '    - expiry: 1795011503',
+    '    - referrer-policy: strict-origin-when-cross-origin',
+    '    - token-type: Bearer',
+    '    - uid: qa+f0-admin@chusterm.invalid',
+    '    - x-content-type-options: nosniff',
+    '    - x-download-options: noopen',
+    '    - x-frame-options: SAMEORIGIN',
+    '    - x-permitted-cross-domain-policies: none',
+    '    - x-request-id: 50eea75e-9246-477e-beed-5642e2ea87a8',
+    '    - x-runtime: 0.524320',
+    '    - x-xss-protection: 0',
+    '    - cookie: user.id=eyJfcmFpbHMiOnsibWVzc2FnZSI6Ik9RPT0iLCJleHAiOm51bGwsInB1ciI6ImNvb2tpZS51c2VyLmlkIn19--8d83f891698024f91ba0a34488820afb509d4414; user.expires_at=eyJfcmFpbHMiOnsibWVzc2FnZSI6IklqSXdNall0TURrdE1UaFVNVFE2TkRnNk1qTXVOREkyV2lJPSIsImV4cCI6bnVsbCwicHVyIjoiY29va2llLnVzZXIuZXhwaXJlc19hdCJ9fQ%3D%3D--0b88bd5ed28b97c93a1a6b18fced41d87fb7ba02; cw_d_session_info={%22access-token%22:%22-5HwQH6vyufFqm8rc9wLhA%22%2C%22authorization%22:%22Bearer%20eyJhY2Nlc3MtdG9rZW4iOiItNUh3UUg2dnl1ZkZxbThyYzl3TGhBIiwidG9rZW4tdHlwZSI6IkJlYXJlciIsImNsaWVudCI6IlpqMmNzTG5ldnNpdXdHU1pqWWJtTVEiLCJleHBpcnkiOiIxNzk1MDExNTAzIiwidWlkIjoicWErZjAtYWRtaW5AY2h1c3Rlcm0uaW52YWxpZCJ9%22%2C%22cache-control%22:%22max-age=0%2C%20private%2C%20must-revalidate%22%2C%22client%22:%22Zj2csLnevsiuwGSZjYbmMQ%22%2C%22content-length%22:%221186%22%2C%22content-type%22:%22application/json%3B%20charset=utf-8%22%2C%22etag%22:%22W/%5C%229962e53dfc972f656b81f8ffe07851ef%5C%22%22%2C%22expiry%22:%221795011503%22%2C%22referrer-policy%22:%22strict-origin-when-cross-origin%22%2C%22token-type%22:%22Bearer%22%2C%22uid%22:%22qa+f0-admin@chusterm.invalid%22%2C%22x-content-type-options%22:%22nosniff%22%2C%22x-download-options%22:%22noopen%22%2C%22x-frame-options%22:%22SAMEORIGIN%22%2C%22x-permitted-cross-domain-policies%22:%22none%22%2C%22x-request-id%22:%2250eea75e-9246-477e-beed-5642e2ea87a8%22%2C%22x-runtime%22:%220.524320%22%2C%22x-xss-protection%22:%220%22}; _ChusteRM_session=bfLK81t%2BHKjPP0Ru79m5mh47h3uQwxWmWDTOqCoVEFRdWaJzWuzYbEZzeHcZFvNAkPJTTPVnL%2FvTa4JmXb3wMYNVVt2jYVLRncRRjg5CqBBwu1zEhCkC4MSWVkt%2BZMsTPGRe3S8fWhRjhe9lPNu3PLvLf5Uji0u1SBknOOOamz15%2FpFVxlwgp%2FEuaq1XOTJT8L%2FhN8uT7CFml1B1dNCpPDCI91V0tUN5ScBOxXz7C4%2BGDCR1pjjMysD%2BDIAUyPJplPrYr%2BGx%2F6UtHjILCy0bOqaZh63qqoQ%2Fal6ro7Mohkdvq20lVunm3gXtn9DghbhgzDYTpL0voa708fmpufKNkZolxNBp9ZENZYdnsPvSKnegKKIMPqR1DBLBc3wOTxa7tzHHuN4I3BUw--7T8EAihNHb4jWuv%2F--MqfVGBsLKRn2TLKP8v9fuA%3D%3D'
+  ],
+  name: 'TimeoutError'
+}
+
+Node.js v25.2.1

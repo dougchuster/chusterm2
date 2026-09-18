@@ -40,7 +40,7 @@ const signals = (src) => ({
   empty: /EmptyState|empty-state|EMPTY_STATE|NO_RESULTS|isEmpty\b|showEmptyResult|NoRecords|NOTHING_HERE|Nenhum|nenhum/i.test(src),
   errorHandling: /catch\s*\(|\.catch\(|onError|hasError|useAlert\(.*(ERROR|erro)/i.test(src),
   retry: /retry|tentar novamente|TRY_AGAIN|RETRY|refetch|reload/i.test(src),
-  confirmDelete: /DeleteDialog|ConfirmDialog|confirm-dialog|useConfirm|ConfirmModal|deleteConfirm|showDeleteConfirmation|CONFIRM.*DELETE|DELETE.*CONFIRM|openDeletePopup|n-dialog|<Dialog/i.test(src),
+  confirmDelete: /@confirm=|confirmArchive|confirmDelete|DeleteDialog|ConfirmDialog|confirm-dialog|useConfirm|ConfirmModal|deleteConfirm|showDeleteConfirmation|CONFIRM.*DELETE|DELETE.*CONFIRM|openDeletePopup|n-dialog|<Dialog/i.test(src),
   hasDelete: /delete|destroy|remover|excluir/i.test(src),
   validation: /useVuelidate|v\$\.|required\b|\$error|rules=|validate\(|:has-error|hasError/i.test(src),
   masks: /vue-the-mask|v-mask|maska|formatPhone|formatCurrency|cpf|cnpj|Intl\.NumberFormat|toLocaleString|dayjs|date-fns|formatDate/i.test(src),

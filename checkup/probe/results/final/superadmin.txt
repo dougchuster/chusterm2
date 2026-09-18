@@ -1,0 +1,32 @@
+OK   [C1 /super_admin] anônimo é redirecionado para sign_in /super_admin/sign_in
+OK   [C3 /super_admin/accounts] admin de conta comum não acessa (vai para sign_in) /super_admin/sign_in
+OK   [C1 /super_admin] login do super admin /super_admin/users
+OK   [C1 /super_admin] carrega sem 4xx/5xx e sem erros status=200 533ms failed= errs=
+OK   [C2 /super_admin/app_config] carrega sem 4xx/5xx e sem erros status=200 543ms failed= errs=
+OK   [C3 /super_admin/accounts] carrega sem 4xx/5xx e sem erros status=200 569ms failed= errs=
+OK   [C4 /super_admin/accounts/new] carrega sem 4xx/5xx e sem erros status=200 670ms failed= errs=
+OK   [C5 /super_admin/accounts/55] carrega sem 4xx/5xx e sem erros status=200 629ms failed= errs=
+OK   [C6 /super_admin/accounts/55/edit] carrega sem 4xx/5xx e sem erros status=200 677ms failed= errs=
+OK   [C7 /super_admin/users] carrega sem 4xx/5xx e sem erros status=200 590ms failed= errs=
+OK   [C8 /super_admin/users/new] carrega sem 4xx/5xx e sem erros status=200 536ms failed= errs=
+OK   [C9 /super_admin/users/9] carrega sem 4xx/5xx e sem erros status=200 583ms failed= errs=
+OK   [C10 /super_admin/users/9/edit] carrega sem 4xx/5xx e sem erros status=200 545ms failed= errs=
+OK   [C11 /super_admin/access_tokens] carrega sem 4xx/5xx e sem erros status=200 560ms failed= errs=
+OK   [C13 /super_admin/installation_configs] carrega sem 4xx/5xx e sem erros status=200 551ms failed= errs=
+OK   [C14 /super_admin/installation_configs/new] carrega sem 4xx/5xx e sem erros status=200 534ms failed= errs=
+OK   [C17 /super_admin/agent_bots] carrega sem 4xx/5xx e sem erros status=200 538ms failed= errs=
+OK   [C18 /super_admin/agent_bots/new] carrega sem 4xx/5xx e sem erros status=200 538ms failed= errs=
+OK   [C21 /super_admin/platform_apps] carrega sem 4xx/5xx e sem erros status=200 541ms failed= errs=
+OK   [C22 /super_admin/platform_apps/new] carrega sem 4xx/5xx e sem erros status=200 529ms failed= errs=
+OK   [C25 /super_admin/instance_status] carrega sem 4xx/5xx e sem erros status=200 541ms failed= errs=
+OK   [C26 /super_admin/settings] carrega sem 4xx/5xx e sem erros status=200 541ms failed= errs=
+OK   [C27 /super_admin/account_users/new] carrega sem 4xx/5xx e sem erros status=200 539ms failed= errs=
+OK   [C11 /super_admin/access_tokens] tokens não aparecem em claro na listagem 
+OK   [C18 /super_admin/agent_bots/new] criar agent bot /super_admin/agent_bots/3
+OK   [C20 /super_admin/agent_bots/:id/edit] nome vazio → erro de validação exibido Nome não pode ficar em branco
+OK   [C20 /super_admin/agent_bots/:id] excluir agent bot (com CSRF) status=0
+OK   [C20 /super_admin/agent_bots/:id] DELETE sem CSRF é rejeitado status=422
+OK   [/monitoring/sidekiq] acessível para super admin status=200
+OK   [/monitoring/sidekiq] anônimo não acessa status=404
+
+30/30 OK
