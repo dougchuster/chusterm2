@@ -227,7 +227,122 @@ class Crm::MetricsService
     end
   end
 
+  # 6.2 — Tempo até a 1ª resposta humana.
+  #
+  # Coorte: deals criados no período que já têm conversa principal. O relógio
+  # começa na 1ª mensagem do cliente (fallback: criação da conversa, depois do
+  # deal) e para na 1ª mensagem humana (outgoing/template com sender User).
+  # Respostas anteriores ao 1º incoming são fluxo outbound — entram como
+  # respondidos, não como tempo de resposta. Deals sem resposta humana e com
+  # espera acima do limiar saem na lista `unanswered`.
+  def first_response_metrics(period_days: 30, sla_minutes: 15, unattended_hours: 1)
+    since = period_days.days.ago
+    deals = account.crm_deals
+      .where('crm_deals.created_at >= ?', since)
+      .where.not(conversation_id: nil)
+      .pluck(:id, :conversation_id, :created_at, :title)
+
+    conversation_ids = deals.pluck(1).uniq
+    starts = first_incoming_at(conversation_ids)
+    replies = first_human_reply_at(conversation_ids)
+    convo_created = Conversation.where(id: conversation_ids).pluck(:id, :created_at).to_h
+
+    durations = []
+    unanswered = []
+    cutoff = unattended_hours.hours.ago
+
+    deals.each do |deal_id, conversation_id, deal_created_at, title|
+      started_at = starts[conversation_id] || convo_created[conversation_id] || deal_created_at
+      replied_at = replies[conversation_id]
+
+      if replied_at && started_at && replied_at >= started_at
+        durations << ((replied_at - started_at) / 60.0)
+      elsif replied_at.nil? && started_at && started_at < cutoff
+        unanswered << {
+          id: deal_id,
+          title: title,
+          waiting_minutes: ((Time.current - started_at) / 60.0).round
+        }
+      end
+    end
+
+    {
+      deals_with_conversation: deals.size,
+      answered: durations.size,
+      avg_first_response_minutes: durations.any? ? (durations.sum / durations.size).round(1) : 0,
+      within_sla_pct: durations.any? ? (durations.count { |m| m <= sla_minutes }.to_f / durations.size * 100).round(1) : 0,
+      sla_minutes: sla_minutes,
+      unattended_hours: unattended_hours,
+      unanswered: unanswered.sort_by { |entry| -entry[:waiting_minutes] }
+    }
+  end
+
+  # 6.3 — Previsão ponderada por etapa do funil.
+  #
+  # Peso = probability_pct do deal; quando 0 (não informado), cai na
+  # probability_pct da etapa. Um único GROUP BY emite count/valor bruto/valor
+  # ponderado — sem query por etapa.
+  def weighted_forecast(pipeline_id: nil)
+    pipeline = resolve_pipeline(pipeline_id)
+    stages = pipeline_stages(pipeline)
+
+    aggregates = account.crm_deals.open_deals
+      .where(crm_pipeline: pipeline)
+      .joins(:crm_pipeline_stage)
+      .group(:crm_pipeline_stage_id)
+      .pluck(
+        :crm_pipeline_stage_id,
+        Arel.sql('COUNT(*)'),
+        Arel.sql('COALESCE(SUM(value_estimate_cents), 0)'),
+        Arel.sql(
+          'COALESCE(SUM(value_estimate_cents * ' \
+          'COALESCE(NULLIF(crm_deals.probability_pct, 0), crm_pipeline_stages.probability_pct) / 100.0), 0)'
+        )
+      ).to_h do |stage_id, count, total, weighted|
+        [stage_id, { count: count, total: total, weighted: weighted }]
+      end
+
+    per_stage = stages.map do |stage|
+      agg = aggregates[stage.id] || { count: 0, total: 0, weighted: 0 }
+      {
+        stage_id: stage.id,
+        stage_name: stage.name,
+        probability_pct: stage.probability_pct,
+        deal_count: agg[:count],
+        total_value: (agg[:total] / 100.0).round(2),
+        weighted_value: (agg[:weighted] / 100.0).round(2)
+      }
+    end
+
+    {
+      pipeline_id: pipeline&.id,
+      pipeline_name: pipeline&.name,
+      total_value: per_stage.sum { |s| s[:total_value] }.round(2),
+      weighted_value: per_stage.sum { |s| s[:weighted_value] }.round(2),
+      stages: per_stage
+    }
+  end
+
   private
+
+  def first_incoming_at(conversation_ids)
+    return {} if conversation_ids.empty?
+
+    Message.where(account_id: account.id, conversation_id: conversation_ids, message_type: :incoming)
+      .unscope(:order)
+      .group(:conversation_id)
+      .minimum(:created_at)
+  end
+
+  def first_human_reply_at(conversation_ids)
+    return {} if conversation_ids.empty?
+
+    Message.where(account_id: account.id, conversation_id: conversation_ids)
+      .where(message_type: %i[outgoing template], sender_type: 'User')
+      .unscope(:order)
+      .group(:conversation_id)
+      .minimum(:created_at)
+  end
 
   # Sem pipeline_id explícito, as métricas por etapa medem o funil default —
   # nunca uma mistura de todos os funis da conta.

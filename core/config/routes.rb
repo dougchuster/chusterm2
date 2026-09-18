@@ -242,6 +242,8 @@ Rails.application.routes.draw do
             get 'metrics/area_distribution', to: 'metrics#area_distribution'
             get 'metrics/top_deals', to: 'metrics#top_deals'
             get 'metrics/stale_deals', to: 'metrics#stale_deals'
+            get 'metrics/first_response', to: 'metrics#first_response'
+            get 'metrics/weighted_forecast', to: 'metrics#weighted_forecast'
           end
           namespace :marketing do
             resources :connections, only: [:index, :destroy] do

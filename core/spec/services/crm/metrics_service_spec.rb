@@ -153,4 +153,88 @@ RSpec.describe Crm::MetricsService do
       expect(result.map { |entry| entry[:id] }).not_to include(deal.id)
     end
   end
+
+  describe '#first_response_metrics' do
+    let(:inbox) { create(:inbox, account: account) }
+    let(:contact) { create(:contact, account: account) }
+    let(:agent) { create(:user, account: account) }
+
+    def deal_with_conversation(title)
+      conversation = create(:conversation, account: account, inbox: inbox, contact: contact)
+      [create_deal!(title: title, conversation: conversation), conversation]
+    end
+
+    it 'measures minutes from the first incoming message to the first human reply' do
+      deal, conversation = deal_with_conversation('Cliente rápido')
+      create(:message, conversation: conversation, account: account,
+                       message_type: :incoming, sender: contact, created_at: 30.minutes.ago)
+      create(:message, conversation: conversation, account: account,
+                       message_type: :outgoing, sender: agent, created_at: 20.minutes.ago)
+
+      result = described_class.new(account).first_response_metrics(period_days: 30)
+
+      expect(result[:deals_with_conversation]).to eq(1)
+      expect(result[:answered]).to eq(1)
+      expect(result[:avg_first_response_minutes]).to eq(10.0)
+      expect(result[:within_sla_pct]).to eq(100.0)
+      expect(result[:unanswered]).to be_empty
+      expect(deal.conversation_id).to eq(conversation.id)
+    end
+
+    it 'flags deals waiting longer than the unattended threshold' do
+      deal, conversation = deal_with_conversation('Cliente esquecido')
+      create(:message, conversation: conversation, account: account,
+                       message_type: :incoming, sender: contact, created_at: 3.hours.ago)
+      _recent, recent_conversation = deal_with_conversation('Cliente novo')
+      create(:message, conversation: recent_conversation, account: account,
+                       message_type: :incoming, sender: contact, created_at: 10.minutes.ago)
+
+      result = described_class.new(account).first_response_metrics(
+        period_days: 30, unattended_hours: 1
+      )
+
+      expect(result[:answered]).to eq(0)
+      ids = result[:unanswered].map { |entry| entry[:id] }
+      expect(ids).to include(deal.id)
+      expect(ids.length).to eq(1)
+      expect(result[:unanswered].first[:waiting_minutes]).to be >= 170
+    end
+
+    it 'ignores replies sent before the first incoming message (outbound flow)' do
+      _deal, conversation = deal_with_conversation('Fluxo outbound')
+      create(:message, conversation: conversation, account: account,
+                       message_type: :outgoing, sender: agent, created_at: 2.hours.ago)
+      create(:message, conversation: conversation, account: account,
+                       message_type: :incoming, sender: contact, created_at: 30.minutes.ago)
+
+      result = described_class.new(account).first_response_metrics(
+        period_days: 30, unattended_hours: 1
+      )
+
+      expect(result[:answered]).to eq(0)
+      expect(result[:unanswered]).to be_empty
+    end
+  end
+
+  describe '#weighted_forecast' do
+    it 'weights open deal value by deal probability, falling back to stage probability' do
+      stage.update!(probability_pct: 50)
+      qualified_stage.update!(probability_pct: 80)
+
+      create_deal!(title: 'Com prob própria', value_estimate_cents: 100_000, probability_pct: 25)
+      create_deal!(title: 'Herda da etapa', stage: qualified_stage, value_estimate_cents: 50_000, probability_pct: 0)
+      create_deal!(title: 'Fechado não entra', status: 'won', closed_at: 1.day.ago, value_estimate_cents: 999_000)
+
+      result = described_class.new(account).weighted_forecast
+
+      novo = result[:stages].find { |entry| entry[:stage_id] == stage.id }
+      qualificado = result[:stages].find { |entry| entry[:stage_id] == qualified_stage.id }
+
+      expect(novo[:deal_count]).to eq(1)
+      expect(novo[:weighted_value]).to eq(250.0)
+      expect(qualificado[:weighted_value]).to eq(400.0)
+      expect(result[:weighted_value]).to eq(650.0)
+      expect(result[:total_value]).to eq(1500.0)
+    end
+  end
 end

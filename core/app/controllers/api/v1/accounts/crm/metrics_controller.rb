@@ -66,6 +66,18 @@ class Api::V1::Accounts::Crm::MetricsController < Api::V1::Accounts::Crm::BaseCo
     }
   end
 
+  def first_response
+    render json: cached('first_response', params[:period_days]) {
+      metrics_service.first_response_metrics(period_days: params[:period_days]&.to_i || 30)
+    }
+  end
+
+  def weighted_forecast
+    render json: cached('weighted_forecast', params[:pipeline_id]) {
+      metrics_service.weighted_forecast(pipeline_id: params[:pipeline_id])
+    }
+  end
+
   private
 
   def cached(*keys, &block)
