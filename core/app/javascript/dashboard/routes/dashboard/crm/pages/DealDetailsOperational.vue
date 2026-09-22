@@ -7,6 +7,7 @@ import CrmAPI from 'dashboard/api/crm';
 import CRMDealDrawer from 'dashboard/components/crm/CRMDealDrawer.vue';
 import CRMScoreBadge from 'dashboard/components/crm/CRMScoreBadge.vue';
 import CRMDealAiInsightsCard from 'dashboard/components/crm/CRMDealAiInsightsCard.vue';
+import CRMDocumentVault from 'dashboard/routes/dashboard/crm/components/documents/CRMDocumentVault.vue';
 import Icon from 'dashboard/components-next/icon/Icon.vue';
 import { useMapGetter, useStore } from 'dashboard/composables/store';
 import { useAdmin } from 'dashboard/composables/useAdmin';
@@ -41,6 +42,10 @@ const refreshing = ref(false);
 const saving = ref(false);
 const error = ref('');
 const activeTab = ref('activities');
+// Cofre de documentos: some (volta aos anexos da conversa) quando o módulo
+// está desligado na conta — o componente avisa com `unavailable`.
+const documentVaultAvailable = ref(true);
+const documentVaultCount = ref(null);
 const showEditDrawer = ref(false);
 const showActivityDrawer = ref(false);
 const showLossModal = ref(false);
@@ -85,7 +90,9 @@ const allTabs = computed(() => [
     value: 'files',
     label: 'Arquivos',
     icon: 'i-lucide-paperclip',
-    count: attachments.value.length,
+    count: useDocumentVault.value && documentVaultCount.value !== null
+      ? documentVaultCount.value
+      : attachments.value.length,
   },
   {
     value: 'automations',
@@ -128,6 +135,8 @@ const contact = computed(() => deal.value?.contact || {});
 const activities = computed(() => deal.value?.activities || []);
 const messages = computed(() => deal.value?.messages || []);
 const attachments = computed(() => deal.value?.attachments || []);
+const vaultContactId = computed(() => Number(deal.value?.contact_id || contact.value?.id) || null);
+const useDocumentVault = computed(() => documentVaultAvailable.value && Boolean(vaultContactId.value));
 const stageOptions = computed(() =>
   stages.value.map(stage => ({
     value: String(stage.id),
@@ -829,6 +838,13 @@ onMounted(async () => {
         </article>
       </div>
 
+      <CRMDocumentVault
+        v-else-if="activeTab === 'files' && useDocumentVault"
+        :contact-id="vaultContactId"
+        :deal-id="dealId"
+        @unavailable="documentVaultAvailable = false"
+        @count="documentVaultCount = $event"
+      />
       <div v-else-if="activeTab === 'files'" class="grid gap-3 p-4 sm:grid-cols-2">
         <p
           v-if="!attachments.length"

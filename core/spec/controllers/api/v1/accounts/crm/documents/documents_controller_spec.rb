@@ -191,6 +191,17 @@ RSpec.describe 'CRM Documents API', type: :request do
       expect(response.location).to include('/rails/active_storage/disk/')
       expect(CrmAuditEvent.for_target('CrmDocument', document.id).pluck(:action)).to include('document_downloaded')
     end
+
+    it 'devolve a URL temporária em JSON para o dashboard abrir' do
+      document = crm_document_for(contact, doc_type: 'rg')
+
+      get "#{base}/#{document.id}/download", params: { disposition: 'inline', mode: 'url' },
+                                             headers: admin.create_new_auth_token
+
+      expect(response).to have_http_status(:success)
+      expect(response.parsed_body['url']).to include('/rails/active_storage/disk/')
+      expect(response.parsed_body['expires_in']).to eq(300)
+    end
   end
 
   def agent_with_access

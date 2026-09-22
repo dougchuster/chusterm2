@@ -69,6 +69,10 @@ class Api::V1::Accounts::Crm::DocumentsController < Api::V1::Accounts::Crm::Docu
     return render json: { error: 'not_found' }, status: :not_found unless @document.file.attached?
 
     audit('document_downloaded', @document, disposition: disposition)
+    # O dashboard autentica por cabeçalho, que o navegador não envia ao seguir
+    # um link: com mode=url a resposta traz a URL temporária para a tela abrir.
+    return render json: { url: temporary_url, expires_in: DOWNLOAD_TTL.to_i } if params[:mode] == 'url'
+
     redirect_to temporary_url, allow_other_host: true
   end
 
