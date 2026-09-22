@@ -19,7 +19,9 @@ class Crm::Documents::DocumentUpdater
     apply_manual_name(attributes) if attributes.key?(:file_name)
     route_from_triage(attributes)
     @document.update!(attributes)
-    @document.saved_changes.except(*IGNORED_CHANGES).transform_values { |(from, to)| { from: from, to: to } }
+    changes = @document.saved_changes.except(*IGNORED_CHANGES).transform_values { |(from, to)| { from: from, to: to } }
+    Crm::Documents::Versioner.call(@document) if changes.key?('doc_type') || changes.key?('crm_document_folder_id')
+    changes
   end
 
   private

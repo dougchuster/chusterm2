@@ -100,6 +100,7 @@ class Crm::Documents::Uploader
     )
     Crm::AuditLogger.log(account: @account, actor: @user, action: 'document_created', target: document,
                          payload: { source: @source, folder_id: document.crm_document_folder_id })
+    Crm::Documents::Versioner.call(document, actor: @user)
     document
   end
 

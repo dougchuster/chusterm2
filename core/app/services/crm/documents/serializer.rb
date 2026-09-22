@@ -34,7 +34,8 @@ class Crm::Documents::Serializer
     { id: document.id, contact_id: document.contact_id, folder_id: document.crm_document_folder_id,
       deal_id: document.crm_deal_id, content_type: document.content_type, byte_size: document.byte_size,
       original_filename: document.original_filename, archived_at: document.archived_at,
-      created_at: document.created_at }
+      created_at: document.created_at, versions_count: document.versions_count,
+      previous_version_id: document.meta&.dig('previous_version_id') }
   end
 
   def classification(document)

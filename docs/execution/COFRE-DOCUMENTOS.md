@@ -198,7 +198,7 @@ Ligar para o escritório: `Crm::Documents::Feature.enable!(Account.find(1))` na 
 | Escolher checklist na aba (197 dos 208 negócios abertos da cliente não têm área nem tipo, então o casamento automático quase nunca acontece) e marcar "entregue em papel" | feito | `crm_deals.custom_fields['documents_checklist']`; `CRMDocumentChecklist.vue` |
 | Validade automática pelo tipo (certidões 90 dias, CNIS 30), sem sobrescrever data manual | feito | `CrmDocument#assign_expiry` |
 | Aprovar / Rejeitar com motivo (chips: Ilegível, Cortado, Vencido, Documento errado) | feito | `CRMDocumentList.vue`, `CRMDocumentEditModal.vue` |
-| Versões (reenvio vira versão, anterior preservada) | pendente | — |
+| Versões: mesmo tipo na mesma pasta com conteúdo diferente vira v2; a anterior vai para 99 Arquivo, obsoleta, como "(v1)"; selo "vN" na lista | feito | `Crm::Documents::Versioner` (chamado no upload e ao classificar/mover); sem tabela nova, conforme §5.3 |
 | Fila "Vencendo" e modelos de pasta editáveis por área | pendente | — |
 
 **Testes:** RSpec do módulo 154/0 (+checklist, validade); Vitest do cofre 20/0.

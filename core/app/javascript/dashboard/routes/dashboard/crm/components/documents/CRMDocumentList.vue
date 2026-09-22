@@ -121,6 +121,14 @@ const itemClass =
         class="hidden sm:inline-flex"
       />
       <DsBadge
+        v-if="document.versions_count > 1"
+        variant="info"
+        icon="i-lucide-history"
+        :label="`v${document.versions_count}`"
+        title="A versão anterior está em 99 Arquivo"
+        class="hidden sm:inline-flex"
+      />
+      <DsBadge
         v-if="expiringSoon(document)"
         variant="warning"
         icon="i-lucide-clock-alert"
