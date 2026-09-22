@@ -4,7 +4,7 @@ RSpec.describe CrmDocument do
   let(:account) { create(:account) }
   let(:contact) { create(:contact, account: account) }
 
-  before { Crm::Documents::Defaults.ensure!(account) }
+  before { Crm::Documents::Defaults.ensure!(account, preset: 'legal') }
 
   def build(**attrs)
     described_class.new(

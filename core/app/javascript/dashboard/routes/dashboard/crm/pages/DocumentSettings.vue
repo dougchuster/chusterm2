@@ -25,7 +25,7 @@ const tabs = [
 </script>
 
 <template>
-  <div class="flex h-full min-h-0 flex-col gap-4 overflow-y-auto p-4 md:p-6">
+  <div class="flex h-full min-h-0 flex-col gap-4 overflow-y-auto p-4 md:p-6 [&>*]:shrink-0">
     <header class="flex items-center gap-3">
       <Icon
         icon="i-lucide-settings-2"
