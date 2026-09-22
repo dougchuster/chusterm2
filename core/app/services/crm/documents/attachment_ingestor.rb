@@ -9,6 +9,10 @@
 class Crm::Documents::AttachmentIngestor
   INGESTED_FILE_TYPES = %w[image video file].freeze
   SMALL_IMAGE_BYTES = 40.kilobytes
+  # Vídeo de iPhone passa fácil de 50 MB (MOV médio ~100 MB na produção em
+  # 22/09): o limite do upload da equipe deixaria provas em vídeo de fora.
+  CAPTURE_MAX_BYTES = 200.megabytes
+  STICKER_CONTENT_TYPE = 'image/webp'.freeze
   CAPTION_MAX_LENGTH = 500
   CAPTURE_OUTGOING_KEY = 'crm_documents_capture_outgoing'.freeze
   SENT_SLOT = 'enviados'.freeze
@@ -64,12 +68,13 @@ class Crm::Documents::AttachmentIngestor
   end
 
   def copy_into_vault
-    @attachment.file.blob.open do |file|
-      Crm::Documents::Uploader.new(
-        contact: contact, io: file, filename: @attachment.file.filename.to_s, source: source,
-        folder: destination_folder, provenance: provenance
-      ).call.document
-    end
+    return if @attachment.file.blob.byte_size > CAPTURE_MAX_BYTES
+
+    Crm::Documents::Uploader.new(
+      contact: contact, blob: Crm::Documents::BlobCloner.call(@attachment.file.blob),
+      filename: @attachment.file.filename.to_s, source: source, max_bytes: CAPTURE_MAX_BYTES,
+      folder: destination_folder, provenance: provenance
+    ).call.document
   end
 
   def destination_folder
@@ -90,10 +95,12 @@ class Crm::Documents::AttachmentIngestor
   end
 
   # Figurinha ou print solto: vai para a triagem marcado, para descartar rápido.
+  # Figurinha do WhatsApp é WebP (394 na produção em 22/09), de qualquer tamanho.
   def likely_irrelevant?(caption)
     return nil unless @attachment.file_type.to_s == 'image' && caption.blank?
 
-    @attachment.file.blob.byte_size < SMALL_IMAGE_BYTES ? true : nil
+    blob = @attachment.file.blob
+    blob.content_type == STICKER_CONTENT_TYPE || blob.byte_size < SMALL_IMAGE_BYTES ? true : nil
   end
 
   def source

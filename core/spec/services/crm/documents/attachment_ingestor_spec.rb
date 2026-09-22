@@ -53,6 +53,34 @@ RSpec.describe Crm::Documents::AttachmentIngestor do
     expect(document.reload.file.download).to start_with('%PDF')
   end
 
+  it 'faz a cópia por hardlink, sem ocupar espaço extra em disco' do
+    attachment = message_with_file
+    document = ingest(attachment)
+    service = document.file.blob.service
+
+    expect(File.stat(service.path_for(document.file.blob.key)).ino)
+      .to eq(File.stat(service.path_for(attachment.file.blob.key)).ino)
+  end
+
+  it 'aceita vídeo grande de conversa acima do limite do upload da equipe' do
+    stub_const('Crm::Documents::Uploader::MAX_BYTES', 10)
+
+    expect(ingest(message_with_file)).to be_present
+  end
+
+  it 'marca figurinha WebP sem legenda como provável irrelevante, mesmo acima de 40 KB' do
+    webp = "RIFF#{[60_000].pack('V')}WEBPVP8 ".b + (0.chr.b * 60_000)
+    message = create(:message, account: account, inbox: inbox, conversation: conversation, content: nil)
+    attachment = message.attachments.new(account_id: account.id, file_type: :image)
+    attachment.file.attach(io: StringIO.new(webp), filename: 'sticker.webp', content_type: 'image/webp')
+    attachment.save!
+
+    document = ingest(attachment)
+
+    expect(document.content_type).to eq('image/webp')
+    expect(document.meta['likely_irrelevant']).to be(true)
+  end
+
   it 'é idempotente para o mesmo anexo (webhook duplicado)' do
     attachment = message_with_file
     first = ingest(attachment)

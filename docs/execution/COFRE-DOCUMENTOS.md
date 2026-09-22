@@ -39,8 +39,37 @@ Se o banco de teste estiver defasado em relação à branch, recarregue a partir
 |------|--------|-----------|
 | Decisões D1–D14 registradas | feito (provisórias) | `DECISOES.md` → ADR-DOC |
 | D15: flag por `accounts.settings` (bitmask de features no limite) | feito | `DECISOES.md` → ADR-DOC; `Crm::Documents::Feature` |
-| Volume atual de anexos por conta nas VPS | **pendente** | Exige acesso de leitura à produção; rodar a query abaixo nas duas VPS |
-| Espaço livre do volume `core-storage` e suporte a hardlink | **pendente** | `df -h` e teste de `ln` dentro do volume, nas duas VPS |
+| Volume atual de anexos por conta nas VPS | feito (22/09, somente leitura) | ver "Medição de produção" abaixo |
+| Espaço livre do volume `core-storage` e suporte a hardlink | feito | ext4 nas duas VPS (hardlink suportado); espaço abaixo |
+
+#### Medição de produção (22/09/2026, somente leitura, transação `read_only`)
+
+**KVM4 — crm.coimbraeruas.com.br (cliente):**
+
+| Item | Valor |
+|------|-------|
+| Disco `/` | 193 GB, **130 GB usados (68%)**, 64 GB livres |
+| Volume `core-storage` (arquivos do app) | 4,6 GB |
+| Banco (`chusterm_postgres-data`) | 11 GB |
+| `/opt/chusterm-backups` | **56 GB** — 8 backups de pré-deploy de ~6,8 GB sem rotação + dump de 23/07 (2,7 GB) |
+| Imagens Docker / cache de build | 30 GB (27 GB recuperáveis) / 14 GB |
+| Contatos | 3.578 (195 com anexo de documento) |
+| Anexos de documento (imagem, vídeo, arquivo) | 3.356, **4,5 GB**, desde 21/05/2026 |
+| Ritmo | ~1.000 arquivos e ~1 GB por mês (mai 1,3 GB; jun 0,5; jul 1,0; ago 1,1) |
+| Por tipo | JPEG 1.693 (224 MB), PDF 1.024 (1,7 GB), WebP 394 (61 MB), DOCX 128, MP4 87 (912 MB), MOV 15 (**1,5 GB**) |
+| Recebidos × enviados pela equipe | 1.739 × 2.861 |
+| Imagens < 40 KB | 239 |
+| Áudios (fora do cofre) | 2.102, 88 MB |
+
+**Chuster — crm.chuster.tech (canário):** disco 96 GB, 43% usado; nenhum contato nem anexo.
+
+**Conclusões:**
+
+1. **O cofre não pressiona o disco; os backups sim.** Documentos são 4,5 GB e crescem ~1 GB/mês. Os backups de pré-deploy crescem 6,8 GB **a cada deploy**, sem rotação: com 64 GB livres, o disco da cliente lota em uns 9 deploys, com ou sem cofre. **Recomendação:** rotação no `/root/predeploy-backup.sh` (manter os 3 últimos + 1 semanal) e cópia externa. Não apaguei nada: backup de produção é irreversível e o espaço ainda não é urgente.
+2. **D1 confirmada:** disco local continua adequado para os documentos. O gatilho "migrar ao passar de 60%" foi pensado para o volume de documentos; aqui o que passa de 60% são backups e imagens.
+3. **Cópia própria por hardlink:** copiar os anexos para o cofre dobraria 4,5 GB (+1 GB/mês). Como o serviço é Disk em ext4, a cópia vira hardlink: arquivo independente, zero espaço extra (implementado em seguida).
+4. **Figurinhas são WebP** (394): a marca "provável figurinha" passa a considerar WebP sem legenda, não só o tamanho.
+5. **Vídeo de iPhone passa de 50 MB** (MOV médio ~100 MB): com o limite do upload, provas em vídeo ficariam fora do cofre. Limite da captura de conversa sobe para 200 MB (o upload da equipe segue em 50 MB, que é o corte do nginx).
 
 Query de dimensionamento (somente leitura):
 
@@ -132,7 +161,8 @@ Sem achados em: IDOR entre contas/contatos, path traversal/header injection no n
 
 **Decisões de implementação da F2:**
 
-- **Cópia própria do arquivo.** O documento não reaproveita o blob do anexo da mensagem: se a conversa ou a mensagem for apagada, o Active Storage tentaria apagar um arquivo compartilhado. Custo: documento recebido ocupa o dobro enquanto a conversa existir. Rever se o disco apertar (alternativa: hardlink no Disk service).
+- **Cópia própria do arquivo, por hardlink.** O documento não reaproveita o blob do anexo da mensagem: se a conversa ou a mensagem for apagada, o Active Storage tentaria apagar um arquivo compartilhado. `Crm::Documents::BlobCloner` cria um blob independente; no serviço Disk (produção) é um hardlink — zero espaço extra, e apagar um não afeta o outro. Em volume sem hardlink ou em S3, copia os bytes. Motivo: medição de produção (copiar dobraria 4,5 GB + 1 GB/mês).
+- **Limite da captura: 200 MB** (vídeo de iPhone); upload da equipe segue em 50 MB. **WebP sem legenda** marcado como provável figurinha.
 - **Áudio não entra.** Nota de voz é conversa, não documento (§7.2). Imagem, vídeo e arquivo entram.
 - **Origem pelo canal da inbox:** WhatsApp, e-mail, Instagram; demais canais (widget, API) como `chat` ("Conversa").
 - **Nota privada não entra** (inclui anexos que a equipe põe só para uso interno).

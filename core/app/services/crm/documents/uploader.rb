@@ -15,12 +15,16 @@ class Crm::Documents::Uploader
   ALLOWED_CONTENT_TYPES = Crm::Documents::Naming::Extension::BY_CONTENT_TYPE.keys.freeze
 
   # rubocop:disable Metrics/ParameterLists
+  # Recebe `io` (upload) ou `blob` já pronto (captura: clone por hardlink).
   # `provenance`: source_attachment_id, source_message_id, uploaded_by_contact,
   # received_at (hora em que o cliente mandou) e meta.
-  def initialize(contact:, io:, filename:, source:, user: nil, folder: nil, deal: nil, attributes: {}, provenance: {})
+  def initialize(contact:, filename:, source:, io: nil, blob: nil, max_bytes: MAX_BYTES, user: nil, folder: nil,
+                 deal: nil, attributes: {}, provenance: {})
     @contact = contact
     @account = contact.account
     @io = io
+    @prebuilt_blob = blob
+    @max_bytes = max_bytes
     @filename = Crm::Documents::Naming::Sanitizer.call(filename, max: 200, fallback: 'arquivo')
     @source = source
     @user = user
@@ -35,25 +39,34 @@ class Crm::Documents::Uploader
     by_attachment = find_by_source_attachment
     return Result.new(document: by_attachment, duplicate: true) if by_attachment
 
-    check_size!
-    blob = ActiveStorage::Blob.create_and_upload!(io: @io, filename: @filename, identify: true)
+    blob = @prebuilt_blob || upload_io
+    check_size!(blob.byte_size)
     check_content_type!(blob)
     duplicate = find_duplicate(blob)
     return reuse(duplicate, blob) if duplicate
 
     Result.new(document: create_document(blob), duplicate: false)
   rescue StandardError
-    blob&.purge unless blob&.attachments&.any?
+    discard_orphan(blob)
     raise
   end
 
   private
 
-  def check_size!
-    size = @io.respond_to?(:size) ? @io.size : nil
-    return if size.nil? || size <= MAX_BYTES
+  # Arquivo que não virou documento não pode ficar ocupando disco.
+  def discard_orphan(blob)
+    blob.purge if blob&.attachments&.none?
+  end
 
-    raise InvalidFile, "O arquivo passa do limite de #{MAX_BYTES / 1.megabyte} MB."
+  def upload_io
+    check_size!(@io.respond_to?(:size) ? @io.size : nil)
+    ActiveStorage::Blob.create_and_upload!(io: @io, filename: @filename, identify: true)
+  end
+
+  def check_size!(size)
+    return if size.nil? || size <= @max_bytes
+
+    raise InvalidFile, "O arquivo passa do limite de #{@max_bytes / 1.megabyte} MB."
   end
 
   def check_content_type!(blob)
