@@ -1,0 +1,54 @@
+<header class="brand">
+  <p class="brand-name"><%= @form.account.name %></p>
+  <h1><%= @form.name %></h1>
+  <% if @link %>
+    <p class="lead">Olá, <%= @link.contact.name.to_s.split.first %>! Envie os documentos abaixo.</p>
+  <% end %>
+  <% if @form.setting('intro').present? %><p class="lead"><%= @form.setting('intro') %></p><% end %>
+</header>
+
+<% if @errors.present? %>
+  <div class="alert" role="alert">
+    <%= @errors['form'] || 'Confira os campos marcados abaixo.' %>
+    <% if @errors['files'] %><br><%= @errors['files'] %><% end %>
+  </div>
+<% end %>
+
+<%= form_tag(request.path, multipart: true, class: 'form', id: 'document-form', novalidate: true) do %>
+  <input type="hidden" name="started_at" value="<%= @started_at %>">
+  <div class="honeypot" aria-hidden="true">
+    <label for="website">Deixe em branco</label>
+    <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+  </div>
+
+  <% if @fields.any? %>
+    <section class="card" aria-labelledby="dados-titulo">
+      <h2 id="dados-titulo">Seus dados</h2>
+      <% @fields.each do |field| %>
+        <%= render 'field', field: field %>
+      <% end %>
+    </section>
+  <% end %>
+
+  <% if @items.any? %>
+    <section class="card" aria-labelledby="documentos-titulo">
+      <h2 id="documentos-titulo">Documentos</h2>
+      <p class="hint">Fotos são reduzidas no celular antes do envio. Aceitamos PDF, foto e documentos do Office.</p>
+      <% @items.each do |item| %>
+        <%= render 'document_item', item: item %>
+      <% end %>
+    </section>
+  <% end %>
+
+  <section class="card">
+    <label class="choice consent<%= ' has-error' if @errors && @errors['consent'] %>" for="consent">
+      <input type="checkbox" id="consent" name="consent" value="1">
+      <span><%= @form.setting('consent_text').presence || 'Autorizo o uso destes dados e documentos exclusivamente para o meu atendimento.' %></span>
+    </label>
+    <% if @errors && @errors['consent'] %><p class="error" role="alert"><%= @errors['consent'] %></p><% end %>
+    <button type="submit" class="button button-primary" data-submit>
+      <%= @form.setting('submit_label').presence || 'Enviar' %>
+    </button>
+    <p class="hint center">Seus dados são usados só para o seu atendimento.</p>
+  </section>
+<% end %>

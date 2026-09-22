@@ -1,0 +1,23 @@
+<section class="card success" aria-live="polite">
+  <p class="check" aria-hidden="true">✓</p>
+  <h1>Recebemos!</h1>
+  <% if @submission %>
+    <p>Seu protocolo é</p>
+    <p class="protocol"><%= @submission.protocol %></p>
+    <p><%= @submission.documents_count %> arquivo(s) recebido(s).</p>
+  <% end %>
+  <% if @rejected.present? %>
+    <div class="alert">
+      Estes arquivos não puderam ser aceitos:
+      <ul>
+        <% @rejected.each do |item| %>
+          <li><%= item[:filename] %> — <%= item[:error] %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+  <p class="lead"><%= @form.setting('success_message').presence || 'Obrigado. Entraremos em contato em breve.' %></p>
+  <% if @link %>
+    <p><a class="button button-secondary" href="<%= request.path %>">Enviar mais documentos</a></p>
+  <% end %>
+</section>

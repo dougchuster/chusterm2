@@ -822,6 +822,13 @@ Rails.application.routes.draw do
   get 'instagram/callback', to: 'instagram/callbacks#show'
   get 'tiktok/callback', to: 'tiktok/callbacks#show'
   get 'notion/callback', to: 'notion/callbacks#show'
+
+  # Cofre de documentos: formulário público de envio (PROJETO-COFRE-DOCUMENTOS.md
+  # §8.7). /f = link fixo do formulário; /l = link personalizado de um cliente.
+  get 'f/:token', to: 'public_document_forms#show', as: :public_document_form
+  post 'f/:token', to: 'public_document_forms#submit'
+  get 'l/:token', to: 'public_document_forms#show', defaults: { link: true }, as: :public_document_form_link
+  post 'l/:token', to: 'public_document_forms#submit', defaults: { link: true }
   # ----------------------------------------------------------------------
   # Routes for external service verifications
   get '.well-known/assetlinks.json' => 'android_app#assetlinks'

@@ -115,6 +115,8 @@ Rails/ApplicationController:
     - 'app/controllers/widgets_controller.rb'
     - 'app/controllers/platform_controller.rb'
     - 'app/controllers/public_controller.rb'
+    # Página pública do formulário de documentos: precisa de CSRF e não de login.
+    - 'app/controllers/public_document_forms_controller.rb'
     - 'app/controllers/survey/responses_controller.rb'
 
 Rails/FindEach:

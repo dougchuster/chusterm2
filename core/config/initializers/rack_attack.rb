@@ -216,6 +216,14 @@ class Rack::Attack
     "#{user_identifier || req.ip}:#{match_data[:account_id]}" if req.post? && match_data.present?
   end
 
+  ## Formulário público do cofre (/f e /l): sem login, então limite por IP.
+  throttle('crm_document_forms/submit/ip', limit: ENV.fetch('RATE_LIMIT_CRM_FORM_SUBMITS', '10').to_i, period: 1.hour) do |req|
+    req.ip if req.post? && req.path.match?(%r{\A/[fl]/[A-Za-z0-9_-]+/?\z})
+  end
+  throttle('crm_document_forms/show/ip', limit: 120, period: 1.minute) do |req|
+    req.ip if req.get? && req.path.match?(%r{\A/[fl]/[A-Za-z0-9_-]+/?\z})
+  end
+
   ## Prevent abuse of contact search api
   throttle('/api/v1/accounts/:account_id/contacts/search', limit: ENV.fetch('RATE_LIMIT_CONTACT_SEARCH', '100').to_i, period: 1.minute) do |req|
     match_data = %r{/api/v1/accounts/(?<account_id>\d+)/contacts/search}.match(req.path)

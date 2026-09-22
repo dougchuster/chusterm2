@@ -1,0 +1,55 @@
+<%
+  key = field['key']
+  input_id = "field-#{key}"
+  value = @answers && @answers[key]
+  error = @errors && @errors[key]
+  hint_id = "#{input_id}-hint"
+  described = [field['help'].present? ? hint_id : nil, error ? "#{input_id}-error" : nil].compact.join(' ').presence
+  condition = field['show_if'].presence && field['show_if'].to_h.stringify_keys
+  kind = field['type']
+  input_types = { 'email' => 'email', 'phone' => 'tel', 'date' => 'date' }
+  modes = { 'phone' => 'tel', 'cpf' => 'numeric', 'cnpj' => 'numeric', 'cpf_cnpj' => 'numeric', 'number' => 'decimal' }
+  autocompletes = { 'contact_name' => 'name', 'contact_phone' => 'tel', 'contact_email' => 'email' }
+%>
+<div class="field<%= ' has-error' if error %>"
+     <% if condition %>data-show-field="<%= condition['field'] %>" data-show-equals="<%= condition['equals'] %>"<% end %>>
+  <% if %w[radio checkboxes].include?(kind) %>
+    <fieldset aria-describedby="<%= described %>">
+      <legend><%= field['label'] %><%= ' *' if field['required'] %></legend>
+      <% Array(field['options']).each_with_index do |option, index| %>
+        <label class="choice" for="<%= input_id %>-<%= index %>">
+          <input type="<%= kind == 'radio' ? 'radio' : 'checkbox' %>" id="<%= input_id %>-<%= index %>"
+                 name="answers[<%= key %>]<%= '[]' if kind == 'checkboxes' %>" value="<%= option %>"
+                 <%= 'checked' if Array(value).map(&:to_s).include?(option.to_s) %>>
+          <span><%= option %></span>
+        </label>
+      <% end %>
+    </fieldset>
+  <% elsif kind == 'checkbox' %>
+    <label class="choice" for="<%= input_id %>">
+      <input type="checkbox" id="<%= input_id %>" name="answers[<%= key %>]" value="1"
+             <%= 'checked' if value.present? %> aria-describedby="<%= described %>">
+      <span><%= field['label'] %><%= ' *' if field['required'] %></span>
+    </label>
+  <% else %>
+    <label for="<%= input_id %>"><%= field['label'] %><%= ' *' if field['required'] %></label>
+    <% if kind == 'textarea' %>
+      <textarea id="<%= input_id %>" name="answers[<%= key %>]" rows="4" maxlength="5000"
+                placeholder="<%= field['placeholder'] %>" aria-describedby="<%= described %>"><%= value %></textarea>
+    <% elsif kind == 'select' %>
+      <select id="<%= input_id %>" name="answers[<%= key %>]" aria-describedby="<%= described %>">
+        <option value="">Escolha…</option>
+        <% Array(field['options']).each do |option| %>
+          <option value="<%= option %>" <%= 'selected' if value.to_s == option.to_s %>><%= option %></option>
+        <% end %>
+      </select>
+    <% else %>
+      <input type="<%= input_types.fetch(kind, 'text') %>" id="<%= input_id %>" name="answers[<%= key %>]"
+             value="<%= value %>" placeholder="<%= field['placeholder'] %>" maxlength="500"
+             inputmode="<%= modes[kind] %>" autocomplete="<%= autocompletes[field['maps_to']] || 'off' %>"
+             aria-describedby="<%= described %>">
+    <% end %>
+  <% end %>
+  <% if field['help'].present? %><p class="hint" id="<%= hint_id %>"><%= field['help'] %></p><% end %>
+  <% if error %><p class="error" id="<%= input_id %>-error" role="alert"><%= error %></p><% end %>
+</div>

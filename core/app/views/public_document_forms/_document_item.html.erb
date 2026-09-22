@@ -1,0 +1,26 @@
+<%
+  key = item['key']
+  input_id = "file-#{key}"
+  error = @errors && @errors[key]
+  condition = item['show_if'].presence && item['show_if'].to_h.stringify_keys
+%>
+<div class="document<%= ' has-error' if error %>"
+     <% if condition %>data-show-field="<%= condition['field'] %>" data-show-equals="<%= condition['equals'] %>"<% end %>>
+  <p class="document-title"><%= item['label'] %><%= ' *' if item['required'] %></p>
+  <% if item['help'].present? %><p class="hint"><%= item['help'] %></p><% end %>
+  <div class="document-actions">
+    <label class="button button-secondary" for="<%= input_id %>-camera">
+      Tirar foto
+      <input class="visually-hidden" type="file" id="<%= input_id %>-camera" name="files[<%= key %>][]"
+             accept="image/*" capture="environment" data-compress>
+    </label>
+    <label class="button button-secondary" for="<%= input_id %>">
+      Escolher arquivo
+      <input class="visually-hidden" type="file" id="<%= input_id %>" name="files[<%= key %>][]"
+             accept="image/*,application/pdf,.doc,.docx,.odt,.xls,.xlsx" data-compress
+             <%= 'multiple' if item['multiple'] %>>
+    </label>
+  </div>
+  <ul class="selected" data-selected-for="<%= key %>" aria-live="polite"></ul>
+  <% if error %><p class="error" role="alert"><%= error %></p><% end %>
+</div>
