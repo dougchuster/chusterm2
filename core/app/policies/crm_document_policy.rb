@@ -29,6 +29,16 @@ class CrmDocumentPolicy < ApplicationPolicy
     true
   end
 
+  # Configuração do cofre (modelo, nomes, tipos, pastas, formulários) é só do
+  # administrador; qualquer um que use o cofre pode LER a configuração.
+  def manage?
+    account_user&.administrator?
+  end
+
+  def review?
+    true
+  end
+
   # D4: apagar de vez (arquivo incluso) é só do administrador.
   def purge?
     account_user&.administrator?

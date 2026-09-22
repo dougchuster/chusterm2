@@ -170,7 +170,13 @@ Rails.application.routes.draw do
             # Cofre de documentos (PROJETO-COFRE-DOCUMENTOS.md). Só responde com
             # accounts.settings['crm_documents'] ligado (ADR-DOC, D15).
             resources :document_folders, only: [:index, :create, :update, :destroy]
-            resources :document_types, only: [:index]
+            resources :document_types, only: [:index, :create, :update, :destroy]
+            resource :document_settings, only: [:show, :update]
+            resources :document_folder_templates, only: [:index, :update]
+            resources :document_forms, only: [:index, :show, :create, :update, :destroy] do
+              member { post :links }
+            end
+            resources :document_submissions, only: [:index, :show, :update]
             resource :document_checklist, only: [:show, :update]
             resources :documents, only: [:index, :show, :create, :update, :destroy] do
               collection do
