@@ -178,7 +178,10 @@ Sem achados em: IDOR entre contas/contatos, path traversal/header injection no n
 | Onde | Release | Estado | Verificação |
 |------|---------|--------|-------------|
 | Chuster (canário) | `20260922T204436-4346d0c-cofre-f1f2` | no ar, **módulo ligado** na conta 1 (Chuster Tech) | migration aplicada; `/health` OK; teste de fumaça no volume real: documento criado na pasta certa, clone por hardlink com mesmo inode, clone sobrevive ao original apagado, contato de teste removido |
+| Chuster (canário) | `20260922T222513-50b5391-cofre-f3` | no ar (F3), módulo ligado na conta 1 | teste de fumaça: reenvio virou v2 com validade 2026-12-21; anterior obsoleto em `99 Arquivo` como "(v1)"; fila "Para análise" traz o v2; contato de teste removido |
 | KVM4 (cliente) | `20260922T205644-4346d0c-cofre-f1f2-dark` | no ar, **módulo desligado** (dark launch) | migration aplicada; `/health` OK; site 200; `accounts.settings.crm_documents` ausente; 0 documentos |
+
+A KVM4 ficou na F1/F2 de propósito: o módulo está desligado lá (a F3 não muda nada até ligar) e cada deploy soma ~6,8 GB de backup num disco em 72%. Levar a F3 junto com o próximo deploy necessário, de preferência depois da rotação de backup.
 
 Ligar para o escritório: `Crm::Documents::Feature.enable!(Account.find(1))` na KVM4 (e, se quiser trazer o histórico, `rake "crm:documents:backfill[1]"`). Aguarda a validação da árvore de pastas pela cliente (D11). O backup pré-deploy levou o disco da KVM4 de 68% para 72%.
 
