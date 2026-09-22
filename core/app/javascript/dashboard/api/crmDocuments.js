@@ -68,6 +68,13 @@ export default {
     });
   },
 
+  // Filas do escritório: 'review' (para análise) ou 'expiring' (vencendo).
+  getQueue(name, { page } = {}) {
+    return axios.get(crmUrl('documents/queue'), {
+      params: cleanParams({ name, page }),
+    });
+  },
+
   getDocuments({ contactId, folderId, dealId, q, archived, page } = {}) {
     return axios.get(crmUrl('documents'), {
       params: cleanParams({

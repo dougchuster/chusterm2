@@ -9,7 +9,9 @@ import {
   DsButton,
   DsEmptyState,
   DsSkeleton,
+  DsTabs,
 } from 'dashboard/design-system/components';
+import CRMDocumentQueue from '../components/documents/CRMDocumentQueue.vue';
 import CRMTriagePanel from '../components/documents/CRMTriagePanel.vue';
 
 // Caixa de Triagem do escritório (PROJETO-COFRE-DOCUMENTOS.md §8.3): tudo que
@@ -22,6 +24,28 @@ const selectedId = ref(null);
 const loading = ref(true);
 const saving = ref(false);
 const unavailable = ref(false);
+const tab = ref('triage');
+const queueCounts = ref({ review: null, expiring: null });
+const tabs = computed(() => [
+  {
+    value: 'triage',
+    label: 'Triagem',
+    icon: 'i-lucide-inbox',
+    count: count.value,
+  },
+  {
+    value: 'review',
+    label: 'Para análise',
+    icon: 'i-lucide-list-checks',
+    count: queueCounts.value.review ?? undefined,
+  },
+  {
+    value: 'expiring',
+    label: 'Vencendo',
+    icon: 'i-lucide-calendar-clock',
+    count: queueCounts.value.expiring ?? undefined,
+  },
+]);
 
 const selected = computed(() =>
   documents.value.find(document => document.id === selectedId.value)
@@ -135,7 +159,7 @@ onMounted(load);
         class="hidden size-6 text-ui-text-muted sm:block"
       />
       <div class="min-w-0 flex-1 basis-64">
-        <h1 class="m-0 text-ui-title text-ui-text">Triagem de documentos</h1>
+        <h1 class="m-0 text-ui-title text-ui-text">Documentos do escritório</h1>
         <p class="m-0 text-ui-body-sm text-ui-text-muted">
           O que os clientes mandaram pelas conversas e ainda não foi
           classificado.
@@ -157,87 +181,107 @@ onMounted(load);
       />
     </header>
 
-    <div v-if="loading" class="flex flex-col gap-2">
-      <DsSkeleton v-for="n in 5" :key="n" class="h-12" />
-    </div>
-    <DsEmptyState
-      v-else-if="unavailable"
-      icon="i-lucide-folder-lock"
-      title="O módulo de arquivos não está ligado nesta conta"
-      description="Fale com o administrador para ativar o cofre de documentos."
+    <DsTabs
+      v-if="!unavailable"
+      v-model="tab"
+      :tabs="tabs"
+      label="Filas de documentos"
     />
-    <DsEmptyState
-      v-else-if="!documents.length"
-      icon="i-lucide-check-check"
-      title="Tudo classificado"
-      description="Os novos arquivos aparecem aqui assim que chegam pelas conversas."
-    />
-
     <div
-      v-else
-      class="grid min-h-0 gap-4 rounded-ui-card border border-ui-border bg-ui-surface lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)]"
+      v-if="tab !== 'triage' && !unavailable"
+      class="rounded-ui-card border border-ui-border bg-ui-surface"
     >
-      <nav
-        class="min-w-0 border-b border-ui-border-subtle p-2 lg:border-b-0 lg:border-r"
-        aria-label="Documentos para classificar"
-      >
-        <section v-for="group in groups" :key="group.contactId" class="py-1">
-          <h2
-            class="m-0 flex items-center gap-2 px-2 py-1.5 text-ui-body-sm font-medium text-ui-text"
-          >
-            {{ group.name || 'Contato sem nome' }}
-            <span class="font-mono text-ui-caption text-ui-text-muted">{{
-              group.items.length
-            }}</span>
-          </h2>
-          <ul class="m-0 flex list-none flex-col gap-px p-0">
-            <li v-for="document in group.items" :key="document.id">
-              <button
-                type="button"
-                class="grid w-full grid-cols-[3.5rem_minmax(0,1fr)_auto] items-center gap-2 rounded-ui-control px-2 py-2 text-left text-ui-caption"
-                :class="
-                  document.id === selectedId
-                    ? 'bg-ui-brand-soft text-ui-brand-foreground'
-                    : 'text-ui-text hover:bg-ui-hover'
-                "
-                :aria-current="document.id === selectedId ? 'true' : undefined"
-                @click="selectedId = document.id"
-              >
-                <span class="font-mono tabular-nums text-ui-text-muted">{{
-                  formatTime(document.created_at)
-                }}</span>
-                <span
-                  class="truncate font-mono"
-                  :title="originalName(document)"
-                  >{{ originalName(document) }}</span
-                >
-                <span
-                  v-if="document.suggested_doc_type_label"
-                  class="rounded-ui-control bg-ui-sunken px-1.5 py-0.5 text-ui-caption text-ui-text-muted"
-                >
-                  {{ document.suggested_doc_type_label }}
-                </span>
-                <span
-                  v-else-if="document.likely_irrelevant"
-                  class="text-ui-text-muted"
-                  >figurinha?</span
-                >
-              </button>
-            </li>
-          </ul>
-        </section>
-      </nav>
-
-      <CRMTriagePanel
-        v-if="selected"
-        :document="selected"
-        :types="types"
-        :saving="saving"
-        @classify="classify"
-        @discard="discard"
-        @next="move(1)"
-        @previous="move(-1)"
+      <CRMDocumentQueue
+        :key="tab"
+        :queue="tab"
+        @count="queueCounts = { ...queueCounts, [tab]: $event }"
       />
     </div>
+    <template v-else>
+      <div v-if="loading" class="flex flex-col gap-2">
+        <DsSkeleton v-for="n in 5" :key="n" class="h-12" />
+      </div>
+      <DsEmptyState
+        v-else-if="unavailable"
+        icon="i-lucide-folder-lock"
+        title="O módulo de arquivos não está ligado nesta conta"
+        description="Fale com o administrador para ativar o cofre de documentos."
+      />
+      <DsEmptyState
+        v-else-if="!documents.length"
+        icon="i-lucide-check-check"
+        title="Tudo classificado"
+        description="Os novos arquivos aparecem aqui assim que chegam pelas conversas."
+      />
+
+      <div
+        v-else
+        class="grid min-h-0 gap-4 rounded-ui-card border border-ui-border bg-ui-surface lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)]"
+      >
+        <nav
+          class="min-w-0 border-b border-ui-border-subtle p-2 lg:border-b-0 lg:border-r"
+          aria-label="Documentos para classificar"
+        >
+          <section v-for="group in groups" :key="group.contactId" class="py-1">
+            <h2
+              class="m-0 flex items-center gap-2 px-2 py-1.5 text-ui-body-sm font-medium text-ui-text"
+            >
+              {{ group.name || 'Contato sem nome' }}
+              <span class="font-mono text-ui-caption text-ui-text-muted">{{
+                group.items.length
+              }}</span>
+            </h2>
+            <ul class="m-0 flex list-none flex-col gap-px p-0">
+              <li v-for="document in group.items" :key="document.id">
+                <button
+                  type="button"
+                  class="grid w-full grid-cols-[3.5rem_minmax(0,1fr)_auto] items-center gap-2 rounded-ui-control px-2 py-2 text-left text-ui-caption"
+                  :class="
+                    document.id === selectedId
+                      ? 'bg-ui-brand-soft text-ui-brand-foreground'
+                      : 'text-ui-text hover:bg-ui-hover'
+                  "
+                  :aria-current="
+                    document.id === selectedId ? 'true' : undefined
+                  "
+                  @click="selectedId = document.id"
+                >
+                  <span class="font-mono tabular-nums text-ui-text-muted">{{
+                    formatTime(document.created_at)
+                  }}</span>
+                  <span
+                    class="truncate font-mono"
+                    :title="originalName(document)"
+                    >{{ originalName(document) }}</span
+                  >
+                  <span
+                    v-if="document.suggested_doc_type_label"
+                    class="rounded-ui-control bg-ui-sunken px-1.5 py-0.5 text-ui-caption text-ui-text-muted"
+                  >
+                    {{ document.suggested_doc_type_label }}
+                  </span>
+                  <span
+                    v-else-if="document.likely_irrelevant"
+                    class="text-ui-text-muted"
+                    >figurinha?</span
+                  >
+                </button>
+              </li>
+            </ul>
+          </section>
+        </nav>
+
+        <CRMTriagePanel
+          v-if="selected"
+          :document="selected"
+          :types="types"
+          :saving="saving"
+          @classify="classify"
+          @discard="discard"
+          @next="move(1)"
+          @previous="move(-1)"
+        />
+      </div>
+    </template>
   </div>
 </template>

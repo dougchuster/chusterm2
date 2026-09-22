@@ -173,7 +173,10 @@ Rails.application.routes.draw do
             resources :document_types, only: [:index]
             resource :document_checklist, only: [:show, :update]
             resources :documents, only: [:index, :show, :create, :update, :destroy] do
-              collection { get :triage }
+              collection do
+                get :triage
+                get :queue
+              end
               member do
                 get :download
                 post :restore

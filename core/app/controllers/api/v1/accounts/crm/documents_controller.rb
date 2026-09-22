@@ -10,7 +10,7 @@ class Api::V1::Accounts::Crm::DocumentsController < Api::V1::Accounts::Crm::Docu
   LIST_INCLUDES = [:contact, :uploaded_by_user, { source_message: :conversation },
                    { crm_document_folder: { parent: :parent } }].freeze
 
-  before_action :load_document, except: [:index, :create, :triage]
+  before_action :load_document, except: [:index, :create, :triage, :queue]
 
   def index
     authorize CrmDocument, :index?
@@ -29,6 +29,17 @@ class Api::V1::Accounts::Crm::DocumentsController < Api::V1::Accounts::Crm::Docu
     context = Crm::Documents::TriageContext.new(account: Current.account, user: Current.user, documents: records)
     render json: { payload: records.map { |d| serializer.document(d).merge(context.for(d)) },
                    meta: { count: scope.count, page: page } }
+  end
+
+  # Filas do escritório: ?name=review (para análise) ou expiring (vencendo).
+  def queue
+    authorize CrmDocument, :index?
+    scope = Crm::Documents::QueueQuery.new(documents_access, params.require(:name)).scope
+    records = paginate(scope.includes(*LIST_INCLUDES))
+    render json: { payload: records.map { |d| serializer.document(d).merge(contact_name: d.contact&.name) },
+                   meta: { count: scope.count, page: page } }
+  rescue ArgumentError => e
+    render_unprocessable(e.message)
   end
 
   def show

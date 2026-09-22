@@ -7,6 +7,9 @@ import DocumentTriage from './DocumentTriage.vue';
 vi.mock('dashboard/api/crmDocuments', () => ({
   default: {
     getTriage: vi.fn(),
+    getQueue: vi.fn(() =>
+      Promise.resolve({ data: { payload: [], meta: { count: 0 } } })
+    ),
     getTypes: vi.fn(),
     updateDocument: vi.fn(),
     getDownloadUrl: vi.fn(() => Promise.resolve({ data: { url: 'blob:x' } })),
