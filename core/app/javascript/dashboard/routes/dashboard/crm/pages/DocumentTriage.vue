@@ -161,8 +161,8 @@ onMounted(load);
       <div class="min-w-0 flex-1 basis-64">
         <h1 class="m-0 text-ui-title text-ui-text">Documentos do escritório</h1>
         <p class="m-0 text-ui-body-sm text-ui-text-muted">
-          O que os clientes mandaram pelas conversas e ainda não foi
-          classificado.
+          Classifique o que chegou, aprove o que foi classificado e acompanhe o
+          que está vencendo.
         </p>
       </div>
       <span
