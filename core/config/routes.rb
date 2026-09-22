@@ -167,6 +167,18 @@ Rails.application.routes.draw do
             # F2.7: visoes salvas do board (lacuna K-05).
             resources :board_views, only: [:index, :create, :update, :destroy]
 
+            # Cofre de documentos (PROJETO-COFRE-DOCUMENTOS.md). Só responde com
+            # accounts.settings['crm_documents'] ligado (ADR-DOC, D15).
+            resources :document_folders, only: [:index, :create, :update, :destroy]
+            resources :document_types, only: [:index]
+            resources :documents, only: [:index, :show, :create, :update, :destroy] do
+              member do
+                get :download
+                post :restore
+                delete :purge
+              end
+            end
+
             resources :pipelines, only: [:index, :create, :update, :destroy] do
               member do
                 delete :purge

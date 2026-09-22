@@ -24,9 +24,10 @@ class Crm::Documents::Naming::PathBuilder
     "#{number} · #{Crm::Documents::Naming::Sanitizer.call(deal.title, max: DEAL_TITLE_MAX, fallback: 'Processo')}"
   end
 
-  def path_for(document)
+  # `file_name` evita recalcular o desempate quando quem chama já o tem.
+  def path_for(document, file_name: nil)
     [ROOT, self.class.client_folder_name(document.contact), *folder_segments(document.crm_document_folder),
-     unique_file_name(document)]
+     file_name || unique_file_name(document)]
   end
 
   def folder_segments(folder)

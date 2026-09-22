@@ -64,7 +64,7 @@ GROUP BY a.account_id ORDER BY sum(b.byte_size) DESC;
 | Roteamento por tipo (slot) | feito | `Crm::Documents::Router` |
 | Upload com identificação pelo conteúdo, allowlist, limite e dedup por checksum | feito | `Crm::Documents::Uploader` |
 | Visibilidade (admin tudo; agente pelos contatos que atende) | feito | `Crm::Documents::Access` |
-| API (pastas, documentos, tipos, download auditado) | em andamento | — |
+| API (pastas, documentos, tipos, download auditado) | feito | `app/controllers/api/v1/accounts/crm/document*_controller.rb`, rotas em `config/routes.rb` (namespace `crm`) |
 | Frontend (aba Arquivos no negócio e no contato) | pendente | — |
 | Download da pasta em `.zip` | pendente | depende de decidir a gem `rubyzip` |
 
@@ -75,7 +75,25 @@ GROUP BY a.account_id ORDER BY sum(b.byte_size) DESC;
 - Contato apagado: documentos saem pelo model (`Contact has_many :crm_documents, dependent: :destroy`, que apaga o arquivo); pastas caem por cascade no banco.
 - Violação de índice único durante o provisionamento roda em savepoint (`requires_new`), para não abortar a transação de quem chamou.
 
-**Testes:** 65 exemplos, 0 falhas (nomenclatura, models, provisionamento, roteamento, upload, acesso).
+**Testes:** 93 exemplos, 0 falhas (nomenclatura, models, provisionamento, roteamento, upload, acesso, API).
+
+**API (todas sob `/api/v1/accounts/:account_id/crm/`, 404 com o módulo desligado ou fora da visibilidade):**
+
+| Método e rota | O que faz |
+|---------------|-----------|
+| `GET document_folders?contact_id=&deal_id=` | Cria a gaveta (e a pasta do processo, com `deal_id`) na primeira visita; devolve pastas com contagem |
+| `POST document_folders` | Pasta comum (`contact_id`, `parent_id`, `name`) |
+| `PATCH document_folders/:id` | Renomeia/move (`folder[name|parent_id|position]`); pasta do modelo mantém o slot |
+| `DELETE document_folders/:id` | Arquiva pasta comum vazia; pasta do modelo nunca |
+| `GET document_types` | Catálogo de tipos da conta |
+| `GET documents?contact_id=&folder_id=&deal_id=&status=&doc_type=&q=&archived=&page=&per_page=` | Lista paginada com caminho e link de download |
+| `POST documents` (multipart) | Upload (`file`, `contact_id`, `folder_id`, `deal_id`, `doc_type`, `description`, `document_date`); 201 novo, 200 + `duplicate: true` se o arquivo já existia |
+| `PATCH documents/:id` | Classificar (da triagem, leva para a pasta do tipo), mover, renomear (trava o nome), aprovar/rejeitar (motivo obrigatório) |
+| `DELETE documents/:id` · `POST documents/:id/restore` | Arquivar / restaurar |
+| `DELETE documents/:id/purge` | Apagar de vez, com arquivo — só administrador |
+| `GET documents/:id/download?disposition=inline` | Audita e redireciona para URL assinada de 5 minutos |
+
+Toda ação grava em `crm_audit_events` (`document_created`, `document_resent`, `document_updated`, `document_archived`, `document_restored`, `document_purged`, `document_downloaded`, `document_folder_*`), com IP e user-agent.
 
 ### F2 a F6
 
