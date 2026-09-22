@@ -6,7 +6,7 @@ RSpec.describe Crm::Documents::Naming::FileNamer do
   let(:contact) { create(:contact, account: account) }
   let(:received_at) { Time.zone.parse('2026-09-22 17:37:00 UTC') } # 14h37 em Brasília
 
-  before { Crm::Documents::Defaults.ensure!(account) }
+  before { Crm::Documents::Defaults.ensure!(account, preset: 'legal') }
 
   def build_document(**attrs)
     CrmDocument.new(

@@ -7,7 +7,7 @@ RSpec.describe Crm::Documents::Naming::PathBuilder do
   let(:contact) { create(:contact, account: account, name: 'Maria da Silva Souza') }
   let(:builder) { described_class.new }
 
-  before { Crm::Documents::Defaults.ensure!(account) }
+  before { Crm::Documents::Defaults.ensure!(account, preset: 'legal') }
 
   def upload(folder:, **attrs)
     CrmDocument.create!(

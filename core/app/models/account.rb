@@ -175,6 +175,10 @@ class Account < ApplicationRecord
   has_many :crm_document_folders, dependent: :delete_all
   has_many :crm_document_types, dependent: :delete_all
   has_many :crm_document_folder_templates, dependent: :delete_all
+  has_one :crm_document_setting, dependent: :delete
+  has_many :crm_document_submissions, dependent: :delete_all
+  has_many :crm_document_form_links, dependent: :delete_all
+  has_many :crm_document_forms, dependent: :delete_all
 
   has_one_attached :contacts_export
   has_one_attached :crm_deals_export

@@ -11,7 +11,7 @@ class Crm::Documents::ChecklistMatcher
     return declared if declared.any?
 
     key = item['key'].to_s
-    aliases = Crm::Documents::Defaults.config.fetch('checklist_aliases', {})[key]
+    aliases = Crm::Documents::Defaults.config(@account).fetch('checklist_aliases', {}).to_h[key]
     return aliases if aliases.present?
     return [key] if slugs.include?(key)
 

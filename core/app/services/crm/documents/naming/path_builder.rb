@@ -12,16 +12,25 @@ class Crm::Documents::Naming::PathBuilder
   DEAL_NUMBER_DIGITS = 4
   CLIENT_NAME_MAX = 80
   DEAL_TITLE_MAX = 80
+  FOLDER_NAME_MAX = 120
 
   def self.client_folder_name(contact)
-    name = Crm::Documents::Naming::Sanitizer.call(contact.name, max: CLIENT_NAME_MAX)
-    "#{name} · C#{contact.id.to_s.rjust(CLIENT_CODE_DIGITS, '0')}"
+    values = { 'nome' => Crm::Documents::Naming::Sanitizer.call(contact.name, max: CLIENT_NAME_MAX),
+               'codigo' => contact.id.to_s.rjust(CLIENT_CODE_DIGITS, '0') }
+    render(contact.account, 'client_folder', values)
   end
 
-  # Número interno do CRM (ano de criação + id), nunca o número CNJ.
+  # Número interno do CRM (ano de criação + id), nunca um número externo.
   def self.deal_folder_name(deal)
-    number = "#{deal.created_at.year}-#{deal.id.to_s.rjust(DEAL_NUMBER_DIGITS, '0')}"
-    "#{number} · #{Crm::Documents::Naming::Sanitizer.call(deal.title, max: DEAL_TITLE_MAX, fallback: 'Processo')}"
+    values = { 'ano' => deal.created_at.year.to_s, 'numero' => deal.id.to_s.rjust(DEAL_NUMBER_DIGITS, '0'),
+               'titulo' => Crm::Documents::Naming::Sanitizer.call(deal.title, max: DEAL_TITLE_MAX, fallback: 'Negócio'),
+               'cliente' => deal.contact&.name.to_s, 'codigo' => deal.contact_id.to_s.rjust(CLIENT_CODE_DIGITS, '0') }
+    render(deal.account, 'case_folder', values)
+  end
+
+  def self.render(account, kind, values)
+    template = Crm::Documents::Defaults.settings_for(account).naming_template(kind)
+    Crm::Documents::Naming::Template.render(template, values, max: FOLDER_NAME_MAX, shrink: %w[titulo nome cliente])
   end
 
   # `file_name` evita recalcular o desempate quando quem chama já o tem.

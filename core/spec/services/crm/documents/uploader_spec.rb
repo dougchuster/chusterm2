@@ -2,10 +2,13 @@ require 'rails_helper'
 
 RSpec.describe Crm::Documents::Uploader do
   let(:account) { create(:account) }
-  let(:contact) { create(:contact, account: account) }
   let(:user) { create(:user, account: account, role: :administrator) }
   let(:pdf) { "%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF\n" }
   let(:jpeg) { "\xFF\xD8\xFF\xE0\x00\x10JFIF\x00".b + ('x' * 64) }
+  let(:contact) { create(:contact, account: account) }
+
+  before { Crm::Documents::Defaults.ensure!(account, preset: 'legal') }
+
 
   def upload(io_content: pdf, filename: 'documento.pdf', **attributes)
     described_class.new(contact: contact, io: StringIO.new(io_content), filename: filename,

@@ -1,0 +1,51 @@
+# Modelo de documentos: SAÚDE (clínicas e consultórios). Estrutura explicada
+# em legal.yml. Cada negócio vira um "atendimento/tratamento".
+name: Saúde
+description: Clínicas e consultórios — documentos do paciente, exames, laudos, receitas e termos.
+
+naming:
+  file: '{data} — {tipo} — {descricao}'
+  triage_file: '{data_hora} — {origem} — {nome_original}'
+  client_folder: '{nome} · P{codigo}'
+  case_folder: '{ano}-{numero} · {titulo}'
+
+document_types:
+  - { slug: documento_identidade, label: Documento de Identidade, target_slot: pessoais, patterns: ['\brg\b', 'identidade', '\bcnh\b'] }
+  - { slug: cpf, label: CPF, target_slot: pessoais, patterns: ['\bcpf\b'] }
+  - { slug: carteirinha_convenio, label: Carteirinha do Convênio, target_slot: pessoais, patterns: ['carteirinha', 'convenio', 'plano de saude'] }
+  - { slug: comprovante_residencia, label: Comprovante de Endereço, target_slot: pessoais, validity_days: 90, patterns: ['comprovante.*(residencia|endereco)'] }
+  - { slug: exame, label: Exame, target_slot: exames, patterns: ['exame', 'hemograma', 'raio.?x', 'ultrassom', 'ressonancia', 'tomografia'] }
+  - { slug: laudo, label: Laudo, target_slot: exames, patterns: ['laudo'] }
+  - { slug: receita, label: Receita, target_slot: receitas, patterns: ['receita', 'prescricao'] }
+  - { slug: atestado, label: Atestado, target_slot: receitas, patterns: ['atestado'] }
+  - { slug: termo_consentimento, label: Termo de Consentimento, target_slot: termos, patterns: ['termo', 'consentimento'] }
+  - { slug: guia_autorizacao, label: Guia de Autorização, target_slot: processo_docs, patterns: ['guia', 'autorizacao'] }
+  - { slug: foto, label: Foto, target_slot: processo_docs, patterns: ['\bfoto\b'] }
+  - { slug: outro, label: Outro, target_slot: current, patterns: [] }
+
+checklist_aliases:
+  rg_cpf: [documento_identidade, cpf]
+  exames: [exame]
+  laudos: [laudo]
+
+client_template:
+  name: Prontuário do paciente
+  tree:
+    - { slot: triagem, name: 00 Triagem }
+    - { slot: pessoais, name: 01 Documentos do Paciente }
+    - { slot: exames, name: 02 Exames e Laudos }
+    - { slot: receitas, name: 03 Receitas e Atestados }
+    - { slot: termos, name: 04 Termos e Consentimentos }
+    - { slot: processos, name: 05 Atendimentos }
+    - { slot: enviados, name: 06 Enviados pela Clínica }
+    - { slot: arquivo, name: 99 Arquivo }
+
+case_area_aliases: {}
+
+case_templates:
+  geral:
+    name: Atendimento
+    tree:
+      - { slot: processo_docs, name: 01 Documentos do Atendimento }
+      - { slot: processo_evolucao, name: 02 Evolução }
+      - { slot: processo_comunicacoes, name: 03 Comunicações }

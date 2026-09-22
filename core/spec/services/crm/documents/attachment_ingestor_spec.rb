@@ -104,7 +104,7 @@ RSpec.describe Crm::Documents::AttachmentIngestor do
   end
 
   it 'não guarda o que o escritório enviou quando a conta desligou essa opção' do
-    account.update!(settings: account.settings.merge('crm_documents_capture_outgoing' => false))
+    account.crm_document_setting.update!(capture_outgoing: false)
 
     expect(ingest(message_with_file(message_type: 'outgoing'))).to be_nil
   end

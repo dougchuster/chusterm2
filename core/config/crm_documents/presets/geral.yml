@@ -1,0 +1,56 @@
+# Modelo de documentos: GERAL (universal). Padrão para qualquer área que não
+# tenha modelo próprio — vendas, serviços, consultoria, tecnologia, varejo.
+# Sem terminologia de nenhuma vertical. Estrutura explicada em legal.yml.
+name: Geral
+description: Universal — documentos pessoais, comprovantes, contratos e documentos de cada negócio.
+
+naming:
+  file: '{data} — {tipo} — {descricao}'
+  triage_file: '{data_hora} — {origem} — {nome_original}'
+  client_folder: '{nome} · C{codigo}'
+  case_folder: '{ano}-{numero} · {titulo}'
+
+document_types:
+  - { slug: documento_identidade, label: Documento de Identidade, target_slot: pessoais, patterns: ['\brg\b', 'identidade', '\bcnh\b', 'habilitacao', 'passaporte'] }
+  - { slug: cpf, label: CPF, target_slot: pessoais, patterns: ['\bcpf\b'] }
+  - { slug: cnpj, label: CNPJ, target_slot: pessoais, patterns: ['\bcnpj\b', 'cartao cnpj'] }
+  - { slug: contrato_social, label: Contrato Social, target_slot: pessoais, patterns: ['contrato social', 'estatuto'] }
+  - { slug: comprovante_residencia, label: Comprovante de Endereço, target_slot: comprovantes, validity_days: 90, patterns: ['comprovante.*(residencia|endereco)', 'conta de (luz|agua|energia)'] }
+  - { slug: comprovante_renda, label: Comprovante de Renda, target_slot: comprovantes, patterns: ['comprovante.*renda', 'holerite', 'contracheque', 'imposto de renda', '\birpf\b'] }
+  - { slug: extrato_bancario, label: Extrato Bancário, target_slot: comprovantes, patterns: ['extrato'] }
+  - { slug: nota_fiscal, label: Nota Fiscal, target_slot: comprovantes, patterns: ['nota fiscal', '\bnf-?e\b', '\bdanfe\b'] }
+  - { slug: comprovante_pagamento, label: Comprovante de Pagamento, target_slot: comprovantes, patterns: ['comprovante.*pagamento', '\bpix\b', 'boleto', 'recibo'] }
+  - { slug: contrato, label: Contrato, target_slot: contratos, patterns: ['contrato'] }
+  - { slug: proposta, label: Proposta, target_slot: processo_propostas, patterns: ['proposta', 'orcamento'] }
+  - { slug: procuracao, label: Procuração, target_slot: contratos, patterns: ['procuracao'] }
+  - { slug: foto, label: Foto, target_slot: processo_docs, patterns: ['\bfoto\b'] }
+  - { slug: outro, label: Outro, target_slot: current, patterns: [] }
+
+checklist_aliases:
+  rg_cpf: [documento_identidade, cpf]
+  documento_identidade: [documento_identidade]
+  comprovante_endereco: [comprovante_residencia]
+  holerite: [comprovante_renda]
+  contracheques: [comprovante_renda]
+
+client_template:
+  name: Gaveta padrão
+  tree:
+    - { slot: triagem, name: 00 Triagem }
+    - { slot: pessoais, name: 01 Documentos Pessoais }
+    - { slot: comprovantes, name: 02 Comprovantes }
+    - { slot: contratos, name: 03 Contratos }
+    - { slot: processos, name: 04 Negócios }
+    - { slot: enviados, name: 05 Enviados pela Equipe }
+    - { slot: arquivo, name: 99 Arquivo }
+
+case_area_aliases: {}
+
+case_templates:
+  geral:
+    name: Negócio — Geral
+    tree:
+      - { slot: processo_docs, name: 01 Documentos }
+      - { slot: processo_propostas, name: 02 Propostas e Orçamentos }
+      - { slot: processo_entregas, name: 03 Entregas }
+      - { slot: processo_comunicacoes, name: 04 Comunicações }

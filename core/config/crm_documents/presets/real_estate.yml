@@ -1,0 +1,50 @@
+# Modelo de documentos: IMOBILIÁRIO (imobiliárias e corretores). Estrutura
+# explicada em legal.yml. Cada negócio vira uma negociação (venda/locação).
+name: Imobiliário
+description: Imobiliárias — documentos do cliente, renda, documentos do imóvel e contratos.
+
+naming:
+  file: '{data} — {tipo} — {descricao}'
+  triage_file: '{data_hora} — {origem} — {nome_original}'
+  client_folder: '{nome} · C{codigo}'
+  case_folder: '{ano}-{numero} · {titulo}'
+
+document_types:
+  - { slug: documento_identidade, label: Documento de Identidade, target_slot: pessoais, patterns: ['\brg\b', 'identidade', '\bcnh\b'] }
+  - { slug: cpf, label: CPF, target_slot: pessoais, patterns: ['\bcpf\b'] }
+  - { slug: certidao_estado_civil, label: Certidão de Estado Civil, target_slot: pessoais, validity_days: 90, patterns: ['certidao.*(casamento|nascimento)'] }
+  - { slug: comprovante_residencia, label: Comprovante de Endereço, target_slot: pessoais, validity_days: 90, patterns: ['comprovante.*(residencia|endereco)', 'conta de (luz|agua|energia)'] }
+  - { slug: comprovante_renda, label: Comprovante de Renda, target_slot: renda, patterns: ['comprovante.*renda', 'holerite', 'contracheque', 'imposto de renda', '\birpf\b', 'extrato'] }
+  - { slug: matricula_imovel, label: Matrícula do Imóvel, target_slot: processo_imovel, validity_days: 30, patterns: ['matricula'] }
+  - { slug: iptu, label: IPTU, target_slot: processo_imovel, patterns: ['\biptu\b'] }
+  - { slug: certidao_onus, label: Certidão de Ônus, target_slot: processo_imovel, validity_days: 30, patterns: ['onus', 'certidao negativa'] }
+  - { slug: proposta, label: Proposta, target_slot: processo_propostas, patterns: ['proposta'] }
+  - { slug: contrato, label: Contrato, target_slot: processo_contratos, patterns: ['contrato', 'compromisso'] }
+  - { slug: vistoria, label: Laudo de Vistoria, target_slot: processo_imovel, patterns: ['vistoria'] }
+  - { slug: foto, label: Foto, target_slot: processo_imovel, patterns: ['\bfoto\b'] }
+  - { slug: outro, label: Outro, target_slot: current, patterns: [] }
+
+checklist_aliases:
+  rg_cpf: [documento_identidade, cpf]
+  holerite: [comprovante_renda]
+
+client_template:
+  name: Pasta do cliente
+  tree:
+    - { slot: triagem, name: 00 Triagem }
+    - { slot: pessoais, name: 01 Documentos Pessoais }
+    - { slot: renda, name: 02 Comprovantes de Renda }
+    - { slot: processos, name: 03 Negociações }
+    - { slot: enviados, name: 04 Enviados pela Imobiliária }
+    - { slot: arquivo, name: 99 Arquivo }
+
+case_area_aliases: {}
+
+case_templates:
+  geral:
+    name: Negociação
+    tree:
+      - { slot: processo_imovel, name: 01 Documentos do Imóvel }
+      - { slot: processo_propostas, name: 02 Propostas }
+      - { slot: processo_contratos, name: 03 Contratos }
+      - { slot: processo_comunicacoes, name: 04 Comunicações }

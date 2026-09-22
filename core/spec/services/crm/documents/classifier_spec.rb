@@ -6,7 +6,7 @@ RSpec.describe Crm::Documents::Classifier do
   let(:account) { create(:account) }
   let(:classifier) { described_class.new(account) }
 
-  before { Crm::Documents::Defaults.ensure!(account) }
+  before { Crm::Documents::Defaults.ensure!(account, preset: 'legal') }
 
   {
     ['segue meu rg', 'IMG-20260922-WA0012.jpg'] => 'rg',

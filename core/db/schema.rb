@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_09_22_000001) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_23_000001) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -1235,6 +1235,75 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_22_000001) do
     t.index ["parent_id"], name: "index_crm_document_folders_on_parent_id"
   end
 
+  create_table "crm_document_form_links", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "crm_document_form_id", null: false
+    t.bigint "contact_id", null: false
+    t.bigint "crm_deal_id"
+    t.string "token_digest", null: false
+    t.datetime "expires_at", null: false
+    t.datetime "revoked_at"
+    t.bigint "created_by_user_id"
+    t.datetime "last_access_at"
+    t.integer "access_count", default: 0, null: false
+    t.integer "submissions_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "contact_id"], name: "index_crm_document_form_links_on_account_id_and_contact_id"
+    t.index ["token_digest"], name: "index_crm_document_form_links_on_token_digest", unique: true
+  end
+
+  create_table "crm_document_forms", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "name", null: false
+    t.string "public_token", null: false
+    t.boolean "active", default: true, null: false
+    t.jsonb "fields", default: [], null: false
+    t.jsonb "document_items", default: [], null: false
+    t.jsonb "settings", default: {}, null: false
+    t.bigint "created_by_user_id"
+    t.integer "submissions_count", default: 0, null: false
+    t.datetime "archived_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "archived_at"], name: "index_crm_document_forms_on_account_id_and_archived_at"
+    t.index ["public_token"], name: "index_crm_document_forms_on_public_token", unique: true
+  end
+
+  create_table "crm_document_settings", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "preset", default: "geral", null: false
+    t.jsonb "naming", default: {}, null: false
+    t.boolean "capture_outgoing", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_crm_document_settings_on_account_id", unique: true
+  end
+
+  create_table "crm_document_submissions", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "crm_document_form_id"
+    t.bigint "crm_document_form_link_id"
+    t.bigint "contact_id"
+    t.bigint "crm_deal_id"
+    t.string "protocol", null: false
+    t.jsonb "answers", default: {}, null: false
+    t.string "match_status", null: false
+    t.boolean "verified", default: false, null: false
+    t.string "review_status", default: "new", null: false
+    t.integer "documents_count", default: 0, null: false
+    t.datetime "consent_at"
+    t.string "ip"
+    t.string "user_agent"
+    t.bigint "reviewed_by_user_id"
+    t.datetime "reviewed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "protocol"], name: "index_crm_document_submissions_on_account_id_and_protocol", unique: true
+    t.index ["account_id", "review_status", "created_at"], name: "idx_crm_document_submissions_review"
+    t.index ["contact_id"], name: "index_crm_document_submissions_on_contact_id"
+  end
+
   create_table "crm_document_types", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.string "slug", null: false
@@ -2211,6 +2280,17 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_22_000001) do
   add_foreign_key "crm_document_folders", "contacts", on_delete: :cascade
   add_foreign_key "crm_document_folders", "crm_deals", on_delete: :nullify
   add_foreign_key "crm_document_folders", "crm_document_folders", column: "parent_id", on_delete: :cascade
+  add_foreign_key "crm_document_form_links", "accounts"
+  add_foreign_key "crm_document_form_links", "contacts", on_delete: :cascade
+  add_foreign_key "crm_document_form_links", "crm_deals", on_delete: :nullify
+  add_foreign_key "crm_document_form_links", "crm_document_forms", on_delete: :cascade
+  add_foreign_key "crm_document_forms", "accounts"
+  add_foreign_key "crm_document_settings", "accounts"
+  add_foreign_key "crm_document_submissions", "accounts"
+  add_foreign_key "crm_document_submissions", "contacts", on_delete: :cascade
+  add_foreign_key "crm_document_submissions", "crm_deals", on_delete: :nullify
+  add_foreign_key "crm_document_submissions", "crm_document_form_links", on_delete: :nullify
+  add_foreign_key "crm_document_submissions", "crm_document_forms", on_delete: :nullify
   add_foreign_key "crm_document_types", "accounts"
   add_foreign_key "crm_documents", "accounts"
   add_foreign_key "crm_documents", "contacts"

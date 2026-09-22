@@ -12,8 +12,11 @@ module Crm::Documents::Feature
     ActiveModel::Type::Boolean.new.cast(account.settings&.dig(SETTING_KEY)) == true
   end
 
-  def enable!(account)
+  # `preset`: modelo de documentos da conta (geral, legal, clinic,
+  # real_estate, education). Sem ele, vale o do pack instalado ou o geral.
+  def enable!(account, preset: nil)
     update!(account, true)
+    Crm::Documents::Defaults.ensure!(account, preset: preset)
   end
 
   def disable!(account)

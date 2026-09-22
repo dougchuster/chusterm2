@@ -1,0 +1,47 @@
+# Modelo de documentos: EDUCAÇÃO (escolas e cursos). Estrutura explicada em
+# legal.yml. Cada negócio vira uma matrícula.
+name: Educação
+description: Escolas e cursos — documentos do aluno e do responsável, histórico, contratos e matrículas.
+
+naming:
+  file: '{data} — {tipo} — {descricao}'
+  triage_file: '{data_hora} — {origem} — {nome_original}'
+  client_folder: '{nome} · A{codigo}'
+  case_folder: '{ano}-{numero} · {titulo}'
+
+document_types:
+  - { slug: documento_identidade, label: Documento de Identidade, target_slot: pessoais, patterns: ['\brg\b', 'identidade', '\bcnh\b'] }
+  - { slug: cpf, label: CPF, target_slot: pessoais, patterns: ['\bcpf\b'] }
+  - { slug: certidao_nascimento, label: Certidão de Nascimento, target_slot: pessoais, patterns: ['certidao.*nascimento'] }
+  - { slug: documento_responsavel, label: Documento do Responsável, target_slot: responsavel, patterns: ['responsavel'] }
+  - { slug: comprovante_residencia, label: Comprovante de Endereço, target_slot: responsavel, validity_days: 90, patterns: ['comprovante.*(residencia|endereco)'] }
+  - { slug: historico_escolar, label: Histórico Escolar, target_slot: academicos, patterns: ['historico'] }
+  - { slug: declaracao_escolar, label: Declaração Escolar, target_slot: academicos, patterns: ['declaracao', 'transferencia'] }
+  - { slug: foto_3x4, label: Foto 3x4, target_slot: pessoais, patterns: ['3x4', '\bfoto\b'] }
+  - { slug: contrato, label: Contrato, target_slot: processo_contratos, patterns: ['contrato'] }
+  - { slug: comprovante_pagamento, label: Comprovante de Pagamento, target_slot: processo_financeiro, patterns: ['comprovante.*pagamento', 'boleto', '\bpix\b', 'recibo'] }
+  - { slug: outro, label: Outro, target_slot: current, patterns: [] }
+
+checklist_aliases:
+  rg_cpf: [documento_identidade, cpf]
+
+client_template:
+  name: Pasta do aluno
+  tree:
+    - { slot: triagem, name: 00 Triagem }
+    - { slot: pessoais, name: 01 Documentos do Aluno }
+    - { slot: responsavel, name: 02 Documentos do Responsável }
+    - { slot: academicos, name: 03 Documentos Acadêmicos }
+    - { slot: processos, name: 04 Matrículas }
+    - { slot: enviados, name: 05 Enviados pela Escola }
+    - { slot: arquivo, name: 99 Arquivo }
+
+case_area_aliases: {}
+
+case_templates:
+  geral:
+    name: Matrícula
+    tree:
+      - { slot: processo_contratos, name: 01 Contrato }
+      - { slot: processo_financeiro, name: 02 Financeiro }
+      - { slot: processo_comunicacoes, name: 03 Comunicações }

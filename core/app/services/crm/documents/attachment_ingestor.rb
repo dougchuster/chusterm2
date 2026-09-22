@@ -14,7 +14,6 @@ class Crm::Documents::AttachmentIngestor
   CAPTURE_MAX_BYTES = 200.megabytes
   STICKER_CONTENT_TYPE = 'image/webp'.freeze
   CAPTION_MAX_LENGTH = 500
-  CAPTURE_OUTGOING_KEY = 'crm_documents_capture_outgoing'.freeze
   SENT_SLOT = 'enviados'.freeze
   SOURCE_BY_CHANNEL = {
     'Channel::Whatsapp' => 'whatsapp', 'Channel::Email' => 'email', 'Channel::Instagram' => 'instagram'
@@ -56,7 +55,7 @@ class Crm::Documents::AttachmentIngestor
   end
 
   def capture_outgoing?
-    @account.settings&.dig(CAPTURE_OUTGOING_KEY) != false
+    Crm::Documents::Defaults.settings_for(@account).capture_outgoing?
   end
 
   def contact

@@ -1,13 +1,21 @@
-# Catálogo padrão do cofre de documentos (PROJETO-COFRE-DOCUMENTOS.md §5).
-# Copiado para cada conta na primeira vez que o módulo é usado
-# (Crm::Documents::Defaults.ensure!). Depois disso a conta edita os próprios
-# registros; mudar este arquivo só afeta contas novas ou slugs ainda ausentes.
+# Modelo de documentos: JURÍDICO (escritórios de advocacia).
+# Cada modelo (config/crm_documents/presets/<slug>.yml) traz o catálogo de
+# tipos, a estrutura de pastas e os padrões de nome. É copiado para a conta
+# na primeira vez que o cofre é usado (Crm::Documents::Defaults.ensure!) e
+# depois a conta edita tudo pela tela de configurações.
 #
 # `target_slot` aponta para o `slot` de uma pasta (nunca para o nome), para o
 # roteamento sobreviver a renomeações. Slots `processo_*` são resolvidos dentro
-# da pasta do processo.
-# `patterns` alimenta o classificador determinístico da F2 (regex, sem acento,
-# comparadas com o nome do arquivo e a legenda já transliterados).
+# da pasta do negócio. `patterns` alimenta o classificador determinístico
+# (regex sem acento contra o nome do arquivo e a legenda).
+name: Jurídico
+description: Escritórios de advocacia — RG, CNIS, procuração, petições, decisões.
+
+naming:
+  file: '{data} — {tipo} — {descricao}'
+  triage_file: '{data_hora} — {origem} — {nome_original}'
+  client_folder: '{nome} · C{codigo}'
+  case_folder: '{ano}-{numero} · {titulo}'
 
 document_types:
   - { slug: rg, label: RG, target_slot: pessoais, patterns: ['\brg\b', 'identidade', 'registro geral'] }

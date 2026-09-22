@@ -62,7 +62,7 @@ RSpec.describe Crm::Documents::Access do
   end
 
   it 'filtra documentos pelo mesmo critério' do
-    Crm::Documents::Defaults.ensure!(account)
+    Crm::Documents::Defaults.ensure!(account, preset: 'legal')
     mine = CrmDocument.create!(account: account, contact: served, source: 'upload', original_filename: 'a.pdf')
     CrmDocument.create!(account: account, contact: stranger, source: 'upload', original_filename: 'b.pdf')
 

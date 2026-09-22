@@ -55,7 +55,7 @@ class Crm::Documents::CaseFolderProvisioner
   end
 
   def template
-    area = Crm::Documents::Defaults.case_area_for(@deal.category.presence || @deal.legal_area)
+    area = Crm::Documents::Defaults.case_area_for(@deal.category.presence || @deal.legal_area, @account)
     templates = @account.crm_document_folder_templates.case_scope
     templates.find_by(legal_area: area) || templates.find_by!(legal_area: Crm::Documents::Defaults::GENERIC_AREA)
   end

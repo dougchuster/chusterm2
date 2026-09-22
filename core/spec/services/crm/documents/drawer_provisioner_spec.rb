@@ -4,6 +4,8 @@ RSpec.describe Crm::Documents::DrawerProvisioner do
   let(:account) { create(:account) }
   let(:contact) { create(:contact, account: account) }
 
+  before { Crm::Documents::Defaults.ensure!(account, preset: 'legal') }
+
   it 'cria as sete pastas do modelo na ordem certa' do
     names = described_class.new(contact).ensure!.map(&:name)
 

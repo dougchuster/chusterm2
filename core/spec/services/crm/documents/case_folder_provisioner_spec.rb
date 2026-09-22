@@ -2,9 +2,12 @@ require 'rails_helper'
 
 RSpec.describe Crm::Documents::CaseFolderProvisioner do
   let(:account) { create(:account) }
-  let(:contact) { create(:contact, account: account) }
   let(:pipeline) { account.crm_pipelines.create!(name: 'Casos', slug: 'casos-docs', kind: 'legal_intake') }
   let(:stage) { pipeline.crm_pipeline_stages.create!(account: account, name: 'Novo', slug: 'novo', position: 0) }
+  let(:contact) { create(:contact, account: account) }
+
+  before { Crm::Documents::Defaults.ensure!(account, preset: 'legal') }
+
 
   def deal(**attrs)
     account.crm_deals.create!({ crm_pipeline: pipeline, crm_pipeline_stage: stage, contact: contact,
