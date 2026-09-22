@@ -202,11 +202,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
     <div
       class="flex flex-wrap items-center gap-x-3 gap-y-1 text-ui-caption text-ui-text-muted"
     >
-      <span
-v-if="document.caption"
-class="italic text-ui-text"
-        >“{{ document.caption }}”</span
-      >
+      <q v-if="document.caption" class="italic text-ui-text">{{
+        document.caption
+      }}</q>
       <a
         v-if="document.conversation_path"
         :href="document.conversation_path"

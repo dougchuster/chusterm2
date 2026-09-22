@@ -15,6 +15,7 @@ import CRMDocumentEditModal from './CRMDocumentEditModal.vue';
 import CRMDocumentFolderTree from './CRMDocumentFolderTree.vue';
 import CRMDocumentChecklist from './CRMDocumentChecklist.vue';
 import CRMDocumentList from './CRMDocumentList.vue';
+import CRMRequestDocumentsModal from './CRMRequestDocumentsModal.vue';
 import { initialFolderId, lineage, visibleRows } from './folderTree';
 
 // Gaveta de documentos do cliente (PROJETO-COFRE-DOCUMENTOS.md §8.4). Emite
@@ -23,9 +24,12 @@ import { initialFolderId, lineage, visibleRows } from './folderTree';
 const props = defineProps({
   contactId: { type: Number, required: true },
   dealId: { type: Number, default: null },
+  contactName: { type: String, default: '' },
 });
 
 const emit = defineEmits(['unavailable', 'count']);
+
+const requesting = ref(false);
 
 const folders = ref([]);
 const types = ref([]);
@@ -275,6 +279,13 @@ onMounted(load);
       <DsButton
         size="sm"
         variant="ghost"
+        icon="i-lucide-send"
+        label="Pedir documentos"
+        @click="requesting = true"
+      />
+      <DsButton
+        size="sm"
+        variant="ghost"
         icon="i-lucide-folder-plus"
         label="Nova pasta"
         @click="startEdit('folder')"
@@ -430,6 +441,13 @@ onMounted(load);
       </div>
     </div>
 
+    <CRMRequestDocumentsModal
+      :open="requesting"
+      :contact-id="contactId"
+      :contact-name="contactName"
+      :deal-id="dealId"
+      @close="requesting = false"
+    />
     <CRMDocumentEditModal
       :mode="editing.mode"
       :document="editing.document"

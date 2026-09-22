@@ -842,6 +842,7 @@ onMounted(async () => {
         v-else-if="activeTab === 'files' && useDocumentVault"
         :contact-id="vaultContactId"
         :deal-id="dealId"
+        :contact-name="contact?.name || ''"
         @unavailable="documentVaultAvailable = false"
         @count="documentVaultCount = $event"
       />

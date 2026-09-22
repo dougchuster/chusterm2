@@ -121,4 +121,73 @@ export default {
       params: { mode: 'url', disposition: inline ? 'inline' : 'attachment' },
     });
   },
+  // ---- Configuração (leitura: quem usa o cofre; alteração: administrador) ----
+  getSettings() {
+    return axios.get(crmUrl('document_settings'));
+  },
+
+  updateSettings(payload) {
+    return axios.patch(crmUrl('document_settings'), payload);
+  },
+
+  getAllTypes() {
+    return axios.get(crmUrl('document_types'), { params: { all: true } });
+  },
+
+  createType(payload) {
+    return axios.post(crmUrl('document_types'), payload);
+  },
+
+  updateType(id, payload) {
+    return axios.patch(crmUrl(`document_types/${id}`), payload);
+  },
+
+  deactivateType(id) {
+    return axios.delete(crmUrl(`document_types/${id}`));
+  },
+
+  getFolderTemplates() {
+    return axios.get(crmUrl('document_folder_templates'));
+  },
+
+  updateFolderTemplate(id, payload) {
+    return axios.patch(crmUrl(`document_folder_templates/${id}`), payload);
+  },
+
+  // ---- Formulários de envio ----
+  getForms() {
+    return axios.get(crmUrl('document_forms'));
+  },
+
+  createForm(payload = {}) {
+    return axios.post(crmUrl('document_forms'), payload);
+  },
+
+  updateForm(id, payload) {
+    return axios.patch(crmUrl(`document_forms/${id}`), payload);
+  },
+
+  archiveForm(id) {
+    return axios.delete(crmUrl(`document_forms/${id}`));
+  },
+
+  // Link personalizado para um cliente; devolve { url, expires_at }.
+  issueFormLink(formId, { contactId, dealId, ttlDays }) {
+    return axios.post(crmUrl(`document_forms/${formId}/links`), {
+      contact_id: contactId,
+      deal_id: dealId,
+      ttl_days: ttlDays,
+    });
+  },
+
+  // ---- Fila "Novos envios" ----
+  getSubmissions({ reviewStatus = 'new', page } = {}) {
+    return axios.get(crmUrl('document_submissions'), {
+      params: cleanParams({ review_status: reviewStatus, page }),
+    });
+  },
+
+  reviewSubmission(id, payload) {
+    return axios.patch(crmUrl(`document_submissions/${id}`), payload);
+  },
 };

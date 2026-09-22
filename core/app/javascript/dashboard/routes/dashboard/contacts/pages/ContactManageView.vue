@@ -544,6 +544,7 @@ onMounted(async () => {
       <template v-if="crmDocumentsEnabled && activeContact?.id" #documents>
         <CRMDocumentVault
           :contact-id="Number(activeContact.id)"
+          :contact-name="activeContact.name || ''"
           @unavailable="onDocumentVaultUnavailable"
         />
       </template>

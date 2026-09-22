@@ -20,6 +20,7 @@ const AiCenter = () => import('./pages/AiCenter.vue');
 const PageTemplatesGallery = () => import('./pages/PageTemplatesGallery.vue');
 const SegmentSettings = () => import('./pages/SegmentSettings.vue');
 const DocumentTriage = () => import('./pages/DocumentTriage.vue');
+const DocumentSettings = () => import('./pages/DocumentSettings.vue');
 
 const commonMeta = {
   featureFlag: FEATURE_FLAGS.CRM,
@@ -38,6 +39,12 @@ export const routes = [
     name: 'crm_documents_triage',
     component: DocumentTriage,
     meta: commonMeta,
+  },
+  {
+    path: frontendURL('accounts/:accountId/crm/arquivos/configuracoes'),
+    name: 'crm_documents_settings',
+    component: DocumentSettings,
+    meta: { ...commonMeta, permissions: ['administrator'] },
   },
   {
     path: frontendURL('accounts/:accountId/crm/leads'),

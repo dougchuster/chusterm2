@@ -12,6 +12,7 @@ import {
   DsTabs,
 } from 'dashboard/design-system/components';
 import CRMDocumentQueue from '../components/documents/CRMDocumentQueue.vue';
+import CRMDocumentSubmissions from '../components/documents/CRMDocumentSubmissions.vue';
 import CRMTriagePanel from '../components/documents/CRMTriagePanel.vue';
 
 // Caixa de Triagem do escritório (PROJETO-COFRE-DOCUMENTOS.md §8.3): tudo que
@@ -25,13 +26,19 @@ const loading = ref(true);
 const saving = ref(false);
 const unavailable = ref(false);
 const tab = ref('triage');
-const queueCounts = ref({ review: null, expiring: null });
+const queueCounts = ref({ submissions: null, review: null, expiring: null });
 const tabs = computed(() => [
   {
     value: 'triage',
     label: 'Triagem',
     icon: 'i-lucide-inbox',
     count: count.value,
+  },
+  {
+    value: 'submissions',
+    label: 'Novos envios',
+    icon: 'i-lucide-mailbox',
+    count: queueCounts.value.submissions ?? undefined,
   },
   {
     value: 'review',
@@ -191,7 +198,12 @@ onMounted(load);
       v-if="tab !== 'triage' && !unavailable"
       class="rounded-ui-card border border-ui-border bg-ui-surface"
     >
+      <CRMDocumentSubmissions
+        v-if="tab === 'submissions'"
+        @count="queueCounts = { ...queueCounts, submissions: $event }"
+      />
       <CRMDocumentQueue
+        v-else
         :key="tab"
         :queue="tab"
         @count="queueCounts = { ...queueCounts, [tab]: $event }"

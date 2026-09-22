@@ -41,6 +41,10 @@ const { accountScopedRoute, isOnChusteRMCloud, currentAccount } = useAccount();
 const hasCrmDocuments = computed(
   () => currentAccount?.value?.settings?.crm_documents === true
 );
+const currentRole = useMapGetter('getCurrentRole');
+const isDocumentsAdmin = computed(
+  () => hasCrmDocuments.value && currentRole.value === 'administrator'
+);
 const store = useStore();
 const { t } = useI18n();
 const route = useRoute();
@@ -557,6 +561,7 @@ const salesCrmMenuItems = computed(() => [
       'crm_cadences',
       'crm_scoring_config',
       'crm_documents_triage',
+      'crm_documents_settings',
     ],
     children: [
       {
@@ -588,6 +593,17 @@ const salesCrmMenuItems = computed(() => [
               icon: 'i-lucide-inbox',
               activeOn: ['crm_documents_triage'],
               to: accountScopedRoute('crm_documents_triage'),
+            },
+          ]
+        : []),
+      ...(isDocumentsAdmin.value
+        ? [
+            {
+              name: 'DocumentSettings',
+              label: t('SIDEBAR.DOCUMENT_SETTINGS'),
+              icon: 'i-lucide-settings-2',
+              activeOn: ['crm_documents_settings'],
+              to: accountScopedRoute('crm_documents_settings'),
             },
           ]
         : []),
