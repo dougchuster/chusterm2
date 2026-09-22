@@ -208,7 +208,15 @@ const saveEdit = async payload => {
         ...payload,
       });
     } else {
-      await CrmDocumentsAPI.updateDocument(editing.value.document.id, payload);
+      // Na aba do negócio, classificar leva o processo junto: CNIS e laudo vão
+      // para a subpasta do processo, não ficam na Triagem.
+      const withDeal =
+        editing.value.mode === 'classify' &&
+        props.dealId &&
+        !editing.value.document.deal_id
+          ? { ...payload, crm_deal_id: props.dealId }
+          : payload;
+      await CrmDocumentsAPI.updateDocument(editing.value.document.id, withDeal);
     }
     editing.value = { mode: '', document: null };
     await refresh();

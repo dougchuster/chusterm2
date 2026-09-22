@@ -36,7 +36,11 @@ const emit = defineEmits([
   'closeMobileSidebar',
 ]);
 
-const { accountScopedRoute, isOnChusteRMCloud } = useAccount();
+const { accountScopedRoute, isOnChusteRMCloud, currentAccount } = useAccount();
+// Cofre de documentos: liga por conta em settings (DECISOES.md, ADR-DOC, D15).
+const hasCrmDocuments = computed(
+  () => currentAccount?.value?.settings?.crm_documents === true
+);
 const store = useStore();
 const { t } = useI18n();
 const route = useRoute();
@@ -552,6 +556,7 @@ const salesCrmMenuItems = computed(() => [
       'crm_automation_rules',
       'crm_cadences',
       'crm_scoring_config',
+      'crm_documents_triage',
     ],
     children: [
       {
@@ -575,6 +580,17 @@ const salesCrmMenuItems = computed(() => [
         activeOn: ['crm_activities'],
         to: accountScopedRoute('crm_activities'),
       },
+      ...(hasCrmDocuments.value
+        ? [
+            {
+              name: 'DocumentTriage',
+              label: t('SIDEBAR.DOCUMENT_TRIAGE'),
+              icon: 'i-lucide-inbox',
+              activeOn: ['crm_documents_triage'],
+              to: accountScopedRoute('crm_documents_triage'),
+            },
+          ]
+        : []),
       {
         name: 'Agenda',
         label: t('SIDEBAR.AGENDA'),

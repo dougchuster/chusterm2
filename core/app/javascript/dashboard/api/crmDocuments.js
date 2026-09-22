@@ -45,6 +45,14 @@ export default {
     return axios.get(crmUrl('document_types'));
   },
 
+  // Caixa de Triagem: o que chegou e ainda não foi classificado, de todos os
+  // clientes que o usuário atende.
+  getTriage({ page } = {}) {
+    return axios.get(crmUrl('documents/triage'), {
+      params: cleanParams({ page }),
+    });
+  },
+
   getDocuments({ contactId, folderId, dealId, q, archived, page } = {}) {
     return axios.get(crmUrl('documents'), {
       params: cleanParams({

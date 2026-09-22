@@ -125,7 +125,9 @@ Sem achados em: IDOR entre contas/contatos, path traversal/header injection no n
 | Imagem pequena sem legenda marcada como "provável figurinha" | feito | `meta.likely_irrelevant` (< 40 KB) |
 | Tela: sugestão, legenda do cliente, "Ver na conversa", sugestão pré-marcada no modal | feito | `CRMDocumentList.vue`, `CRMDocumentEditModal.vue` |
 | Backfill idempotente em lotes | feito | `Crm::Documents::Backfill`, `rake "crm:documents:backfill[ACCOUNT_ID,AAAA-MM-DD]"` |
-| Caixa de Triagem do escritório (`crm/arquivos/triagem`, com teclado) | pendente | próxima entrega |
+| Caixa de Triagem do escritório (`crm/arquivos/triagem`) | feito | `pages/DocumentTriage.vue`, `CRMTriagePanel.vue`; API `GET crm/documents/triage`; item "Triagem de documentos" no menu CRM só com o módulo ligado |
+| Triagem: agrupada por cliente, pré-visualização de imagem/PDF, sugestão marcada, atalhos (J/K, 1–9, Enter, Delete), destino e nome final antes de confirmar, processo quando o tipo é de processo | feito | idem |
+| Aba do negócio: classificar leva o processo junto (CNIS/laudo vão para a subpasta do processo) | feito | `CRMDocumentVault.vue` |
 | Atualização em tempo real (ActionCable) | pendente | hoje a aba atualiza ao abrir/recarregar |
 
 **Decisões de implementação da F2:**
@@ -135,7 +137,9 @@ Sem achados em: IDOR entre contas/contatos, path traversal/header injection no n
 - **Origem pelo canal da inbox:** WhatsApp, e-mail, Instagram; demais canais (widget, API) como `chat` ("Conversa").
 - **Nota privada não entra** (inclui anexos que a equipe põe só para uso interno).
 
-**Testes:** RSpec do módulo 128/0 (classificador, ingestão, listener, backfill, API); Vitest CRM + contatos 172/0.
+**Verificação da captura no app local:** mensagem recebida com anexo e legenda "segue meu comprovante de residência" criada na conversa 1 do contato 80 (conta 55). O Sidekiq gerou o documento em `00 Triagem` com cópia própria do arquivo, nome `2026-09-22 17h08 — Conversa — conta-luz-setembro.pdf` e sugestão `comprovante_residencia`.
+
+**Testes:** RSpec do módulo 131/0 (classificador, ingestão, listener, backfill, API, triagem); Vitest CRM + contatos + menu 204/0.
 
 **Falha pré-existente, não relacionada:** `spec/listeners/crm_captain_triage_listener_spec.rb:19` falha também sem as mudanças do cofre (a criação de conta já provisiona funil com etapas, o que invalida a premissa do teste).
 

@@ -172,6 +172,7 @@ Rails.application.routes.draw do
             resources :document_folders, only: [:index, :create, :update, :destroy]
             resources :document_types, only: [:index]
             resources :documents, only: [:index, :show, :create, :update, :destroy] do
+              collection { get :triage }
               member do
                 get :download
                 post :restore

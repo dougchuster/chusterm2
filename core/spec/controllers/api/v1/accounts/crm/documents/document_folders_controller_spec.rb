@@ -107,6 +107,8 @@ RSpec.describe 'CRM Document Folders API', type: :request do
 
       expect(response).to have_http_status(:success)
       expect(response.parsed_body.pluck('slug')).to include('rg', 'cnis', 'outro')
+      rg = response.parsed_body.find { |type| type['slug'] == 'rg' }
+      expect(rg['target_folder_label']).to eq('01 Documentos Pessoais')
     end
   end
 end

@@ -143,9 +143,11 @@ describe('CRMDocumentVault', () => {
     await wrapper.find('form').trigger('submit');
     await flushPromises();
 
+    // Na aba do negócio, o processo vai junto (CNIS/laudo caem na subpasta dele).
     expect(CrmDocumentsAPI.updateDocument).toHaveBeenCalledWith(50, {
       doc_type: 'rg',
       description: '',
+      crm_deal_id: 7,
     });
   });
 });

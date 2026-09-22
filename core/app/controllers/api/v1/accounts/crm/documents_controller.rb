@@ -10,7 +10,7 @@ class Api::V1::Accounts::Crm::DocumentsController < Api::V1::Accounts::Crm::Docu
   LIST_INCLUDES = [:contact, :uploaded_by_user, { source_message: :conversation },
                    { crm_document_folder: { parent: :parent } }].freeze
 
-  before_action :load_document, except: [:index, :create]
+  before_action :load_document, except: [:index, :create, :triage]
 
   def index
     authorize CrmDocument, :index?
@@ -18,6 +18,17 @@ class Api::V1::Accounts::Crm::DocumentsController < Api::V1::Accounts::Crm::Docu
     scope = Crm::Documents::DocumentFilter.new(contact: contact, params: params).scope
     records = paginate(scope.includes(*LIST_INCLUDES))
     render json: { payload: records.map { |d| serializer.document(d) }, meta: { count: scope.count, page: page } }
+  end
+
+  # Caixa de Triagem (§8.3): o que chegou e ainda não foi classificado, de
+  # todos os clientes que o usuário atende.
+  def triage
+    authorize CrmDocument, :index?
+    scope = Crm::Documents::TriageQuery.new(documents_access).scope
+    records = paginate(scope.includes(*LIST_INCLUDES)).to_a
+    context = Crm::Documents::TriageContext.new(account: Current.account, user: Current.user, documents: records)
+    render json: { payload: records.map { |d| serializer.document(d).merge(context.for(d)) },
+                   meta: { count: scope.count, page: page } }
   end
 
   def show
