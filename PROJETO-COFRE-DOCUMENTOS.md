@@ -2,10 +2,12 @@
 
 **Versão:** 2.1 (substitui a 1.0 e a 2.0 do mesmo dia)
 **Data:** 2026-09-22
-**Status:** em execução desde 22/09/2026 — F1 e F2 entregues na branch `feat/crm-documents-vault`. Registro vivo do que foi feito, como verificar e o que falta: `docs/execution/COFRE-DOCUMENTOS.md`
+**Status:** em execução desde 22/09/2026 — F1, F2, F3 e F4 entregues na branch `feat/crm-documents-vault`; o cofre é **universal** (modelos por área, nomes e formulários configuráveis pela tela). Registro vivo do que foi feito, como verificar e o que falta: `docs/execution/COFRE-DOCUMENTOS.md`
 **Flag de produto:** `crm_documents`
 **Branch sugerida:** `feat/crm-documents-vault`
 **Documentos relacionados:** `PLANO-REFORMULACAO-CRM.md`, `DECISOES.md`, `SECURITY_AUDIT.md`, `docs/PLANO-DESIGN-SYSTEM-2026.md`
+
+**Mudança de escopo em 23/09/2026 (execução):** o CRM atende várias áreas, então o cofre virou universal. A estrutura jurídica descrita neste documento passou a ser um dos modelos (`presets/legal.yml`); o padrão é o modelo Geral. Os nomes (§5.3) viraram padrões editáveis, e o formulário da §8.7 virou um construtor em que cada conta monta os próprios formulários. Detalhes em `docs/execution/COFRE-DOCUMENTOS.md`.
 
 **O que mudou da 1.0 para a 2.0**
 - §5 nova: **estrutura de pastas e nomenclatura** padronizada (cliente, processo, arquivo), com modelos por área do direito.

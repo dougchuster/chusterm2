@@ -97,3 +97,9 @@ Referência: `PROJETO-COFRE-DOCUMENTOS.md` §18. Data: 2026-09-22.
 **Decisão técnica nova (D15) — como ligar o módulo por conta.** O projeto previa a flag `crm_documents` em `config/features.yml`, mas o arquivo já tem 65 flags e o bitmask de `feature_flags` é um bigint de 63 bits (as flags nº 64/65 já não funcionam — ver check-up de 18/09). Adotado: chave `crm_documents` em `accounts.settings` (jsonb), lida por `Crm::Documents::Feature.enabled?(account)`. Não toca o bitmask, não exige migration e liga/desliga por conta pelo console ou pelo super admin.
 
 **Alternativas rejeitadas para D15:** reaproveitar uma flag depreciada do `features.yml` (mudaria o significado de um bit já gravado em contas existentes); migrar `feature_flags` para jsonb (mudança no núcleo do Chatwoot, fora do escopo).
+
+**Atualização de 23/09/2026 (execução do cofre):**
+
+- **D16 — Cofre universal.** O CRM atende várias áreas; o catálogo jurídico deixou de ser o padrão. Modelos por área em `config/crm_documents/presets` (geral, legal, clinic, real_estate, education), escolhidos na tela "Configurar documentos" ou pelo pack vertical instalado; padrões de nome editáveis por conta com marcadores. Conta que já usava o catálogo jurídico é reconhecida e mantém o modelo legal.
+- **D12 — resolvida pelo produto:** os assuntos e documentos do formulário não são mais fixos; cada conta monta os próprios formulários (construtor). O modelo jurídico traz como ponto de partida os cinco assuntos propostos.
+- **D14 — mantida:** sem código de confirmação no envio; o envio pelo formulário aberto entra "não verificado" até a equipe confirmar ("É este cliente"). O link personalizado entra verificado.

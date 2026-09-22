@@ -207,6 +207,37 @@ Ligar para o escritório: `Crm::Documents::Feature.enable!(Account.find(1))` na 
 
 **Testes:** RSpec do módulo 154/0 (+checklist, validade); Vitest do cofre 20/0.
 
-### F4 a F6
+### Universal: modelos por área e nomes configuráveis (22–23/09/2026)
+
+O CRM atende várias áreas; o cofre deixou de ser jurídico por padrão.
+
+| Item | Onde |
+|------|------|
+| Modelos de documentos por área: **geral** (padrão universal), legal, clinic, real_estate, education — tipos, pastas, apelidos de checklist, padrões de nome e formulário inicial | `config/crm_documents/presets/*.yml`, `Crm::Documents::Presets`, `Crm::Documents::Defaults` |
+| Conta nova recebe o modelo do pack vertical instalado ou o geral; conta que já usava o catálogo jurídico é reconhecida (tipo `cnis`); troca de modelo acrescenta tipos e troca modelos de pasta sem mexer no que existe | `Defaults.initial_preset`, `Defaults.apply_preset!` |
+| Configurações por conta (modelo, padrões de nome, captura) | tabela `crm_document_settings` |
+| Padrões de nome com marcadores (`{data} — {tipo} — {descricao}`, `{nome} · C{codigo}`, `{ano}-{numero} · {titulo}`, triagem), validados por padrão, sem separador sobrando, encolhendo só a descrição | `Crm::Documents::Naming::Template`, `FileNamer`, `PathBuilder` |
+| Tela "Configurar documentos" (administrador): Formulários, Área e nomes (prévia ao vivo), Tipos de documento, Pastas | `pages/DocumentSettings.vue`, `components/documents/settings/` |
+
+Para ligar o módulo com um modelo: `Crm::Documents::Feature.enable!(account, preset: 'legal')` (ou `geral`, `clinic`, `real_estate`, `education`). Sem `preset`, vale o do pack ou o geral.
+
+### F4 — Formulários de envio montados pela conta
+
+O plano previa um formulário fixo (§8.7). Virou um **construtor**: cada conta monta os próprios formulários, com as perguntas e documentos que quiser.
+
+| Item | Onde |
+|------|------|
+| Estrutura: campos (texto, texto longo, telefone, e-mail, CPF, CNPJ, CPF/CNPJ, data, número, lista, escolha única, várias escolhas, confirmação), ligação ao cadastro (nome/telefone/e-mail), obrigatório, ajuda, condição "mostrar quando"; documentos pedidos com tipo do cofre, vários arquivos e condição; textos da página | `CrmDocumentForm`, `Crm::Documents::FormSchema` |
+| Página pública `/f/:token` (link fixo) e `/l/:token` (link do cliente); HTML no servidor, funciona sem JS; JS só condicionais, lista de arquivos, redução de fotos e anti-duplo-envio | `PublicDocumentFormsController`, `app/views/public_document_forms/`, `public/crm-forms/` |
+| Envio: validação por tipo (CPF/CNPJ com dígito verificador), ciência LGPD, contato por telefone/e-mail sem alterar cadastro existente, protocolo `AAAA-NNNNNN`, arquivos na Triagem com tipo sugerido, "não verificado" até a equipe confirmar | `FormAnswers`, `ContactResolver`, `FormSubmitter` |
+| Link personalizado ("Pedir documentos" no negócio/contato): não pede identificação, entra verificado, validade 1–60 dias, só o digest do token no banco | `CrmDocumentFormLink`, `POST crm/document_forms/:id/links`, `CRMRequestDocumentsModal.vue` |
+| Fila "Novos envios": respostas rotuladas, identificação, "É este cliente", concluir, spam (arquiva os arquivos) | `GET/PATCH crm/document_submissions`, `CRMDocumentSubmissions.vue` |
+| Defesas: CSRF, campo-isca e tempo mínimo (fingem sucesso), página expirada pede reenvio, rack-attack por IP (10 envios/h, `RATE_LIMIT_CRM_FORM_SUBMITS`), X-Frame-Options DENY, noindex, no-store, 404 genérico | idem |
+
+**Pendências conhecidas da F4:** confirmação do protocolo por WhatsApp para o número informado (§8.7.1) — exige escolher a inbox de envio por formulário; hoje o protocolo aparece só na tela. Envio de muitos arquivos grandes de uma vez passa do limite do nginx (100 MB no host do CRM) — a redução de fotos no celular mitiga.
+
+### F5 e F6
+
+Pendentes. F5 depende da D3 (conta Google). Ver `PROJETO-COFRE-DOCUMENTOS.md` §13.
 
 Pendentes. F4 depende da D12 (assuntos do formulário) e da revisão de segurança; F5 da D3 (conta Google). Ver `PROJETO-COFRE-DOCUMENTOS.md` §13.
