@@ -117,3 +117,29 @@ case_templates:
       - { slot: processo_provas, name: 02 Inquérito e Provas }
       - { slot: processo_peticoes, name: 03 Petições e Protocolos }
       - { slot: processo_decisoes, name: 04 Decisões e Audiências }
+
+# Formulário inicial ao criar um formulário novo (a conta edita tudo depois).
+default_form:
+  name: Envio de documentos
+  settings:
+    intro: Preencha seus dados, conte o que aconteceu e envie os documentos pelo celular. Sem cadastro e sem aplicativo.
+    success_message: Recebemos seus documentos. Guarde o número do protocolo; o escritório vai falar com você pelo WhatsApp informado.
+    consent_text: Autorizo o uso destes dados e documentos exclusivamente para o meu atendimento jurídico.
+    submit_label: Enviar documentos
+  fields:
+    - { key: nome, label: Nome completo, type: text, required: true, maps_to: contact_name }
+    - { key: whatsapp, label: WhatsApp com DDD, type: phone, required: true, maps_to: contact_phone, help: É por aqui que o escritório vai responder. }
+    - { key: cpf, label: CPF, type: cpf, help: Opcional. Ajuda a encontrar o seu cadastro mais rápido. }
+    - { key: assunto, label: Assunto, type: radio, required: true, options: ['Aposentadoria ou benefício do INSS', 'Trabalho (demissão, direitos)', 'Família (divórcio, pensão, guarda)', 'Banco, compras ou contratos', 'Outro assunto'] }
+    - { key: cliente, label: Você já é cliente do escritório?, type: radio, options: ['Sim', 'Não', 'Não sei'] }
+    - { key: relato, label: Conte em poucas palavras o que aconteceu ou o que precisa, type: textarea, required: true }
+    - { key: data_marcada, label: Tem alguma data marcada? (audiência, perícia, prazo), type: date }
+  document_items:
+    - { key: identidade, label: RG ou CNH, doc_type: rg, multiple: true }
+    - { key: endereco, label: Comprovante de residência, doc_type: comprovante_residencia }
+    - { key: cnis, label: CNIS, doc_type: cnis, show_if: { field: assunto, equals: 'Aposentadoria ou benefício do INSS' } }
+    - { key: laudos, label: Laudos e exames médicos, doc_type: laudo_medico, multiple: true, show_if: { field: assunto, equals: 'Aposentadoria ou benefício do INSS' } }
+    - { key: ctps, label: Carteira de trabalho, doc_type: ctps, multiple: true, show_if: { field: assunto, equals: 'Trabalho (demissão, direitos)' } }
+    - { key: holerites, label: Últimos holerites, doc_type: holerite, multiple: true, show_if: { field: assunto, equals: 'Trabalho (demissão, direitos)' } }
+    - { key: certidao_casamento, label: Certidão de casamento, doc_type: certidao_casamento, show_if: { field: assunto, equals: 'Família (divórcio, pensão, guarda)' } }
+    - { key: outros, label: Outros documentos, multiple: true }

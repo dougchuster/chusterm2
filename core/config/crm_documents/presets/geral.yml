@@ -54,3 +54,21 @@ case_templates:
       - { slot: processo_propostas, name: 02 Propostas e Orçamentos }
       - { slot: processo_entregas, name: 03 Entregas }
       - { slot: processo_comunicacoes, name: 04 Comunicações }
+
+# Formulário inicial ao criar um formulário novo (a conta edita tudo depois).
+default_form:
+  name: Envio de documentos
+  settings:
+    intro: Preencha seus dados e envie os documentos pelo celular. Sem cadastro e sem aplicativo.
+    success_message: Recebemos seus documentos. Guarde o número do protocolo; entraremos em contato pelo WhatsApp informado.
+    consent_text: Autorizo o uso destes dados e documentos exclusivamente para o meu atendimento.
+    submit_label: Enviar
+  fields:
+    - { key: nome, label: Nome completo, type: text, required: true, maps_to: contact_name }
+    - { key: whatsapp, label: WhatsApp com DDD, type: phone, required: true, maps_to: contact_phone, help: É por aqui que vamos responder. }
+    - { key: email, label: E-mail, type: email, maps_to: contact_email }
+    - { key: mensagem, label: Conte em poucas palavras o que você precisa, type: textarea }
+  document_items:
+    - { key: identidade, label: Documento com foto (RG ou CNH), doc_type: documento_identidade, multiple: true }
+    - { key: endereco, label: Comprovante de endereço, doc_type: comprovante_residencia }
+    - { key: outros, label: Outros documentos, multiple: true }
