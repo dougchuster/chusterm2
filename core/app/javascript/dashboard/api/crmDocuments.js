@@ -53,6 +53,21 @@ export default {
     });
   },
 
+  // "X de Y" de documentos de um negócio.
+  getChecklist(dealId) {
+    return axios.get(crmUrl('document_checklist'), {
+      params: { deal_id: dealId },
+    });
+  },
+
+  // payload: { template_id } ou { mark: { key, done } }
+  updateChecklist(dealId, payload) {
+    return axios.patch(crmUrl('document_checklist'), {
+      deal_id: dealId,
+      ...payload,
+    });
+  },
+
   getDocuments({ contactId, folderId, dealId, q, archived, page } = {}) {
     return axios.get(crmUrl('documents'), {
       params: cleanParams({

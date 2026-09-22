@@ -7,7 +7,7 @@ defineProps({
   documents: { type: Array, default: () => [] },
 });
 
-const emit = defineEmits(['open', 'download', 'edit', 'archive']);
+const emit = defineEmits(['open', 'download', 'edit', 'archive', 'approve']);
 
 const STATUS = {
   received: { label: 'Recebido', variant: 'neutral' },
@@ -181,6 +181,24 @@ const itemClass =
           @click="emit('edit', 'rename', document)"
         >
           <Icon icon="i-lucide-pencil" class="size-4" /> Renomear
+        </button>
+        <button
+          v-if="!document.in_triage && document.status !== 'approved'"
+          type="button"
+          role="menuitem"
+          :class="itemClass"
+          @click="emit('approve', document)"
+        >
+          <Icon icon="i-lucide-circle-check" class="size-4" /> Aprovar
+        </button>
+        <button
+          v-if="!document.in_triage && document.status !== 'rejected'"
+          type="button"
+          role="menuitem"
+          :class="itemClass"
+          @click="emit('edit', 'reject', document)"
+        >
+          <Icon icon="i-lucide-circle-x" class="size-4" /> Rejeitar…
         </button>
         <button
           type="button"

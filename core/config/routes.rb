@@ -171,6 +171,7 @@ Rails.application.routes.draw do
             # accounts.settings['crm_documents'] ligado (ADR-DOC, D15).
             resources :document_folders, only: [:index, :create, :update, :destroy]
             resources :document_types, only: [:index]
+            resource :document_checklist, only: [:show, :update]
             resources :documents, only: [:index, :show, :create, :update, :destroy] do
               collection { get :triage }
               member do

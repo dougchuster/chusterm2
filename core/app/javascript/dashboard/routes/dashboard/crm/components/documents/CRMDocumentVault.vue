@@ -13,6 +13,7 @@ import {
 } from 'dashboard/design-system/components';
 import CRMDocumentEditModal from './CRMDocumentEditModal.vue';
 import CRMDocumentFolderTree from './CRMDocumentFolderTree.vue';
+import CRMDocumentChecklist from './CRMDocumentChecklist.vue';
 import CRMDocumentList from './CRMDocumentList.vue';
 import { initialFolderId, lineage, visibleRows } from './folderTree';
 
@@ -110,9 +111,13 @@ const load = async () => {
   }
 };
 
+// Muda a cada recarga: o checklist "X de Y" se atualiza junto.
+const refreshKey = ref(0);
+
 const refresh = async () => {
   await loadFolders();
   await loadDocuments();
+  refreshKey.value += 1;
 };
 
 const uploadOne = async entry => {
@@ -181,6 +186,16 @@ const openDocument = async (document, inline = true) => {
     window.open(data.url, '_blank', 'noopener,noreferrer');
   } catch (err) {
     useAlert(errorMessage(err, 'Não foi possível abrir o arquivo.'));
+  }
+};
+
+const approveDocument = async document => {
+  try {
+    await CrmDocumentsAPI.updateDocument(document.id, { status: 'approved' });
+    useAlert(`${document.file_name} aprovado.`);
+    await refresh();
+  } catch (err) {
+    useAlert(errorMessage(err, 'Não foi possível aprovar.'));
   }
 };
 
@@ -282,6 +297,11 @@ onMounted(load);
         "
       />
     </header>
+    <CRMDocumentChecklist
+      v-if="dealId && !loading"
+      :deal-id="dealId"
+      :refresh-key="refreshKey"
+    />
 
     <div v-if="loading" class="flex flex-col gap-2 p-4">
       <DsSkeleton v-for="n in 4" :key="n" class="h-10" />
@@ -398,6 +418,7 @@ onMounted(load);
           @download="openDocument($event, false)"
           @edit="startEdit"
           @archive="archiveDocument"
+          @approve="approveDocument"
         />
 
         <div

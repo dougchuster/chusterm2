@@ -30,6 +30,22 @@ document_types:
   - { slug: decisao, label: Decisão, target_slot: processo_decisoes, patterns: ['decisao', 'sentenca', 'despacho'] }
   - { slug: outro, label: Outro, target_slot: current, patterns: [] }
 
+# Itens de checklist (crm_checklist_templates, kind: document) → tipos que os
+# atendem. Sem apelido, vale o item cuja `key` é igual ao slug do tipo. Chaves
+# tiradas dos checklists reais da produção em 22/09/2026.
+checklist_aliases:
+  rg_cpf: [rg, cpf, cnh]
+  rg_cpf_ambos: [rg, cpf, cnh]
+  documento_identidade: [rg, cnh]
+  contracheques: [holerite]
+  holerites: [holerite]
+  certidao_nascimento_filhos: [certidao_nascimento]
+  certidao_nascimento_herdeiros: [certidao_nascimento]
+  laudos: [laudo_medico]
+  laudos_medicos: [laudo_medico]
+  exames: [laudo_medico]
+  carteira_trabalho: [ctps]
+
 # Estrutura da gaveta do cliente (raiz). Prefixo numérico garante a mesma
 # ordem na tela, no Windows Explorer e no Drive.
 client_template:

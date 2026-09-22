@@ -173,6 +173,36 @@ Sem achados em: IDOR entre contas/contatos, path traversal/header injection no n
 
 **Falha pré-existente, não relacionada:** `spec/listeners/crm_captain_triage_listener_spec.rb:19` falha também sem as mudanças do cofre (a criação de conta já provisiona funil com etapas, o que invalida a premissa do teste).
 
-### F3 a F6
+### Deploys (22/09/2026)
 
-Pendentes. Ver `PROJETO-COFRE-DOCUMENTOS.md` §13.
+| Onde | Release | Estado | Verificação |
+|------|---------|--------|-------------|
+| Chuster (canário) | `20260922T204436-4346d0c-cofre-f1f2` | no ar, **módulo ligado** na conta 1 (Chuster Tech) | migration aplicada; `/health` OK; teste de fumaça no volume real: documento criado na pasta certa, clone por hardlink com mesmo inode, clone sobrevive ao original apagado, contato de teste removido |
+| KVM4 (cliente) | `20260922T205644-4346d0c-cofre-f1f2-dark` | no ar, **módulo desligado** (dark launch) | migration aplicada; `/health` OK; site 200; `accounts.settings.crm_documents` ausente; 0 documentos |
+
+Ligar para o escritório: `Crm::Documents::Feature.enable!(Account.find(1))` na KVM4 (e, se quiser trazer o histórico, `rake "crm:documents:backfill[1]"`). Aguarda a validação da árvore de pastas pela cliente (D11). O backup pré-deploy levou o disco da KVM4 de 68% para 72%.
+
+### Incidente encontrado na produção (fora do escopo do cofre)
+
+**O WhatsApp da Dra. Paula está desconectado do CRM desde 08/09/2026 11h43.** Instância Evolution "Dra Paula Matos": `connectionStatus: connecting`, `disconnectionReasonCode: 401`, `conflict / device_removed` — o aparelho vinculado foi removido do WhatsApp (ou a sessão foi derrubada pelo WhatsApp). Última mensagem gravada no CRM: 16/09/2026. Nada entra desde então.
+
+**Como resolver (precisa do celular dela):** no CRM, Configurações → Caixas de entrada → WhatsApp da Dra. Paula → reconectar e escanear o QR code pelo WhatsApp dela (Aparelhos conectados → Conectar um aparelho). Sem isso, nem o atendimento nem a captura do cofre recebem mensagens. Relacionado ao risco A2 (Baileys não oficial) de `DECISOES.md`.
+
+### F3 — Checklist, status, validade e versões
+
+| Item | Status | Onde |
+|------|--------|------|
+| "X de Y" do negócio a partir dos checklists existentes (itens `kind: document`) | feito | `Crm::Documents::Checklist`, `GET/PATCH crm/document_checklist?deal_id=` |
+| Casamento item ↔ tipo: `doc_types` do item, apelidos (`rg_cpf` → RG/CPF/CNH, `contracheques` → holerite), slug igual à chave, classificador no título | feito | `Crm::Documents::ChecklistMatcher`, `checklist_aliases` em `defaults.yml` (chaves dos checklists reais da produção) |
+| Documento de processo só conta para o próprio negócio; rejeitado não conta; aprovado aparece | feito | idem |
+| Escolher checklist na aba (197 dos 208 negócios abertos da cliente não têm área nem tipo, então o casamento automático quase nunca acontece) e marcar "entregue em papel" | feito | `crm_deals.custom_fields['documents_checklist']`; `CRMDocumentChecklist.vue` |
+| Validade automática pelo tipo (certidões 90 dias, CNIS 30), sem sobrescrever data manual | feito | `CrmDocument#assign_expiry` |
+| Aprovar / Rejeitar com motivo (chips: Ilegível, Cortado, Vencido, Documento errado) | feito | `CRMDocumentList.vue`, `CRMDocumentEditModal.vue` |
+| Versões (reenvio vira versão, anterior preservada) | pendente | — |
+| Fila "Vencendo" e modelos de pasta editáveis por área | pendente | — |
+
+**Testes:** RSpec do módulo 154/0 (+checklist, validade); Vitest do cofre 20/0.
+
+### F4 a F6
+
+Pendentes. F4 depende da D12 (assuntos do formulário) e da revisão de segurança; F5 da D3 (conta Google). Ver `PROJETO-COFRE-DOCUMENTOS.md` §13.

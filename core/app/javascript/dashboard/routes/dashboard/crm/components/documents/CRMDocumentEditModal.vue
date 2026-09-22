@@ -27,7 +27,11 @@ const TITLES = {
   move: 'Mover documento',
   rename: 'Renomear documento',
   folder: 'Nova pasta',
+  reject: 'Rejeitar documento',
 };
+
+// Motivos que a equipe mais usa; o texto pode ser enviado ao cliente.
+const REJECT_REASONS = ['Ilegível', 'Cortado', 'Vencido', 'Documento errado'];
 
 watch(
   () => [props.mode, props.document],
@@ -66,6 +70,7 @@ const canConfirm = computed(() => {
     );
   if (props.mode === 'rename')
     return Boolean(name.value.trim()) || Boolean(props.document?.name_locked);
+  if (props.mode === 'reject') return Boolean(name.value.trim());
   return Boolean(name.value.trim());
 });
 
@@ -76,6 +81,7 @@ const confirm = () => {
     move: { crm_document_folder_id: Number(folderId.value) },
     rename: { file_name: name.value.trim() },
     folder: { name: name.value.trim() },
+    reject: { status: 'rejected', review_note: name.value.trim() },
   };
   emit('confirm', payloads[props.mode]);
 };
@@ -114,6 +120,25 @@ const confirm = () => {
           Sai da Triagem e vai para a pasta do tipo escolhido, com o nome
           padrão.
         </p>
+      </template>
+      <template v-else-if="mode === 'reject'">
+        <div class="flex flex-wrap gap-2">
+          <button
+            v-for="reason in REJECT_REASONS"
+            :key="reason"
+            type="button"
+            class="min-h-9 rounded-ui-control border border-ui-border px-3 text-ui-body-sm text-ui-text hover:bg-ui-hover"
+            @click="name = reason"
+          >
+            {{ reason }}
+          </button>
+        </div>
+        <DsInput
+          id="crm-doc-reject-reason"
+          v-model="name"
+          label="Por que este documento não serve?"
+          description="O motivo fica registrado e pode ser enviado ao cliente."
+        />
       </template>
       <DsSelect
         v-else-if="mode === 'move'"

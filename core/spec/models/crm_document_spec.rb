@@ -36,6 +36,30 @@ RSpec.describe CrmDocument do
     expect(document.file_name).to eq('CPF da Maria.pdf')
   end
 
+  it 'calcula a validade pelo tipo ao classificar' do
+    document = build(doc_type: 'comprovante_residencia')
+    document.save!
+
+    expect(document.expires_on).to eq(Date.new(2026, 12, 21))
+  end
+
+  it 'conta a validade a partir da data do documento' do
+    document = build(doc_type: 'cnis', document_date: Date.new(2026, 9, 1))
+    document.save!
+
+    expect(document.expires_on).to eq(Date.new(2026, 10, 1))
+  end
+
+  it 'não sobrescreve validade informada à mão e não inventa validade para tipo sem prazo' do
+    manual = build(doc_type: 'comprovante_residencia', expires_on: Date.new(2027, 1, 1))
+    manual.save!
+    rg = build(doc_type: 'rg')
+    rg.save!
+
+    expect(manual.expires_on).to eq(Date.new(2027, 1, 1))
+    expect(rg.expires_on).to be_nil
+  end
+
   it 'exige motivo para rejeitar' do
     document = build(doc_type: 'cpf', status: 'rejected')
 

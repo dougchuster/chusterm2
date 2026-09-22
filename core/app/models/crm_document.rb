@@ -19,6 +19,7 @@ class CrmDocument < ApplicationRecord
   has_one_attached :file
 
   before_validation :assign_file_name
+  before_validation :assign_expiry
 
   validates :source, inclusion: { in: SOURCES }
   validates :status, inclusion: { in: STATUSES }
@@ -63,6 +64,19 @@ class CrmDocument < ApplicationRecord
     return if account.nil?
 
     self.file_name = Crm::Documents::Naming::FileNamer.call(self)
+  end
+
+  # Validade pelo catálogo (certidão 90 dias, CNIS 30): conta da data do
+  # documento ou do recebimento. Data informada à mão não é sobrescrita.
+  def assign_expiry
+    return if will_save_change_to_expires_on? || !expiry_inputs_changed?
+
+    days = document_type&.validity_days
+    self.expires_on = days ? (document_date || received_at.in_time_zone(time_zone).to_date) + days : nil
+  end
+
+  def expiry_inputs_changed?
+    new_record? || will_save_change_to_doc_type? || will_save_change_to_document_date?
   end
 
   def doc_type_in_catalog

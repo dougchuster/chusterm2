@@ -4,6 +4,11 @@ class Crm::ApplyChecklistTemplate
     @actor = actor
   end
 
+  # Mesmo critério usado pelo cofre de documentos para o "X de Y" do negócio.
+  def self.best_template_for(deal)
+    new(deal: deal).send(:find_best_template)
+  end
+
   def perform
     template = find_best_template
     return unless template
