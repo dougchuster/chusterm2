@@ -232,7 +232,7 @@ onMounted(load);
       class="flex flex-wrap items-center gap-3 border-b border-ui-border-subtle p-3"
     >
       <p
-        class="m-0 min-w-0 flex-1 truncate text-ui-body-sm text-ui-text-muted"
+        class="m-0 hidden min-w-0 flex-1 truncate text-ui-body-sm text-ui-text-muted sm:block"
         :title="breadcrumb.join(' / ')"
       >
         <Icon
@@ -279,7 +279,10 @@ onMounted(load);
       <DsSkeleton v-for="n in 4" :key="n" class="h-10" />
     </div>
 
-    <div v-else class="grid min-h-80 md:grid-cols-[17rem_minmax(0,1fr)]">
+    <div
+      v-else
+      class="grid content-start md:min-h-80 md:grid-cols-[17rem_minmax(0,1fr)]"
+    >
       <aside class="hidden border-r border-ui-border-subtle p-2 md:block">
         <CRMDocumentFolderTree
           :folders="folders"

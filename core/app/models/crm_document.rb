@@ -3,7 +3,7 @@
 # derivado pela nomenclatura e só deixa de ser recalculado quando a equipe
 # renomeia à mão (`name_locked`).
 class CrmDocument < ApplicationRecord
-  SOURCES = %w[whatsapp email instagram upload portal system].freeze
+  SOURCES = %w[whatsapp email instagram chat upload portal system].freeze
   STATUSES = %w[received approved rejected obsolete].freeze
   DEFAULT_TIME_ZONE = 'America/Sao_Paulo'.freeze
 
@@ -12,6 +12,9 @@ class CrmDocument < ApplicationRecord
   belongs_to :crm_document_folder, optional: true
   belongs_to :crm_deal, optional: true
   belongs_to :uploaded_by_user, class_name: 'User', optional: true
+  # Mensagem de origem (captura automática). Sem FK: a mensagem pode ser
+  # apagada e o documento continua — a cópia do arquivo é própria.
+  belongs_to :source_message, class_name: 'Message', optional: true
 
   has_one_attached :file
 

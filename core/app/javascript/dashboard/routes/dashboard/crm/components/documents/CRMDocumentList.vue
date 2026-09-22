@@ -20,6 +20,7 @@ const SOURCE = {
   whatsapp: 'WhatsApp',
   email: 'E-mail',
   instagram: 'Instagram',
+  chat: 'Conversa',
   upload: 'Enviado pela equipe',
   portal: 'Portal do cliente',
   system: 'Sistema',
@@ -98,7 +99,27 @@ const itemClass =
           <span aria-hidden="true">·</span>
           <span>{{ SOURCE[document.source] || document.source }}</span>
         </span>
+        <span
+          v-if="document.caption"
+          class="mt-1 line-clamp-2 block text-ui-caption italic text-ui-text-muted"
+        >
+          “{{ document.caption }}”
+        </span>
       </button>
+      <DsBadge
+        v-if="document.in_triage && document.suggested_doc_type_label"
+        variant="brand"
+        icon="i-lucide-sparkles"
+        :label="`Sugestão: ${document.suggested_doc_type_label}`"
+        class="hidden sm:inline-flex"
+      />
+      <DsBadge
+        v-else-if="document.in_triage && document.likely_irrelevant"
+        variant="neutral"
+        icon="i-lucide-image-off"
+        label="Provável figurinha"
+        class="hidden sm:inline-flex"
+      />
       <DsBadge
         v-if="expiringSoon(document)"
         variant="warning"
@@ -128,6 +149,14 @@ const itemClass =
         >
           <Icon icon="i-lucide-download" class="size-4" /> Baixar
         </button>
+        <a
+          v-if="document.conversation_path"
+          role="menuitem"
+          :href="document.conversation_path"
+          :class="itemClass"
+        >
+          <Icon icon="i-lucide-message-square" class="size-4" /> Ver na conversa
+        </a>
         <button
           type="button"
           role="menuitem"

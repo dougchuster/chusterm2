@@ -14,6 +14,7 @@ class AsyncDispatcher < BaseDispatcher
       CampaignListener.instance,
       CsatSurveyListener.instance,
       CrmCaptainTriageListener.instance,
+      CrmDocumentIntakeListener.instance,
       HookListener.instance,
       InstallationWebhookListener.instance,
       NotificationListener.instance,

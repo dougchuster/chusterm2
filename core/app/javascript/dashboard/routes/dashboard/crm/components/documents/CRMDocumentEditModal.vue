@@ -32,7 +32,9 @@ const TITLES = {
 watch(
   () => [props.mode, props.document],
   () => {
-    typeSlug.value = props.document?.doc_type || '';
+    // Sugestão da captura automática já vem marcada; a equipe só confirma.
+    typeSlug.value =
+      props.document?.doc_type || props.document?.suggested_doc_type || '';
     description.value = props.document?.description || '';
     folderId.value = props.document?.folder_id || '';
     name.value = props.mode === 'rename' ? props.document?.file_name || '' : '';

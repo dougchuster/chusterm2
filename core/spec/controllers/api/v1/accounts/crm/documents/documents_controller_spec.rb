@@ -36,6 +36,24 @@ RSpec.describe 'CRM Documents API', type: :request do
       expect(body['meta']).to include('count' => 1)
     end
 
+    it 'traz a sugestão de tipo, a legenda e o caminho da conversa dos documentos capturados' do
+      inbox = create(:inbox, account: account)
+      conversation = create(:conversation, account: account, inbox: inbox, contact: contact)
+      message = create(:message, account: account, inbox: inbox, conversation: conversation, content: 'segue meu rg')
+      attachment = message.attachments.new(account_id: account.id, file_type: :file)
+      attachment.file.attach(io: Rails.root.join('spec/assets/sample.pdf').open, filename: 'x.pdf',
+                             content_type: 'application/pdf')
+      attachment.save!
+      Crm::Documents::AttachmentIngestor.new(attachment).call
+
+      get base, params: { contact_id: contact.id }, headers: admin.create_new_auth_token, as: :json
+
+      expect(response.parsed_body['payload'].first).to include(
+        'suggested_doc_type' => 'rg', 'suggested_doc_type_label' => 'RG', 'caption' => 'segue meu rg',
+        'conversation_path' => "/app/accounts/#{account.id}/conversations/#{conversation.display_id}"
+      )
+    end
+
     it 'filtra por pasta e por busca' do
       rg = crm_document_for(contact, doc_type: 'rg')
       crm_document_for(contact, doc_type: 'cnis')

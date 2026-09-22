@@ -45,6 +45,9 @@ const triageDocument = {
   file_name: '2026-09-22 14h37 — WhatsApp — IMG-WA0012.jpg',
   in_triage: true,
   doc_type: null,
+  suggested_doc_type: 'rg',
+  suggested_doc_type_label: 'RG',
+  caption: 'segue meu rg',
   status: 'received',
   source: 'whatsapp',
   content_type: 'image/jpeg',
@@ -95,6 +98,8 @@ describe('CRMDocumentVault', () => {
     });
     expect(wrapper.text()).toContain('IMG-WA0012.jpg');
     expect(wrapper.text()).toContain('A classificar');
+    expect(wrapper.text()).toContain('Sugestão: RG');
+    expect(wrapper.text()).toContain('segue meu rg');
     expect(wrapper.emitted('count')[0]).toEqual([1]);
   });
 
@@ -125,7 +130,7 @@ describe('CRMDocumentVault', () => {
     expect(CrmDocumentsAPI.getFolders).toHaveBeenCalledTimes(2);
   });
 
-  it('classifica o documento pelo modal', async () => {
+  it('classifica com a sugestão já marcada, só confirmando', async () => {
     CrmDocumentsAPI.updateDocument.mockResolvedValue({ data: {} });
     const wrapper = await mountVault();
 
@@ -134,7 +139,7 @@ describe('CRMDocumentVault', () => {
       .findAll('button[role="menuitem"]')
       .find(b => b.text().includes('Classificar'));
     await classify.trigger('click');
-    await wrapper.find('#crm-doc-type').setValue('rg');
+    expect(wrapper.find('#crm-doc-type').element.value).toBe('rg');
     await wrapper.find('form').trigger('submit');
     await flushPromises();
 

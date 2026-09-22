@@ -44,7 +44,19 @@ class Crm::Documents::Serializer
   end
 
   def provenance(document)
-    { source: document.source, uploaded_by: uploader(document), source_message_id: document.source_message_id }
+    meta = document.meta || {}
+    { source: document.source, uploaded_by: uploader(document), source_message_id: document.source_message_id,
+      conversation_path: conversation_path(document), caption: meta['caption'],
+      suggested_doc_type: meta['suggested_doc_type'], suggested_doc_type_label: type_label(meta['suggested_doc_type']),
+      likely_irrelevant: meta['likely_irrelevant'] == true }
+  end
+
+  # "Ver na conversa": o vínculo com o WhatsApp nunca se perde (§8.4).
+  def conversation_path(document)
+    conversation = document.source_message&.conversation
+    return if conversation.nil?
+
+    "/app/accounts/#{@account.id}/conversations/#{conversation.display_id}"
   end
 
   # Uma consulta para a lista inteira, em vez de uma por documento.

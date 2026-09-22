@@ -11,7 +11,7 @@ class Crm::Documents::Naming::FileNamer
   SEPARATOR = ' — '.freeze
   OTHER_TYPE = 'outro'.freeze
   SOURCE_LABELS = {
-    'whatsapp' => 'WhatsApp', 'email' => 'E-mail', 'instagram' => 'Instagram',
+    'whatsapp' => 'WhatsApp', 'email' => 'E-mail', 'instagram' => 'Instagram', 'chat' => 'Conversa',
     'upload' => 'Envio da equipe', 'portal' => 'Portal', 'system' => 'Sistema'
   }.freeze
 

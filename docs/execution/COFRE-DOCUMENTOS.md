@@ -112,6 +112,33 @@ Sem achados em: IDOR entre contas/contatos, path traversal/header injection no n
 
 **Verificação no app local (2026-09-22):** imagem `core` reconstruída, migration aplicada, módulo ligado na conta 55 (fixture "Conta A QA"), negócio 70. Roteiro reproduzível: `qa/e2e/shot-documents-vault.mjs <saida> <amostras>`. Visto funcionando: gaveta criada na primeira visita com as 7 pastas e a pasta do processo `2026-0070 · Negocio QA 0001` com as 4 subpastas do modelo geral; envio de 3 arquivos com progresso; nome de triagem com hora local (`2026-09-22 16h44 — Envio da equipe — RG maria.pdf`); contagem da aba atualizada. Ajustes feitos a partir das capturas: coluna de pastas mais larga com quebra de linha nos nomes, nome de arquivo em até duas linhas, lista de envios com "Limpar lista" e sumiço automático dos concluídos.
 
-### F2 a F6
+### F2 — Captura automática
+
+| Item | Status | Onde |
+|------|--------|------|
+| Listener no `message_created` (todos os canais, sem tocar serviço de canal) | feito | `app/listeners/crm_document_intake_listener.rb`, registrado em `AsyncDispatcher` |
+| Job de ingestão na fila `low`, com nova tentativa se o arquivo ainda não chegou | feito | `app/jobs/crm/documents/ingest_attachment_job.rb` |
+| Ingestão: recebido → Triagem; enviado pela equipe → `05 Enviados pelo Escritório` (desligável por `accounts.settings['crm_documents_capture_outgoing'] = false`) | feito | `Crm::Documents::AttachmentIngestor` |
+| Idempotência por anexo (webhook duplicado) e por checksum | feito | índice único `source_attachment_id` + `Uploader` |
+| Hora do nome = hora em que o cliente mandou | feito | `provenance[:received_at]` |
+| Classificador determinístico (legenda antes do nome, sem acento) → só sugere | feito | `Crm::Documents::Classifier`; `meta.suggested_doc_type` |
+| Imagem pequena sem legenda marcada como "provável figurinha" | feito | `meta.likely_irrelevant` (< 40 KB) |
+| Tela: sugestão, legenda do cliente, "Ver na conversa", sugestão pré-marcada no modal | feito | `CRMDocumentList.vue`, `CRMDocumentEditModal.vue` |
+| Backfill idempotente em lotes | feito | `Crm::Documents::Backfill`, `rake "crm:documents:backfill[ACCOUNT_ID,AAAA-MM-DD]"` |
+| Caixa de Triagem do escritório (`crm/arquivos/triagem`, com teclado) | pendente | próxima entrega |
+| Atualização em tempo real (ActionCable) | pendente | hoje a aba atualiza ao abrir/recarregar |
+
+**Decisões de implementação da F2:**
+
+- **Cópia própria do arquivo.** O documento não reaproveita o blob do anexo da mensagem: se a conversa ou a mensagem for apagada, o Active Storage tentaria apagar um arquivo compartilhado. Custo: documento recebido ocupa o dobro enquanto a conversa existir. Rever se o disco apertar (alternativa: hardlink no Disk service).
+- **Áudio não entra.** Nota de voz é conversa, não documento (§7.2). Imagem, vídeo e arquivo entram.
+- **Origem pelo canal da inbox:** WhatsApp, e-mail, Instagram; demais canais (widget, API) como `chat` ("Conversa").
+- **Nota privada não entra** (inclui anexos que a equipe põe só para uso interno).
+
+**Testes:** RSpec do módulo 128/0 (classificador, ingestão, listener, backfill, API); Vitest CRM + contatos 172/0.
+
+**Falha pré-existente, não relacionada:** `spec/listeners/crm_captain_triage_listener_spec.rb:19` falha também sem as mudanças do cofre (a criação de conta já provisiona funil com etapas, o que invalida a premissa do teste).
+
+### F3 a F6
 
 Pendentes. Ver `PROJETO-COFRE-DOCUMENTOS.md` §13.
