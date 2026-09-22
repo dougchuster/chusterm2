@@ -65,7 +65,10 @@ GROUP BY a.account_id ORDER BY sum(b.byte_size) DESC;
 | Upload com identificação pelo conteúdo, allowlist, limite e dedup por checksum | feito | `Crm::Documents::Uploader` |
 | Visibilidade (admin tudo; agente pelos contatos que atende) | feito | `Crm::Documents::Access` |
 | API (pastas, documentos, tipos, download auditado) | feito | `app/controllers/api/v1/accounts/crm/document*_controller.rb`, rotas em `config/routes.rb` (namespace `crm`) |
-| Frontend (aba Arquivos no negócio e no contato) | pendente | — |
+| Frontend: aba Arquivos no negócio | feito | `routes/dashboard/crm/components/documents/`, `DealDetailsOperational.vue` |
+| Frontend: aba Arquivos no drawer do contato | feito | `ContactManageView.vue` (só com o módulo ligado) |
+| Desfazer (toast) em mover/classificar/arquivar | pendente | hoje confirma com aviso simples; arquivar é reversível por `restore` |
+| Revisão de segurança dedicada da F1 | feita, achados corrigidos | ver "Revisão de segurança" abaixo |
 | Download da pasta em `.zip` | pendente | depende de decidir a gem `rubyzip` |
 
 **Escolhas de implementação registradas aqui (não mudam a especificação):**
@@ -94,6 +97,20 @@ GROUP BY a.account_id ORDER BY sum(b.byte_size) DESC;
 | `GET documents/:id/download?disposition=inline` | Audita e redireciona para URL assinada de 5 minutos |
 
 Toda ação grava em `crm_audit_events` (`document_created`, `document_resent`, `document_updated`, `document_archived`, `document_restored`, `document_purged`, `document_downloaded`, `document_folder_*`), com IP e user-agent.
+
+**Revisão de segurança (2026-09-22, agente security-reviewer sobre `27fe796d67..HEAD`):**
+
+| Severidade | Achado | Tratamento |
+|------------|--------|------------|
+| CRÍTICO | `Access` reusava `CrmDeal.visible_to`, que torna negócio sem inbox visível a todo agente: qualquer agente leria RG/CPF/laudos de clientes que nunca atendeu | Corrigido: regra própria (conversa em inbox do agente, ou negócio do qual é dono, responsável ou do time). Spec de regressão `access_spec.rb` |
+| ALTO | Upload sem limite de taxa; tamanho checado depois de o corpo chegar | Throttle `crm/documents#create` (200/h por usuário, `RATE_LIMIT_CRM_DOCUMENT_UPLOADS`) e recusa 413 por `Content-Length`. O revisor citou `client_max_body_size 0` do nginx herdado do Chatwoot, mas produção usa `chusterm-host.conf`, que já corta em 50m/100m |
+| MÉDIO | Evento `document_downloaded` gravado na emissão do link, não no download | Renomeado para `document_download_link_issued` |
+| MÉDIO | Mensagem de erro expunha o content type detectado | Mensagem genérica com os formatos aceitos |
+| BAIXO | `window.open` sem `noreferrer` | `noopener,noreferrer` |
+
+Sem achados em: IDOR entre contas/contatos, path traversal/header injection no nome, mass assignment, SQL injection na busca, XSS.
+
+**Verificação no app local (2026-09-22):** imagem `core` reconstruída, migration aplicada, módulo ligado na conta 55 (fixture "Conta A QA"), negócio 70. Roteiro reproduzível: `qa/e2e/shot-documents-vault.mjs <saida> <amostras>`. Visto funcionando: gaveta criada na primeira visita com as 7 pastas e a pasta do processo `2026-0070 · Negocio QA 0001` com as 4 subpastas do modelo geral; envio de 3 arquivos com progresso; nome de triagem com hora local (`2026-09-22 16h44 — Envio da equipe — RG maria.pdf`); contagem da aba atualizada. Ajustes feitos a partir das capturas: coluna de pastas mais larga com quebra de linha nos nomes, nome de arquivo em até duas linhas, lista de envios com "Limpar lista" e sumiço automático dos concluídos.
 
 ### F2 a F6
 

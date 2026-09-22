@@ -55,6 +55,8 @@ const totalDocuments = computed(() =>
   folders.value.reduce((sum, folder) => sum + (folder.documents_count || 0), 0)
 );
 
+const UPLOAD_FEEDBACK_MS = 6000;
+
 const errorMessage = (err, fallback) => err?.response?.data?.error || fallback;
 
 const loadFolders = async () => {
@@ -157,6 +159,12 @@ const uploadFiles = async fileList => {
     useAlert(
       `${duplicates} arquivo(s) já estavam guardados. Nada foi duplicado.`
     );
+  // Envio concluído some sozinho; erro fica até a pessoa limpar.
+  setTimeout(() => {
+    uploads.value = uploads.value.filter(entry =>
+      ['error', 'uploading'].includes(entry.status)
+    );
+  }, UPLOAD_FEEDBACK_MS);
   await refresh();
 };
 
@@ -170,7 +178,7 @@ const openDocument = async (document, inline = true) => {
     const { data } = await CrmDocumentsAPI.getDownloadUrl(document.id, {
       inline,
     });
-    window.open(data.url, '_blank', 'noopener');
+    window.open(data.url, '_blank', 'noopener,noreferrer');
   } catch (err) {
     useAlert(errorMessage(err, 'Não foi possível abrir o arquivo.'));
   }
@@ -271,7 +279,7 @@ onMounted(load);
       <DsSkeleton v-for="n in 4" :key="n" class="h-10" />
     </div>
 
-    <div v-else class="grid min-h-80 md:grid-cols-[15rem_minmax(0,1fr)]">
+    <div v-else class="grid min-h-80 md:grid-cols-[17rem_minmax(0,1fr)]">
       <aside class="hidden border-r border-ui-border-subtle p-2 md:block">
         <CRMDocumentFolderTree
           :folders="folders"
@@ -301,6 +309,17 @@ onMounted(load);
           class="m-0 flex list-none flex-col gap-1 border-b border-ui-border-subtle p-3"
           aria-live="polite"
         >
+          <li class="flex justify-end">
+            <button
+              type="button"
+              class="text-ui-caption text-ui-text-muted underline-offset-2 hover:text-ui-text hover:underline"
+              @click="
+                uploads = uploads.filter(entry => entry.status === 'uploading')
+              "
+            >
+              Limpar lista
+            </button>
+          </li>
           <li
             v-for="entry in uploads"
             :key="entry.key"

@@ -26,6 +26,7 @@ class Api::V1::Accounts::Crm::DocumentsController < Api::V1::Accounts::Crm::Docu
     authorize CrmDocument, :create?
     contact = find_visible_contact!(params.require(:contact_id))
     return render_unprocessable('Envie um arquivo.') if params[:file].blank?
+    return render_too_large if request.content_length.to_i > Crm::Documents::Uploader::MAX_BYTES + 1.megabyte
 
     result = upload(contact)
     render json: { document: serializer.document(result.document), duplicate: result.duplicate? },
@@ -68,7 +69,9 @@ class Api::V1::Accounts::Crm::DocumentsController < Api::V1::Accounts::Crm::Docu
     authorize @document, :download?
     return render json: { error: 'not_found' }, status: :not_found unless @document.file.attached?
 
-    audit('document_downloaded', @document, disposition: disposition)
+    # Registra a emissão do link temporário (o download em si acontece depois,
+    # direto no storage). Nome explícito para a trilha não afirmar mais do que sabe.
+    audit('document_download_link_issued', @document, disposition: disposition)
     # O dashboard autentica por cabeçalho, que o navegador não envia ao seguir
     # um link: com mode=url a resposta traz a URL temporária para a tela abrir.
     return render json: { url: temporary_url, expires_in: DOWNLOAD_TTL.to_i } if params[:mode] == 'url'
@@ -77,6 +80,11 @@ class Api::V1::Accounts::Crm::DocumentsController < Api::V1::Accounts::Crm::Docu
   end
 
   private
+
+  def render_too_large
+    render json: { error: "O arquivo passa do limite de #{Crm::Documents::Uploader::MAX_BYTES / 1.megabyte} MB." },
+           status: :payload_too_large
+  end
 
   def page
     [params[:page].to_i, 1].max

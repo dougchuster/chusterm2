@@ -1,6 +1,10 @@
 # Quem vê os documentos de quem (PROJETO-COFRE-DOCUMENTOS.md §10).
 # Administrador vê tudo. Agente vê os contatos que atende: conversa numa inbox
-# dele ou negócio visível para ele pela mesma regra de CrmDeal.visible_to.
+# dele, ou negócio do qual é dono, responsável ou do time dele.
+#
+# Deliberadamente NÃO reusa CrmDeal.visible_to: no funil, negócio sem inbox é
+# visível para todo agente, o que aqui abriria RG/CPF/laudos de clientes que o
+# agente nunca atendeu (achado CRÍTICO da revisão de segurança de 22/09/2026).
 # Fora disso, o controller responde 404 — nem a existência do documento vaza.
 class Crm::Documents::Access
   def initialize(user, account)
@@ -45,6 +49,11 @@ class Crm::Documents::Access
   end
 
   def deal_contact_ids
-    CrmDeal.visible_to(@user, @account).where.not(contact_id: nil).select(:contact_id)
+    team_ids = @user.teams.where(account_id: @account.id).select(:id)
+    deals = CrmDeal.where(account_id: @account.id).where.not(contact_id: nil)
+    deals.where(owner_id: @user.id)
+         .or(deals.where(assignee_id: @user.id))
+         .or(deals.where(team_id: team_ids))
+         .select(:contact_id)
   end
 end

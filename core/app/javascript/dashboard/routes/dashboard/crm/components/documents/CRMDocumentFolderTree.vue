@@ -77,7 +77,7 @@ const onKeydown = (event, index, row) => {
               ? 'bg-ui-brand-soft text-ui-brand-foreground'
               : 'text-ui-text hover:bg-ui-hover'
           "
-          :style="{ paddingLeft: `${row.depth * 14 + 4}px` }"
+          :style="{ paddingLeft: `${row.depth * 12 + 4}px` }"
         >
           <button
             v-if="row.hasChildren"
@@ -122,9 +122,10 @@ const onKeydown = (event, index, row) => {
                   : 'text-ui-text-muted'
               "
             />
-            <span class="min-w-0 flex-1 truncate" :title="row.folder.name">{{
-              row.folder.name
-            }}</span>
+            <span
+              class="min-w-0 flex-1 leading-snug [overflow-wrap:anywhere]"
+              >{{ row.folder.name }}</span
+            >
             <span
               v-if="row.folder.documents_count"
               class="shrink-0 font-mono text-ui-caption tabular-nums text-ui-text-muted"

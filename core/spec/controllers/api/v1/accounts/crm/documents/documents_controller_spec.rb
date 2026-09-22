@@ -189,7 +189,7 @@ RSpec.describe 'CRM Documents API', type: :request do
 
       expect(response).to have_http_status(:found)
       expect(response.location).to include('/rails/active_storage/disk/')
-      expect(CrmAuditEvent.for_target('CrmDocument', document.id).pluck(:action)).to include('document_downloaded')
+      expect(CrmAuditEvent.for_target('CrmDocument', document.id).pluck(:action)).to include('document_download_link_issued')
     end
 
     it 'devolve a URL temporária em JSON para o dashboard abrir' do

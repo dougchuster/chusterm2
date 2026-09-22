@@ -206,6 +206,16 @@ class Rack::Attack
     match_data[:account_id] if match_data.present?
   end
 
+  ## Cofre de documentos: upload por usuário (revisão de segurança 22/09/2026).
+  ## O nginx de produção já corta o corpo (chusterm-host.conf); isto limita a
+  ## quantidade, para ninguém encher o disco da VPS com envios em série.
+  throttle('/api/v1/accounts/:account_id/crm/documents#create',
+           limit: ENV.fetch('RATE_LIMIT_CRM_DOCUMENT_UPLOADS', '200').to_i, period: 1.hour) do |req|
+    match_data = %r{\A/api/v1/accounts/(?<account_id>\d+)/crm/documents/?\z}.match(req.path)
+    user_identifier = req.get_header('HTTP_UID').presence || req.get_header('HTTP_API_ACCESS_TOKEN').presence
+    "#{user_identifier || req.ip}:#{match_data[:account_id]}" if req.post? && match_data.present?
+  end
+
   ## Prevent abuse of contact search api
   throttle('/api/v1/accounts/:account_id/contacts/search', limit: ENV.fetch('RATE_LIMIT_CONTACT_SEARCH', '100').to_i, period: 1.minute) do |req|
     match_data = %r{/api/v1/accounts/(?<account_id>\d+)/contacts/search}.match(req.path)

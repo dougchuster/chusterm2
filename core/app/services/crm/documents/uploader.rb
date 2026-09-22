@@ -52,7 +52,7 @@ class Crm::Documents::Uploader
   def check_content_type!(blob)
     return if ALLOWED_CONTENT_TYPES.include?(blob.content_type)
 
-    raise InvalidFile, "O tipo de arquivo (#{blob.content_type}) não é aceito."
+    raise InvalidFile, 'Este tipo de arquivo não é aceito. Envie PDF, imagem, áudio, vídeo ou documento do Office.'
   end
 
   def find_duplicate(blob)

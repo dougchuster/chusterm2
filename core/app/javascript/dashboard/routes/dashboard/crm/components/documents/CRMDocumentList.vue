@@ -75,7 +75,9 @@ const itemClass =
         :title="document.path"
         @click="emit('open', document)"
       >
-        <span class="block truncate font-mono text-ui-body-sm text-ui-text">
+        <span
+          class="line-clamp-2 font-mono text-ui-body-sm text-ui-text [overflow-wrap:anywhere]"
+        >
           {{ document.file_name }}
         </span>
         <span

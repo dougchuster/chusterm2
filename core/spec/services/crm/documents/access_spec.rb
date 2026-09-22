@@ -39,6 +39,28 @@ RSpec.describe Crm::Documents::Access do
     expect(described_class.new(agent, account).contact_visible?(stranger)).to be(true)
   end
 
+  # Achado CRÍTICO da revisão de segurança (22/09): no funil, negócio sem
+  # inbox é visível para todo agente. Isso não pode abrir documento sensível.
+  it 'não libera o contato só porque existe um negócio sem inbox' do
+    pipeline = account.crm_pipelines.create!(name: 'P', slug: 'p-sem-inbox', kind: 'legal_intake')
+    stage = pipeline.crm_pipeline_stages.create!(account: account, name: 'Novo', slug: 'novo', position: 0)
+    account.crm_deals.create!(crm_pipeline: pipeline, crm_pipeline_stage: stage, contact: stranger,
+                              inbox: nil, title: 'Caso criado à mão')
+
+    expect(described_class.new(agent, account).contact_visible?(stranger)).to be(false)
+  end
+
+  it 'libera o contato quando o negócio é do time do agente' do
+    team = create(:team, account: account)
+    create(:team_member, team: team, user: agent)
+    pipeline = account.crm_pipelines.create!(name: 'P', slug: 'p-time', kind: 'legal_intake')
+    stage = pipeline.crm_pipeline_stages.create!(account: account, name: 'Novo', slug: 'novo', position: 0)
+    account.crm_deals.create!(crm_pipeline: pipeline, crm_pipeline_stage: stage, contact: stranger,
+                              team_id: team.id, title: 'Caso do time')
+
+    expect(described_class.new(agent, account).contact_visible?(stranger)).to be(true)
+  end
+
   it 'filtra documentos pelo mesmo critério' do
     Crm::Documents::Defaults.ensure!(account)
     mine = CrmDocument.create!(account: account, contact: served, source: 'upload', original_filename: 'a.pdf')
