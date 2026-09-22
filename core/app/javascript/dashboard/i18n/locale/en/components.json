@@ -81,7 +81,8 @@
     "TABS": {
       "OVERVIEW": "Overview",
       "TIMELINE": "Timeline",
-      "NOTES": "Notes"
+      "NOTES": "Notes",
+      "DOCUMENTS": "Files"
     },
     "FIELDS": {
       "EMPTY_TITLE": "No fields to display",

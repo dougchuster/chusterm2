@@ -59,10 +59,12 @@ const mockContacts = [
 describe('ContactManageView.vue', () => {
   let store;
   let updateError;
+  let accountSettings;
 
   beforeEach(() => {
     vi.clearAllMocks();
     updateError = null;
+    accountSettings = {};
 
     store = createStore({
       getters: {
@@ -76,6 +78,13 @@ describe('ContactManageView.vue', () => {
         updateUISettings: vi.fn(),
       },
       modules: {
+        accounts: {
+          namespaced: true,
+          getters: {
+            getAccount: () => () => ({ id: 1, settings: accountSettings }),
+            isFeatureEnabledonAccount: () => () => false,
+          },
+        },
         contacts: {
           namespaced: false,
           state: {
@@ -214,6 +223,25 @@ describe('ContactManageView.vue', () => {
     expect(drawer.props('open')).toBe(true);
     expect(drawer.props('title')).toBe('John Doe');
     expect(drawer.props('subtitle')).toBe('john@example.com');
+  });
+
+  it('mostra a aba Arquivos no drawer só com o cofre ligado na conta', async () => {
+    const tabValues = async () => {
+      const wrapper = createWrapper();
+      await wrapper
+        .findComponent({ name: 'DsDataGrid' })
+        .vm.$emit('rowClick', mockContacts[0]);
+      await flushPromises();
+      return wrapper
+        .findComponent({ name: 'DsRecordDrawer' })
+        .props('tabs')
+        .map(tab => tab.value);
+    };
+
+    expect(await tabValues()).not.toContain('documents');
+
+    accountSettings = { crm_documents: true };
+    expect(await tabValues()).toContain('documents');
   });
 
   it('performs bulk delete action when selected rows are deleted', async () => {

@@ -81,7 +81,8 @@
     "TABS": {
       "OVERVIEW": "Visão geral",
       "TIMELINE": "Linha do tempo",
-      "NOTES": "Notas"
+      "NOTES": "Notas",
+      "DOCUMENTS": "Arquivos"
     },
     "FIELDS": {
       "EMPTY_TITLE": "Nenhum campo para exibir",

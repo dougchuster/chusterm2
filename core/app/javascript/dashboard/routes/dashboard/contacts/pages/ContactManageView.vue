@@ -5,6 +5,8 @@ import { useI18n } from 'vue-i18n';
 import { useStore, useMapGetter } from 'dashboard/composables/store';
 import { useAlert } from 'dashboard/composables';
 import { useUISettings } from 'dashboard/composables/useUISettings';
+import { useAccount } from 'dashboard/composables/useAccount';
+import CRMDocumentVault from 'dashboard/routes/dashboard/crm/components/documents/CRMDocumentVault.vue';
 import BulkActionsAPI from 'dashboard/api/bulkActions';
 import {
   DsDataGrid,
@@ -31,6 +33,48 @@ const selectedRows = ref([]);
 const activeContactId = ref(route.params.contactId || null);
 const isDrawerOpen = ref(Boolean(route.params.contactId));
 const drawerActiveTab = ref('overview');
+
+// Cofre de documentos (PROJETO-COFRE-DOCUMENTOS.md §8.1): a gaveta completa do
+// cliente, como aba do drawer. Só aparece com o módulo ligado na conta.
+const { currentAccount } = useAccount();
+const documentVaultEnabled = ref(true);
+const crmDocumentsEnabled = computed(
+  () =>
+    documentVaultEnabled.value &&
+    currentAccount.value?.settings?.crm_documents === true
+);
+const drawerTabs = computed(() => {
+  const tabs = [
+    {
+      value: 'overview',
+      label: t('RECORD_DRAWER.TABS.OVERVIEW'),
+      icon: 'i-lucide-file-text',
+    },
+    {
+      value: 'timeline',
+      label: t('RECORD_DRAWER.TABS.TIMELINE'),
+      icon: 'i-lucide-history',
+    },
+    {
+      value: 'notes',
+      label: t('RECORD_DRAWER.TABS.NOTES'),
+      icon: 'i-lucide-notebook-pen',
+    },
+  ];
+  if (!crmDocumentsEnabled.value) return tabs;
+  return [
+    ...tabs,
+    {
+      value: 'documents',
+      label: t('RECORD_DRAWER.TABS.DOCUMENTS'),
+      icon: 'i-lucide-folder',
+    },
+  ];
+});
+const onDocumentVaultUnavailable = () => {
+  documentVaultEnabled.value = false;
+  drawerActiveTab.value = 'overview';
+};
 const searchQuery = ref(route.query?.search || '');
 
 const getCompanyName = contact =>
@@ -489,12 +533,20 @@ onMounted(async () => {
       :avatar-url="activeContact?.thumbnail || activeContact?.avatar_url || ''"
       :avatar-name="activeContact?.name || ''"
       :active-tab="drawerActiveTab"
+      :tabs="drawerTabs"
       :fields="drawerFields"
       :quick-actions="drawerQuickActions"
       @close="handleCloseDrawer"
       @update:active-tab="drawerActiveTab = $event"
       @field-update="handleDrawerFieldUpdate"
       @quick-action="handleQuickAction"
-    />
+    >
+      <template v-if="crmDocumentsEnabled && activeContact?.id" #documents>
+        <CRMDocumentVault
+          :contact-id="Number(activeContact.id)"
+          @unavailable="onDocumentVaultUnavailable"
+        />
+      </template>
+    </DsRecordDrawer>
   </div>
 </template>
