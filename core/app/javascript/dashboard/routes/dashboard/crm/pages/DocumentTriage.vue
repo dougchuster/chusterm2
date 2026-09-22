@@ -130,8 +130,11 @@ onMounted(load);
 <template>
   <div class="flex h-full min-h-0 flex-col gap-4 overflow-y-auto p-4 md:p-6">
     <header class="flex flex-wrap items-center gap-3">
-      <Icon icon="i-lucide-inbox" class="size-6 text-ui-text-muted" />
-      <div class="min-w-0 flex-1">
+      <Icon
+        icon="i-lucide-inbox"
+        class="hidden size-6 text-ui-text-muted sm:block"
+      />
+      <div class="min-w-0 flex-1 basis-64">
         <h1 class="m-0 text-ui-title text-ui-text">Triagem de documentos</h1>
         <p class="m-0 text-ui-body-sm text-ui-text-muted">
           O que os clientes mandaram pelas conversas e ainda não foi

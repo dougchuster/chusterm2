@@ -2,7 +2,7 @@
 
 **Versão:** 2.1 (substitui a 1.0 e a 2.0 do mesmo dia)
 **Data:** 2026-09-22
-**Status:** proposta para aprovação (nenhuma linha de código escrita)
+**Status:** em execução desde 22/09/2026 — F1 e F2 entregues na branch `feat/crm-documents-vault`. Registro vivo do que foi feito, como verificar e o que falta: `docs/execution/COFRE-DOCUMENTOS.md`
 **Flag de produto:** `crm_documents`
 **Branch sugerida:** `feat/crm-documents-vault`
 **Documentos relacionados:** `PLANO-REFORMULACAO-CRM.md`, `DECISOES.md`, `SECURITY_AUDIT.md`, `docs/PLANO-DESIGN-SYSTEM-2026.md`

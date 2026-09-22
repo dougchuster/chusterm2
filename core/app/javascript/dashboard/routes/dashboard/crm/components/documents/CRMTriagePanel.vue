@@ -174,7 +174,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
     aria-label="Classificar documento"
   >
     <div
-      class="grid aspect-[4/3] max-w-full place-items-center overflow-hidden rounded-ui-control border border-ui-border-subtle bg-ui-sunken"
+      class="grid h-56 max-w-full lg:h-72 place-items-center overflow-hidden rounded-ui-control border border-ui-border-subtle bg-ui-sunken"
     >
       <img
         v-if="isImage && previewUrl"
