@@ -1,7 +1,8 @@
 # Revisão de um envio pela equipe:
 # - verificar: confirma que o envio é mesmo daquele contato; os arquivos
 #   deixam de aparecer como "não verificado";
-# - concluir: tira da fila "Novos envios";
+# - concluir: tira da fila "Novos envios" — só depois de verificar, para
+#   ninguém dar por bom um arquivo que qualquer pessoa pode ter mandado;
 # - spam: tira da fila e arquiva os arquivos (continuam restauráveis).
 class Crm::Documents::SubmissionReviewer
   def initialize(submission, user:)
@@ -30,6 +31,8 @@ class Crm::Documents::SubmissionReviewer
   end
 
   def review!(status)
+    raise ArgumentError, 'Confirme que é este cliente antes de concluir.' if status == 'done' && !@submission.verified
+
     @submission.update!(review_status: status, reviewed_by_user: @user, reviewed_at: Time.current)
     @submission.documents.active.find_each { |document| document.update!(archived_at: Time.current) } if status == 'spam'
   end

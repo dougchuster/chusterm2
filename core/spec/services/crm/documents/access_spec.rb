@@ -61,6 +61,23 @@ RSpec.describe Crm::Documents::Access do
     expect(described_class.new(agent, account).contact_visible?(stranger)).to be(true)
   end
 
+  # Revisão de segurança (22/09, formulários): negócio sem inbox de outro
+  # agente é outro caso do mesmo cliente — não pode receber documento por ele.
+  it 'só oferece para arquivar os negócios do agente, não o caso sem inbox de outro' do
+    # Um funil por caso: o funil só aceita um lead aberto por contato.
+    deal_for = lambda do |attrs|
+      pipeline = account.crm_pipelines.create!(name: attrs[:title], slug: "p-#{SecureRandom.hex(3)}", kind: 'legal_intake')
+      stage = pipeline.crm_pipeline_stages.create!(account: account, name: 'Novo', slug: 'novo', position: 0)
+      account.crm_deals.create!(crm_pipeline: pipeline, crm_pipeline_stage: stage, contact: served, **attrs)
+    end
+    mine = deal_for.call(title: 'Trabalhista', owner_id: agent.id)
+    by_inbox = deal_for.call(title: 'Da inbox', inbox: inbox)
+    deal_for.call(title: 'Família', owner_id: admin.id)
+
+    expect(described_class.new(agent, account).deals.pluck(:id)).to contain_exactly(mine.id, by_inbox.id)
+    expect(described_class.new(admin, account).deals.count).to eq(3)
+  end
+
   it 'filtra documentos pelo mesmo critério' do
     Crm::Documents::Defaults.ensure!(account, preset: 'legal')
     mine = CrmDocument.create!(account: account, contact: served, source: 'upload', original_filename: 'a.pdf')

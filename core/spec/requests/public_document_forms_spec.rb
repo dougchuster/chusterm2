@@ -28,6 +28,8 @@ RSpec.describe 'Formulário público de documentos', type: :request do
       expect(response.body).to include('Imobiliária Horizonte', 'WhatsApp com DDD', 'Documento com foto (RG ou CNH)')
       expect(response.headers['X-Frame-Options']).to eq('DENY')
       expect(response.headers['X-Robots-Tag']).to include('noindex')
+      expect(response.headers['Referrer-Policy']).to eq('same-origin')
+      expect(response.headers['Content-Security-Policy']).to include("default-src 'self'", "frame-ancestors 'none'")
     end
 
     it 'responde 404 para link desconhecido, formulário desativado ou módulo desligado' do
@@ -54,6 +56,32 @@ RSpec.describe 'Formulário público de documentos', type: :request do
       expect(response.body).to include(submission.protocol, 'Recebemos')
       expect(submission.contact.phone_number).to eq('+5511912345678')
       expect(submission.documents.count).to eq(1)
+    end
+
+    # O ambiente de teste desliga o CSRF; aqui ele fica ligado, como em
+    # produção. Com Referrer-Policy no-referrer o navegador mandava
+    # "Origin: null" e todo envio real caía em 422 (achado no roteiro visual).
+    context 'with CSRF ligado, como em produção' do
+      around do |example|
+        previous = ActionController::Base.allow_forgery_protection
+        ActionController::Base.allow_forgery_protection = true
+        example.run
+      ensure
+        ActionController::Base.allow_forgery_protection = previous
+      end
+
+      it 'aceita o envio com o token da página e a origem do próprio site' do
+        get "/f/#{form.public_token}"
+        token = response.body[/name="authenticity_token" value="([^"]+)"/, 1]
+
+        post "/f/#{form.public_token}",
+             params: { authenticity_token: token, answers: answers, consent: '1', started_at: started,
+                       files: { identidade: [crm_pdf_upload('rg.pdf')] } },
+             headers: { 'Origin' => 'http://www.example.com' }
+
+        expect(response).to have_http_status(:ok)
+        expect(CrmDocumentSubmission.count).to eq(1)
+      end
     end
 
     it 'mostra os erros e mantém o que foi digitado' do

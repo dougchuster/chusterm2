@@ -24,8 +24,7 @@ class Api::V1::Accounts::Crm::DocumentsBaseController < Api::V1::Accounts::Crm::
   def find_contact_deal!(contact, deal_id)
     return if deal_id.blank?
 
-    CrmDeal.visible_to(Current.user, Current.account).where(account_id: Current.account.id, contact_id: contact.id)
-           .find(deal_id)
+    documents_access.deals.where(contact_id: contact.id).find(deal_id)
   end
 
   def find_contact_folder!(contact, folder_id)

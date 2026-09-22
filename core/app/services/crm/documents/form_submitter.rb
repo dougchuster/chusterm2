@@ -12,8 +12,16 @@
 class Crm::Documents::FormSubmitter
   MAX_FILES = 20
   MAX_FILE_BYTES = 25.megabytes
+  MAX_TOTAL_BYTES = 100.megabytes
+  # Envios não verificados para o mesmo contato numa janela: quem digita o
+  # telefone de outra pessoa não consegue inundar a Triagem dela.
+  MAX_UNVERIFIED_PER_CONTACT = 5
+  UNVERIFIED_WINDOW = 24.hours
+  FLOODED_MESSAGE = 'Recebemos muitos envios para este contato nas últimas horas. Tente de novo amanhã ou fale com a equipe.'.freeze
   PROTOCOL_DIGITS = 6
   PROTOCOL_ATTEMPTS = 3
+
+  class Flooded < StandardError; end
 
   Result = Struct.new(:submission, :errors, :rejected, keyword_init: true) do
     def success?
@@ -41,6 +49,8 @@ class Crm::Documents::FormSubmitter
     submission, rejected = persist
     audit(submission)
     Result.new(submission: submission, errors: {}, rejected: rejected)
+  rescue Flooded
+    Result.new(errors: { 'form' => FLOODED_MESSAGE }, rejected: [])
   end
 
   private
@@ -60,9 +70,19 @@ class Crm::Documents::FormSubmitter
       message = item_error(item, @files[item['key']] || [])
       found[item['key']] = message if message
     end
-    errors['files'] = "Envie no máximo #{MAX_FILES} arquivos." if @files.values.sum(&:size) > MAX_FILES
-    errors['files'] = 'Arquivo enviado para um item que não existe.' if (@files.keys - items.pluck('key')).any?
-    errors
+    batch = batch_error
+    batch ? errors.merge('files' => batch) : errors
+  end
+
+  def batch_error
+    return 'Arquivo enviado para um item que não existe.' if (@files.keys - items.pluck('key')).any?
+    return 'Os arquivos passam de 100 MB no total. Envie em partes.' if total_bytes > MAX_TOTAL_BYTES
+
+    "Envie no máximo #{MAX_FILES} arquivos." if @files.values.sum(&:size) > MAX_FILES
+  end
+
+  def total_bytes
+    @files.values.flatten.sum { |file| file.try(:size).to_i }
   end
 
   def item_error(item, sent)
@@ -74,6 +94,8 @@ class Crm::Documents::FormSubmitter
   def persist
     CrmDocumentSubmission.transaction do
       resolved = resolve_contact
+      raise Flooded if flooded?(resolved.contact)
+
       submission = create_submission(resolved)
       rejected = store_files(submission)
       submission.update!(documents_count: submission.documents.count)
@@ -89,6 +111,13 @@ class Crm::Documents::FormSubmitter
       account: @account, name: @answers.mapped('contact_name'),
       phone: @answers.mapped('contact_phone'), email: @answers.mapped('contact_email')
     ).call
+  end
+
+  def flooded?(contact)
+    return false if @link
+
+    CrmDocumentSubmission.where(account_id: @account.id, contact_id: contact.id, verified: false)
+                         .where(created_at: UNVERIFIED_WINDOW.ago..).count >= MAX_UNVERIFIED_PER_CONTACT
   end
 
   def create_submission(resolved)

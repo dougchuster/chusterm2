@@ -138,13 +138,14 @@ onMounted(load);
           <DsButton
             v-if="!submission.verified"
             size="sm"
-            variant="secondary"
+            variant="primary"
             icon="i-lucide-shield-check"
             label="É este cliente"
             :disabled="busyId === submission.id"
             @click="review(submission, { verified: true }, 'Envio verificado.')"
           />
           <DsButton
+            v-else
             size="sm"
             variant="primary"
             icon="i-lucide-check"

@@ -41,6 +41,16 @@ class Crm::Documents::Access
     administrator? ? scope : scope.where(contact_id: visible_contacts.select(:id))
   end
 
+  # Negócios em que o agente pode arquivar documentos: os dele (dono,
+  # responsável, time) e os da inbox dele. Negócio sem inbox de outro agente
+  # fica de fora — é outro caso do mesmo cliente (sigilo entre casos).
+  def deals
+    scope = CrmDeal.where(account_id: @account.id)
+    return scope if administrator?
+
+    own_deals(scope).or(scope.where(inbox_id: @user.inboxes.where(account_id: @account.id).select(:id)))
+  end
+
   private
 
   def served_contact_ids
@@ -49,11 +59,11 @@ class Crm::Documents::Access
   end
 
   def deal_contact_ids
+    own_deals(CrmDeal.where(account_id: @account.id).where.not(contact_id: nil)).select(:contact_id)
+  end
+
+  def own_deals(scope)
     team_ids = @user.teams.where(account_id: @account.id).select(:id)
-    deals = CrmDeal.where(account_id: @account.id).where.not(contact_id: nil)
-    deals.where(owner_id: @user.id)
-         .or(deals.where(assignee_id: @user.id))
-         .or(deals.where(team_id: team_ids))
-         .select(:contact_id)
+    scope.where(owner_id: @user.id).or(scope.where(assignee_id: @user.id)).or(scope.where(team_id: team_ids))
   end
 end

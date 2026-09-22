@@ -45,12 +45,23 @@ describe('CRMDocumentSubmissions', () => {
     expect(wrapper.emitted('count')[0]).toEqual([1]);
   });
 
-  it('verifica e conclui o envio', async () => {
+  it('só deixa concluir depois de verificar o envio', async () => {
+    CrmDocumentsAPI.getSubmissions
+      .mockResolvedValueOnce({
+        data: { payload: [submission], meta: { count: 1 } },
+      })
+      .mockResolvedValue({
+        data: {
+          payload: [{ ...submission, verified: true }],
+          meta: { count: 1 },
+        },
+      });
     const wrapper = mount(CRMDocumentSubmissions);
     await flushPromises();
 
     const byText = text =>
       wrapper.findAll('button').find(b => b.text().includes(text));
+    expect(byText('Concluir')).toBeUndefined();
     await byText('É este cliente').trigger('click');
     await flushPromises();
     await byText('Concluir').trigger('click');

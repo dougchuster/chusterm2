@@ -108,6 +108,36 @@ RSpec.describe Crm::Documents::FormSubmitter do
     expect(result.submission.documents_count).to eq(1)
   end
 
+  it 'recusa envio que passa do teto total de bytes' do
+    stub_const("#{described_class}::MAX_TOTAL_BYTES", 10)
+
+    result = submit
+
+    expect(result.errors['files']).to include('100 MB')
+    expect(CrmDocumentSubmission.count).to eq(0)
+  end
+
+  # Revisão de segurança (22/09): quem digita o telefone de outra pessoa não
+  # consegue inundar a Triagem dela.
+  it 'limita os envios não verificados para o mesmo contato e não cria nada no excedente' do
+    stub_const("#{described_class}::MAX_UNVERIFIED_PER_CONTACT", 2)
+    2.times { expect(submit).to be_success }
+
+    result = submit
+
+    expect(result.errors['form']).to include('muitos envios')
+    expect(CrmDocumentSubmission.count).to eq(2)
+    expect(CrmDocument.count).to eq(2)
+  end
+
+  it 'não limita o link personalizado, que é verificado' do
+    stub_const("#{described_class}::MAX_UNVERIFIED_PER_CONTACT", 1)
+    contact = submit.submission.contact
+    link, = CrmDocumentFormLink.issue!(form: form, contact: contact)
+
+    expect(submit(answers: { assunto: 'Compra' }, link: link)).to be_success
+  end
+
   it 'numera os protocolos em sequência dentro do ano' do
     first = submit.submission
     second = submit(answers: answers.merge(whatsapp: '61912345678')).submission

@@ -14,6 +14,19 @@ class PublicDocumentFormsController < ActionController::Base
   protect_from_forgery with: :exception
   layout 'public_document_form'
 
+  # Única página do CRM aberta sem login: nada de fora da própria origem.
+  content_security_policy do |policy|
+    policy.default_src :self
+    policy.script_src :self
+    policy.style_src :self
+    policy.img_src :self, :data, :blob
+    policy.connect_src :self
+    policy.object_src :none
+    policy.base_uri :none
+    policy.form_action :self
+    policy.frame_ancestors :none
+  end
+
   before_action :load_form
   after_action :harden_headers
 
@@ -101,7 +114,9 @@ class PublicDocumentFormsController < ActionController::Base
 
   def harden_headers
     response.headers['X-Frame-Options'] = 'DENY'
-    response.headers['Referrer-Policy'] = 'no-referrer'
+    # same-origin, não no-referrer: com no-referrer o navegador manda
+    # "Origin: null" no POST e a checagem de origem do CSRF recusa o envio.
+    response.headers['Referrer-Policy'] = 'same-origin'
     response.headers['X-Robots-Tag'] = 'noindex, nofollow'
     response.headers['Cache-Control'] = 'no-store'
   end
