@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_09_18_000004) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_22_000001) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -1205,6 +1205,87 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_18_000004) do
     t.index ["status"], name: "index_crm_deals_on_status"
   end
 
+  create_table "crm_document_folder_templates", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "name", null: false
+    t.string "legal_area", default: "geral", null: false
+    t.string "scope", null: false
+    t.jsonb "tree", default: [], null: false
+    t.boolean "default", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "scope", "legal_area"], name: "idx_crm_document_folder_templates_scope_area", unique: true
+  end
+
+  create_table "crm_document_folders", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "contact_id", null: false
+    t.bigint "parent_id"
+    t.bigint "crm_deal_id"
+    t.string "name", null: false
+    t.string "slot"
+    t.string "kind", default: "custom", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "archived_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index "account_id, contact_id, COALESCE(parent_id, (0)::bigint), lower((name)::text)", name: "idx_crm_document_folders_sibling_name", unique: true, where: "(archived_at IS NULL)"
+    t.index ["account_id", "contact_id"], name: "idx_crm_document_folders_account_contact"
+    t.index ["crm_deal_id"], name: "index_crm_document_folders_on_crm_deal_id"
+    t.index ["parent_id"], name: "index_crm_document_folders_on_parent_id"
+  end
+
+  create_table "crm_document_types", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "slug", null: false
+    t.string "label", null: false
+    t.string "target_slot", null: false
+    t.integer "validity_days"
+    t.jsonb "patterns", default: [], null: false
+    t.integer "position", default: 0, null: false
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "slug"], name: "idx_crm_document_types_account_slug", unique: true
+  end
+
+  create_table "crm_documents", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "contact_id", null: false
+    t.bigint "crm_document_folder_id"
+    t.bigint "crm_deal_id"
+    t.string "doc_type"
+    t.string "description"
+    t.date "document_date"
+    t.string "file_name", null: false
+    t.boolean "name_locked", default: false, null: false
+    t.string "original_filename"
+    t.string "content_type"
+    t.bigint "byte_size"
+    t.string "checksum"
+    t.string "source", null: false
+    t.bigint "source_attachment_id"
+    t.bigint "source_message_id"
+    t.bigint "uploaded_by_user_id"
+    t.boolean "uploaded_by_contact", default: false, null: false
+    t.string "status", default: "received", null: false
+    t.text "review_note"
+    t.jsonb "tags", default: [], null: false
+    t.date "expires_on"
+    t.integer "versions_count", default: 1, null: false
+    t.jsonb "meta", default: {}, null: false
+    t.datetime "archived_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "contact_id", "archived_at"], name: "idx_crm_documents_account_contact"
+    t.index ["account_id", "contact_id", "checksum"], name: "idx_crm_documents_contact_checksum"
+    t.index ["account_id", "crm_deal_id"], name: "idx_crm_documents_account_deal"
+    t.index ["account_id", "crm_document_folder_id"], name: "idx_crm_documents_account_folder"
+    t.index ["account_id", "source_attachment_id"], name: "idx_crm_documents_source_attachment", unique: true, where: "(source_attachment_id IS NOT NULL)"
+    t.index ["account_id", "status"], name: "idx_crm_documents_account_status"
+    t.index ["tags"], name: "index_crm_documents_on_tags", using: :gin
+  end
+
   create_table "crm_external_connections", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.bigint "user_id"
@@ -2125,6 +2206,16 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_18_000004) do
   add_foreign_key "crm_deal_conversations", "accounts"
   add_foreign_key "crm_deal_conversations", "conversations"
   add_foreign_key "crm_deal_conversations", "crm_deals"
+  add_foreign_key "crm_document_folder_templates", "accounts"
+  add_foreign_key "crm_document_folders", "accounts"
+  add_foreign_key "crm_document_folders", "contacts", on_delete: :cascade
+  add_foreign_key "crm_document_folders", "crm_deals", on_delete: :nullify
+  add_foreign_key "crm_document_folders", "crm_document_folders", column: "parent_id", on_delete: :cascade
+  add_foreign_key "crm_document_types", "accounts"
+  add_foreign_key "crm_documents", "accounts"
+  add_foreign_key "crm_documents", "contacts"
+  add_foreign_key "crm_documents", "crm_deals", on_delete: :nullify
+  add_foreign_key "crm_documents", "crm_document_folders", on_delete: :nullify
   add_foreign_key "crm_external_connections", "accounts"
   add_foreign_key "crm_external_connections", "users"
   add_foreign_key "crm_field_definitions", "accounts"

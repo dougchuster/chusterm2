@@ -1,0 +1,95 @@
+# Catálogo padrão do cofre de documentos (PROJETO-COFRE-DOCUMENTOS.md §5).
+# Copiado para cada conta na primeira vez que o módulo é usado
+# (Crm::Documents::Defaults.ensure!). Depois disso a conta edita os próprios
+# registros; mudar este arquivo só afeta contas novas ou slugs ainda ausentes.
+#
+# `target_slot` aponta para o `slot` de uma pasta (nunca para o nome), para o
+# roteamento sobreviver a renomeações. Slots `processo_*` são resolvidos dentro
+# da pasta do processo.
+# `patterns` alimenta o classificador determinístico da F2 (regex, sem acento,
+# comparadas com o nome do arquivo e a legenda já transliterados).
+
+document_types:
+  - { slug: rg, label: RG, target_slot: pessoais, patterns: ['\brg\b', 'identidade', 'registro geral'] }
+  - { slug: cpf, label: CPF, target_slot: pessoais, patterns: ['\bcpf\b'] }
+  - { slug: cnh, label: CNH, target_slot: pessoais, patterns: ['\bcnh\b', 'carteira de motorista', 'habilitacao'] }
+  - { slug: certidao_nascimento, label: Certidão de Nascimento, target_slot: pessoais, validity_days: 90, patterns: ['certidao.*nascimento'] }
+  - { slug: certidao_casamento, label: Certidão de Casamento, target_slot: pessoais, validity_days: 90, patterns: ['certidao.*casamento'] }
+  - { slug: certidao_obito, label: Certidão de Óbito, target_slot: pessoais, validity_days: 90, patterns: ['certidao.*obito'] }
+  - { slug: comprovante_residencia, label: Comprovante de Residência, target_slot: comprovantes, validity_days: 90, patterns: ['comprovante.*(residencia|endereco)', 'conta de (luz|agua|energia)'] }
+  - { slug: holerite, label: Holerite, target_slot: comprovantes, patterns: ['holerite', 'contracheque', 'contra cheque'] }
+  - { slug: extrato_bancario, label: Extrato Bancário, target_slot: comprovantes, patterns: ['extrato'] }
+  - { slug: procuracao, label: Procuração, target_slot: contratos, patterns: ['procuracao'] }
+  - { slug: contrato_honorarios, label: Contrato de Honorários, target_slot: contratos, patterns: ['contrato.*honorario'] }
+  - { slug: declaracao_hipossuficiencia, label: Declaração de Hipossuficiência, target_slot: contratos, patterns: ['hipossuficiencia'] }
+  - { slug: cnis, label: CNIS, target_slot: processo_docs, validity_days: 30, patterns: ['\bcnis\b'] }
+  - { slug: ctps, label: CTPS, target_slot: processo_docs, patterns: ['\bctps\b', 'carteira de trabalho'] }
+  - { slug: ppp, label: PPP, target_slot: processo_docs, patterns: ['\bppp\b', 'perfil profissiografico'] }
+  - { slug: laudo_medico, label: Laudo Médico, target_slot: processo_docs, patterns: ['laudo', 'atestado'] }
+  - { slug: peticao, label: Petição, target_slot: processo_peticoes, patterns: ['peticao', 'inicial'] }
+  - { slug: decisao, label: Decisão, target_slot: processo_decisoes, patterns: ['decisao', 'sentenca', 'despacho'] }
+  - { slug: outro, label: Outro, target_slot: current, patterns: [] }
+
+# Estrutura da gaveta do cliente (raiz). Prefixo numérico garante a mesma
+# ordem na tela, no Windows Explorer e no Drive.
+client_template:
+  name: Gaveta padrão
+  tree:
+    - { slot: triagem, name: 00 Triagem }
+    - { slot: pessoais, name: 01 Documentos Pessoais }
+    - { slot: comprovantes, name: 02 Comprovantes }
+    - { slot: contratos, name: 03 Procurações e Contratos }
+    - { slot: processos, name: 04 Processos }
+    - { slot: enviados, name: 05 Enviados pelo Escritório }
+    - { slot: arquivo, name: 99 Arquivo }
+
+# Subpastas de cada processo, por área (crm_deals.category / legal_area).
+# Área sem modelo próprio usa `geral`; `case_area_aliases` cobre áreas que
+# compartilham estrutura.
+case_area_aliases:
+  consumidor: civel
+  juridico: geral
+
+case_templates:
+  geral:
+    name: Processo — Geral
+    tree:
+      - { slot: processo_docs, name: 01 Documentos do Caso }
+      - { slot: processo_peticoes, name: 02 Petições e Protocolos }
+      - { slot: processo_decisoes, name: 03 Decisões e Intimações }
+      - { slot: processo_comunicacoes, name: 04 Comunicações }
+  previdenciario:
+    name: Processo — Previdenciário
+    tree:
+      - { slot: processo_docs, name: 01 Documentos do Caso }
+      - { slot: processo_administrativo, name: 02 Requerimento Administrativo }
+      - { slot: processo_peticoes, name: 03 Petições e Protocolos }
+      - { slot: processo_decisoes, name: 04 Decisões e Perícias }
+  trabalhista:
+    name: Processo — Trabalhista
+    tree:
+      - { slot: processo_docs, name: 01 Documentos do Contrato }
+      - { slot: processo_provas, name: 02 Provas }
+      - { slot: processo_peticoes, name: 03 Petições e Protocolos }
+      - { slot: processo_decisoes, name: 04 Decisões e Audiências }
+  familia:
+    name: Processo — Família
+    tree:
+      - { slot: processo_docs, name: 01 Documentos das Partes }
+      - { slot: processo_bens, name: 02 Bens e Renda }
+      - { slot: processo_peticoes, name: 03 Petições e Protocolos }
+      - { slot: processo_decisoes, name: 04 Decisões e Acordos }
+  civel:
+    name: Processo — Cível e Consumidor
+    tree:
+      - { slot: processo_docs, name: 01 Documentos do Caso }
+      - { slot: processo_provas, name: 02 Provas }
+      - { slot: processo_peticoes, name: 03 Petições e Protocolos }
+      - { slot: processo_decisoes, name: 04 Decisões }
+  criminal:
+    name: Processo — Criminal
+    tree:
+      - { slot: processo_docs, name: 01 Documentos do Caso }
+      - { slot: processo_provas, name: 02 Inquérito e Provas }
+      - { slot: processo_peticoes, name: 03 Petições e Protocolos }
+      - { slot: processo_decisoes, name: 04 Decisões e Audiências }

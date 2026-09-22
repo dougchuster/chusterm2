@@ -169,6 +169,12 @@ class Account < ApplicationRecord
   has_many :crm_account_packs, dependent: :destroy
   has_many :crm_field_definitions, dependent: :destroy
   has_many :crm_activity_types, dependent: :destroy
+  # Cofre de documentos: documentos primeiro (apagam o arquivo em disco), depois
+  # as pastas, que são só metadados.
+  has_many :crm_documents, dependent: :destroy
+  has_many :crm_document_folders, dependent: :delete_all
+  has_many :crm_document_types, dependent: :delete_all
+  has_many :crm_document_folder_templates, dependent: :delete_all
 
   has_one_attached :contacts_export
   has_one_attached :crm_deals_export

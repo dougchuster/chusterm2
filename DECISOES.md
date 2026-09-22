@@ -68,3 +68,32 @@ Referência: `PLANO_17_09.md` §3 (achados A0–A3). Data das decisões: 2026-09
 - [ ] gitleaks + throttle (0.8)
 - [ ] Repo limpo: serviços órfãos, .nvmrc, docs/execution versionados (0.9)
 - [ ] RSpec + Vitest verdes; 0 termos jurídicos fora do pack em contas sem `legal`
+
+---
+
+## ADR-DOC — Cofre de documentos (módulo Arquivos)
+
+Referência: `PROJETO-COFRE-DOCUMENTOS.md` §18. Data: 2026-09-22.
+
+**Status:** provisório. As recomendações do projeto foram adotadas para destravar a F1; D2, D3, D6, D7, D11 e D12 precisam da confirmação da cliente antes da F4/F5 (nada nelas é irreversível na F1).
+
+| ID | Decisão adotada | Confirmação |
+|----|-----------------|-------------|
+| D1 | Disco local da VPS (Active Storage `local`); migrar a S3-compatible acima de 60% do disco | técnica |
+| D2 | Construir o portal público (F4), com revisão de segurança no gate | cliente |
+| D3 | Backup em Google Workspace + Drive Compartilhado, conta de função | cliente |
+| D4 | Purga definitiva só por administrador; agente arquiva | técnica |
+| D5 | Anexos enviados pela equipe entram em `05 Enviados pelo Escritório` | técnica |
+| D6 | Retenção de 5 anos após o encerramento do caso, com relatório prévio | cliente |
+| D7 | Gaveta identificada por `Nome · C000123`; CPF fora dos caminhos | cliente |
+| D8 | Espelho legível em disco por hardlink, desligável | técnica |
+| D9 | Classificação automática não tira da Triagem no início | técnica |
+| D10 | Arquivos sobem legíveis para o Drive (sem criptografia do lado do cliente) | técnica |
+| D11 | Árvore de pastas e nomenclatura da §5 | cliente |
+| D12 | Cinco assuntos no formulário aberto (INSS, Trabalho, Família, Banco/consumo, Outro) | cliente |
+| D13 | Envio de pessoa sem cadastro não cria negócio automaticamente | técnica |
+| D14 | Sem código de confirmação por WhatsApp no início; envio entra "não verificado" | técnica |
+
+**Decisão técnica nova (D15) — como ligar o módulo por conta.** O projeto previa a flag `crm_documents` em `config/features.yml`, mas o arquivo já tem 65 flags e o bitmask de `feature_flags` é um bigint de 63 bits (as flags nº 64/65 já não funcionam — ver check-up de 18/09). Adotado: chave `crm_documents` em `accounts.settings` (jsonb), lida por `Crm::Documents::Feature.enabled?(account)`. Não toca o bitmask, não exige migration e liga/desliga por conta pelo console ou pelo super admin.
+
+**Alternativas rejeitadas para D15:** reaproveitar uma flag depreciada do `features.yml` (mudaria o significado de um bit já gravado em contas existentes); migrar `feature_flags` para jsonb (mudança no núcleo do Chatwoot, fora do escopo).

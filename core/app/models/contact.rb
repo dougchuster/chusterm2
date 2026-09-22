@@ -63,6 +63,10 @@ class Contact < ApplicationRecord
   has_many :messages, as: :sender, dependent: :destroy_async
   has_many :notes, dependent: :destroy_async
   has_many :crm_deals, dependent: :nullify
+  # Cofre de documentos: o destroy apaga o arquivo em disco; as pastas caem por
+  # cascade no banco (FK on_delete: :cascade).
+  has_many :crm_documents, dependent: :destroy
+  has_many :crm_document_folders, dependent: nil
   belongs_to :crm_owner, class_name: 'User', optional: true
   before_validation :prepare_contact_attributes, :normalize_crm_attributes
   after_create_commit :dispatch_create_event, :ip_lookup
