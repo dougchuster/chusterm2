@@ -560,8 +560,6 @@ const salesCrmMenuItems = computed(() => [
       'crm_automation_rules',
       'crm_cadences',
       'crm_scoring_config',
-      'crm_documents_triage',
-      'crm_documents_settings',
     ],
     children: [
       {
@@ -585,28 +583,6 @@ const salesCrmMenuItems = computed(() => [
         activeOn: ['crm_activities'],
         to: accountScopedRoute('crm_activities'),
       },
-      ...(hasCrmDocuments.value
-        ? [
-            {
-              name: 'DocumentTriage',
-              label: t('SIDEBAR.DOCUMENT_TRIAGE'),
-              icon: 'i-lucide-inbox',
-              activeOn: ['crm_documents_triage'],
-              to: accountScopedRoute('crm_documents_triage'),
-            },
-          ]
-        : []),
-      ...(isDocumentsAdmin.value
-        ? [
-            {
-              name: 'DocumentSettings',
-              label: t('SIDEBAR.DOCUMENT_SETTINGS'),
-              icon: 'i-lucide-settings-2',
-              activeOn: ['crm_documents_settings'],
-              to: accountScopedRoute('crm_documents_settings'),
-            },
-          ]
-        : []),
       {
         name: 'Agenda',
         label: t('SIDEBAR.AGENDA'),
@@ -730,6 +706,38 @@ const salesCrmMenuItems = computed(() => [
     activeOn: ['crm_cadences'],
     to: accountScopedRoute('crm_cadences'),
   },
+  // Cofre de documentos: item próprio, não dentro de Negócios — o dono do
+  // documento é o contato, e escondido no grupo fechado ninguém o achava.
+  ...(hasCrmDocuments.value
+    ? [
+        {
+          name: 'Documents',
+          label: t('SIDEBAR.DOCUMENTS'),
+          icon: 'i-lucide-folder-open',
+          activeOn: ['crm_documents_triage', 'crm_documents_settings'],
+          children: [
+            {
+              name: 'DocumentTriage',
+              label: t('SIDEBAR.DOCUMENT_TRIAGE'),
+              icon: 'i-lucide-inbox',
+              activeOn: ['crm_documents_triage'],
+              to: accountScopedRoute('crm_documents_triage'),
+            },
+            ...(isDocumentsAdmin.value
+              ? [
+                  {
+                    name: 'DocumentSettings',
+                    label: t('SIDEBAR.DOCUMENT_SETTINGS'),
+                    icon: 'i-lucide-settings-2',
+                    activeOn: ['crm_documents_settings'],
+                    to: accountScopedRoute('crm_documents_settings'),
+                  },
+                ]
+              : []),
+          ],
+        },
+      ]
+    : []),
   ...(hasMarketing.value
     ? [
         {

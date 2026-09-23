@@ -18,6 +18,7 @@ const routerResolveMock = vi.fn(to => ({
 }));
 
 const currentSidebarWidth = ref(200);
+const currentAccount = ref({ settings: {} });
 
 vi.mock('vuex', () => ({
   useStore: () => ({
@@ -57,6 +58,7 @@ vi.mock('dashboard/composables/useAccount', () => ({
       query,
     }),
     isOnChusteRMCloud: ref(false),
+    currentAccount,
   }),
 }));
 
@@ -101,6 +103,7 @@ describe('Sidebar.vue', () => {
     vi.clearAllMocks();
     localStorage.clear();
     currentSidebarWidth.value = 200;
+    currentAccount.value = { settings: {} };
     setItemSpy = vi.spyOn(window.localStorage, 'setItem');
   });
 
@@ -186,6 +189,16 @@ describe('Sidebar.vue', () => {
     expect(wrapper.text()).toContain('SIDEBAR.REPORTS');
     expect(wrapper.text()).toContain('SIDEBAR.SETTINGS');
     expect(wrapper.text()).toContain('SIDEBAR.HELP_CENTER.TITLE');
+  });
+
+  it('mostra Arquivos como item próprio só com o cofre ligado na conta', async () => {
+    const wrapper = mountSidebar();
+    expect(wrapper.text()).not.toContain('SIDEBAR.DOCUMENTS');
+
+    currentAccount.value = { settings: { crm_documents: true } };
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.text()).toContain('SIDEBAR.DOCUMENTS');
   });
 
   it('toggles section collapse when header button is clicked', async () => {
