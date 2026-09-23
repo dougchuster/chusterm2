@@ -179,6 +179,7 @@ Sem achados em: IDOR entre contas/contatos, path traversal/header injection no n
 |------|---------|--------|-------------|
 | Chuster (canário) | `20260922T204436-4346d0c-cofre-f1f2` | no ar, **módulo ligado** na conta 1 (Chuster Tech) | migration aplicada; `/health` OK; teste de fumaça no volume real: documento criado na pasta certa, clone por hardlink com mesmo inode, clone sobrevive ao original apagado, contato de teste removido |
 | Chuster (canário) | `20260922T222513-50b5391-cofre-f3` | no ar (F3), módulo ligado na conta 1 | teste de fumaça: reenvio virou v2 com validade 2026-12-21; anterior obsoleto em `99 Arquivo` como "(v1)"; fila "Para análise" traz o v2; contato de teste removido |
+| Chuster (canário) | `20260923T000744-0177aa3-cofre-universal` | no ar (universal + F4 + correções de segurança), módulo ligado na conta 1 | migration aplicada; `/health` OK; teste de fumaça por HTTPS como navegador (CSRF, Origin, cookie): formulário criado do modelo jurídico, página 200 com CSS/JS 200, CSP e `Referrer-Policy: same-origin` no ar, envio com PDF → protocolo `2026-000001`, contato novo, arquivo na Triagem como "2026-09-22 21h29 — Formulário — rg-smoke.pdf" com tipo sugerido e "não verificado"; formulário, envio, documento e contato de teste removidos |
 | KVM4 (cliente) | `20260922T205644-4346d0c-cofre-f1f2-dark` | no ar, **módulo desligado** (dark launch) | migration aplicada; `/health` OK; site 200; `accounts.settings.crm_documents` ausente; 0 documentos |
 
 A KVM4 ficou na F1/F2 de propósito: o módulo está desligado lá (a F3 não muda nada até ligar) e cada deploy soma ~6,8 GB de backup num disco em 72%. Levar a F3 junto com o próximo deploy necessário, de preferência depois da rotação de backup.
@@ -203,7 +204,7 @@ Ligar para o escritório: `Crm::Documents::Feature.enable!(Account.find(1))` na 
 | Aprovar / Rejeitar com motivo (chips: Ilegível, Cortado, Vencido, Documento errado) | feito | `CRMDocumentList.vue`, `CRMDocumentEditModal.vue` |
 | Versões: mesmo tipo na mesma pasta com conteúdo diferente vira v2; a anterior vai para 99 Arquivo, obsoleta, como "(v1)"; selo "vN" na lista | feito | `Crm::Documents::Versioner` (chamado no upload e ao classificar/mover); sem tabela nova, conforme §5.3 |
 | Filas do escritório: "Para análise" (aprovar/rejeitar) e "Vencendo" (vencidos e 30 dias), em abas na página de documentos | feito | `GET crm/documents/queue?name=review|expiring` (`QueueQuery`), `CRMDocumentQueue.vue`, `DocumentTriage.vue` |
-| Modelos de pasta editáveis por área (tela de configuração) | pendente | hoje ficam no catálogo copiado por conta; editar exige console |
+| Modelos de pasta editáveis por área (tela de configuração) | feito (23/09) | aba "Pastas" em Configurar documentos, `CRMFolderTemplatesSettings.vue`, `crm/document_folder_templates` |
 
 **Testes:** RSpec do módulo 154/0 (+checklist, validade); Vitest do cofre 20/0.
 
@@ -234,10 +235,28 @@ O plano previa um formulário fixo (§8.7). Virou um **construtor**: cada conta 
 | Fila "Novos envios": respostas rotuladas, identificação, "É este cliente", concluir, spam (arquiva os arquivos) | `GET/PATCH crm/document_submissions`, `CRMDocumentSubmissions.vue` |
 | Defesas: CSRF, campo-isca e tempo mínimo (fingem sucesso), página expirada pede reenvio, rack-attack por IP (10 envios/h, `RATE_LIMIT_CRM_FORM_SUBMITS`), X-Frame-Options DENY, noindex, no-store, 404 genérico | idem |
 
-**Pendências conhecidas da F4:** confirmação do protocolo por WhatsApp para o número informado (§8.7.1) — exige escolher a inbox de envio por formulário; hoje o protocolo aparece só na tela. Envio de muitos arquivos grandes de uma vez passa do limite do nginx (100 MB no host do CRM) — a redução de fotos no celular mitiga.
+**Revisão de segurança (23/09/2026)**: nenhum achado CRITICAL. Corrigidos:
+
+| Nível | Achado | Correção |
+|-------|--------|----------|
+| HIGH | Envio aberto grava arquivos no contato real casado pelo telefone/e-mail — quem sabe o telefone de alguém podia inundar a Triagem dele | até 5 envios não verificados por contato em 24 h (`FormSubmitter::MAX_UNVERIFIED_PER_CONTACT`); link personalizado não entra na conta |
+| HIGH | "Pedir documentos" e upload aceitavam `deal_id` de qualquer negócio sem inbox do contato (`CrmDeal.visible_to`) — documento podia cair no caso de outro agente (sigilo entre casos) | `Crm::Documents::Access#deals` (dono, responsável, time, inbox do agente) em `find_contact_deal!` |
+| MEDIUM | Sem teto total por envio | 100 MB por envio (`MAX_TOTAL_BYTES`), igual ao nginx do canário |
+| MEDIUM | "Concluir" liberado com envio não verificado | servidor recusa; na fila o botão só aparece depois de "É este cliente" (spam continua livre) |
+| MEDIUM | Sem CSP na única página aberta sem login | CSP só da própria origem em `PublicDocumentFormsController` |
+| LOW (aceito) | Verificador de tempo reutilizável dentro de 12 h; respostas (CPF) sem criptografia de coluna | mitigado pelo rack-attack; mesmo padrão de `contacts` — registrar se a cliente pedir |
+
+**Achados do roteiro visual (`qa/e2e/shot-documents-forms.mjs`) que os testes não pegavam:**
+
+- `Referrer-Policy: no-referrer` fazia o navegador mandar `Origin: null` e o CSRF recusava **todo** envio real (422). Trocado para `same-origin`; spec de request com CSRF ligado.
+- O `core/Dockerfile` copia `public/` item a item e deixava `public/crm-forms` de fora: a página saía sem estilo, com o campo-isca visível e sem os condicionais. Incluído.
+- Vírgula sem aspas no YAML cortava o rótulo "Tem alguma data marcada? (audiência, perícia, prazo)"; `presets_spec.rb` varre os presets atrás de chave sem valor.
+- As abas de "Configurar documentos" sumiam (filho da coluna flex encolhendo a zero).
+
+Observação: o nginx do canário acrescenta `X-Frame-Options: SAMEORIGIN` ao `DENY` da aplicação (cabeçalho duplicado); quem vale é o `frame-ancestors 'none'` da CSP, então a página continua sem poder ser embutida.
+
+**Pendências conhecidas da F4:** confirmação do protocolo por WhatsApp para o número informado (§8.7.1) — exige escolher a inbox de envio por formulário; hoje o protocolo aparece só na tela. O nginx das duas VPS aceita 100 MB por requisição no host do CRM (conferido em 23/09), igual ao teto da aplicação.
 
 ### F5 e F6
 
-Pendentes. F5 depende da D3 (conta Google). Ver `PROJETO-COFRE-DOCUMENTOS.md` §13.
-
-Pendentes. F4 depende da D12 (assuntos do formulário) e da revisão de segurança; F5 da D3 (conta Google). Ver `PROJETO-COFRE-DOCUMENTOS.md` §13.
+Pendentes. F5 (backup no Google Drive) depende da D3 (conta Google). F6 (acabamento e métricas) depois do uso real. Ver `PROJETO-COFRE-DOCUMENTOS.md` §13.
