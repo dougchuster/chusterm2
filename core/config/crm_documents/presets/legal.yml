@@ -133,7 +133,7 @@ default_form:
     - { key: assunto, label: Assunto, type: radio, required: true, options: ['Aposentadoria ou benefício do INSS', 'Trabalho (demissão, direitos)', 'Família (divórcio, pensão, guarda)', 'Banco, compras ou contratos', 'Outro assunto'] }
     - { key: cliente, label: Você já é cliente do escritório?, type: radio, options: ['Sim', 'Não', 'Não sei'] }
     - { key: relato, label: Conte em poucas palavras o que aconteceu ou o que precisa, type: textarea, required: true }
-    - { key: data_marcada, label: Tem alguma data marcada? (audiência, perícia, prazo), type: date }
+    - { key: data_marcada, label: "Tem alguma data marcada? (audiência, perícia, prazo)", type: date }
   document_items:
     - { key: identidade, label: RG ou CNH, doc_type: rg, multiple: true }
     - { key: endereco, label: Comprovante de residência, doc_type: comprovante_residencia }

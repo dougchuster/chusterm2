@@ -120,6 +120,8 @@ COPY public/apple*.png ./public/
 COPY public/android*.png ./public/
 COPY public/ms-icon*.png ./public/
 COPY public/dashboard/images/ ./public/dashboard/images/
+# Página pública do formulário de documentos (/f e /l): CSS e JS estáticos.
+COPY public/crm-forms/ ./public/crm-forms/
 
 # Evolution API - Vue components e i18n
 COPY app/javascript/dashboard/routes/dashboard/settings/inbox/channels/ ./app/javascript/dashboard/routes/dashboard/settings/inbox/channels/
